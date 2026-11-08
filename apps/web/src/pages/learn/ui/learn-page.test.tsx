@@ -22,11 +22,21 @@ describe('learn page: the top of the learning screen', () => {
     render(<LearnPage />, container);
     await act(settle);
 
-    expect(container.querySelector('[data-testid="learn-unlocked-count"]')?.textContent).toBe(
-      t('learn.unlocked', { done: 5, total: 104 }),
+    expect(container.querySelector('[data-testid="learn-mastered-count"]')?.textContent).toBe(
+      t('learn.mastered', { done: 0, total: 104 }),
     );
     expect(container.querySelector('[data-testid="learn-unlocked-list"]')?.textContent).toBe(
       'あ い う え お',
+    );
+  });
+
+  it('shows no streak before the first answer', async () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    render(<LearnPage />, container);
+    await act(settle);
+    expect(container.querySelector('[data-testid="learn-streak"]')?.textContent).toBe(
+      t('learn.streak', { days: 0 }),
     );
   });
 
@@ -44,8 +54,8 @@ describe('learn page: the top of the learning screen', () => {
       katakana?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(container.querySelector('[data-testid="learn-unlocked-count"]')?.textContent).toBe(
-      t('learn.unlocked', { done: 5, total: 125 }),
+    expect(container.querySelector('[data-testid="learn-mastered-count"]')?.textContent).toBe(
+      t('learn.mastered', { done: 0, total: 125 }),
     );
     expect(container.querySelector('[data-testid="learn-unlocked-list"]')?.textContent).toBe(
       'ア イ ウ エ オ',

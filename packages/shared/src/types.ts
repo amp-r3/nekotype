@@ -94,7 +94,14 @@ export type LearnState = {
   /** The last 10 recall answers, oldest first. */
   readonly recent: Readonly<Record<LearnKanaKey, readonly RecallAnswer[]>>;
   readonly stats: Readonly<Record<LearnKanaKey, LearnStat>>;
+  /** Runs of consecutive active local days `[first, last]`; ascending, never overlapping or adjacent. */
+  readonly activeDays: readonly (readonly [first: number, last: number])[];
+  /** Recall answer times per track and local day, counted in buckets of 100 ms. */
+  readonly recallBuckets: Readonly<Record<Track, DayBuckets>>;
 };
+
+/** Local day → bucket → number of recall answers. */
+export type DayBuckets = Readonly<Record<string, Readonly<Record<string, number>>>>;
 
 export type Counters = {
   readonly started: Readonly<Record<Mode, number>>;

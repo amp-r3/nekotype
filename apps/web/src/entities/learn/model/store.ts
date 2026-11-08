@@ -9,12 +9,23 @@ import type {
   Scheduler,
   TimeoutHandle,
 } from '@nekotype/shared/types';
-import { RECENT_ANSWERS, isCounters, isLearnState, isObject } from '@nekotype/shared/runtime';
+import {
+  RECENT_ANSWERS,
+  decayLearnStat,
+  isCounters,
+  isLearnState,
+  isObject,
+} from '@nekotype/shared/runtime';
 import type { Db } from '@/shared/lib';
 import { defaultClock, defaultScheduler, getDatabase } from '@/shared/lib';
 import { K_WINDOW, intervalsOf, recallAnswerTime, typingK } from '../lib/answer-time';
 import type { Keystroke } from '../lib/answer-time';
-import { evaluateUnlocking, initialCounters, initialLearnState } from '../lib/state';
+import { addRecallTime } from '../lib/buckets';
+import { reviewEntry } from '../lib/boxes';
+import { localDay } from '../lib/day';
+import { addActiveDay } from '../lib/streak';
+import { trackOfKey } from '../lib/tracks';
+import { evaluateBoxes, evaluateUnlocking, initialCounters, initialLearnState } from '../lib/state';
 
 const DELTA_STORE = 'delta';
 const DELTA_KEY = 'current';
@@ -36,6 +47,8 @@ export type RecallInput = {
   readonly keystrokes: readonly Keystroke[];
   /** No rejected key and no Esc. */
   readonly ok: boolean;
+  /** A task of a review session: only a review moves the kana's box. */
+  readonly review?: boolean;
 };
 
 export type RecognitionInput = {
@@ -79,7 +92,9 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   let writing: Promise<void> = Promise.resolve();
   let loading: Promise<void> | null = null;
 
-  const unlock = (next: LearnState): LearnState => evaluateUnlocking(next, deps.targetMs());
+  // Unlocking and the move from box 0 to box 1 are checked together (learning.md, "Boxes").
+  const unlock = (next: LearnState): LearnState =>
+    evaluateBoxes(evaluateUnlocking(next, deps.targetMs()), deps.targetMs(), deps.clock.now());
 
   const write = (): Promise<void> => {
     pending = null;
@@ -146,7 +161,7 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
       commit({ ...current, entries: { ...current.entries, [key]: entry } });
     },
 
-    recordRecall({ key, keystrokes, ok }) {
+    recordRecall({ key, keystrokes, ok, review = false }) {
       const ms = recallAnswerTime(keystrokes, typingK(intervals));
       // `at` identifies the answer in a merge, so two answers never share one.
       lastAt = Math.max(deps.clock.now(), lastAt + 1);
@@ -154,7 +169,23 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
       intervals = [...intervals, ...intervalsOf(keystrokes)].slice(-K_WINDOW);
       const current = state.value;
       const recent = [...(current.recent[key] ?? []), answer].slice(-RECENT_ANSWERS);
-      commit({ ...current, recent: { ...current.recent, [key]: recent } });
+      const track = trackOfKey(key);
+      const day = localDay(lastAt);
+      const entry = current.entries[key];
+      const entries =
+        review && entry !== undefined
+          ? { ...current.entries, [key]: reviewEntry(entry, ok, lastAt) }
+          : current.entries;
+      commit({
+        ...current,
+        entries,
+        recent: { ...current.recent, [key]: recent },
+        activeDays: addActiveDay(current.activeDays, day),
+        recallBuckets: {
+          ...current.recallBuckets,
+          [track]: addRecallTime(current.recallBuckets[track], day, ms),
+        },
+      });
       return ms;
     },
 
@@ -169,7 +200,11 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
           ? { ...before.mixups, [chosen]: (before.mixups[chosen] ?? 0) + 1 }
           : before.mixups,
       };
-      commit({ ...current, stats: { ...current.stats, [key]: stat } });
+      commit({
+        ...current,
+        stats: { ...current.stats, [key]: decayLearnStat(stat) },
+        activeDays: addActiveDay(current.activeDays, localDay(deps.clock.now())),
+      });
     },
 
     countSession(kind) {

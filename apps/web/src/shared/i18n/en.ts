@@ -30,7 +30,8 @@ export const en = {
   'learn.track.label': 'Track',
   'learn.track.hiragana': 'Hiragana',
   'learn.track.katakana': 'Katakana',
-  'learn.unlocked': 'Unlocked {done} of {total}',
+  'learn.mastered': 'Mastered {done} of {total}',
+  'learn.streak': 'Streak: {days} d',
   'learn.unlocked.list': 'Unlocked kana',
 
   'settings.showTranslation': 'Show the translation under the text',

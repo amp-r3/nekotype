@@ -1,6 +1,8 @@
 import type { Counters, LearnState, Track } from '@nekotype/shared/types';
 import { initialUnlocked } from './tracks';
+import { isLearnKanaKey } from '@nekotype/shared/runtime';
 import { isConfident } from './confidence';
+import { settleEntry } from './boxes';
 import { keysOfTrack, nextUnlock } from './tracks';
 
 export const TRACKS: readonly Track[] = ['hiragana', 'katakana'];
@@ -14,6 +16,8 @@ export function initialLearnState(): LearnState {
     entries: {},
     recent: {},
     stats: {},
+    activeDays: [],
+    recallBuckets: { hiragana: {}, katakana: {} },
   };
 }
 
@@ -44,4 +48,18 @@ export function evaluateUnlocking(state: LearnState, targetMs: number): LearnSta
     };
   }
   return result;
+}
+
+/**
+ * Box 1 at first confidence (learning.md, "Boxes"): checked whenever unlocking is. Returns the same
+ * object when no entry moves.
+ */
+export function evaluateBoxes(state: LearnState, targetMs: number, now: number): LearnState {
+  let entries = state.entries;
+  for (const [key, entry] of Object.entries(state.entries)) {
+    if (!isLearnKanaKey(key)) continue;
+    const settled = settleEntry(entry, state.recent[key] ?? [], targetMs, now);
+    if (settled !== entry) entries = { ...entries, [key]: settled };
+  }
+  return entries === state.entries ? state : { ...state, entries };
 }
