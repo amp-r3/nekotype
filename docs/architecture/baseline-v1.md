@@ -14,7 +14,7 @@ Nekotype is a high-performance, keyboard-first Japanese kana speed trainer engin
 
 ```
 apps/web/          @nekotype/web: the Preact SPA, Feature-Sliced Design (below)
-packages/engine/   @nekotype/engine: NFA romaji engine and kana tables; imports nothing
+packages/engine/   @nekotype/engine: NFA romaji engine, kana tables, track composition (`kanaOf`, `kanaRows`) and the visually-similar kana table (`similarKana`); imports nothing
 packages/shared/   @nekotype/shared: /types (Clock, Rng, Scheduler, Valid* types), /runtime (type guards)
 ```
 
