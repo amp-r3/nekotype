@@ -36,6 +36,8 @@ apps/web/src/
 └── shared/               # Reusable primitives, UI components, i18n, storage, and utility libraries
 ```
 
+`shared/lib/idb` holds the IndexedDB layer (P3, ADR 061): a promise wrapper, `getDatabase()` (one connection per page load, or an in-memory store with a "data will not be saved" notice when the database cannot be opened) and the schema reset on a `SCHEMA_VERSION` mismatch. Nothing stores data there yet; settings move in the next step of P3.
+
 ### Import Rules & Layer Hierarchy
 
 1. **Unidirectional Dependency Flow:** Slices in higher layers may import slices from lower layers only (`app` → `pages` → `features` → `entities` → `shared`). Lower layers NEVER import from higher layers.

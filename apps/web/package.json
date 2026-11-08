@@ -31,6 +31,7 @@
     "@types/node": "^22.13.10",
     "eslint": "^10.13.0",
     "eslint-plugin-boundaries": "^7.4.0",
+    "fake-indexeddb": "^6.2.7",
     "happy-dom": "^21.0.4",
     "steiger": "^0.8.1",
     "subset-font": "^2.9.0",

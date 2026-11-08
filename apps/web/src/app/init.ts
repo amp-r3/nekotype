@@ -1,5 +1,5 @@
 import { effect } from '@preact/signals';
-import { LocalStorageStore } from '@/shared/lib';
+import { LocalStorageStore, databaseMode, getDatabase, removeLegacyKeys } from '@/shared/lib';
 import { initLocale, locale, t } from '@/shared/i18n';
 import { currentPath } from '@/shared/lib';
 import { initSettings, flushSettings } from '@/entities/settings';
@@ -27,6 +27,13 @@ export function initApp(): Promise<void> {
   const localeReady = initLocale(store);
   initSettings(store);
   initProgress(store);
+
+  // Opens the database (and resets it if the schema changed). The shell does not wait for it.
+  void getDatabase().then(() => {
+    if (databaseMode.value === 'indexeddb') {
+      removeLegacyKeys(store);
+    }
+  });
 
   // Sync documentElement.lang with active locale signal
   if (typeof document !== 'undefined') {

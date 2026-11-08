@@ -65,6 +65,22 @@ export const STORAGE_KEYS = {
   LOCALE: 'nekotype:locale',
 } as const;
 
+/**
+ * Keys that earlier versions wrote and the code no longer uses (ADR 061). `kanaflow:settings:v1`
+ * joins in P3 when settings move to IndexedDB, `kanaflow:progress:v1` in P4.
+ */
+export const LEGACY_KEYS: readonly string[] = [];
+
+/** Deletes the legacy keys without reading them. Called once IndexedDB has opened. */
+export function removeLegacyKeys(
+  store: KeyValueStore,
+  keys: readonly string[] = LEGACY_KEYS,
+): void {
+  for (const key of keys) {
+    store.remove(key);
+  }
+}
+
 export function createDebouncedSaver(saveFn: () => void, delayMs = 300) {
   let timer: ReturnType<typeof setTimeout> | null = null;
 
