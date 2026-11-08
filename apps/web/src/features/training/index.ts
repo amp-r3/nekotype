@@ -1,10 +1,6 @@
-export type { KeyIntent } from './lib/input-adapter';
-
-export type { InputSource, InputSourceDeps } from './lib/input-source';
 export { useTestChrome } from './lib/use-test-chrome';
 export { TextStream } from './ui/text-stream';
 export type { TextStreamProps } from './ui/text-stream';
-export { createInputSource } from './lib/input-source';
 
 export type { Session, SessionDeps } from './model/session';
 export { createSession } from './model/session';

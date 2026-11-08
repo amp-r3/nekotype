@@ -2,8 +2,8 @@ import { useLayoutEffect, useMemo, useRef } from 'preact/hooks';
 import type { RefObject } from 'preact';
 import { useSignalEffect } from '@preact/signals';
 import type { Session } from '../model/session';
-import { createInputSource } from './input-source';
-import type { InputSource } from './input-source';
+import { createInputSource } from '@/shared/lib';
+import type { InputSource } from '@/shared/lib';
 
 export type TestInput = {
   readonly source: InputSource;

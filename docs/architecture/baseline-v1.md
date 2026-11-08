@@ -225,14 +225,14 @@ Zen (ADR 042) is the worked example: a test with no length that is ended by hand
 
 1. Add the member to `ValidTestConfig` in `packages/shared/src/types.ts` and to `isTestConfig` in `packages/shared/src/runtime.ts`. `TestConfig` in `apps/web/src/entities/settings/model/types.ts` derives from it. Stored settings are validated with the guard, so an unlisted mode is discarded on load; adding a member keeps what was saved before valid, so no migration is needed. Test it with a settings value from before the change.
 2. Let the compiler list the places that switch on `kind`. In the session (`features/training/model/session.ts`) a mode decides whether a deadline timer is armed (`time`), whether the stream has an end (`count`) and how the test can end (zen: `finish()`); `LiveLine` (counter) and `ModePanel` (selector, length group) follow.
-3. If the mode ends in a new way, add a key intent (`finish` in `lib/input-adapter.ts`), let the input source pass it (`lib/input-source.ts`) and handle it in `handleIntent`. Decide what a test that ends with nothing to keep does, and say it in `docs/spec/metrics.md` ("Test end").
+3. If the mode ends in a new way, add a key intent (`finish` in `shared/lib/input/input-adapter.ts`), let the input source pass it (`shared/lib/input/input-source.ts`) and handle it in `handleIntent`. Decide what a test that ends with nothing to keep does, and say it in `docs/spec/metrics.md` ("Test end").
 4. Add tests at each level: the guard, the session (without rendering), the key, and an e2e of the whole flow.
 
 ---
 
 ## 5. Mobile & On-Screen Input Seam
 
-The input layer feeds one stream of `KeyIntent`s from several sources (ADR 038, spec [Frontend](../spec/frontend.md)). `lib/input-adapter.ts` classifies a key or a character; `lib/input-source.ts` listens to the DOM:
+The input layer feeds one stream of `KeyIntent`s from several sources (ADR 038, spec [Frontend](../spec/frontend.md)). `shared/lib/input/input-adapter.ts` classifies a key or a character; `shared/lib/input/input-source.ts` listens to the DOM:
 
 ```
 [ keydown (desktop) ]──────────┐
