@@ -1,21 +1,25 @@
 import type { JSX } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { t } from '@/shared/i18n';
-import { Segmented } from '@/shared/ui';
+import { Button, Segmented } from '@/shared/ui';
+import { KanaChart } from '@/shared/ui/kana-chart';
+import { chartModel, kanaDetails } from '../lib/chart';
 import { learnTargetMs, learnTrack, setTrack } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
 import { defaultClock } from '@/shared/lib';
 import {
+  cellInfos,
   currentStreak,
   initLearn,
   isMastered,
+  keyOf,
   keysOfTrack,
   learnReady,
   learnState,
   localDay,
 } from '@/entities/learn';
 
-// The top of the learning screen. The chart and the sessions follow in later
+// The learning screen: track switch, progress and the kana chart. The sessions follow in later
 // pull requests (docs/spec/learning.md, "`/` screen").
 export function LearnPage(): JSX.Element {
   useEffect(() => {
@@ -32,13 +36,14 @@ export function LearnPage(): JSX.Element {
 
   const track = learnTrack.value;
   const state = learnState.value;
-  const unlocked = state.unlocked[track];
   const keys = keysOfTrack(track);
   const target = learnTargetMs.value;
   const mastered = keys.filter((key) =>
     isMastered(state.entries[key], state.recent[key] ?? [], target),
   ).length;
-  const streak = currentStreak(state.activeDays, localDay(defaultClock.now()));
+  const now = defaultClock.now();
+  const infos = cellInfos(track, state, target, now);
+  const streak = currentStreak(state.activeDays, localDay(now));
 
   return (
     <section className="max-w-layout-test mx-auto flex w-full flex-col items-start gap-6 py-12">
@@ -62,14 +67,24 @@ export function LearnPage(): JSX.Element {
         {t('learn.streak', { days: streak })}
       </p>
 
-      <p
-        lang="ja"
-        aria-label={t('learn.unlocked.list')}
-        className="text-fur-dim text-ui-body break-words"
-        data-testid="learn-unlocked-list"
-      >
-        {unlocked.map((key) => key.slice(key.indexOf(':') + 1)).join(' ')}
-      </p>
+      <KanaChart
+        rows={chartModel(track, infos)}
+        ariaLabel={t('learn.chart.label')}
+        renderDetails={(cell, close) => {
+          const info = infos.get(keyOf(track, cell.kana));
+          if (info === undefined) return null;
+          return (
+            <div className="flex flex-col items-start gap-1">
+              {kanaDetails(info).map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+              <Button variant="text" size="sm" onClick={close}>
+                {t('learn.chart.close')}
+              </Button>
+            </div>
+          );
+        }}
+      />
     </section>
   );
 }

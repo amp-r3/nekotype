@@ -536,3 +536,117 @@ html[data-testing] [data-chrome] {
 .nk-task.is-coarse .nk-opt .nk-opt__key {
   display: none;
 }
+
+/* ---- The kana chart ----------------------------------------------------------------------- */
+
+.nk-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.nk-chart__group.is-block-start {
+  margin-top: var(--space-4);
+}
+
+.nk-chart__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.nk-chart__head {
+  flex: none;
+  width: 36px;
+  color: var(--fur-dim);
+  font-family: var(--font-mono);
+  font-size: var(--text-ui-caption);
+}
+
+.nk-chart__slot {
+  position: relative;
+}
+
+/* A cell is 44px square; the state is shown by border, fill and marks, not by colour alone. */
+.nk-cell {
+  position: relative;
+  display: block;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  padding: 0;
+  border: var(--stroke-hair) solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fur);
+  text-align: center;
+}
+
+button.nk-cell {
+  cursor: pointer;
+}
+
+.nk-cell.is-locked {
+  color: var(--fur-faint);
+}
+
+.nk-cell.is-learning {
+  border-color: var(--line-strong);
+}
+
+.nk-cell.is-confident {
+  background: var(--heat-fur-3);
+}
+
+.nk-cell.is-mastered {
+  background: var(--heat-fur-4);
+  color: var(--on-fur);
+}
+
+button.nk-cell.is-locked:hover,
+button.nk-cell.is-learning:hover {
+  background: var(--bg-hover);
+}
+
+/* Mastered: a 2px mark under the cell. */
+.nk-cell.is-mastered::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--stroke-mark));
+  height: var(--stroke-mark);
+  background: var(--eye);
+}
+
+/* Review due: a folded corner in the ink of the cell. */
+.nk-cell.is-due::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--space-2);
+  height: var(--space-2);
+  background: currentColor;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.nk-chart__tip {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--fur);
+  color: var(--on-fur);
+  font-size: var(--text-ui-caption);
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.nk-chart__details {
+  padding: var(--space-2) var(--space-2) var(--space-2) 40px;
+  color: var(--fur-dim);
+  font-size: var(--text-ui-label);
+}

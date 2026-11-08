@@ -33,3 +33,7 @@ export type { OptionCardProps, OptionState } from './option-card';
 
 export { createTaskController } from './task-controller';
 export type { TaskController, TaskKind } from './task-controller';
+
+// `KanaChart` is not exported here: this barrel is in the initial graph, which would pull the chart
+// into the initial chunk. The learning screen imports it from '@/shared/ui/kana-chart' until
+// learning is the initial route.

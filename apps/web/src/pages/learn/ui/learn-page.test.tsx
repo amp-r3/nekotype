@@ -8,6 +8,12 @@ import { t } from '@/shared/i18n';
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
 
+function unlockedKana(root: HTMLElement): string {
+  return Array.from(root.querySelectorAll('[data-testid="kana-cell"]:not([data-state="locked"])'))
+    .map((cell) => cell.textContent)
+    .join('');
+}
+
 describe('learn page: the top of the learning screen', () => {
   let container: HTMLDivElement;
 
@@ -25,9 +31,7 @@ describe('learn page: the top of the learning screen', () => {
     expect(container.querySelector('[data-testid="learn-mastered-count"]')?.textContent).toBe(
       t('learn.mastered', { done: 0, total: 104 }),
     );
-    expect(container.querySelector('[data-testid="learn-unlocked-list"]')?.textContent).toBe(
-      'あ い う え お',
-    );
+    expect(unlockedKana(container)).toBe('あいうえお');
   });
 
   it('shows no streak before the first answer', async () => {
@@ -57,9 +61,7 @@ describe('learn page: the top of the learning screen', () => {
     expect(container.querySelector('[data-testid="learn-mastered-count"]')?.textContent).toBe(
       t('learn.mastered', { done: 0, total: 125 }),
     );
-    expect(container.querySelector('[data-testid="learn-unlocked-list"]')?.textContent).toBe(
-      'ア イ ウ エ オ',
-    );
+    expect(unlockedKana(container)).toBe('アイウエオ');
     expect(learnTrack.value).toBe('katakana');
   });
 });
