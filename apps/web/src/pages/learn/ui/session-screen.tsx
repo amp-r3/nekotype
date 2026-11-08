@@ -114,7 +114,7 @@ export function SessionScreen({
       <KanaTask
         kind={task.kind}
         {...shown}
-        session={{ kind: 'learning', n: task.n, total: session.total }}
+        session={{ kind: session.mode, n: task.n, total: session.total }}
         labels={labels()}
         notice={<span role="status">{notice}</span>}
         onLeave={onLeave}

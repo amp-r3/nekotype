@@ -45,8 +45,27 @@ export async function seedSettings(page: Page, patch: StoredSettings): Promise<v
     learn: { ...DEFAULTS.learn, ...patch.learn },
   };
   await page.goto('/');
+  await putRecord(page, 'settings', 'current', settings);
+  await page.reload();
+}
+
+/** Writes the learning state (`delta/current`) the same way, on `path`, and reloads. */
+export async function seedLearning(
+  page: Page,
+  path: string,
+  learn: Record<string, unknown>,
+): Promise<void> {
+  await page.goto(path);
+  await putRecord(page, 'delta', 'current', {
+    learn,
+    counters: { started: { typing: 0, learn: 0 }, finished: { typing: 0, learn: 0 } },
+  });
+  await page.reload();
+}
+
+async function putRecord(page: Page, store: string, key: string, value: unknown): Promise<void> {
   await page.evaluate(
-    async ({ settings, schemaVersion }) => {
+    async ({ store, key, value, schemaVersion }) => {
       const open = (): Promise<IDBDatabase> =>
         new Promise((resolve, reject) => {
           const req = indexedDB.open('nekotype');
@@ -82,8 +101,8 @@ export async function seedSettings(page: Page, patch: StoredSettings): Promise<v
       if (db === null) throw new Error('the database was not created');
       const opened = db;
       await new Promise<void>((resolve, reject) => {
-        const tx = opened.transaction('settings', 'readwrite');
-        tx.objectStore('settings').put(settings, 'current');
+        const tx = opened.transaction(store, 'readwrite');
+        tx.objectStore(store).put(value, key);
         tx.oncomplete = () => {
           resolve();
         };
@@ -93,9 +112,8 @@ export async function seedSettings(page: Page, patch: StoredSettings): Promise<v
       });
       opened.close();
     },
-    { settings, schemaVersion: SCHEMA_VERSION },
+    { store, key, value, schemaVersion: SCHEMA_VERSION },
   );
-  await page.reload();
 }
 
 /** The stored `settings` record, or null; for a test that waits until a change has been written. */

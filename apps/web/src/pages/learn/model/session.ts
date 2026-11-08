@@ -65,6 +65,10 @@ export type Phase = 'idle' | 'task' | 'answered' | 'waiting' | 'summary';
 
 export type LearnSessionDeps = {
   readonly track: Track;
+  /** `review`: recall only, one task per kana of `queue`, no introductions; answers move boxes. */
+  readonly mode?: 'learning' | 'review';
+  /** The kana of a review session, in order; fixed when the session is created. */
+  readonly queue?: readonly LearnKanaKey[];
   readonly store: Pick<
     LearnStore,
     'state' | 'introduce' | 'recordRecall' | 'recordRecognition' | 'countSession'
@@ -87,6 +91,7 @@ export interface LearnSession {
   readonly phase: ReadonlySignal<Phase>;
   readonly summary: ReadonlySignal<SessionSummary | null>;
   readonly total: number;
+  readonly mode: 'learning' | 'review';
   /** Shows the first task. */
   start: () => void;
   /** The task is on screen: its answer time runs from now, and keys are taken. */
@@ -117,7 +122,9 @@ function kanaOfKey(key: LearnKanaKey): string {
  */
 export function createLearnSession(deps: LearnSessionDeps): LearnSession {
   const { track, store, clock, scheduler, rng, audio } = deps;
-  const total = deps.tasks ?? SESSION_TASKS;
+  const mode = deps.mode ?? 'learning';
+  const queue = deps.queue ?? [];
+  const total = mode === 'review' ? queue.length : (deps.tasks ?? SESSION_TASKS);
 
   const task = signal<TaskView | null>(null);
   const choice = signal<Choice | null>(null);
@@ -169,6 +176,10 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
   };
 
   const pick = (): { kind: TaskView['kind']; key: LearnKanaKey } | null => {
+    if (mode === 'review') {
+      const key = queue[count];
+      return key === undefined ? null : { kind: 'recall', key };
+    }
     const state = store.state.value;
     const pending = state.unlocked[track].find((key) => state.entries[key] === undefined);
     if (pending !== undefined) return { kind: 'introduction', key: pending };
@@ -237,7 +248,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
       port?.finish('correct');
       store.introduce(current.key);
     } else if (current.kind === 'recall') {
-      store.recordRecall({ key: current.key, keystrokes, ok });
+      store.recordRecall({ key: current.key, keystrokes, ok, review: mode === 'review' });
       if (!ok) errors.add(current.key);
       port?.finish(ok ? 'correct' : 'miss');
     }
@@ -284,6 +295,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
     phase,
     summary,
     total,
+    mode,
 
     start() {
       before = store.state.value;

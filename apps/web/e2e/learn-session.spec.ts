@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { allKanaRows } from '@nekotype/engine';
+import { seedLearning } from './lib/app';
 
 // The romaji the page asks for or accepts, worked out from what the page shows (ADR 045): the kana
 // on screen, through the kana table.
@@ -72,5 +73,36 @@ test.describe('learning session on /learn', () => {
     await page.getByRole('button', { name: 'leave session' }).click();
     await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
     await expect(page.getByRole('navigation')).toBeVisible();
+  });
+});
+
+test.describe('review session on /learn', () => {
+  const unlocked = ['あ', 'い', 'う', 'え', 'お'].map((kana) => `hiragana:${kana}`);
+  const learn = {
+    unlocked: {
+      hiragana: unlocked,
+      katakana: unlocked.map((k) => k.replace(/^hiragana/, 'katakana')),
+    },
+    entries: { 'hiragana:あ': { box: 2, dueAt: 1, updatedAt: 1 } },
+    recent: {},
+    stats: {},
+    activeDays: [],
+    recallBuckets: { hiragana: {}, katakana: {} },
+  };
+
+  test('reviews the one due kana and ends on the summary', async ({ page }) => {
+    await seedLearning(page, '/learn', learn);
+    const review = page.getByRole('button', { name: 'Review (1)' });
+    await expect(review).toBeEnabled();
+    await review.click();
+
+    await expect(page.getByTestId('task-session')).toHaveText('review · 1 of 1');
+    await expect(page.getByTestId('kana-task')).toHaveAttribute('data-kind', 'recall');
+    await answer(page, false);
+
+    await expect(page.getByRole('heading', { name: 'session summary' })).toBeVisible();
+    await page.getByRole('button', { name: 'to the table' }).click();
+    // The kana moved to box 3, so it is not due any more.
+    await expect(page.getByRole('button', { name: 'Review (0)' })).toBeDisabled();
   });
 });
