@@ -4,9 +4,6 @@ import { initLocale, locale, t } from '@/shared/i18n';
 import { currentPath } from '@/shared/lib';
 import { initSettings, flushSettings } from '@/entities/settings';
 import { initProgress, flushProgress } from '@/entities/stats';
-import type { KeyIntent } from '@/features/training';
-
-export type { KeyIntent };
 
 // The tab title follows the screen; `t()` reads the language, so it follows that too.
 function routeTitle(path: string): string {

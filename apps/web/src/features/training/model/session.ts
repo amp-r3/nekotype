@@ -1,6 +1,6 @@
 import type { ReadonlySignal } from '@preact/signals';
 import { batch, computed, signal } from '@preact/signals';
-import type { KeyIntent } from '../lib/input-adapter';
+import type { KeyIntent } from '@/shared/lib';
 import { computeMetrics } from '../lib/metrics';
 import { createKeyTally } from '../lib/key-tally';
 import type { Phase, PromptResult, SessionMetrics } from './types';

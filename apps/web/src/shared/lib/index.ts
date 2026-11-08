@@ -37,3 +37,7 @@ export {
   isKanaStats,
   isProgress,
 } from '@nekotype/shared/runtime';
+
+export type { KeyIntent } from './input/input-adapter';
+export type { InputSource, InputSourceDeps } from './input/input-source';
+export { createInputSource } from './input/input-source';
