@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
 import { t, locale, setLocale } from '@/shared/i18n';
 import type { Locale } from '@/shared/i18n';
-import { currentPath, navigate } from '@/shared/lib';
+import { currentPath, databaseMode, navigate } from '@/shared/lib';
 import { Footer, Nav, Segmented } from '@/shared/ui';
 import lockupUrl from '@/assets/logo/lockup.svg';
 import { RouteView } from './route-view';
@@ -42,6 +42,12 @@ export function App(): JSX.Element {
             />
           }
         />
+
+        {databaseMode.value === 'memory' && (
+          <p role="status" className="text-fur-dim text-ui-label mt-2">
+            {t('storage.unavailable')}
+          </p>
+        )}
 
         <main className="mt-4 flex flex-1 flex-col">
           <RouteView path={path} onHome={goHome} />

@@ -17,6 +17,8 @@ export const en = {
   'page.about': 'About',
   'page.stub': 'This screen is not built yet.',
   'route.loading': 'Loading...',
+  'storage.unavailable':
+    'Your data will not be saved: this browser does not let the page store it.',
   'route.loadError': 'Failed to load the page. Check the connection and try again.',
   'route.retry': 'Try again',
   'notFound.title': 'Page not found',

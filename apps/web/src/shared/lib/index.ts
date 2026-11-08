@@ -19,7 +19,14 @@ export {
   LocalStorageStore,
   STORAGE_KEYS,
   createDebouncedSaver,
+  LEGACY_KEYS,
+  removeLegacyKeys,
 } from './storage';
+
+export type { Db, Write } from './idb/idb';
+export type { DatabaseMode, DatabaseProvider } from './idb/database';
+export { getDatabase, databaseMode, openDatabase, createDatabaseProvider } from './idb/database';
+export { SCHEMA_VERSION, PRE_RELEASE, DATABASE_NAME, STORES } from './idb/schema';
 
 export type {
   ValidTestConfig,
