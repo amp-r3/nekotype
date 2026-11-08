@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
-import { Button, Dialog, ResetIcon, Toggle } from '@/shared/ui';
+import { Button, Dialog, ResetIcon, Switch } from '@/shared/ui';
 import { resetProgress } from '@/entities/stats';
 import { showTranslationSetting, setShowTranslation } from '@/entities/settings';
 
@@ -17,7 +17,7 @@ export function SettingsPage(): JSX.Element {
     <section className="max-w-layout-test mx-auto flex w-full flex-col gap-8 py-12">
       <h1 className="text-ui-title text-fur">{t('page.settings')}</h1>
 
-      <Toggle
+      <Switch
         checked={showTranslationSetting.value}
         onChange={setShowTranslation}
         label={t('settings.showTranslation')}
@@ -48,7 +48,7 @@ export function SettingsPage(): JSX.Element {
         <p className="text-fur-dim text-ui-body">{t('reset.confirm')}</p>
         <div className="flex items-center justify-end gap-2 pt-2">
           <Button
-            variant="ghost"
+            variant="text"
             onClick={() => {
               setResetDialogOpen(false);
             }}

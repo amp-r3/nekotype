@@ -1,7 +1,7 @@
 import type { ComponentChildren, JSX, Ref } from 'preact';
 import { cx } from '../lib';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type ButtonVariant = 'primary' | 'secondary' | 'text' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export type ButtonProps = {
@@ -38,7 +38,7 @@ export function Button({
   const variantClasses =
     variant === 'primary'
       ? 'bg-fur text-on-fur hover:bg-fur-bright disabled:bg-bg-raised'
-      : variant === 'ghost'
+      : variant === 'text'
         ? 'bg-transparent text-fur-dim hover:text-fur hover:bg-bg-hover'
         : variant === 'danger'
           ? 'text-miss border border-miss hover:bg-bg-hover disabled:border-fur-faint'

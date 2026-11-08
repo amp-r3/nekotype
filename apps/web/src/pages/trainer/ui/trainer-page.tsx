@@ -59,7 +59,7 @@ export function TrainerPage(props: TrainerPageProps = {}): JSX.Element {
             <Button onClick={trainer.retryContent}>{t('route.retry')}</Button>
           </>
         ) : trainer.isLoadingContent.value ? (
-          <span role="status" className="text-fur-dim animate-blink">
+          <span role="status" className="text-fur-dim">
             {t('stage.contentLoading')}
           </span>
         ) : null}

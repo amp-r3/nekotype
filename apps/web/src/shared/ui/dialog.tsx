@@ -79,7 +79,7 @@ export function Dialog({
       aria-labelledby="dialog-title"
     >
       <div className="flex flex-col gap-4 p-4 sm:p-6">
-        <div className="border-line flex items-center justify-between border-b pb-3">
+        <div className="flex items-center justify-between">
           <h2 id="dialog-title" className="text-ui-heading text-fur">
             {title}
           </h2>

@@ -88,7 +88,7 @@ export function TestStage({ session, input, onRestart }: TestStageProps): JSX.El
         {/* Restart comes first in the tab order: the first Tab reaches it, also in a zen test. */}
         <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
+            variant="text"
             size="sm"
             onClick={(e) => {
               // The click is dealt with here; the stage would only focus the field a second time.
@@ -99,7 +99,10 @@ export function TestStage({ session, input, onRestart }: TestStageProps): JSX.El
             ariaLabel={t('stage.restartLabel')}
           >
             <RefreshIcon size={13} />
-            <span className="hidden sm:inline">{t('stage.tabHint')}</span>
+            <span className="hidden items-center gap-1.5 sm:inline-flex">
+              <Kbd>{t('key.tabEnter')}</Kbd>
+              {t('stage.tabHint')}
+            </span>
             <span className="sm:hidden">{t('stage.restart')}</span>
           </Button>
 
