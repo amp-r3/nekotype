@@ -2,6 +2,7 @@ import type { JSX } from 'preact';
 import { useMemo, useRef } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import { cx, useMediaQuery } from '@/shared/lib';
+import { groupTokens } from '../lib/token-groups';
 import { useStreamBinding } from '../lib/use-stream-binding';
 import type { Session } from '../model/session';
 
@@ -37,16 +38,23 @@ export function TextStream({ session }: TextStreamProps): JSX.Element {
         <div ref={inner} className={cx('nk-test__inner font-jp text-jp-test-sm sm:text-jp-test')}>
           {drawn.prompts.map((prompt) => (
             <span key={prompt.index} className="nk-word">
-              {prompt.tokens.map((token, i) => (
-                <span
-                  key={prompt.firstToken + i}
-                  className="nk-char is-untyped"
-                  data-token={prompt.firstToken + i}
-                  data-skip={token.skip ? '' : undefined}
-                >
-                  {token.glyph}
-                </span>
-              ))}
+              {groupTokens(prompt.tokens).map((group, g, groups) => {
+                const offset = groups.slice(0, g).reduce((n, earlier) => n + earlier.length, 0);
+                return (
+                  <span key={prompt.firstToken + offset} className="nk-group">
+                    {group.map((token, i) => (
+                      <span
+                        key={prompt.firstToken + offset + i}
+                        className="nk-char is-untyped"
+                        data-token={prompt.firstToken + offset + i}
+                        data-skip={token.skip ? '' : undefined}
+                      >
+                        {token.glyph}
+                      </span>
+                    ))}
+                  </span>
+                );
+              })}
               <wbr />
             </span>
           ))}

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { expectStoredTyping, openTypingScreen } from './lib/app';
+import { expectStoredTyping, openConfigBar, openTypingScreen } from './lib/app';
 import { canonicalOfPrompt } from './lib/prompt';
 
 test.describe('focus redirection and keyboard-first typing', () => {
@@ -25,6 +25,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
     { tag: '@mobile' },
     async ({ page }) => {
       await openTypingScreen(page);
+      await openConfigBar(page);
       const input = page.locator('input[aria-label="Kana input sink"]');
 
       // Click a ConfigBar button (e.g. Katakana) to steal focus from input
@@ -106,6 +107,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
       await openTypingScreen(page);
       const input = page.locator('input[aria-label="Kana input sink"]');
       await expect(input).toBeFocused();
+      await openConfigBar(page);
 
       // Configure Count test with 10 prompts
       const countRadio = page.getByRole('radio', { name: 'Count' });

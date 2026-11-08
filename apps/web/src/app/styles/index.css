@@ -87,6 +87,16 @@ html {
   margin-inline-end: 0.35em;
 }
 
+/* A prompt wider than the line (marked when the stream is measured, ADR 060) may break, but only
+   between groups: a group is read as one unit. */
+.nk-word.is-long {
+  white-space: normal;
+}
+
+.nk-group {
+  white-space: nowrap;
+}
+
 .nk-char {
   display: inline-block;
 }

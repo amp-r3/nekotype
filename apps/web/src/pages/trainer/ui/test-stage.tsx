@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
 import { useComputed } from '@preact/signals';
 import { t, locale } from '@/shared/i18n';
-import { isApplePlatform } from '@/shared/lib';
+import { isApplePlatform, useMediaQuery } from '@/shared/lib';
 import { testConfig, showTranslationSetting } from '@/entities/settings';
 import { Kbd, RefreshIcon, Button } from '@/shared/ui';
 import type { Session } from '@/features/training';
@@ -31,6 +31,8 @@ export function TestStage({ session, input, onRestart }: TestStageProps): JSX.El
   useTestChrome(session);
 
   const zen = testConfig.value.kind === 'zen';
+  // A touch screen has no Esc: a button stands in its place (docs/spec/frontend.md, "Keyboard").
+  const touch = useMediaQuery('(pointer: coarse)');
 
   // These lines take their place before they have text, so the stream does not move when they get
   // some.
@@ -73,10 +75,25 @@ export function TestStage({ session, input, onRestart }: TestStageProps): JSX.El
       </p>
 
       <div className="text-fur-dim text-ui-caption flex w-full flex-wrap items-center justify-between gap-3 pt-2">
-        <div className="flex items-center gap-2">
-          <Kbd>{t('key.esc')}</Kbd>
-          <span>{t('stage.escHint')}</span>
-        </div>
+        {touch ? (
+          <Button
+            variant="text"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Inside the click, so the keyboard of a phone stays open.
+              focusInput();
+              session.handleIntent({ kind: 'reveal' });
+            }}
+          >
+            {t('stage.showRomaji')}
+          </Button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Kbd>{t('key.esc')}</Kbd>
+            <span>{t('stage.escHint')}</span>
+          </div>
+        )}
 
         <span
           aria-hidden="true"
