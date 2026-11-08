@@ -6,17 +6,18 @@
 
 > A lightweight, keyboard-first web app for learning Hiragana and Katakana from zero, with adaptive unlocking and progress tracking, and for typing Japanese words and phrases in romaji with instantaneous feedback, dual-tier romaji matching and zero latency.
 
-**Status.** The code implements phases P0–P2: a typing trainer with Words and Phrases, described below. The MVP specified in [docs/spec/](docs/spec/README.md) is learning-first ([ADR 058](docs/adr/058-learning-first.md)): from P3, `/` teaches kana one at a time with recall, recognition and spaced reviews, and typing keeps words and phrases on `/type`.
+**Status.** The code implements phases P0–P3 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md)): `/` teaches hiragana and katakana one kana at a time with introductions, recall, recognition and spaced reviews, with progress in IndexedDB, and typing Words and Phrases lives on `/type`. There is no backend yet (sync is P5, kana audio P6).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Max%20Strict-blue.svg)](https://www.typescriptlang.org/)
 [![FSD: Verified](https://img.shields.io/badge/Architecture-Feature--Sliced%20Design-orange.svg)](https://feature-sliced.design/)
-[![Bundle Budget](https://img.shields.io/badge/First%20Load-94.7%20KB%20%2F%20160%20KB-success.svg)](#-performance-budgets)
+[![Bundle Budget](https://img.shields.io/badge/First%20Load-102.9%20KB%20%2F%20160%20KB-success.svg)](#-performance-budgets)
 
 ---
 
 ## ✨ Features
 
+- **🌱 Learning on `/`:** two tracks (hiragana, katakana); kana unlock one at a time when the answers to the unlocked ones are confident (10 answers, median at or under the target time, accuracy ≥ 90%); a session is 25 tasks (introduction, recall by typing, recognition among 4 options); spaced reviews in boxes 0–5; a kana chart, a streak and a daily answer-time chart on `/stats`. Learning and typing keep separate data.
 - **⚡ Zero-Latency Typing:** Driven by an immutable Non-deterministic Finite Automaton (NFA) engine and fine-grained Preact signals. Keystrokes update without component tree re-renders.
 - **🎯 Two-Tier Romaji Matching:**
   - **Strict IME Mode:** Strictly enforces official Microsoft IME / Google Japanese Input romaji keystrokes (e.g. `ti` → ち, `thi` → ティ, `who` → ウォ, `wo` → を).
@@ -140,18 +141,18 @@ CI runs `verify` (with e2e) on every push and pull request; the hooks catch the 
 
 Nekotype adheres to strict first-load asset caps, checked by `pnpm run budget` (part of `verify`) from the Vite manifest. Figures of the current build:
 
-| Asset                      | Budget Limit | Actual (gzip / woff2) | Status                    |
-| -------------------------- | ------------ | --------------------- | ------------------------- |
-| **Initial HTML**           | $\le 5$ KB   | **0.44 KB**           | ✅ Passed                 |
-| **Initial JavaScript**     | $\le 35$ KB  | **32.67 KB**          | ✅ Passed                 |
-| **Initial CSS**            | $\le 10$ KB  | **6.03 KB**           | ✅ Passed                 |
-| **Noto Sans JP 400**       | $\le 45$ KB  | **20.77 KB** (woff2)  | ✅ Passed                 |
-| **JetBrains Mono 400/500** | $\le 45$ KB  | **10.66 / 10.69 KB**  | ✅ Passed                 |
-| **Golos Text 400/500**     | $\le 45$ KB  | **9.38 / 9.55 KB**    | ✅ Passed                 |
-| **Logo (SVG)**             | counted      | **1.45 KB**           | ✅ Passed                 |
-| **Total First Load**       | $\le 160$ KB | **102.39 KB**         | ✅ Passed (64% of budget) |
-| **Lazy content chunk**     | $\le 40$ KB  | **2.05 KB** (largest) | ✅ Passed                 |
-| **Lazy route chunk**       | $\le 25$ KB  | **1.98 KB** (largest) | ✅ Passed                 |
+| Asset                      | Budget Limit | Actual (gzip / woff2)  | Status                    |
+| -------------------------- | ------------ | ---------------------- | ------------------------- |
+| **Initial HTML**           | $\le 5$ KB   | **0.49 KB**            | ✅ Passed                 |
+| **Initial JavaScript**     | $\le 35$ KB  | **32.56 KB**           | ✅ Passed                 |
+| **Initial CSS**            | $\le 10$ KB  | **7.23 KB**            | ✅ Passed                 |
+| **Noto Sans JP 400**       | $\le 45$ KB  | **20.77 KB** (woff2)   | ✅ Passed                 |
+| **JetBrains Mono 400/500** | $\le 45$ KB  | **10.79 / 10.61 KB**   | ✅ Passed                 |
+| **Golos Text 400/500**     | $\le 45$ KB  | **9.42 / 9.56 KB**     | ✅ Passed                 |
+| **Logo (SVG)**             | counted      | **1.45 KB**            | ✅ Passed                 |
+| **Total First Load**       | $\le 160$ KB | **102.88 KB**          | ✅ Passed (64% of budget) |
+| **Lazy content chunk**     | $\le 40$ KB  | **2.05 KB** (largest)  | ✅ Passed                 |
+| **Lazy route chunk**       | $\le 25$ KB  | **10.54 KB** (largest) | ✅ Passed                 |
 
 ---
 
