@@ -10,6 +10,9 @@ export { dakutenRows } from './dakuten';
 export { yoonRows } from './yoon';
 export { extendedRows } from './extended';
 export { standaloneRows } from './standalone';
+export { kanaOf, kanaRows } from './tracks';
+export type { TrackRow } from './tracks';
+export { similarKana, similarPairs } from './similar';
 export { SKIP_CHARACTERS, SOKUON_PREFIXES } from './tokens';
 
 export const allKanaRows: readonly KanaRow[] = [

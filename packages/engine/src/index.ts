@@ -26,9 +26,15 @@ export {
   standaloneRows,
   allKanaRows,
   engineTable,
+  kanaOf,
+  kanaRows,
+  similarKana,
+  similarPairs,
   SKIP_CHARACTERS,
   SOKUON_PREFIXES,
 } from './data';
+
+export type { TrackRow } from './data';
 
 export { createEngine } from './matcher/engine';
 export type { Engine } from './matcher/engine';
