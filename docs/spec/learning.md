@@ -31,10 +31,11 @@ Learning is the core of the product ([ADR 058](../adr/058-learning-first.md)): i
   2. Kana with fewer than 10 recall answers are **in focus**. The task takes a kana in focus with probability `FOCUS_SHARE` = 0.5 when there are kana both in and out of focus, with probability 1 when every candidate is in focus, and 0 when none is (A40). Kana in focus are equally likely; a kana out of focus is chosen with probability proportional to its weight.
   3. The **weight** of a kana out of focus is `1 + 4 × min(1, slow + err)`, with `slow = clamp((m − T) / T, 0, 1)` and `err = clamp((1 − a) / 0.5, 0, 1)`, where `m` is the median answer time and `a` the accuracy of its last 10 recall answers, and `T` is the target answer time. A confident kana without errors weighs 1; a kana twice as slow as the target, or wrong in half its answers, weighs 5.
   4. The task is a recognition task with probability `RECOGNITION_SHARE` = 1/3, and a recall task otherwise.
-- **Recall.** The kana is shown; the user types its romaji in the learning strictness (`settings.learn.strictness`, relaxed by default), with the romaji buffer as on the typing screen. A rejected key flashes the caret; Esc shows the romaji (`canonical`). The answer ends when the kana is typed in full.
+- **Recall.** The kana is shown; the user types its romaji in the learning strictness (`settings.learn.strictness`, relaxed by default), with the romaji buffer as on the typing screen. A rejected key flashes the caret; Esc shows the romaji (`canonical`), and on a touch screen, which has no Esc, a "Show the romaji" button does the same; either counts as an error. The answer ends when the kana is typed in full.
 - **Recognition.** The romaji (`canonicalFor`) is shown; the user picks the kana from 4 numbered options by click, tap or keys 1–4. A wrong choice is recorded in the kana's `mixups` and reveals the right option.
 - **After an answer** the result stays on screen for `ANSWER_PAUSE_MS` = 400 and the next task follows. After a wrong recognition choice the next task waits for Enter, Space or a click, so the right option can be read. Keys pressed before the next task is shown are ignored.
 - Random choices use the injected `Rng`, so a session is reproducible in tests.
+- **Screen.** Every task is drawn by the design system's `KanaTask` ([Frontend](frontend.md#hot-path-d16), ADR 059): a session line with the session kind and progress (`learning · 7 of 25`, `review · 3 of 5`), the task, one reserved notice line and a line of key hints. There is no timer, and the answer time is not shown. The navigation and the footer are not rendered during a session; "Leave session" in the session line returns to the chart without a confirmation.
 - The session ends after its last task with the summary. A session is not resumable (A30): leaving it early keeps every recorded answer, because the learning state is written after each answer ([Storage and sync](storage-sync.md)), but the summary, held in memory, is lost.
 
 ## Reviews
@@ -99,7 +100,7 @@ Shown at the end of a learning or review session; a chunk of its own, like the r
 - faster and slower kana: for each kana that had 10 recall answers at the start, the change in the median answer time of its last 10 recall answers from the start of the session to its end; changes of at least 100 ms are listed, at most 5 each way, largest first;
 - confused kana: kana chosen instead of the right one in recognition, and kana with errors in recall.
 
-"Continue" (Enter) starts another learning session.
+"Continue" (Enter) starts another learning session; "To the table", the second action, returns to the chart. The navigation is shown again on the summary.
 
 ## Audio
 

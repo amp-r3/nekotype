@@ -1,9 +1,10 @@
 # TranslationLine
 
-Строка под потоком: перевод, ссылка «источник» и действие «сообщить об ошибке». Видна во время теста (A9: по умолчанию включена, выключается в настройках).
+The line under the stream: translation, the `source` link and the `report a problem` action. Visible during a typing test.
 
-- Перевод в `ui-body` / `fur-dim`, действия в `ui-caption`. Без подложки и рамки.
-- «Источник» обязателен для фраз (условие лицензии Tatoeba) и отсутствует для слов.
-- Офлайн жалоба отключена, причина — в `title`.
-- Высота зарезервирована на 2 строки (`min-height: 48px`), чтобы поток не прыгал при смене промпта.
-- Кана внутри перевода рисуется Noto Sans JP через запасной шрифт семейства `ui`.
+- Translation in `ui-body` / `fur-dim`, actions in `ui-caption`. No fill, no border.
+- `source` / `источник` is required for phrases (Tatoeba licence condition) and absent for words. It is attribution, so it shows whenever there is a `sourceHref` — with the translation on or off.
+- Offline, reporting is disabled; the reason is in `title`.
+- The height is reserved for 2 lines (`min-height: 48px`) so the stream does not jump when the prompt changes.
+- Setting off (ADR 056): `show the translation under the text` / `перевод под текстом` on `/settings`, on by default. When it is off, pass `hidden`: the line keeps its two-line height, the translation text and `report a problem` go, and for a phrase `source` stays — the stream does not move.
+- Kana inside the translation is drawn in Noto Sans JP through the `ui` family's fallback.

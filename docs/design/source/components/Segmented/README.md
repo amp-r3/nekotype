@@ -1,7 +1,7 @@
 # Segmented
 
-Сегментированный выбор: режимы, письмо, карта ошибок или времени, строгость.
+Segmented choice: modes, script, error or time map, strictness.
 
-- Без подложек: `fur-dim` → ховер `fur` → выбранный `fur` + черта `eye` снизу.
-- `role="radiogroup"`, стрелки ← → внутри группы, `Tab` между группами. `label` обязателен.
-- Числа и ромадзи — `mono`. При `pointer: coarse` высота от `touch-min`.
+- No fills: `fur-dim` → hover `fur` → selected `fur` + `eye` underline.
+- `role="radiogroup"`, ← → arrows within a group, `Tab` between groups. `label` is required.
+- Numbers and romaji — `mono`. Height from `touch-min` under `pointer: coarse`.

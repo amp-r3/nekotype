@@ -1,13 +1,13 @@
 # Cat
 
-Кошка Nekotype. В продукте только стиль `geometry` (Q24): знак, фавикон и иллюстрации. `line` и `silhouette` оставлены в архиве ассетов и в продукте не используются.
+The Nekotype cat. The product uses the `geometry` style only (Q24): mark, favicon and illustrations. `line` and `silhouette` are kept in the asset archive and are not used in the product.
 
-| настроение | где |
+| mood | where |
 | --- | --- |
 | `neutral` | 404 |
-| `sleep` | пустые состояния (`EmptyState`) |
-| `content` | экран результатов — только при личном рекорде (Q17) |
+| `sleep` | empty states (`EmptyState`) |
+| `content` | typing results — on a personal best only (Q17) |
 
-- Цвета: `cat-fur`, `cat-eye`, `cat-ground`. Глаза — единственное цветовое пятно.
-- Её нет на экране теста и в уроке, пока идёт задание.
-- Без анимации и без реплик. Декоративна, кроме случая, когда несёт смысл (`label="кошка довольна"`).
+- Colours: `cat-fur`, `cat-eye`, `cat-ground`. The eyes are the only colour spot.
+- She is not on the typing test screen, nor on a learning task, nor on `/`.
+- No animation and no speech. Decorative, except where she carries meaning (`label`: `the cat is pleased` / `кошка довольна`).

@@ -1,11 +1,11 @@
 # Char
 
-Легенда состояний символа для документации и обучения. Сам поток рисует символы через контроллер `TestArea`.
+A legend of character states for documentation. The stream itself draws characters through the `TestArea` controller.
 
-| состояние | класс | цвет |
+| state | class | colour |
 | --- | --- | --- |
-| не введена | `is-untyped` | `untyped` (только ≥ 24px) |
-| верно | `is-correct` | `fur` |
-| ошибка | `is-miss` | `miss` + черта `miss-dim` 2px |
-| текущая | — | каретка `eye` слева |
-| пропуск пройден | `is-skip is-done` | `fur-dim` |
+| not typed | `is-untyped` | `untyped` (≥ 24px only) |
+| correct | `is-correct` | `fur` |
+| error | `is-miss` | `miss` + 2px `miss-dim` underline |
+| current | — | `eye` caret on the left |
+| skip token passed | `is-skip is-done` | `fur-dim` |

@@ -1,6 +1,6 @@
 # Pagination
 
-Страницы истории: «← новее · 1 2 … 12 · старше →».
+History pages: `← newer · 1 2 … 12 · older →` / `← новее · 1 2 … 12 · старше →`.
 
-- Пункты в стиле `Segmented`: текущая страница — `fur` + черта `eye`, `aria-current="page"`. Крайние кнопки неактивны на краях.
-- Показываются первая, последняя и соседние страницы, остальные заменяет «…».
+- Items in `Segmented` style: the current page — `fur` + `eye` underline, `aria-current="page"`. Edge buttons are disabled at the edges.
+- The first, last and neighbouring pages are shown; "…" replaces the rest.

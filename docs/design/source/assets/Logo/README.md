@@ -1,8 +1,8 @@
 # Logo
 
-- `lockup.svg` — знак (геометрия) + «nekotype» с кареткой `eye`. Основной логотип.
-- `wordmark.svg` — «nekotype», JetBrains Mono Medium в кривых, каретка `eye`.
-- `mark-geometry.svg`, `mark-line.svg`, `mark-silhouette.svg` — голова кошки в каждом из трёх стилей.
-- `favicon.svg` — геометрическая голова на квадрате `bg` (`radius-sm`), без зрачков: на 16px они пропадают.
+- `lockup.svg` — the mark (geometry) + "nekotype" with an `eye` caret. The main logo.
+- `wordmark.svg` — "nekotype", JetBrains Mono Medium outlined, `eye` caret.
+- `mark-geometry.svg`, `mark-line.svg`, `mark-silhouette.svg` — the cat's head in each of the three styles.
+- `favicon.svg` — the geometric head on a `bg` square (`radius-sm`), without pupils: at 16px they disappear.
 
-Цвета зашиты (`fur` `#efe9dd`, `eye` `#a5c8dd`, `bg` `#1c1e21`); знаки ставятся только на `bg`. Минимальный размер знака `geometry` — 16px, `line` и `silhouette` — 32px. Охранное поле — высота уха (¼ высоты знака).
+Colours are baked in (`fur` `#efe9dd`, `eye` `#a5c8dd`, `bg` `#1c1e21`); marks are placed on `bg` only. Minimum size of the `geometry` mark — 16px, `line` and `silhouette` — 32px. Clear space — the height of an ear (¼ of the mark's height).
