@@ -195,7 +195,7 @@ async function readRedraws(page: Page): Promise<Redraw[]> {
 }
 
 test.describe('redrawing the stream', () => {
-  for (const content of ['Single Kana', 'Words']) {
+  for (const content of ['Words', 'Phrases']) {
     test(`${content}: the text does not move under the fingers and the caret does not glide`, async ({
       page,
     }) => {
@@ -203,8 +203,8 @@ test.describe('redrawing the stream', () => {
       await page.getByRole('radio', { name: content }).click();
       await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
       await expect(page.getByTestId('prompt-text')).not.toHaveText('');
-      // Words come in a chunk of their own, and keys are ignored until it is in.
-      if (content === 'Words') await expect(page.getByTestId('translation')).not.toHaveText('');
+      // Words and phrases come in chunks of their own, and keys are ignored until one is in.
+      await expect(page.getByTestId('translation')).not.toHaveText('');
       await watchRedraws(page);
 
       // Enough redraws to include trimmed ones: the first refills, the next ones trim.
@@ -263,6 +263,7 @@ test.describe('the interface while a test runs', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === 'webkit-mobile', 'a touch screen has no mouse');
     await page.goto('/');
+    await expect(page.getByTestId('translation')).not.toHaveText('');
     await page.keyboard.press('KeyA');
     await expect(page.getByRole('navigation')).toBeHidden();
 

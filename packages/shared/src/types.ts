@@ -28,9 +28,8 @@ export type ValidTestConfig =
 export type ValidSettings = {
   readonly v: 1;
   readonly script: 'hiragana' | 'katakana' | 'both';
-  readonly content: 'single' | 'words' | 'phrases';
+  readonly content: 'words' | 'phrases';
   readonly strictness: 'learner' | 'ime';
-  readonly rowIds: readonly string[];
   readonly weakFocus: boolean;
   // Added to v1 later: settings saved without it mean `true` (spec storage-sync.md, D18).
   readonly showTranslation?: boolean;

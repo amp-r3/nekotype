@@ -7,7 +7,6 @@ describe('prefetch: the other screens and the content chunks, after the first re
   it('chooses the vocabulary kinds for the settings', () => {
     expect(contentKindsFor('words')).toEqual(['words']);
     expect(contentKindsFor('phrases')).toEqual(['phrases']);
-    expect(contentKindsFor('single')).toEqual(['words', 'phrases']);
   });
 
   it('loads every route and the chosen content chunks', async () => {
@@ -30,10 +29,10 @@ describe('prefetch: the other screens and the content chunks, after the first re
     );
     const extra = vi.fn(() => Promise.reject(new Error('offline')));
     await expect(
-      prefetch({ content: 'single', loadRoute, loadContent, loadExtras: [extra] }),
+      prefetch({ content: 'words', loadRoute, loadContent, loadExtras: [extra] }),
     ).resolves.toBeUndefined();
     expect(loadRoute).toHaveBeenCalledTimes(ROUTE_PATHS.length);
-    expect(loadContent).toHaveBeenCalledTimes(2);
+    expect(loadContent).toHaveBeenCalledTimes(1);
   });
 
   it('runs on requestIdleCallback when there is one, else after a timer', () => {

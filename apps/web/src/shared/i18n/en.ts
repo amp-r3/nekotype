@@ -1,7 +1,6 @@
 export const en = {
   // Top bar
   'app.title': 'Nekotype',
-  'app.rows': 'Kana Matrix',
   'app.reset': 'Reset Progress',
   'app.language': 'Interface language',
 
@@ -31,7 +30,6 @@ export const en = {
   'config.script.hiragana': 'Hiragana',
   'config.script.katakana': 'Katakana',
   'config.script.both': 'Both (Mixed)',
-  'config.content.single': 'Single Kana',
   'config.content.words': 'Words',
   'config.content.phrases': 'Phrases',
   'config.strictness.learner': 'Relaxed',
@@ -67,8 +65,6 @@ export const en = {
   'stage.revealed': 'Revealed: {answer}',
   'stage.contentLoading': 'Loading vocabulary...',
   'stage.contentLoadError': 'Failed to load the vocabulary. Kana are practised until it loads.',
-  'stage.noKanaForRows':
-    'The selected rows have no kana for this script. Practising the basic rows instead.',
 
   // Results panel
   'results.title': 'Test Results',
@@ -89,15 +85,6 @@ export const en = {
 
   // Dialogs
   'dialog.close': 'Close',
-  'rows.category.basic': 'Gojūon (Basic)',
-  'rows.category.dakuten': 'Dakuten & Handakuten',
-  'rows.category.yoon': 'Yōon (Digraphs)',
-  'rows.category.extended': 'Extended Katakana',
-  'dialog.selectAll': 'Select All',
-  'dialog.clear': 'Clear',
-  'dialog.gojuonOnly': 'Gojūon Only',
-  'dialog.atLeastOneRow': 'At least one row must stay selected',
-  'dialog.extendedDisabled': 'Extended katakana is unavailable in Hiragana-only mode',
   'reset.title': 'Reset Progress',
   'reset.confirm': 'Are you sure you want to erase all accuracy and time history?',
   'reset.action': 'Reset Everything',

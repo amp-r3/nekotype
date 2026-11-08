@@ -68,9 +68,8 @@ describe('storage: KeyValueStore implementations and guards', () => {
     const valid = {
       v: 1,
       script: 'both',
-      content: 'single',
+      content: 'words',
       strictness: 'learner',
-      rowIds: ['vowels'],
       weakFocus: true,
       test: { kind: 'time', seconds: 30 },
     };
@@ -83,7 +82,7 @@ describe('storage: KeyValueStore implementations and guards', () => {
     // Corrupted field types
     expect(isSettings({ ...valid, script: 'klingon' })).toBe(false);
     expect(isSettings({ ...valid, content: 123 })).toBe(false);
-    expect(isSettings({ ...valid, rowIds: [] })).toBe(false);
+    expect(isSettings({ ...valid, content: 'single' })).toBe(false);
     expect(isSettings({ ...valid, test: { kind: 'time', seconds: 999 } })).toBe(false);
     expect(isSettings('not an object')).toBe(false);
     expect(isSettings(null)).toBe(false);

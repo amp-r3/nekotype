@@ -38,8 +38,8 @@ test.describe('trainer: lifecycle and vocabulary loading', () => {
       await route.continue();
     });
     await page.goto('/');
-    await page.getByRole('radio', { name: 'Words' }).click();
-    await page.getByRole('radio', { name: 'Single Kana' }).click();
+    await page.getByRole('radio', { name: 'Phrases' }).click();
+    await expect(page.getByTestId('translation')).not.toHaveText('');
     await page.keyboard.press('KeyA');
     await expect(page.getByTestId(ARENA)).toHaveAttribute('data-phase', 'running');
 
@@ -58,15 +58,14 @@ test.describe('trainer: lifecycle and vocabulary loading', () => {
       await route.continue();
     });
     await page.goto('/');
-    await page.getByRole('radio', { name: 'Words' }).click();
 
     await expect(page.getByText('Failed to load the vocabulary')).toBeVisible();
     await expect(page.getByRole('radio', { name: 'Words' })).toHaveAttribute(
       'aria-checked',
       'true',
     );
-    // Kana can be typed until Retry succeeds.
-    await expect(page.getByTestId('prompt-text')).not.toHaveText('');
+    // There is nothing to type until Retry succeeds.
+    await expect(page.getByTestId('prompt-text')).toHaveText('');
 
     await page.waitForTimeout(450);
     await page.reload();

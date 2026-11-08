@@ -4,13 +4,11 @@ import { createSession } from './session';
 import type { Session } from './session';
 import { setupSettingsResetWatcher } from './settings-watcher';
 import { createPromptWeights } from '../lib/prompt-weights';
-import { buildPool, loadContent, pickPrompt, rowsYieldKana } from '@/entities/prompt';
+import { buildPool, loadContent, pickPrompt } from '@/entities/prompt';
 import type { ContentItem, PromptItem } from '@/entities/prompt';
 import {
   contentSetting,
   getPracticeSettings,
-  rowIdsSetting,
-  scriptSetting,
   strictnessSetting,
   testConfig,
 } from '@/entities/settings';
@@ -34,8 +32,6 @@ export type Trainer = {
   readonly session: Session;
   readonly isLoadingContent: ReadonlySignal<boolean>;
   readonly contentLoadFailed: ReadonlySignal<boolean>;
-  // D20: the selected rows give no kana for the script, so the basic rows are practised.
-  readonly noKanaForRows: ReadonlySignal<boolean>;
   // Discards the running test and shows a fresh prompt.
   readonly restart: () => void;
   // Loads the selected vocabulary again after a failure.
@@ -56,28 +52,25 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
   // Loads in flight and failed ones, per kind. Only the selected kind is shown or blocks input.
   const loading = signal<ReadonlySet<VocabularyKind>>(new Set());
   const failed = signal<ReadonlySet<VocabularyKind>>(new Set());
-  const selectedKind = (): VocabularyKind | null => {
-    const kind = contentSetting.value;
-    return kind === 'words' || kind === 'phrases' ? kind : null;
-  };
-  const isLoadingContent = computed(() => {
-    const kind = selectedKind();
-    return kind !== null && loading.value.has(kind);
-  });
-  const contentLoadFailed = computed(() => {
-    const kind = selectedKind();
-    return kind !== null && failed.value.has(kind);
+  const selectedKind = (): VocabularyKind => contentSetting.value;
+  const isLoadingContent = computed(() => loading.value.has(selectedKind()));
+  const contentLoadFailed = computed(() => failed.value.has(selectedKind()));
+
+  // No prompt to show: the selected vocabulary is loading, failed to load, or has nothing for the
+  // script. The notice slot says which; Retry loads it again.
+  const noPrompts = computed(() => {
+    if (isLoadingContent.value || contentLoadFailed.value) return true;
+    return (
+      deps.nextPrompt === undefined &&
+      buildPool(getPracticeSettings(), vocabulary[selectedKind()]).length === 0
+    );
   });
 
   const nextPrompt =
     deps.nextPrompt ??
     ((): PromptItem => {
       const settings = getPracticeSettings();
-      const content =
-        settings.content === 'words' || settings.content === 'phrases'
-          ? vocabulary[settings.content]
-          : undefined;
-      const pool = buildPool(settings, content);
+      const pool = buildPool(settings, vocabulary[settings.content]);
       const weights = settings.weakFocus
         ? promptWeights(pool, progressStats.value)
         : new Map<string, number>();
@@ -92,7 +85,7 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
     clock: deps.clock ?? defaultClock,
     scheduler: deps.scheduler ?? defaultScheduler,
     // The prompts of the selected content are not here yet: nothing to type.
-    inputBlocked: () => isLoadingContent.peek(),
+    inputBlocked: () => noPrompts.peek(),
     stats: { record: recordTokenOutcomes, flush: flushProgress },
     // A zen test ended with nothing to keep: a fresh prompt, as after a restart.
     onDiscard: () => {
@@ -102,8 +95,9 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
 
   const restart = (): void => {
     session.reset();
-    // While the selected vocabulary loads there is no prompt; its arrival restarts again.
-    if (isLoadingContent.peek()) return;
+    // While the selected vocabulary loads, or after it failed, there is no prompt; its arrival or
+    // Retry restarts again.
+    if (noPrompts.peek()) return;
     session.loadPrompt(nextPrompt(), strictnessSetting.value);
   };
 
@@ -120,7 +114,7 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
       mark(loading, kind, true);
       mark(failed, kind, false);
     });
-    // The prompt on display is of the fallback pool: drop it until the vocabulary is here.
+    // Drop the prompt on display until the vocabulary is here.
     if (!stopped && selectedKind() === kind) restart();
     void loadContent(kind)
       .then((items) => {
@@ -134,7 +128,7 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
           mark(loading, kind, false);
           mark(failed, kind, true);
         });
-        // The setting stays; the fallback pool is practised until Retry.
+        // The setting stays; there is nothing to practise until Retry.
         if (!stopped && selectedKind() === kind) restart();
       });
   };
@@ -143,18 +137,10 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
     session,
     isLoadingContent,
     contentLoadFailed,
-    noKanaForRows: computed(
-      () =>
-        contentSetting.value === 'single' &&
-        !rowsYieldKana({ script: scriptSetting.value, rowIds: rowIdsSetting.value }),
-    ),
     restart,
     retryContent() {
-      const kind = selectedKind();
-      if (kind !== null) {
-        ensureLoaded(kind);
-        restart();
-      }
+      ensureLoaded(selectedKind());
+      restart();
     },
     start() {
       stopped = false;
@@ -162,7 +148,7 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
       const stopLoading = effect(() => {
         const kind = contentSetting.value;
         untracked(() => {
-          if (kind === 'words' || kind === 'phrases') ensureLoaded(kind);
+          ensureLoaded(kind);
         });
       });
       restart();

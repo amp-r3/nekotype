@@ -6,7 +6,6 @@ import {
   setStrictness,
   setWeakFocus,
   setShowTranslation,
-  toggleRow,
   initSettings,
   setTestConfig,
 } from '@/entities/settings';
@@ -28,7 +27,7 @@ describe('settings-watcher: one reactive effect calling the reset callback', () 
     });
   });
 
-  it('invokes the callback once per change of any of the six settings, not for the initial values', () => {
+  it('invokes the callback once per change of any of the five settings, not for the initial values', () => {
     expect(resetCallCount).toBe(0);
 
     // 1. Script change
@@ -36,24 +35,20 @@ describe('settings-watcher: one reactive effect calling the reset callback', () 
     expect(resetCallCount).toBe(1);
 
     // 2. Content change
-    setContent('words');
+    setContent('phrases');
     expect(resetCallCount).toBe(2);
 
     // 3. Strictness change
     setStrictness('ime');
     expect(resetCallCount).toBe(3);
 
-    // 4. Row toggle
-    toggleRow('k');
+    // 4. Weak focus toggle
+    setWeakFocus(false);
     expect(resetCallCount).toBe(4);
 
-    // 5. Weak focus toggle
-    setWeakFocus(false);
-    expect(resetCallCount).toBe(5);
-
-    // 6. Test config change
+    // 5. Test config change
     setTestConfig({ kind: 'count', prompts: 50 });
-    expect(resetCallCount).toBe(6);
+    expect(resetCallCount).toBe(5);
   });
 
   it('does not reset for showTranslation: only what is shown changes', () => {

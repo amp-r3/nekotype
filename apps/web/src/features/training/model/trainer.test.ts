@@ -5,8 +5,6 @@ import type { ContentItem, PromptItem } from '@/entities/prompt';
 import {
   contentSetting,
   initSettings,
-  presetBasic,
-  selectAllRows,
   setContent,
   setScript,
   setTestConfig,
@@ -26,22 +24,24 @@ const word: ContentItem = {
 describe('trainer: prompt source, restarts and content loading', () => {
   beforeEach(() => {
     initSettings(new MemoryKeyValueStore());
-    setContent('single');
+    // The vocabulary: the real chunks are not under test here.
+    vi.spyOn(promptModule, 'loadContent').mockResolvedValue([word]);
+    setContent('words');
     setScript('both');
-    presetBasic();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('start() shows a first prompt and stop() ends the following of the settings', () => {
+  it('start() shows a first prompt and stop() ends the following of the settings', async () => {
     const picked: PromptItem = { key: 'basic:a', text: 'あ' };
     const next = vi.fn(() => picked);
     const trainer = createTrainer({ nextPrompt: next });
     expect(trainer.session.currentPrompt.value).toBeNull();
 
     const stop = trainer.start();
+    await flush();
     expect(trainer.session.currentPrompt.value?.text).toBe('あ');
     const afterStart = next.mock.calls.length;
 
@@ -54,10 +54,11 @@ describe('trainer: prompt source, restarts and content loading', () => {
     expect(next.mock.calls.length).toBe(afterStop);
   });
 
-  it('restart() discards a running test and loads a fresh prompt', () => {
+  it('restart() discards a running test and loads a fresh prompt', async () => {
     const picked: PromptItem = { key: 'word:neko', text: 'ねこ' };
     const trainer = createTrainer({ nextPrompt: () => picked });
     const stop = trainer.start();
+    await flush();
     trainer.session.handleIntent({ kind: 'char', char: 'n' });
     expect(trainer.session.phase.value).toBe('running');
 
@@ -68,23 +69,29 @@ describe('trainer: prompt source, restarts and content loading', () => {
     stop();
   });
 
-  it('the default source draws from the pool of the selected settings', () => {
+  it('the default source draws from the pool of the selected settings', async () => {
+    const pan: ContentItem = {
+      id: 'word:pan',
+      text: 'パン',
+      script: 'katakana',
+      meaning: { en: 'bread', ru: 'хлеб' },
+    };
+    vi.spyOn(promptModule, 'loadContent').mockResolvedValue([word, pan]);
     setScript('katakana');
     const trainer = createTrainer({ rng: { next: () => 0 } });
     const stop = trainer.start();
+    await flush();
     expect(trainer.session.currentPrompt.value?.script).toBe('katakana');
     stop();
   });
 
-  it('loads vocabulary once when the content becomes words, and restarts with it', async () => {
+  it('loads vocabulary once per kind, and restarts with it', async () => {
     const load = vi.spyOn(promptModule, 'loadContent').mockResolvedValue([word]);
     setScript('hiragana');
     const trainer = createTrainer({ rng: { next: () => 0 } });
     const stop = trainer.start();
-    expect(load).not.toHaveBeenCalled();
-
-    setContent('words');
     expect(trainer.isLoadingContent.value).toBe(true);
+    expect(trainer.session.currentPrompt.value).toBeNull();
     await flush();
 
     expect(load).toHaveBeenCalledTimes(1);
@@ -93,32 +100,32 @@ describe('trainer: prompt source, restarts and content loading', () => {
     expect(trainer.contentLoadFailed.value).toBe(false);
     expect(trainer.session.currentPrompt.value?.text).toBe('ねこ');
 
-    // Back and forth does not fetch again.
-    setContent('single');
+    // Back and forth does not fetch a kind again.
+    setContent('phrases');
+    await flush();
     setContent('words');
     await flush();
-    expect(load).toHaveBeenCalledTimes(1);
+    expect(load).toHaveBeenCalledTimes(2);
     stop();
   });
 
-  // Spec "Loading" (frontend.md): a failed load keeps the setting; the fallback pool is used
-  // until Retry succeeds.
-  it('a failed load reports it, keeps the setting and practises kana until Retry', async () => {
+  // Spec "Loading" (frontend.md): a failed load keeps the setting; there is nothing to type until
+  // Retry succeeds.
+  it('a failed load reports it, keeps the setting and shows no prompt until Retry', async () => {
     const load = vi
       .spyOn(promptModule, 'loadContent')
       .mockRejectedValueOnce(new Error('chunk failed'))
       .mockResolvedValue([word]);
     const trainer = createTrainer({ rng: { next: () => 0 } });
     const stop = trainer.start();
-
-    setContent('phrases');
     await flush();
 
     expect(trainer.contentLoadFailed.value).toBe(true);
     expect(trainer.isLoadingContent.value).toBe(false);
-    expect(contentSetting.value).toBe('phrases');
-    // Typing is allowed on the fallback pool.
-    expect(trainer.session.currentPrompt.value).not.toBeNull();
+    expect(contentSetting.value).toBe('words');
+    expect(trainer.session.currentPrompt.value).toBeNull();
+    trainer.session.handleIntent({ kind: 'char', char: 'n' });
+    expect(trainer.session.phase.value).toBe('idle');
 
     trainer.retryContent();
     expect(trainer.isLoadingContent.value).toBe(true);
@@ -141,7 +148,6 @@ describe('trainer: prompt source, restarts and content loading', () => {
     );
     const trainer = createTrainer({ rng: { next: () => 0 } });
     const stop = trainer.start();
-    setContent('words');
     setContent('phrases');
     await flush();
     trainer.session.handleIntent({ kind: 'char', char: 'n' });
@@ -158,16 +164,18 @@ describe('trainer: prompt source, restarts and content loading', () => {
 
   it('a chunk that arrives late does not reset a running test of another content', async () => {
     let resolveWords: (items: readonly ContentItem[]) => void = () => {};
-    vi.spyOn(promptModule, 'loadContent').mockReturnValue(
-      new Promise((r) => {
-        resolveWords = r;
-      }),
+    vi.spyOn(promptModule, 'loadContent').mockImplementation((kind) =>
+      kind === 'words'
+        ? new Promise((r) => {
+            resolveWords = r;
+          })
+        : Promise.resolve([word]),
     );
     const trainer = createTrainer({ rng: { next: () => 0 } });
     const stop = trainer.start();
-    setContent('words');
-    setContent('single');
-    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    setContent('phrases');
+    await flush();
+    trainer.session.handleIntent({ kind: 'char', char: 'n' });
     const phase = trainer.session.phase.value;
     expect(phase).toBe('running');
 
@@ -223,7 +231,7 @@ describe('trainer: prompt source, restarts and content loading', () => {
     stop();
   });
 
-  it('stop() ends a running test: no timers stay alive and the deadline does not fire', () => {
+  it('stop() ends a running test: no timers stay alive and the deadline does not fire', async () => {
     setTestConfig({ kind: 'time', seconds: 15 });
     const live = new Set<number>();
     let nextId = 1;
@@ -254,6 +262,7 @@ describe('trainer: prompt source, restarts and content loading', () => {
       scheduler,
     });
     const stop = trainer.start();
+    await flush();
     trainer.session.handleIntent({ kind: 'char', char: 'a' });
     expect(live.size).toBeGreaterThan(0);
 
@@ -283,19 +292,6 @@ describe('trainer: prompt source, restarts and content loading', () => {
     expect(next.mock.calls.length).toBe(calls);
   });
 
-  it('noKanaForRows is true only for single kana whose rows give nothing for the script (D20)', () => {
-    const trainer = createTrainer({ nextPrompt: () => ({ key: 'basic:a', text: 'あ' }) });
-    expect(trainer.noKanaForRows.value).toBe(false);
-
-    selectAllRows(['ext_fa']);
-    setScript('katakana');
-    expect(trainer.noKanaForRows.value).toBe(false);
-    setScript('hiragana');
-    expect(trainer.noKanaForRows.value).toBe(true);
-    setContent('words');
-    expect(trainer.noKanaForRows.value).toBe(false);
-  });
-
   it('restart loads the prompt with the strictness of the settings', () => {
     const trainer = createTrainer({ nextPrompt: () => ({ key: 'word:pan', text: 'パン' }) });
     expect(strictnessSetting.value).toBe('learner');
@@ -303,11 +299,12 @@ describe('trainer: prompt source, restarts and content loading', () => {
     expect(trainer.session.currentPrompt.value?.text).toBe('パン');
   });
 
-  it('a zen test ended with nothing to keep starts a fresh one, with no result', () => {
+  it('a zen test ended with nothing to keep starts a fresh one, with no result', async () => {
     setTestConfig({ kind: 'zen' });
     const next = vi.fn((): PromptItem => ({ key: 'word:pan', text: 'パン' }));
     const trainer = createTrainer({ nextPrompt: next });
     const stop = trainer.start();
+    await flush();
     trainer.session.handleIntent({ kind: 'char', char: 'p' });
     expect(trainer.session.phase.value).toBe('running');
     const asked = next.mock.calls.length;
@@ -321,11 +318,12 @@ describe('trainer: prompt source, restarts and content loading', () => {
     stop();
   });
 
-  it('a zen test with a completed prompt shows its result', () => {
+  it('a zen test with a completed prompt shows its result', async () => {
     setTestConfig({ kind: 'zen' });
     const clock = { now: vi.fn(() => 1000) };
     const trainer = createTrainer({ nextPrompt: () => ({ key: 'basic:a', text: 'あ' }), clock });
     const stop = trainer.start();
+    await flush();
     trainer.session.handleIntent({ kind: 'char', char: 'a' });
     clock.now.mockReturnValue(2500);
     trainer.session.handleIntent({ kind: 'char', char: 'a' });

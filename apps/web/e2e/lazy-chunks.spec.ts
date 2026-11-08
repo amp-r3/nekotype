@@ -66,7 +66,7 @@ test.describe('the results screen is a lazy chunk', () => {
 
     await context.setOffline(true);
     await page.getByRole('radio', { name: 'RU' }).click();
-    await expect(page.getByRole('button', { name: 'Таблица кана' })).toBeVisible();
+    await expect(page.getByRole('radio', { name: 'Хирагана' })).toBeVisible();
     await page.getByRole('radio', { name: 'Дзен' }).click();
     await page.keyboard.type(await canonicalOfPrompt(page), { delay: 15 });
     await page.getByRole('button', { name: /^Завершить/ }).click();
@@ -90,7 +90,7 @@ test.describe('the Russian dictionary is a lazy chunk', () => {
     await page.waitForTimeout(500);
     await expect(page.locator('#app nav')).toHaveCount(0);
 
-    await expect(page.getByRole('button', { name: 'Таблица кана' })).toBeVisible();
+    await expect(page.getByRole('radio', { name: 'Хирагана' })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
   });
 
@@ -98,7 +98,7 @@ test.describe('the Russian dictionary is a lazy chunk', () => {
     await page.route(RU_CHUNK, (route) => route.abort());
     await page.goto('/');
 
-    await expect(page.getByRole('button', { name: 'Kana Matrix' })).toBeVisible();
+    await expect(page.getByRole('radio', { name: 'Hiragana' })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     expect(await page.evaluate(() => localStorage.getItem('nekotype:locale'))).toBe('ru');
   });

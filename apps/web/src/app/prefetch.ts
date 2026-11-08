@@ -7,12 +7,9 @@ import { ROUTE_PATHS } from './route-paths';
 
 type VocabularyKind = 'words' | 'phrases';
 
-/**
- * The content chunks worth having before the network drops: the selected vocabulary, or both kinds
- * while kana are selected (the user's likely next switch; they are small).
- */
+/** The content chunks worth having before the network drops: the selected vocabulary. */
 export function contentKindsFor(content: ContentKind): readonly VocabularyKind[] {
-  return content === 'single' ? ['words', 'phrases'] : [content];
+  return [content];
 }
 
 export type PrefetchDeps = {

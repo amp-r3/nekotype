@@ -6,7 +6,7 @@
 
 > A lightweight, keyboard-first web app for learning Hiragana and Katakana from zero, with adaptive unlocking and progress tracking, and for typing Japanese words and phrases in romaji with instantaneous feedback, dual-tier romaji matching and zero latency.
 
-**Status.** The code implements phases P0–P2: a typing trainer with Single Kana, Words and Phrases, described below. The MVP specified in [docs/spec/](docs/spec/README.md) is learning-first ([ADR 058](docs/adr/058-learning-first.md)): from P3, `/` teaches kana one at a time with recall, recognition and spaced reviews, and typing keeps words and phrases on `/type`.
+**Status.** The code implements phases P0–P2: a typing trainer with Words and Phrases, described below. The MVP specified in [docs/spec/](docs/spec/README.md) is learning-first ([ADR 058](docs/adr/058-learning-first.md)): from P3, `/` teaches kana one at a time with recall, recognition and spaced reviews, and typing keeps words and phrases on `/type`.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Max%20Strict-blue.svg)](https://www.typescriptlang.org/)
@@ -23,7 +23,7 @@
   - **Learner Mode:** Accommodates intuitive learner habits (Hepburn, Kunrei, Nihon-shiki, vowel lengthening like `koohii`, and reading hints like `wa` for particle は in こんにちは).
 - **🔤 Comprehensive Kana Coverage:**
   - 31 complete row sets across **Gojūon** (Basic), **Dakuten & Handakuten**, **Yōon** (Digraphs), and **Extended Katakana** (`ext_fa`, `ext_va`, `ext_wi`, `ext_ti`, `ext_che`).
-  - Single Kana, Common Words, and Everyday Phrases modes.
+  - Common Words and Everyday Phrases modes.
 - **🧠 Adaptive Weak-Kana Weighting:**
   - Bayesian-inspired weakness formula: $\text{weakness} = \frac{m + 1}{a + 2}$.
   - Dynamically weights prompts during practice so your most frequent mistakes surface more often. For words and phrases the weight is the mean of the weights of their kana.

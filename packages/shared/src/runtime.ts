@@ -32,20 +32,12 @@ export function isSettings(value: unknown): value is ValidSettings {
   }
 
   const content = value['content'];
-  if (content !== 'single' && content !== 'words' && content !== 'phrases') {
+  if (content !== 'words' && content !== 'phrases') {
     return false;
   }
 
   const strictness = value['strictness'];
   if (strictness !== 'learner' && strictness !== 'ime') {
-    return false;
-  }
-
-  const rowIds = value['rowIds'];
-  if (!Array.isArray(rowIds) || rowIds.length === 0) {
-    return false;
-  }
-  if (!rowIds.every((r) => typeof r === 'string')) {
     return false;
   }
 

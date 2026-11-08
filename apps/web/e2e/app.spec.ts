@@ -43,32 +43,6 @@ test.describe('focus redirection and keyboard-first typing', () => {
     },
   );
 
-  test(
-    '(c) open and close the rows dialog: focus returns, typing works',
-    { tag: '@mobile' },
-    async ({ page }) => {
-      await page.goto('/');
-      const input = page.locator('input[aria-label="Kana input sink"]');
-
-      // Open rows dialog
-      const rowsBtn = page.getByRole('button', { name: 'Kana Matrix' });
-      await rowsBtn.click();
-
-      const dialog = page.locator('dialog[open]');
-      await expect(dialog).toBeVisible();
-
-      // Close dialog
-      const closeBtn = dialog.getByLabel('Close');
-      await closeBtn.click();
-      await expect(page.locator('dialog[open]')).toHaveCount(0);
-
-      // Type a key: focus returns to input and test starts
-      await page.keyboard.press('KeyA');
-      await expect(input).toBeFocused();
-      await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'running');
-    },
-  );
-
   test('(d) set words mode, reload: the first prompt is a word/phrase, never a single kana', async ({
     page,
   }) => {
@@ -213,18 +187,18 @@ test.describe('focus redirection and keyboard-first typing', () => {
   test('(g) RU/EN switch changes a visible label and survives a reload', async ({ page }) => {
     await page.goto('/');
 
-    // Check initial English label for matrix button
-    const matrixBtn = page.getByRole('button', { name: 'Kana Matrix' });
-    await expect(matrixBtn).toBeVisible();
+    // Check initial English label of the script switch
+    const scriptRadio = page.getByRole('radio', { name: 'Hiragana' });
+    await expect(scriptRadio).toBeVisible();
 
     // Switch to Russian locale
     const ruRadio = page.getByRole('radio', { name: 'RU' });
     await ruRadio.click();
     await expect(ruRadio).toHaveAttribute('aria-checked', 'true');
 
-    // Matrix button label updates to Russian
-    const ruMatrixBtn = page.getByRole('button', { name: 'Таблица кана' });
-    await expect(ruMatrixBtn).toBeVisible();
+    // Script switch label updates to Russian
+    const ruScriptRadio = page.getByRole('radio', { name: 'Хирагана' });
+    await expect(ruScriptRadio).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
 
     // Allow 350ms for persistence
@@ -234,13 +208,13 @@ test.describe('focus redirection and keyboard-first typing', () => {
     await page.reload();
 
     // Label and lang attribute persist across reload
-    await expect(page.getByRole('button', { name: 'Таблица кана' })).toBeVisible();
+    await expect(page.getByRole('radio', { name: 'Хирагана' })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
 
     // Clean up: switch back to English
     const enRadio = page.getByRole('radio', { name: 'EN' });
     await enRadio.click();
-    await expect(page.getByRole('button', { name: 'Kana Matrix' })).toBeVisible();
+    await expect(page.getByRole('radio', { name: 'Hiragana' })).toBeVisible();
   });
 
   test('(h) Space in the input does nothing; Esc reveals the answer and the prompt is assisted', async ({

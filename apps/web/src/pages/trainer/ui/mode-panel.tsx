@@ -1,14 +1,11 @@
 import type { JSX } from 'preact';
-import { useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
-import { Button, RowsIcon, Segmented, Toggle } from '@/shared/ui';
-import { RowsDialog } from './rows-dialog';
+import { Segmented, Toggle } from '@/shared/ui';
 import {
   scriptSetting,
   contentSetting,
   strictnessSetting,
   weakFocusSetting,
-  rowIdsSetting,
   setScript,
   setContent,
   setStrictness,
@@ -21,21 +18,14 @@ import {
 import type { ScriptMode, ContentKind } from '@/entities/settings';
 import type { Strictness } from '@/entities/prompt';
 
-export type ModePanelProps = {
-  /** The rows dialog is about to open. */
-  readonly onOpenRows: () => void;
-};
-
 // The speed-test options: script, material and strictness in the first row, test, length, weak
-// kana and rows in the second (design: ModePanel).
-export function ModePanel({ onOpenRows }: ModePanelProps): JSX.Element {
-  const [rowsDialogOpen, setRowsDialogOpen] = useState(false);
+// kana in the second (design: ModePanel).
+export function ModePanel(): JSX.Element {
   const currentScript = scriptSetting.value;
   const currentContent = contentSetting.value;
   const currentStrictness = strictnessSetting.value;
   const currentWeakFocus = weakFocusSetting.value;
   const currentTestConfig = testConfig.value;
-  const selectedRowCount = rowIdsSetting.value.length;
 
   const handleScriptChange = (val: ScriptMode) => {
     setScript(val);
@@ -89,7 +79,6 @@ export function ModePanel({ onOpenRows }: ModePanelProps): JSX.Element {
         {divider}
         <Segmented<ContentKind>
           options={[
-            { value: 'single', label: t('config.content.single') },
             { value: 'words', label: t('config.content.words') },
             { value: 'phrases', label: t('config.content.phrases') },
           ]}
@@ -153,32 +142,7 @@ export function ModePanel({ onOpenRows }: ModePanelProps): JSX.Element {
           onChange={handleWeakFocusChange}
           label={t('config.weakFocus')}
         />
-        {currentContent === 'single' && (
-          <>
-            {divider}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                onOpenRows();
-                setRowsDialogOpen(true);
-              }}
-              ariaLabel={t('app.rows')}
-            >
-              <RowsIcon size={14} />
-              <span className="hidden sm:inline">{t('app.rows')}</span>
-              <span className="text-mono-small font-mono">{selectedRowCount}</span>
-            </Button>
-          </>
-        )}
       </div>
-
-      <RowsDialog
-        open={rowsDialogOpen}
-        onClose={() => {
-          setRowsDialogOpen(false);
-        }}
-      />
     </div>
   );
 }

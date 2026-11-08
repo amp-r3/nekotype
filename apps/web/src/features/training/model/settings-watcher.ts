@@ -3,7 +3,6 @@ import {
   scriptSetting,
   contentSetting,
   strictnessSetting,
-  rowIdsSetting,
   weakFocusSetting,
   testConfig,
 } from '@/entities/settings';
@@ -14,7 +13,7 @@ function readAll(...values: readonly unknown[]): number {
 }
 
 /**
- * Calls `onReset` whenever one of the six practice and test settings changes, but not for the
+ * Calls `onReset` whenever one of the five practice and test settings changes, but not for the
  * values present when it is set up. The settings slice cannot reset a session itself, so this is
  * where a change of setting ends the running test.
  */
@@ -22,12 +21,11 @@ export function setupSettingsResetWatcher(onReset: () => void): () => void {
   let isFirstRun = true;
 
   const dispose = effect(() => {
-    // Subscribe to all six practice and test settings.
+    // Subscribe to all five practice and test settings.
     readAll(
       scriptSetting.value,
       contentSetting.value,
       strictnessSetting.value,
-      rowIdsSetting.value,
       weakFocusSetting.value,
       testConfig.value,
     );

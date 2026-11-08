@@ -1,7 +1,6 @@
 import type { ReadonlySignal } from '@preact/signals';
 import { signal } from '@preact/signals';
-import { allKanaRows } from '@nekotype/engine';
-import type { RowId, Strictness } from '@nekotype/engine';
+import type { Strictness } from '@nekotype/engine';
 import type {
   PracticeSettings,
   ScriptMode,
@@ -11,22 +10,15 @@ import type {
   CountTestConfig,
 } from './types';
 import type { KeyValueStore } from '@/shared/lib';
-import { DEFAULT_BASIC_ROWS, STORAGE_KEYS, isSettings, createDebouncedSaver } from '@/shared/lib';
-
-const VALID_ROW_IDS = new Set<string>(allKanaRows.map((r) => r.id));
-
-function isRowId(id: string): id is RowId {
-  return VALID_ROW_IDS.has(id);
-}
+import { STORAGE_KEYS, isSettings, createDebouncedSaver } from '@/shared/lib';
 
 export const DEFAULT_TIME_TEST: TimeTestConfig = { kind: 'time', seconds: 30 };
 export const DEFAULT_COUNT_TEST: CountTestConfig = { kind: 'count', prompts: 25 };
 export const DEFAULT_TEST_CONFIG: TestConfig = DEFAULT_TIME_TEST;
 
 const _scriptSetting = signal<ScriptMode>('both');
-const _contentSetting = signal<ContentKind>('single');
+const _contentSetting = signal<ContentKind>('words');
 const _strictnessSetting = signal<Strictness>('learner');
-const _rowIdsSetting = signal<readonly RowId[]>(DEFAULT_BASIC_ROWS);
 const _weakFocusSetting = signal<boolean>(true);
 const _showTranslationSetting = signal<boolean>(true);
 const _testConfig = signal<TestConfig>(DEFAULT_TEST_CONFIG);
@@ -34,7 +26,6 @@ const _testConfig = signal<TestConfig>(DEFAULT_TEST_CONFIG);
 export const scriptSetting: ReadonlySignal<ScriptMode> = _scriptSetting;
 export const contentSetting: ReadonlySignal<ContentKind> = _contentSetting;
 export const strictnessSetting: ReadonlySignal<Strictness> = _strictnessSetting;
-export const rowIdsSetting: ReadonlySignal<readonly RowId[]> = _rowIdsSetting;
 export const weakFocusSetting: ReadonlySignal<boolean> = _weakFocusSetting;
 export const showTranslationSetting: ReadonlySignal<boolean> = _showTranslationSetting;
 export const testConfig: ReadonlySignal<TestConfig> = _testConfig;
@@ -49,7 +40,6 @@ function saveCurrentSettings(): void {
     script: _scriptSetting.value,
     content: _contentSetting.value,
     strictness: _strictnessSetting.value,
-    rowIds: _rowIdsSetting.value,
     weakFocus: _weakFocusSetting.value,
     showTranslation: _showTranslationSetting.value,
     test: _testConfig.value,
@@ -83,11 +73,6 @@ export function initSettings(store: KeyValueStore): void {
         _scriptSetting.value = parsed.script;
         _contentSetting.value = parsed.content;
         _strictnessSetting.value = parsed.strictness;
-        // Verify valid row IDs
-        const validRows = parsed.rowIds.filter(isRowId);
-        if (validRows.length > 0) {
-          _rowIdsSetting.value = validRows;
-        }
         _weakFocusSetting.value = parsed.weakFocus;
         _showTranslationSetting.value = parsed.showTranslation ?? true;
         _testConfig.value = parsed.test;
@@ -100,9 +85,8 @@ export function initSettings(store: KeyValueStore): void {
 
   // Fallback to defaults
   _scriptSetting.value = 'both';
-  _contentSetting.value = 'single';
+  _contentSetting.value = 'words';
   _strictnessSetting.value = 'learner';
-  _rowIdsSetting.value = DEFAULT_BASIC_ROWS;
   _weakFocusSetting.value = true;
   _showTranslationSetting.value = true;
   _testConfig.value = DEFAULT_TEST_CONFIG;
@@ -113,7 +97,6 @@ export function getPracticeSettings(): PracticeSettings {
     script: _scriptSetting.value,
     content: _contentSetting.value,
     strictness: _strictnessSetting.value,
-    rowIds: _rowIdsSetting.value,
     weakFocus: _weakFocusSetting.value,
   };
 }
@@ -147,37 +130,5 @@ export function setShowTranslation(show: boolean): void {
 // Changing the test length or kind restarts the session; features/training watches this signal.
 export function setTestConfig(config: TestConfig): void {
   _testConfig.value = config;
-  notifyChange();
-}
-
-// Domain rule: at least one row must stay selected!
-export function toggleRow(rowId: RowId): boolean {
-  const current = _rowIdsSetting.value;
-  if (current.includes(rowId)) {
-    if (current.length <= 1) {
-      return false; // Rejected: cannot remove last row
-    }
-    _rowIdsSetting.value = current.filter((id) => id !== rowId);
-    notifyChange();
-    return true;
-  } else {
-    _rowIdsSetting.value = [...current, rowId];
-    notifyChange();
-    return true;
-  }
-}
-
-export function selectAllRows(allIds: readonly RowId[]): void {
-  _rowIdsSetting.value = [...allIds];
-  notifyChange();
-}
-
-export function clearRows(keepFirst: RowId = 'vowels'): void {
-  _rowIdsSetting.value = [keepFirst];
-  notifyChange();
-}
-
-export function presetBasic(): void {
-  _rowIdsSetting.value = [...DEFAULT_BASIC_ROWS];
   notifyChange();
 }

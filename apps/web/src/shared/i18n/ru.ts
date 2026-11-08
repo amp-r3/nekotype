@@ -3,7 +3,6 @@ import type { en } from './en';
 export const ru = {
   // Top bar
   'app.title': 'Nekotype',
-  'app.rows': 'Таблица кана',
   'app.reset': 'Сбросить прогресс',
   'app.language': 'Язык интерфейса',
 
@@ -33,7 +32,6 @@ export const ru = {
   'config.script.hiragana': 'Хирагана',
   'config.script.katakana': 'Катакана',
   'config.script.both': 'Обе (Смешанный)',
-  'config.content.single': 'Символы',
   'config.content.words': 'Слова',
   'config.content.phrases': 'Фразы',
   'config.strictness.learner': 'Мягкая',
@@ -69,8 +67,6 @@ export const ru = {
   'stage.revealed': 'Ответ: {answer}',
   'stage.contentLoading': 'Загрузка словаря...',
   'stage.contentLoadError': 'Не удалось загрузить словарь. Пока он не загружен, тренируются каны.',
-  'stage.noKanaForRows':
-    'В выбранных рядах нет кан для этого письма. Пока тренируются основные ряды.',
 
   // Results panel
   'results.title': 'Результаты теста',
@@ -91,15 +87,6 @@ export const ru = {
 
   // Dialogs
   'dialog.close': 'Закрыть',
-  'rows.category.basic': 'Годзюон (основные)',
-  'rows.category.dakuten': 'Дакутэн и хандакутэн',
-  'rows.category.yoon': 'Ёон (сочетания)',
-  'rows.category.extended': 'Расширенная катакана',
-  'dialog.selectAll': 'Выбрать все',
-  'dialog.clear': 'Сбросить выбор',
-  'dialog.gojuonOnly': 'Только Годзюон',
-  'dialog.atLeastOneRow': 'Хотя бы один ряд должен быть выбран',
-  'dialog.extendedDisabled': 'Расширенная катакана недоступна в режиме только хираганы',
   'reset.title': 'Сброс прогресса',
   'reset.confirm': 'Вы уверены, что хотите удалить всю статистику точности и времени?',
   'reset.action': 'Стереть все',

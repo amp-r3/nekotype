@@ -1,4 +1,4 @@
-import type { ReadingHint, RowId, Script } from '@nekotype/engine';
+import type { ReadingHint, Script } from '@nekotype/engine';
 
 export type {
   BasicRowId,
@@ -18,7 +18,7 @@ export type {
 
 export type ScriptMode = Script | 'both';
 
-export type ContentKind = 'single' | 'words' | 'phrases';
+export type ContentKind = 'words' | 'phrases';
 
 export type ContentItem = {
   readonly id: string;
@@ -32,5 +32,4 @@ export type ContentItem = {
 export type PoolSettings = {
   readonly script: ScriptMode;
   readonly content: ContentKind;
-  readonly rowIds: readonly RowId[];
 };

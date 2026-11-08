@@ -1,6 +1,6 @@
 > **Scope.** Describes the v1 baseline code as it stands after the P1 engine cutover: the application in `apps/web/src/` and the two packages it uses, `packages/engine` and `packages/shared`. Where it disagrees with the [MVP specification](../spec/README.md), the specification applies; this document is rewritten as the MVP phases land (spec item D21).
 
-> **Direction.** [ADR 058](../adr/058-learning-first.md) made learning the core of the MVP: from P3, `/` is the learning screen and typing keeps words and phrases on `/type`. This document still describes the code as it is, a typing trainer with Single Kana, Words and Phrases.
+> **Direction.** [ADR 058](../adr/058-learning-first.md) made learning the core of the MVP: from P3, `/` is the learning screen and typing keeps words and phrases on `/type`. This document still describes the code as it is, a typing trainer with Words and Phrases (single kana and the row selection were removed in P3).
 
 # Nekotype Architecture Documentation
 
@@ -45,7 +45,7 @@ apps/web/src/
 
 ### Widgets Layer Consolidation
 
-Under standard FSD, the `widgets/` layer hosts multi-slice compositional blocks. The FSD linter (`steiger`) enforces `fsd/insignificant-slice`, requiring slices to have more than one consumer across the application. Each screen is a separate page slice and the trainer is the only one with several components, so all trainer-specific widgets (`ModePanel`, `TestStage`, `ResultsPanel`, `RowsDialog`, `LiveStatsStrip`, `SpeedChart`, `WeakestKanaList`) were consolidated into `apps/web/src/pages/trainer/ui/` as page-internal UI components.
+Under standard FSD, the `widgets/` layer hosts multi-slice compositional blocks. The FSD linter (`steiger`) enforces `fsd/insignificant-slice`, requiring slices to have more than one consumer across the application. Each screen is a separate page slice and the trainer is the only one with several components, so all trainer-specific widgets (`ModePanel`, `TestStage`, `ResultsPanel`, `LiveStatsStrip`, `SpeedChart`, `WeakestKanaList`) were consolidated into `apps/web/src/pages/trainer/ui/` as page-internal UI components.
 
 > [!NOTE]
 > **When to Extract Widgets:** If a second full-page view is introduced (such as a historical stats dashboard, custom word list editor, or flashcard review page) that reuses these UI blocks, extract them back into `apps/web/src/widgets/<widget-name>/` with their own public APIs.
@@ -55,7 +55,7 @@ Under standard FSD, the `widgets/` layer hosts multi-slice compositional blocks.
 - `pages/trainer/ui/test-stage.tsx` is the screen: the stage; the hidden field that takes the keyboard lives one level up in `trainer-page.tsx`, so it stays when the screen changes (`useTestInput` in `features/training/lib/use-test-input.ts` creates and binds the input source and keeps the focus; `useFinishButton` enables Finish; ADR 055), `LiveLine` (counter, kana per minute, kana accuracy), `TextStream`, one line for notices (layout, IME, the revealed romaji), the translation (two lines reserved; empty when `showTranslation` is off) and the hints. Every line whose text a keystroke changes is a signal passed as a text node, so the screen renders once.
 - `lib/weakest-kana.ts` computes the weakest kana of the results screen; the default time and count tests are `DEFAULT_TIME_TEST` and `DEFAULT_COUNT_TEST` in `entities/settings`.
 - `features/training/ui/text-stream.tsx` renders the tokens of `session.stream` and has no child component; `lib/use-stream-binding.ts` gives the elements to the writer (`lib/stream-dom.ts`) and writes the rest to the DOM through signal effects.
-- While a test runs `useTestChrome` sets `data-testing` on the document; the stylesheet turns it into `opacity` and `visibility` for everything marked `data-chrome` (navigation, mode panel, footer). Restart has `nk-on-focus`: it shows when focused or hovered, and always on a touch screen. Tab and Shift keep the interface shown. Opening the rows dialog restarts a running test. `useEnterForNext` handles Enter on the results screen.
+- While a test runs `useTestChrome` sets `data-testing` on the document; the stylesheet turns it into `opacity` and `visibility` for everything marked `data-chrome` (navigation, mode panel, footer). Restart has `nk-on-focus`: it shows when focused or hovered, and always on a touch screen. Tab and Shift keep the interface shown. `useEnterForNext` handles Enter on the results screen.
 - The page switches to the results on a `finished` computed value, so the start of a test (idle to running) does not render it. The render test counts every component render of the page from the first key: none for a key inside a prompt, the stream for a key that completes one.
 
 ### Routing and the application shell (ADR 037)
@@ -280,7 +280,7 @@ Every commit and pull request must satisfy `pnpm run verify`, which CI also runs
    - Fonts (woff2, read from `dist`): ≤ 45 KB per file (actual 20.77 KB Noto Sans JP 400, 10.66 and 10.69 KB JetBrains Mono 400/500, 9.38 and 9.55 KB Golos Text 400/500)
    - Total first load: ≤ 160 KB, including the SVG of the initial chunk, the logo (actual 102.39 KB)
    - Lazy route chunk: ≤ 25 KB; content chunk (`words`/`phrases` modules): ≤ 40 KB (actual 1.60 KB and 2.05 KB; the largest route chunk is the Russian dictionary, 1.98 KB)
-7. **`pnpm run e2e` (`playwright test`)**: Chromium and WebKit (iPhone 13 emulation) against the production bundle (`vite build` into `dist-e2e`, served by `vite preview` on a port of its own, 5273; ADR 045), then the latency test (`playwright.latency.config.ts`): it runs a probe build (`pnpm run build:probe`, `vite preview`) with 4× CPU throttling and checks, for Single Kana, Words and Phrases, the keystroke p95 budgets and a ceiling on the worst keystroke (ADR 043, 048). `check-budget` fails when `dist` contains the probe.
+7. **`pnpm run e2e` (`playwright test`)**: Chromium and WebKit (iPhone 13 emulation) against the production bundle (`vite build` into `dist-e2e`, served by `vite preview` on a port of its own, 5273; ADR 045), then the latency test (`playwright.latency.config.ts`): it runs a probe build (`pnpm run build:probe`, `vite preview`) with 4× CPU throttling and checks, for Words and Phrases, the keystroke p95 budgets and a ceiling on the worst keystroke (ADR 043, 048). `check-budget` fails when `dist` contains the probe.
 
 Git hooks run the same checks earlier (`pre-commit`: staged formatting, typecheck, lint, unit tests; `pre-push`: `verify`).
 
@@ -292,17 +292,17 @@ Git hooks run the same checks earlier (`pre-commit`: staged formatting, typechec
 
 - `updateKanaStats(prev: KanaStats | undefined, mistakes: number, ms: number): KanaStats`: Completely pure function; calculates new attempt count `a`, mistake count `m`, EMA response latency `t` ($\alpha = 0.3$; `ms` 0 is no measurement and keeps `t`), and applies `decayStats` (halving `a` and `m` when $a > 50$). Returns a fresh `KanaStats` object without mutating `prev`.
 - `ProgressMap`: Defined as `ReadonlyMap<string, KanaStats>`, guaranteeing immutable consumption by weights calculators.
-- `computeItemWeight(tokenKeys: readonly string[], weights: ReadonlyMap<string, number>): number`: Evaluates prompt weight for words/phrases by computing the arithmetic mean over all constituent token kana keys (unseen keys defaulting to weight 3.0, per section 8 of the [archived v1 plan](../archive/v1-implementation-plan.md)). Since D20 it is used: `createPromptWeights()` in `features/training` maps each word or phrase to the `KanaKey`s of its tokens and weighs it by their mean; a single kana weighs what it did before.
+- `computeItemWeight(tokenKeys: readonly string[], weights: ReadonlyMap<string, number>): number`: Evaluates prompt weight for words/phrases by computing the arithmetic mean over all constituent token kana keys (unseen keys defaulting to weight 3.0, per section 8 of the [archived v1 plan](../archive/v1-implementation-plan.md)). Since D20 it is used: `createPromptWeights()` in `features/training` maps each word or phrase to the `KanaKey`s of its tokens and weighs it by their mean; a single kana key weighs what it did before.
 
 ### `entities/settings`
 
-- Holds the practice settings (`script`, `content`, `strictness`, `rowIds`, `weakFocus`), the display setting `showTranslation` (optional in the stored v1 value, `true` when absent; not a practice setting, so it does not reset a test, ADR 056) and the test length `testConfig` as `ReadonlySignal`s, and the actions that change them (`setScript`, `setTestConfig`, `toggleRow`, …). `initSettings(store)` reads `kanaflow:settings:v1`; one debounced writer saves all the values together (`flushSettings()` on `pagehide`). It does not import `entities/prompt`: its `ScriptMode` and `ContentKind` derive from `ValidSettings`.
+- Holds the practice settings (`script`, `content`, `strictness`, `weakFocus`), the display setting `showTranslation` (optional in the stored v1 value, `true` when absent; not a practice setting, so it does not reset a test, ADR 056) and the test length `testConfig` as `ReadonlySignal`s, and the actions that change them (`setScript`, `setTestConfig`, …). `initSettings(store)` reads `kanaflow:settings:v1`; one debounced writer saves all the values together (`flushSettings()` on `pagehide`). It does not import `entities/prompt`: its `ScriptMode` and `ContentKind` derive from `ValidSettings`.
+- `content` defaults to `words`. A saved value that fails validation (for example the removed `single`) is replaced by the defaults, with no conversion (ADR 061); a stored `rowIds` is ignored.
 - Changing a setting does not reset the session here (a slice cannot import another); `setupSettingsResetWatcher` in `features/training` does.
 
 ### `entities/prompt`
 
-- `buildPool(settings: PoolSettings, content?: readonly ContentItem[]): readonly PromptItem[]`: Builds the prompt pool. In `words` and `phrases` content modes, if `content` is empty or no vocabulary items match the active script mode, it falls back to constructing the single-kana pool matching `settings.rowIds` and `settings.script` (ADR 019). If the selected rows give no kana for the script (extended rows with hiragana), it falls back to the basic rows (D20, ADR 028).
-- `rowsYieldKana(settings): boolean`: Whether the selected rows give at least one kana for the script; the trainer shows a notice when it is false.
+- `buildPool(settings: PoolSettings, content?: readonly ContentItem[]): readonly PromptItem[]`: Builds the prompt pool from the loaded words or phrases, filtered by the script mode. It is empty while the vocabulary is not loaded or when nothing matches the script; the trainer then shows no prompt and blocks input (a loading notice, or the load error with Retry). There is no kana fallback pool since P3 (ADR 019, 028 are superseded).
 - `pickPrompt(pool: readonly PromptItem[], weights: ReadonlyMap<string, number>, rng: Rng, previousKey: string | null): PromptItem`: Selects the next prompt using weighted distribution. Throws an invariant Error on an empty pool, which `buildPool` no longer produces.
 
 ### End-to-End Browser Certification (`e2e/`)

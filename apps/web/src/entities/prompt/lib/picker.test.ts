@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPool, pickPrompt, rowsYieldKana } from './picker';
+import { buildPool, pickPrompt } from './picker';
 import type { PoolSettings, PromptItem, ContentItem } from '../model/types';
 import type { Rng } from '@/shared/lib';
 
@@ -15,42 +15,6 @@ class SeededRng implements Rng {
 }
 
 describe('picker: pool building', () => {
-  it('builds single kana pool for basic rows in both scripts', () => {
-    const settings: PoolSettings = {
-      script: 'both',
-      content: 'single',
-      rowIds: ['vowels'],
-    };
-    const pool = buildPool(settings);
-    // 5 vowels x 2 scripts = 10 prompts
-    expect(pool.length).toBe(10);
-    expect(pool.some((p) => p.key === 'hiragana:あ')).toBe(true);
-    expect(pool.some((p) => p.key === 'katakana:ア')).toBe(true);
-  });
-
-  it('excludes extended rows when script is hiragana-only', () => {
-    const settings: PoolSettings = {
-      script: 'hiragana',
-      content: 'single',
-      rowIds: ['vowels', 'ext_fa'],
-    };
-    const pool = buildPool(settings);
-    // vowels has 5 hiragana, ext_fa has 0 hiragana
-    expect(pool.length).toBe(5);
-    expect(pool.some((p) => p.text === 'ファ')).toBe(false);
-  });
-
-  it('includes extended rows when script is katakana or both', () => {
-    const settings: PoolSettings = {
-      script: 'katakana',
-      content: 'single',
-      rowIds: ['ext_fa'],
-    };
-    const pool = buildPool(settings);
-    expect(pool.length).toBe(4);
-    expect(pool.some((p) => p.text === 'ファ')).toBe(true);
-  });
-
   it('filters content by script in words mode', () => {
     const sampleWords: readonly ContentItem[] = [
       {
@@ -70,7 +34,6 @@ describe('picker: pool building', () => {
     const hSettings: PoolSettings = {
       script: 'hiragana',
       content: 'words',
-      rowIds: ['vowels'],
     };
     const hPool = buildPool(hSettings, sampleWords);
     expect(hPool.length).toBe(1);
@@ -79,25 +42,16 @@ describe('picker: pool building', () => {
     const bothSettings: PoolSettings = {
       script: 'both',
       content: 'words',
-      rowIds: ['vowels'],
     };
     const bothPool = buildPool(bothSettings, sampleWords);
     expect(bothPool.length).toBe(2);
   });
 
-  it('falls back to single-kana pool when content is empty or has no script matches (plan 5.5)', () => {
-    const settings: PoolSettings = {
-      script: 'hiragana',
-      content: 'words',
-      rowIds: ['vowels'],
-    };
-    // Pass empty content array
-    const fallbackPool = buildPool(settings, []);
-    // Falls back to single kana vowels (5 hiragana items)
-    expect(fallbackPool.length).toBe(5);
-    expect(fallbackPool[0]?.key).toBe('hiragana:あ');
+  it('has no prompts without content, with empty content or with nothing for the script', () => {
+    const settings: PoolSettings = { script: 'hiragana', content: 'words' };
+    expect(buildPool(settings)).toEqual([]);
+    expect(buildPool(settings, [])).toEqual([]);
 
-    // Content with no items matching script
     const katakanaOnlyWords: readonly ContentItem[] = [
       {
         id: 'word:pan',
@@ -106,9 +60,7 @@ describe('picker: pool building', () => {
         meaning: { en: 'Bread', ru: 'Хлеб' },
       },
     ];
-    const fallbackPool2 = buildPool(settings, katakanaOnlyWords);
-    expect(fallbackPool2.length).toBe(5);
-    expect(fallbackPool2[0]?.key).toBe('hiragana:あ');
+    expect(buildPool(settings, katakanaOnlyWords)).toEqual([]);
   });
 });
 
@@ -176,33 +128,5 @@ describe('picker: prompt selection', () => {
 
     expect(counts3.w10).toBeGreaterThan(counts3.w1);
     expect(counts3.w10).toBeGreaterThan(counts3.w2);
-  });
-
-  describe('D20: rows that give no kana for the script', () => {
-    const base: PoolSettings = {
-      script: 'hiragana',
-      content: 'single',
-      rowIds: ['ext_fa'],
-    };
-
-    it('buildPool falls back to the basic rows instead of returning an empty pool', () => {
-      const pool = buildPool(base);
-      expect(pool.length).toBe(46);
-      expect(pool.every((item) => item.script === 'hiragana')).toBe(true);
-      // The fallback pool is usable: pickPrompt must not throw on it.
-      expect(() => pickPrompt(pool, new Map(), new SeededRng(1), null)).not.toThrow();
-    });
-
-    it('rowsYieldKana tells apart rows with and without kana for the script', () => {
-      expect(rowsYieldKana(base)).toBe(false);
-      expect(rowsYieldKana({ ...base, script: 'katakana' })).toBe(true);
-      expect(rowsYieldKana({ ...base, script: 'both' })).toBe(true);
-      expect(rowsYieldKana({ ...base, rowIds: ['ext_fa', 'k'] })).toBe(true);
-    });
-
-    it('a selection that does yield kana is used as is', () => {
-      const pool = buildPool({ ...base, rowIds: ['vowels'] });
-      expect(pool.map((item) => item.text)).toEqual(['あ', 'い', 'う', 'え', 'お']);
-    });
   });
 });

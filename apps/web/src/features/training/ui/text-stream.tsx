@@ -2,7 +2,6 @@ import type { JSX } from 'preact';
 import { useMemo, useRef } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import { cx, useMediaQuery } from '@/shared/lib';
-import { contentSetting } from '@/entities/settings';
 import { useStreamBinding } from '../lib/use-stream-binding';
 import type { Session } from '../model/session';
 
@@ -18,7 +17,6 @@ export type TextStreamProps = {
  */
 export function TextStream({ session }: TextStreamProps): JSX.Element {
   const drawn = session.stream.value;
-  const solo = contentSetting.value === 'single';
   const narrow = useMediaQuery('(max-width: 639px)');
 
   const root = useRef<HTMLDivElement>(null);
@@ -36,13 +34,7 @@ export function TextStream({ session }: TextStreamProps): JSX.Element {
       {/* The prompt on display, for assistive technology and tests: the stream is a picture. */}
       <span ref={promptText} data-testid="prompt-text" className="sr-only" />
       <div ref={view} className="nk-test__text" lang="ja" aria-hidden="true">
-        <div
-          ref={inner}
-          className={cx(
-            'nk-test__inner font-jp',
-            solo ? 'text-jp-solo-sm sm:text-jp-solo' : 'text-jp-test-sm sm:text-jp-test',
-          )}
-        >
+        <div ref={inner} className={cx('nk-test__inner font-jp text-jp-test-sm sm:text-jp-test')}>
           {drawn.prompts.map((prompt) => (
             <span key={prompt.index} className="nk-word">
               {prompt.tokens.map((token, i) => (
