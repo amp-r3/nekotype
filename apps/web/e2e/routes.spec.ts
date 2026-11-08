@@ -67,7 +67,7 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
     await page.getByRole('radio', { name: 'RU' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'О проекте' })).toBeVisible();
     await expect(page).toHaveTitle('О проекте — Nekotype');
-    await page.getByRole('radio', { name: 'EN' }).click();
+    await page.getByRole('radio', { name: 'en', exact: true }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'About' })).toBeVisible();
   });
 });

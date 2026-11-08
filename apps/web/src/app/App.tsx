@@ -30,8 +30,8 @@ export function App(): JSX.Element {
           trailing={
             <Segmented<Locale>
               options={[
-                { value: 'en', label: 'EN' },
-                { value: 'ru', label: 'RU' },
+                { value: 'en', label: 'en' },
+                { value: 'ru', label: 'ru' },
               ]}
               value={locale.value}
               onChange={(next) => {

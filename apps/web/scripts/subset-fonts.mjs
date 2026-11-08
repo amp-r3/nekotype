@@ -4,8 +4,8 @@ import { join } from 'node:path';
 import subsetFont from 'subset-font';
 
 import { allKanaRows } from '@nekotype/engine';
-import { wordsData } from '../src/entities/kana/model/data/words.ts';
-import { phrasesData } from '../src/entities/kana/model/data/phrases.ts';
+import { wordsData } from '../src/entities/prompt/model/data/words.ts';
+import { phrasesData } from '../src/entities/prompt/model/data/phrases.ts';
 
 // Kana, words and phrases are the Noto subset (glyphs.txt); the other sets are fixed here.
 // data.test.ts keeps the mandatory list below in sync with this script.
@@ -15,7 +15,10 @@ const range = (from, to) =>
   Array.from({ length: to - from + 1 }, (_, i) => String.fromCodePoint(from + i)).join('');
 const ascii = range(0x20, 0x7e);
 const cyrillic = range(0x410, 0x44f) + 'Ёё';
-const uiExtras = 'ūōé←→·…—–«»×№';
+// U+2212 minus, U+00A0 and U+202F: no-break spaces (ADR 034, design decision 20).
+const spaces = '\u00a0\u202f';
+const minus = '\u2212';
+const uiExtras = 'ūōé←→·…—–«»×№' + spaces;
 
 // Sources are pinned to a google/fonts commit and checked against a hash (ADR 034).
 const GOOGLE_FONTS_COMMIT = '2fe1e8c6b137fb13041a7cfca6fdcd8a910ea4dc';
@@ -48,11 +51,18 @@ const sortedGlyphs = Array.from(chars).sort().join('');
 writeFileSync(join(process.cwd(), 'glyphs.txt'), sortedGlyphs, 'utf-8');
 console.log(`Updated glyphs.txt (${chars.size} glyphs)`);
 
+const monoGlyphs = ascii + cyrillic + '←→✕' + minus + spaces;
+
 const outputs = [
-  { source: 'golos', file: 'GolosText-400.woff2', wght: 400, glyphs: ascii + cyrillic + uiExtras },
+  {
+    source: 'golos',
+    file: 'GolosText-400.woff2',
+    wght: 400,
+    glyphs: ascii + cyrillic + uiExtras + minus,
+  },
   { source: 'golos', file: 'GolosText-500.woff2', wght: 500, glyphs: ascii + cyrillic + uiExtras },
-  { source: 'mono', file: 'JetBrainsMono-400.woff2', wght: 400, glyphs: ascii + cyrillic + '←→✕' },
-  { source: 'mono', file: 'JetBrainsMono-500.woff2', wght: 500, glyphs: ascii + cyrillic + '←→✕' },
+  { source: 'mono', file: 'JetBrainsMono-400.woff2', wght: 400, glyphs: monoGlyphs + '·⌘' },
+  { source: 'mono', file: 'JetBrainsMono-500.woff2', wght: 500, glyphs: monoGlyphs },
   { source: 'noto', file: 'NotoSansJP-400.woff2', wght: 400, glyphs: sortedGlyphs },
 ];
 

@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { t } from '@/shared/i18n';
-import { Segmented, Toggle } from '@/shared/ui';
+import { Segmented, Switch } from '@/shared/ui';
 import {
   scriptSetting,
   contentSetting,
@@ -137,7 +137,7 @@ export function ModePanel(): JSX.Element {
           ) : null /* Zen has no length: it goes on until it is ended by hand. */
         }
         {divider}
-        <Toggle
+        <Switch
           checked={currentWeakFocus}
           onChange={handleWeakFocusChange}
           label={t('config.weakFocus')}

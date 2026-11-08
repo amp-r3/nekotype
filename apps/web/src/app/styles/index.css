@@ -11,10 +11,6 @@
   }
 }
 
-.animate-blink {
-  animation: blink var(--dur-blink) var(--ease-inout) infinite;
-}
-
 .animate-fadeIn {
   animation: fadeIn var(--dur-reveal) var(--ease-out);
 }
@@ -55,7 +51,6 @@ html {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .animate-blink,
   .animate-fadeIn,
   .nk-caret.is-idle {
     animation: none !important;

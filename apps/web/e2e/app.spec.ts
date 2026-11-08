@@ -71,7 +71,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
     }).toPass({ timeout: 5000 });
   });
 
-  test('(e) Tab then Enter restarts the test', async ({ page }) => {
+  test('(e) tab → enter restarts the test', async ({ page }) => {
     await page.goto('/');
     const input = page.locator('input[aria-label="Kana input sink"]');
     await expect(input).toBeFocused();
@@ -212,7 +212,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
 
     // Clean up: switch back to English
-    const enRadio = page.getByRole('radio', { name: 'EN' });
+    const enRadio = page.getByRole('radio', { name: 'en', exact: true });
     await enRadio.click();
     await expect(page.getByRole('radio', { name: 'Hiragana' })).toBeVisible();
   });
