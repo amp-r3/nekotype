@@ -76,8 +76,8 @@ From P2 the interface follows the [Nekotype design system](../design/README.md) 
 
 | Layer      | Slices                                                                                                                                                                             |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pages`    | `learn` (`/`), `trainer` (`/type`), `stats`, `settings`, `about`                                                                                                                   |
-| `features` | `training` (`createSession`, the typing session), `learn-session` (`createLearnSession`, task choice), `sync`, `report-content`                                                    |
+| `pages`    | `learn` (`/`; also the learning session and task choice), `trainer` (`/type`), `stats`, `settings`, `about`                                                                        |
+| `features` | `training` (`createSession`, the typing session), `sync`, `report-content`                                                                                                         |
 | `entities` | `prompt` (picker, weights, content), `stats` (typing statistics, local view, results, records), `learn` (learning state, confidence, unlocking, boxes, streak), `user`, `settings` |
 
 Slices on one layer do not import each other, so a flow crossing features, such as sign-out running a sync first, is composed in the page or in `app`. The input source, used by both sessions, is in `shared` ([Architecture](architecture.md)).
