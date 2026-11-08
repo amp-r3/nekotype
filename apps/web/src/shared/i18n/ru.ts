@@ -51,6 +51,7 @@ export const ru = {
   'learn.chart.noRecognition': 'ответов на узнавание пока нет',
   'learn.chart.close': 'закрыть',
   'learn.continue': 'Продолжить',
+  'learn.review': 'Повторение ({n})',
   'learn.session.learning': 'обучение',
   'learn.session.review': 'повторение',
   'learn.session.of': 'из',

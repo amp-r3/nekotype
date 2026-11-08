@@ -50,6 +50,7 @@ export const en = {
   'learn.chart.noRecognition': 'no recognition answers yet',
   'learn.chart.close': 'close',
   'learn.continue': 'Continue',
+  'learn.review': 'Review ({n})',
   'learn.session.learning': 'learning',
   'learn.session.review': 'review',
   'learn.session.of': 'of',

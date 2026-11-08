@@ -25,6 +25,7 @@ import {
 import { createLearnSession } from '../model/session';
 import type { LearnSession } from '../model/session';
 import { silentAudio } from '../lib/audio';
+import { dueCount, reviewQueue } from '../lib/review-queue';
 import { SessionScreen } from './session-screen';
 import { SummaryScreen } from './summary-screen';
 
@@ -42,10 +43,13 @@ export function LearnPage(): JSX.Element {
     void initLearn(() => learnTargetMs.value);
   }, []);
 
-  const startSession = useCallback((): void => {
+  const startSession = useCallback((mode: 'learning' | 'review' = 'learning'): void => {
     inputRef.current?.focus();
+    const track = learnTrack.value;
     const next = createLearnSession({
-      track: learnTrack.value,
+      track,
+      mode,
+      queue: mode === 'review' ? reviewQueue(learnState.value, track, defaultClock.now()) : [],
       store: { state: learnState, introduce, recordRecall, recordRecognition, countSession },
       clock: defaultClock,
       scheduler: defaultScheduler,
@@ -108,7 +112,13 @@ export function LearnPage(): JSX.Element {
     return (
       <>
         {hiddenInput}
-        <SummaryScreen summary={summary} onContinue={startSession} onTable={toTable} />
+        <SummaryScreen
+          summary={summary}
+          onContinue={() => {
+            startSession();
+          }}
+          onTable={toTable}
+        />
       </>
     );
   }
@@ -122,6 +132,7 @@ export function LearnPage(): JSX.Element {
   ).length;
   const now = defaultClock.now();
   const infos = cellInfos(track, state, target, now);
+  const due = dueCount(state, track, now);
   const streak = currentStreak(state.activeDays, localDay(now));
 
   return (
@@ -148,9 +159,27 @@ export function LearnPage(): JSX.Element {
           {t('learn.streak', { days: streak })}
         </p>
 
-        <Button variant="primary" size="lg" onClick={startSession}>
-          {t('learn.continue')}
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => {
+              startSession();
+            }}
+          >
+            {t('learn.continue')}
+          </Button>
+          <Button
+            variant="secondary"
+            size="lg"
+            disabled={due === 0}
+            onClick={() => {
+              startSession('review');
+            }}
+          >
+            {t('learn.review', { n: due })}
+          </Button>
+        </div>
 
         <KanaChart
           rows={chartModel(track, infos)}

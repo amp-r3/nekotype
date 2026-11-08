@@ -65,3 +65,19 @@ describe('learn page: the top of the learning screen', () => {
     expect(learnTrack.value).toBe('katakana');
   });
 });
+
+describe('learn page: review', () => {
+  it('disables "Review (N)" while nothing is due', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    render(<LearnPage />, container);
+    await act(settle);
+    const button = Array.from(container.querySelectorAll('button')).find(
+      (el) => el.textContent === t('learn.review', { n: 0 }),
+    );
+    expect(button).toBeDefined();
+    expect(button?.hasAttribute('disabled')).toBe(true);
+    render(null, container);
+    container.remove();
+  });
+});
