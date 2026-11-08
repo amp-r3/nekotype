@@ -8,12 +8,13 @@ export const ru = {
 
   // Navigation and routes
   'nav.label': 'Основная навигация',
-  'nav.test': 'тест',
+  'nav.type': 'тест',
   'nav.learn': 'обучение',
   'nav.stats': 'статистика',
   'nav.settings': 'настройки',
   'nav.about': 'о проекте',
   'page.learn': 'Обучение',
+  'page.type': 'Тест',
   'page.stats': 'Статистика',
   'page.settings': 'Настройки',
   'page.about': 'О проекте',

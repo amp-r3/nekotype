@@ -8,8 +8,8 @@ import { initProgress, flushProgress } from '@/entities/stats';
 // The tab title follows the screen; `t()` reads the language, so it follows that too.
 function routeTitle(path: string): string {
   switch (path) {
-    case '/learn':
-      return `${t('page.learn')} — ${t('app.title')}`;
+    case '/type':
+      return `${t('page.type')} — ${t('app.title')}`;
     case '/stats':
       return `${t('page.stats')} — ${t('app.title')}`;
     case '/settings':

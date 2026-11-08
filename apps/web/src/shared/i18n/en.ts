@@ -6,12 +6,13 @@ export const en = {
 
   // Navigation and routes
   'nav.label': 'Main navigation',
-  'nav.test': 'test',
+  'nav.type': 'type',
   'nav.learn': 'learn',
   'nav.stats': 'stats',
   'nav.settings': 'settings',
   'nav.about': 'about',
   'page.learn': 'Learn',
+  'page.type': 'Type',
   'page.stats': 'Statistics',
   'page.settings': 'Settings',
   'page.about': 'About',

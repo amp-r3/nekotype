@@ -1,6 +1,6 @@
 // The screens of the application. `public/_redirects` lists every path but `/`, and a test keeps
 // the two in step.
-export const ROUTE_PATHS = ['/', '/learn', '/stats', '/settings', '/about'] as const;
+export const ROUTE_PATHS = ['/', '/type', '/stats', '/settings', '/about'] as const;
 
 export type RoutePath = (typeof ROUTE_PATHS)[number];
 

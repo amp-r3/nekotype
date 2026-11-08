@@ -87,7 +87,7 @@ for (const content of CONTENTS) {
     const report: string[] = [];
 
     for (let run = 1; run <= RUNS; run++) {
-      await page.goto('/');
+      await page.goto('/type');
       await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
       await page.evaluate(() => {
         const probe: unknown = Reflect.get(window, '__nekotypeProbe');

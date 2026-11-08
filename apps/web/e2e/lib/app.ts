@@ -6,11 +6,11 @@ import { SCHEMA_VERSION } from '../../src/shared/lib/idb/schema';
 export const INPUT_FIELD = 'input[aria-label="Kana input sink"]';
 
 /**
- * Opens the typing screen and waits until it is usable: settings load from IndexedDB, so the screen
+ * Opens the typing screen (`/type`) and waits until it is usable: settings load from IndexedDB, so the screen
  * can render after `load`. A test that acts at once would otherwise race the first render.
  */
 export async function openTypingScreen(page: Page): Promise<void> {
-  await page.goto('/');
+  await page.goto('/type');
   await expect(page.getByTestId('prompt-arena')).toBeVisible();
   await expect(page.locator(INPUT_FIELD)).toBeFocused();
 }
@@ -35,7 +35,7 @@ const DEFAULTS = {
 
 /**
  * Writes the `settings` record to IndexedDB and reloads. The application creates the database on
- * its first load, so this opens `/`, waits for it, writes (with the current `schemaVersion`, or
+ * its first load, so this opens `/type`, waits for it, writes (with the current `schemaVersion`, or
  * the reset would drop the record) and reloads. A seed in localStorage would be ignored silently.
  */
 export async function seedSettings(page: Page, patch: StoredSettings): Promise<void> {
@@ -44,7 +44,7 @@ export async function seedSettings(page: Page, patch: StoredSettings): Promise<v
     typing: { ...DEFAULTS.typing, ...patch.typing },
     learn: { ...DEFAULTS.learn, ...patch.learn },
   };
-  await page.goto('/');
+  await page.goto('/type');
   await putRecord(page, 'settings', 'current', settings);
   await page.reload();
 }

@@ -203,7 +203,7 @@ pnpm dlx wrangler pages deploy apps/web/dist --project-name nekotype --branch=ma
 | `/index.html` | `max-age=0, must-revalidate`                                                                            | New deploys must be picked up immediately                          |
 | `/*`          | `nosniff`, `strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, restrictive `Permissions-Policy` | Baseline hardening                                                 |
 
-`public/_redirects` rewrites each client-side route (`/learn`, `/stats`, `/settings`, `/about`) to `/` with status `200` (a rewrite to `/index.html` would be answered with Pages' own 308 redirect to `/`, ADR 039); it deliberately has no catch-all (a test keeps it equal to the route list in `src/app/route-paths.ts`). A `404.html` is needed too: without it Cloudflare Pages answers every unknown path — including `/assets/typo.js` — with `index.html` and a `200`, which then gets cached as `immutable` under `/assets/*`. `apps/web/public/404.html` is a self-contained page (no extra requests) that turns misses into real `404`s.
+`public/_redirects` rewrites each client-side route (`/type`, `/stats`, `/settings`, `/about`) to `/` with status `200` (a rewrite to `/index.html` would be answered with Pages' own 308 redirect to `/`, ADR 039); it deliberately has no catch-all (a test keeps it equal to the route list in `src/app/route-paths.ts`). A `404.html` is needed too: without it Cloudflare Pages answers every unknown path — including `/assets/typo.js` — with `index.html` and a `200`, which then gets cached as `immutable` under `/assets/*`. `apps/web/public/404.html` is a self-contained page (no extra requests) that turns misses into real `404`s.
 
 ---
 

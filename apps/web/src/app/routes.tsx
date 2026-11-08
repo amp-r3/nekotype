@@ -1,5 +1,5 @@
 import type { ComponentType, JSX } from 'preact';
-import { TrainerPage } from '@/pages/trainer';
+import { LearnPage } from '@/pages/learn';
 import type { RoutePath } from './route-paths';
 
 export type Route = {
@@ -8,15 +8,23 @@ export type Route = {
 };
 
 // `/` is in the initial chunk; it is the screen the application opens on.
-function TrainerRoute(): JSX.Element {
-  return <TrainerPage />;
+function LearnRoute(): JSX.Element {
+  return <LearnPage />;
 }
 
-export const EAGER_ROUTES: readonly (readonly [RoutePath, ComponentType])[] = [['/', TrainerRoute]];
+// The typing screen is a lazy route; it takes no props here.
+async function loadTrainer(): Promise<ComponentType> {
+  const { TrainerPage } = await import('@/pages/trainer');
+  return function TrainerRoute(): JSX.Element {
+    return <TrainerPage />;
+  };
+}
+
+export const EAGER_ROUTES: readonly (readonly [RoutePath, ComponentType])[] = [['/', LearnRoute]];
 
 export const routes: Readonly<Record<RoutePath, Route>> = {
-  '/': { load: () => Promise.resolve(TrainerRoute) },
-  '/learn': { load: () => import('@/pages/learn').then((m) => m.LearnPage) },
+  '/': { load: () => Promise.resolve(LearnRoute) },
+  '/type': { load: loadTrainer },
   '/stats': { load: () => import('@/pages/stats').then((m) => m.StatsPage) },
   '/settings': { load: () => import('@/pages/settings').then((m) => m.SettingsPage) },
   '/about': { load: () => import('@/pages/about').then((m) => m.AboutPage) },

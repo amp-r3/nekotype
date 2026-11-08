@@ -22,7 +22,7 @@ describe('prefetch: the other screens and the content chunks, after the first re
 
   it('ignores failures: a rejected chunk neither throws nor stops the others', async () => {
     const loadRoute = vi.fn((path: string) =>
-      path === '/learn' ? Promise.reject(new Error('offline')) : Promise.resolve(),
+      path === '/stats' ? Promise.reject(new Error('offline')) : Promise.resolve(),
     );
     const loadContent = vi.fn<PrefetchDeps['loadContent']>(() =>
       Promise.reject(new Error('offline')),

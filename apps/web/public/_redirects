@@ -9,8 +9,8 @@
 # 404.html and a real 404 status. A test keeps this list equal to ROUTE_PATHS in
 # src/app/route-paths.ts.
 
-/learn / 200
-/learn/ / 200
+/type / 200
+/type/ / 200
 /stats / 200
 /stats/ / 200
 /settings / 200

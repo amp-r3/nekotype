@@ -28,39 +28,42 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
     stopRouter();
   });
 
-  it('shows the trainer at / with the navigation and the footer', () => {
+  it('shows the learning screen at / with the navigation and the footer', async () => {
     render(<App />, container);
     const nav = container.querySelector('nav');
     expect(nav?.getAttribute('aria-label')).toBe(t('nav.label'));
     expect(Array.from(nav?.querySelectorAll('a') ?? []).map((a) => a.getAttribute('href'))).toEqual(
-      ['/', '/learn', '/stats', '/settings'],
+      ['/', '/type', '/stats', '/settings'],
     );
     expect(nav?.querySelector('[aria-current="page"]')?.getAttribute('href')).toBe('/');
     expect(container.querySelector('footer a')?.getAttribute('href')).toBe('/about');
-    expect(container.querySelector('[data-testid="prompt-arena"]')).not.toBeNull();
+    await vi.waitFor(() => {
+      expect(container.querySelector('h1')?.textContent).toBe(t('page.learn'));
+    });
+    expect(container.querySelector('[data-testid="prompt-arena"]')).toBeNull();
   });
 
   it('a click on a link opens its screen without a page load, and Back returns', async () => {
     render(<App />, container);
     const marker = window.history.length;
 
-    const learn = container.querySelector<HTMLAnchorElement>('nav a[href="/learn"]');
-    learn?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
+    const type = container.querySelector<HTMLAnchorElement>('nav a[href="/type"]');
+    type?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
     await vi.waitFor(() => {
-      expect(container.querySelector('h1')?.textContent).toBe(t('page.learn'));
+      expect(container.querySelector('[data-testid="prompt-arena"]')).not.toBeNull();
     });
 
-    expect(window.location.pathname).toBe('/learn');
+    expect(window.location.pathname).toBe('/type');
     expect(window.history.length).toBe(marker + 1);
-    expect(container.querySelector('[data-testid="prompt-arena"]')).toBeNull();
     expect(container.querySelector('nav [aria-current="page"]')?.getAttribute('href')).toBe(
-      '/learn',
+      '/type',
     );
 
     window.history.replaceState(null, '', '/');
     window.dispatchEvent(new PopStateEvent('popstate'));
-    await settle();
-    expect(container.querySelector('[data-testid="prompt-arena"]')).not.toBeNull();
+    await vi.waitFor(() => {
+      expect(container.querySelector('h1')?.textContent).toBe(t('page.learn'));
+    });
   });
 
   it('a modified click is left to the browser', async () => {
@@ -81,7 +84,6 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
 
   it('every other screen opens from its address', async () => {
     for (const [path, title] of [
-      ['/learn', 'page.learn'],
       ['/stats', 'page.stats'],
       ['/settings', 'page.settings'],
       ['/about', 'page.about'],
@@ -108,14 +110,14 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
     home?.click();
     await settle();
     expect(window.location.pathname).toBe('/');
-    expect(container.querySelector('[data-testid="prompt-arena"]')).not.toBeNull();
+    expect(container.querySelector('h1')?.textContent).toBe(t('page.learn'));
   });
 
   it('the navigation follows the interface language', async () => {
     render(<App />, container);
     await setLocale('ru');
     await settle();
-    expect(container.querySelector('nav a[href="/learn"]')?.textContent).toBe('обучение');
+    expect(container.querySelector('nav a[href="/"]')?.textContent).toBe('обучение');
   });
 });
 
@@ -126,7 +128,7 @@ describe('App shell: a keystroke renders nothing but the stream', () => {
 
   beforeEach(async () => {
     await setLocale('en');
-    window.history.replaceState(null, '', '/');
+    window.history.replaceState(null, '', '/type');
     stopRouter = startRouter();
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -146,6 +148,9 @@ describe('App shell: a keystroke renders nothing but the stream', () => {
 
   it('with the navigation, the mode panel and the route in the page, only the stream renders', async () => {
     render(<App />, container);
+    await vi.waitFor(() => {
+      expect(container.querySelector('input')).not.toBeNull();
+    });
     await settle();
 
     const rendered = new Set<string>();

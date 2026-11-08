@@ -20,8 +20,8 @@ export function App(): JSX.Element {
             brand={<img src={lockupUrl} alt={t('app.title')} width="138" height="28" />}
             brandHref="/"
             items={[
-              { href: '/', label: t('nav.test') },
-              { href: '/learn', label: t('nav.learn') },
+              { href: '/', label: t('nav.learn') },
+              { href: '/type', label: t('nav.type') },
               { href: '/stats', label: t('nav.stats') },
               { href: '/settings', label: t('nav.settings') },
             ]}

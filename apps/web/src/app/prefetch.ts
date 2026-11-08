@@ -1,7 +1,7 @@
 import type { ContentKind } from '@/entities/settings';
 import { loadContent } from '@/entities/prompt';
 import { preloadLocale } from '@/shared/i18n';
-import { prefetchResultsPanel } from '@/pages/trainer';
+import { prefetchSessionRuntime, prefetchSummaryPanel } from '@/pages/learn';
 import { routes } from './routes';
 import { ROUTE_PATHS } from './route-paths';
 
@@ -58,8 +58,9 @@ export function schedulePrefetch(content: () => ContentKind): void {
         loadRoute: (path) => routes[path].load(),
         loadContent,
         loadExtras: [
-          prefetchResultsPanel,
-          () => import('@/pages/learn').then((module) => module.prefetchSummaryPanel()),
+          () => import('@/pages/trainer').then((module) => module.prefetchResultsPanel()),
+          prefetchSummaryPanel,
+          prefetchSessionRuntime,
           () => preloadLocale('ru'),
         ],
       });

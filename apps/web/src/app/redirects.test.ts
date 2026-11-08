@@ -30,7 +30,7 @@ describe('_redirects: every screen but / opens the single page application', () 
   });
 
   // Cloudflare Pages redirects /index.html to / (308). A rewrite to it is answered with that
-  // redirect, so a reload of /learn showed the trainer. The dev server cannot show this; the
+  // redirect, so a reload of /type showed the trainer. The dev server cannot show this; the
   // Pages emulator (`wrangler pages dev apps/web/dist`) and the deployed preview can.
   it('never rewrites to /index.html', () => {
     expect(rules.some((rule) => rule[1] === '/index.html')).toBe(false);
