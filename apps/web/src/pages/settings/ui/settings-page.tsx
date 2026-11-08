@@ -3,6 +3,7 @@ import { useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import { Button, Dialog, ResetIcon, Switch } from '@/shared/ui';
 import { resetProgress } from '@/entities/stats';
+import { resetLearning } from '@/entities/learn';
 import { showTranslationSetting, setShowTranslation } from '@/entities/settings';
 
 export function SettingsPage(): JSX.Element {
@@ -10,6 +11,7 @@ export function SettingsPage(): JSX.Element {
 
   const handleConfirmReset = () => {
     resetProgress();
+    void resetLearning();
     setResetDialogOpen(false);
   };
 

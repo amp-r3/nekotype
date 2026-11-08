@@ -24,7 +24,14 @@ export const en = {
   'notFound.title': 'Page not found',
   'notFound.home': 'Back to the trainer',
   'settings.reset.description':
-    'Erases the accuracy and reaction-time statistics stored in this browser.',
+    'Erases the typing statistics and the learning progress stored in this browser.',
+
+  // Learning screen
+  'learn.track.label': 'Track',
+  'learn.track.hiragana': 'Hiragana',
+  'learn.track.katakana': 'Katakana',
+  'learn.unlocked': 'Unlocked {done} of {total}',
+  'learn.unlocked.list': 'Unlocked kana',
 
   'settings.showTranslation': 'Show the translation under the text',
 
@@ -89,7 +96,8 @@ export const en = {
   // Dialogs
   'dialog.close': 'Close',
   'reset.title': 'Reset Progress',
-  'reset.confirm': 'Are you sure you want to erase all accuracy and time history?',
+  'reset.confirm':
+    'Are you sure you want to erase the typing statistics and the learning progress?',
   'reset.action': 'Reset Everything',
   'reset.cancel': 'Cancel',
 } as const satisfies Record<string, string>;
