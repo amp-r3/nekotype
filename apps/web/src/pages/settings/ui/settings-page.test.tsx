@@ -5,6 +5,7 @@ import { act } from 'preact/test-utils';
 import { SettingsPage } from './settings-page';
 import { introduce, keyOf, learnState } from '@/entities/learn';
 import { t } from '@/shared/i18n';
+import { learnTargetMs } from '@/entities/settings';
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
 
@@ -40,5 +41,18 @@ describe('settings page: Reset progress', () => {
     await act(settle);
 
     expect(learnState.value.entries).toEqual({});
+  });
+
+  it('changes the target answer time', async () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    render(<SettingsPage />, container);
+    const range = container.querySelector<HTMLInputElement>('[data-testid="settings-target-ms"]');
+    if (!range) throw new Error('no range');
+    await act(() => {
+      range.value = '2250';
+      range.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(learnTargetMs.value).toBe(2250);
   });
 });
