@@ -1,5 +1,6 @@
 # ADR 025: Rename to Nekotype and New Pages Origin
 
+- **Status:** In force. Amended by [ADR 061](061-schema-reset-before-release.md): the `kanaflow:*` keys are deleted, not read by a migration.
 - **Context:** The project is renamed from Kana Flow to Nekotype. A Cloudflare Pages project cannot be renamed, and its `*.pages.dev` address follows the project name. There is no custom domain yet, and the only user of `kana-flow.pages.dev` is the author.
 - **Decision:** Production moves to a new Pages project `nekotype` at `nekotype.pages.dev`; CI deploys only there. The spec uses `@nekotype/engine`, `@nekotype/shared`, `@nekotype/content`, the IndexedDB database `nekotype`, the Web Lock `nekotype-sync` and the session cookie `nt_session`. The UI locale key is `nekotype:locale`. The baseline keys `kanaflow:settings:v1` and `kanaflow:progress:v1` keep their old prefix because the D18 migration reads them. No data is carried over between origins and no redirect is deployed from `kana-flow.pages.dev`.
 - **Justification:** Creating a new project is the only way to get the new address. With no real users, copying data and serving a 301 redirect would be cost without benefit. This supersedes the origin-preservation rationale of A6 in the spec. Alternatives rejected: keeping the old name (the product is renamed), and a redirect-only project (not needed before launch).

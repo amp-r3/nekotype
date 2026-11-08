@@ -1,6 +1,6 @@
 # ADR 056: The `showTranslation` Setting: an Optional Field of Settings v1
 
-- **Status:** In force.
+- **Status:** In force. Amended by [ADR 061](061-schema-reset-before-release.md): in P3 the field becomes required, because no saved value has to stay valid.
 - **Context:** The spec (`frontend.md`, "Interface" and `/settings`) makes the translation under the stream depend on `showTranslation`, on by default. The code showed it always, and no phase planned the setting. The settings format is protected by the D18 migration, which already lists `showTranslation` with the default `true`.
 - **Decision:**
   - `ValidSettings` gets an optional `showTranslation: boolean`. `isSettings` accepts a value without the field and rejects one that is not a boolean. A missing field means `true`, so what was saved before stays valid and the `v` of the format does not change.
