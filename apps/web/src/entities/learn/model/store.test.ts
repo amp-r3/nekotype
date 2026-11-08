@@ -372,3 +372,81 @@ describe('learn store: persistence', () => {
     expect(scheduler.pending).toBe(0);
   });
 });
+
+describe('learn store: boxes, streak and buckets', () => {
+  const A_DAY = 86_400_000;
+
+  it('moves a kana from box 0 to box 1 at first confidence, not before', () => {
+    const { store } = setup();
+    store.introduce(A);
+    for (let i = 0; i < 9; i++) answer(store, A, 1000);
+    expect(store.state.value.entries[A]?.box).toBe(0);
+    answer(store, A, 1000);
+    expect(store.state.value.entries[A]?.box).toBe(1);
+    expect(store.state.value.entries[A]?.dueAt).toBeGreaterThan(0);
+  });
+
+  it('does not move a box of 1 or higher by learning answers, even when due', () => {
+    const { store, clock } = setup();
+    store.introduce(A);
+    for (let i = 0; i < 10; i++) answer(store, A, 1000);
+    clock.advance(40 * A_DAY);
+    answer(store, A, 1000, false);
+    answer(store, A, 1000);
+    expect(store.state.value.entries[A]?.box).toBe(1);
+  });
+
+  it('moves a box only by reviews', () => {
+    const { store, clock } = setup();
+    store.introduce(A);
+    for (let i = 0; i < 10; i++) answer(store, A, 1000);
+    clock.advance(2 * A_DAY);
+    store.recordRecall({
+      key: A,
+      keystrokes: [{ t: 900, accepted: true }],
+      ok: true,
+      review: true,
+    });
+    expect(store.state.value.entries[A]?.box).toBe(2);
+    store.recordRecall({
+      key: A,
+      keystrokes: [{ t: 900, accepted: false }],
+      ok: false,
+      review: true,
+    });
+    expect(store.state.value.entries[A]?.box).toBe(1);
+  });
+
+  it('makes a day active by an answer, not by an introduction', () => {
+    const { store } = setup();
+    store.introduce(A);
+    expect(store.state.value.activeDays).toEqual([]);
+    answer(store, A);
+    expect(store.state.value.activeDays).toHaveLength(1);
+  });
+
+  it('makes a day active by a recognition answer', () => {
+    const { store } = setup();
+    store.recordRecognition({ key: A, chosen: A });
+    expect(store.state.value.activeDays).toHaveLength(1);
+  });
+
+  it("counts a recall answer time in the track's bucket of the day", () => {
+    const { store } = setup();
+    answer(store, A, 850);
+    answer(store, keyOf('katakana', 'ア'), 1250);
+    const { hiragana, katakana } = store.state.value.recallBuckets;
+    expect(Object.values(hiragana)).toEqual([{ '8': 1 }]);
+    expect(Object.values(katakana)).toEqual([{ '12': 1 }]);
+  });
+
+  it('halves the recognition counters above 200', () => {
+    const { store } = setup();
+    for (let i = 0; i < 201; i++) store.recordRecognition({ key: A, chosen: KA });
+    expect(store.state.value.stats[A]).toEqual({
+      recognitions: 100,
+      recognitionErrors: 100,
+      mixups: { [KA]: 100 },
+    });
+  });
+});

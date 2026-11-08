@@ -31,7 +31,8 @@ export const ru = {
   'learn.track.label': 'Азбука',
   'learn.track.hiragana': 'Хирагана',
   'learn.track.katakana': 'Катакана',
-  'learn.unlocked': 'Открыто {done} из {total}',
+  'learn.mastered': 'Освоено {done} из {total}',
+  'learn.streak': 'Серия: {days} дн.',
   'learn.unlocked.list': 'Открытые знаки',
 
   'settings.showTranslation': 'Показывать перевод под текстом',

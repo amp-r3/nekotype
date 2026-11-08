@@ -1,5 +1,6 @@
 import type {
   Counters,
+  DayBuckets,
   LearnBox,
   LearnEntry,
   LearnKanaKey,
@@ -156,6 +157,44 @@ function isKeyList(value: unknown): value is readonly LearnKanaKey[] {
   return Array.isArray(value) && value.every(isLearnKanaKey);
 }
 
+function isDay(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value);
+}
+
+export function isActiveDays(value: unknown): value is LearnState['activeDays'] {
+  if (!Array.isArray(value)) return false;
+  let previousLast = -Infinity;
+  for (const run of value) {
+    if (!Array.isArray(run) || run.length !== 2) return false;
+    const first: unknown = run[0];
+    const last: unknown = run[1];
+    if (!isDay(first) || !isDay(last) || first > last || first <= previousLast + 1) return false;
+    previousLast = last;
+  }
+  return true;
+}
+
+function isDayBuckets(value: unknown): value is DayBuckets {
+  if (!isObject(value)) return false;
+  return Object.keys(value).every((day) => {
+    const buckets = value[day];
+    return (
+      isDay(Number(day)) &&
+      isObject(buckets) &&
+      Object.keys(buckets).every((bucket) => {
+        const index = Number(bucket);
+        return (
+          Number.isInteger(index) && index >= 0 && index <= MAX_BUCKET && isCount(buckets[bucket])
+        );
+      })
+    );
+  });
+}
+
+function isRecallBuckets(value: unknown): value is LearnState['recallBuckets'] {
+  return isObject(value) && isDayBuckets(value['hiragana']) && isDayBuckets(value['katakana']);
+}
+
 export function isLearnState(value: unknown): value is LearnState {
   if (!isObject(value)) return false;
   const unlocked = value['unlocked'];
@@ -165,7 +204,9 @@ export function isLearnState(value: unknown): value is LearnState {
     isKeyList(unlocked['katakana']) &&
     isRecordOf(value['entries'], isLearnEntry) &&
     isRecordOf(value['recent'], isRecallList) &&
-    isRecordOf(value['stats'], isLearnStat)
+    isRecordOf(value['stats'], isLearnStat) &&
+    isActiveDays(value['activeDays']) &&
+    isRecallBuckets(value['recallBuckets'])
   );
 }
 
@@ -251,6 +292,79 @@ export function addLearnStats(a: LearnStat, b: LearnStat): LearnStat {
   return {
     recognitions: a.recognitions + b.recognitions,
     recognitionErrors: a.recognitionErrors + b.recognitionErrors,
+    mixups,
+  };
+}
+
+/** Union of the runs of active days; overlapping or adjacent runs are joined. */
+export function mergeActiveDays(
+  a: LearnState['activeDays'],
+  b: LearnState['activeDays'],
+): [number, number][] {
+  const runs = [...a, ...b].map((run): [number, number] => [run[0], run[1]]);
+  runs.sort((x, y) => x[0] - y[0] || x[1] - y[1]);
+  const merged: [number, number][] = [];
+  for (const run of runs) {
+    const last = merged[merged.length - 1];
+    if (last !== undefined && run[0] <= last[1] + 1) last[1] = Math.max(last[1], run[1]);
+    else merged.push(run);
+  }
+  return merged;
+}
+
+/** Width of an answer-time bucket, ms. */
+export const BUCKET_MS = 100;
+/** The last bucket holds every time from the cap on. */
+export const MAX_BUCKET = 100;
+/** Days of a track older than this before its newest day are dropped. */
+export const BUCKET_DAYS = 365;
+
+/** The bucket of an answer time. */
+export function bucketOf(ms: number): number {
+  return Math.min(MAX_BUCKET, Math.max(0, Math.floor(ms / BUCKET_MS)));
+}
+
+/** Drops the days more than 365 days before the newest day. */
+export function dropOldDays(days: DayBuckets): DayBuckets {
+  const keys = Object.keys(days);
+  if (keys.length === 0) return days;
+  const newest = Math.max(...keys.map(Number));
+  const kept: Record<string, Readonly<Record<string, number>>> = {};
+  for (const key of keys) {
+    const buckets = days[key];
+    if (buckets !== undefined && Number(key) >= newest - BUCKET_DAYS) kept[key] = buckets;
+  }
+  return kept;
+}
+
+/** Bucket counts are added per day; old days are dropped afterwards. */
+export function addBuckets(a: DayBuckets, b: DayBuckets): DayBuckets {
+  const sum: Record<string, Record<string, number>> = {};
+  for (const source of [a, b]) {
+    for (const [day, buckets] of Object.entries(source)) {
+      const target = (sum[day] ??= {});
+      for (const [bucket, count] of Object.entries(buckets)) {
+        target[bucket] = (target[bucket] ?? 0) + count;
+      }
+    }
+  }
+  return dropOldDays(sum);
+}
+
+/** Decay is applied above this many recognitions. */
+export const RECOGNITION_DECAY_AT = 200;
+
+/** Halves a kana's learning counters and mixups when recognitions pass 200; zero entries go. */
+export function decayLearnStat(stat: LearnStat): LearnStat {
+  if (stat.recognitions <= RECOGNITION_DECAY_AT) return stat;
+  const mixups: Record<string, number> = {};
+  for (const [key, count] of Object.entries(stat.mixups)) {
+    const half = Math.floor(count / 2);
+    if (half > 0) mixups[key] = half;
+  }
+  return {
+    recognitions: Math.floor(stat.recognitions / 2),
+    recognitionErrors: Math.floor(stat.recognitionErrors / 2),
     mixups,
   };
 }

@@ -4,9 +4,18 @@ import { t } from '@/shared/i18n';
 import { Segmented } from '@/shared/ui';
 import { learnTargetMs, learnTrack, setTrack } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
-import { initLearn, keysOfTrack, learnReady, learnState } from '@/entities/learn';
+import { defaultClock } from '@/shared/lib';
+import {
+  currentStreak,
+  initLearn,
+  isMastered,
+  keysOfTrack,
+  learnReady,
+  learnState,
+  localDay,
+} from '@/entities/learn';
 
-// The top of the learning screen. The mastered count, the chart and the sessions follow in later
+// The top of the learning screen. The chart and the sessions follow in later
 // pull requests (docs/spec/learning.md, "`/` screen").
 export function LearnPage(): JSX.Element {
   useEffect(() => {
@@ -22,8 +31,14 @@ export function LearnPage(): JSX.Element {
   }
 
   const track = learnTrack.value;
-  const unlocked = learnState.value.unlocked[track];
-  const total = keysOfTrack(track).length;
+  const state = learnState.value;
+  const unlocked = state.unlocked[track];
+  const keys = keysOfTrack(track);
+  const target = learnTargetMs.value;
+  const mastered = keys.filter((key) =>
+    isMastered(state.entries[key], state.recent[key] ?? [], target),
+  ).length;
+  const streak = currentStreak(state.activeDays, localDay(defaultClock.now()));
 
   return (
     <section className="max-w-layout-test mx-auto flex w-full flex-col items-start gap-6 py-12">
@@ -39,8 +54,12 @@ export function LearnPage(): JSX.Element {
         ariaLabel={t('learn.track.label')}
       />
 
-      <p className="text-fur text-ui-body" data-testid="learn-unlocked-count">
-        {t('learn.unlocked', { done: unlocked.length, total })}
+      <p className="text-fur text-ui-body" data-testid="learn-mastered-count">
+        {t('learn.mastered', { done: mastered, total: keys.length })}
+      </p>
+
+      <p className="text-fur text-ui-body" data-testid="learn-streak">
+        {t('learn.streak', { days: streak })}
       </p>
 
       <p

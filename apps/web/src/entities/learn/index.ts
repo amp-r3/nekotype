@@ -22,7 +22,26 @@ export {
 
 export { CONFIDENT_ACCURACY, accuracyOf, isConfident, medianAnswerMs } from './lib/confidence';
 export { dependenciesOf, keyOf, keysOfTrack, nextUnlock, trackOfKey } from './lib/tracks';
-export { TRACKS, evaluateUnlocking, initialCounters, initialLearnState } from './lib/state';
+export {
+  TRACKS,
+  evaluateBoxes,
+  evaluateUnlocking,
+  initialCounters,
+  initialLearnState,
+} from './lib/state';
+export { dayStart, localDay } from './lib/day';
+export {
+  BOX_DAYS,
+  MASTERED_BOX,
+  dueAtFor,
+  isDue,
+  isMastered,
+  nextBox,
+  reviewEntry,
+  settleEntry,
+} from './lib/boxes';
+export { addActiveDay, bestStreak, currentStreak } from './lib/streak';
+export { addRecallTime, dailyMedian, dailyMedians } from './lib/buckets';
 
 export type { LearnStore, LearnStoreDeps, RecallInput, RecognitionInput } from './model/store';
 export {
