@@ -25,7 +25,14 @@ export const ru = {
   'notFound.title': 'Страница не найдена',
   'notFound.home': 'Вернуться к тренажёру',
   'settings.reset.description':
-    'Удаляет статистику точности и времени реакции, сохранённую в этом браузере.',
+    'Удаляет статистику набора и прогресс обучения, сохранённые в этом браузере.',
+
+  // Learning screen
+  'learn.track.label': 'Азбука',
+  'learn.track.hiragana': 'Хирагана',
+  'learn.track.katakana': 'Катакана',
+  'learn.unlocked': 'Открыто {done} из {total}',
+  'learn.unlocked.list': 'Открытые знаки',
 
   'settings.showTranslation': 'Показывать перевод под текстом',
 
@@ -90,7 +97,7 @@ export const ru = {
   // Dialogs
   'dialog.close': 'Закрыть',
   'reset.title': 'Сброс прогресса',
-  'reset.confirm': 'Вы уверены, что хотите удалить всю статистику точности и времени?',
+  'reset.confirm': 'Вы уверены, что хотите удалить статистику набора и прогресс обучения?',
   'reset.action': 'Стереть все',
   'reset.cancel': 'Отмена',
 } as const satisfies Record<keyof typeof en, string>;

@@ -7,6 +7,7 @@ import {
   showTranslationSetting,
   testConfig,
 } from '@/entities/settings';
+import { learnCounters, learnReady, learnState } from '@/entities/learn';
 import { progressStats } from '@/entities/stats';
 import { createSession } from '@/features/training';
 import type { Session } from '@/features/training';
@@ -30,6 +31,9 @@ export type _CheckShowTranslationSetting = AssertFalse<
 >;
 export type _CheckTestConfig = AssertFalse<IsWritable<typeof testConfig, 'value'>>;
 export type _CheckProgressStats = AssertFalse<IsWritable<typeof progressStats, 'value'>>;
+export type _CheckLearnState = AssertFalse<IsWritable<typeof learnState, 'value'>>;
+export type _CheckLearnCounters = AssertFalse<IsWritable<typeof learnCounters, 'value'>>;
+export type _CheckLearnReady = AssertFalse<IsWritable<typeof learnReady, 'value'>>;
 export type _CheckLocale = AssertFalse<IsWritable<typeof locale, 'value'>>;
 
 // Controller signal checks:
@@ -64,6 +68,9 @@ describe('store state: ReadonlySignal guarantees', () => {
     expect(testConfig.value).toBeDefined();
     expect(progressStats.value).toBeDefined();
     expect(locale.value).toBeDefined();
+    expect(learnState.value.unlocked.hiragana).toHaveLength(5);
+    expect(learnCounters.value.started.learn).toBe(0);
+    expect(learnReady.value).toBe(false);
 
     const dummyController = createSession({
       nextPrompt: () => ({ key: 'basic:a', text: 'あ' }),

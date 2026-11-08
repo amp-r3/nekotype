@@ -54,3 +54,49 @@ export type ValidProgress = {
   readonly v: 1;
   readonly stats: Record<string, ValidKanaStats>;
 };
+
+// Learning (spec metrics.md, "Data model")
+
+export type Mode = 'typing' | 'learn';
+export type Track = 'hiragana' | 'katakana';
+export type LearnKanaKey = `${Track}:${string}`;
+
+export type RecallAnswer = {
+  /** Time of the answer, Unix ms; identifies the answer in a merge. */
+  readonly at: number;
+  /** Answer time, ms. */
+  readonly ms: number;
+  /** No error. */
+  readonly ok: boolean;
+};
+
+export type LearnBox = 0 | 1 | 2 | 3 | 4 | 5;
+
+export type LearnEntry = {
+  readonly box: LearnBox;
+  /** 0 in box 0. */
+  readonly dueAt: number;
+  readonly updatedAt: number;
+};
+
+export type LearnStat = {
+  readonly recognitions: number;
+  readonly recognitionErrors: number;
+  /** Kana chosen instead of this one → count. */
+  readonly mixups: Readonly<Record<LearnKanaKey, number>>;
+};
+
+export type LearnState = {
+  /** In track order; starts with the vowels. */
+  readonly unlocked: Readonly<Record<Track, readonly LearnKanaKey[]>>;
+  /** Introduced kana. */
+  readonly entries: Readonly<Record<LearnKanaKey, LearnEntry>>;
+  /** The last 10 recall answers, oldest first. */
+  readonly recent: Readonly<Record<LearnKanaKey, readonly RecallAnswer[]>>;
+  readonly stats: Readonly<Record<LearnKanaKey, LearnStat>>;
+};
+
+export type Counters = {
+  readonly started: Readonly<Record<Mode, number>>;
+  readonly finished: Readonly<Record<Mode, number>>;
+};
