@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openTypingScreen } from './lib/app';
+import { openTypingScreen, seedSettings } from './lib/app';
 import type { Page } from '@playwright/test';
 import { canonicalOfPrompt } from './lib/prompt';
 
@@ -294,4 +294,36 @@ test.describe('the interface while a test runs', () => {
       await expect(restart).toHaveCSS('opacity', '1');
     },
   );
+});
+
+test.describe('a phrase wider than the line (ADR 060)', () => {
+  test.use({ viewport: { width: 360, height: 740 } });
+
+  test('breaks between tokens and never runs past the edge of the stream @mobile', async ({
+    page,
+  }) => {
+    await seedSettings(page, { typing: { content: 'phrases' } });
+    await openTypingScreen(page);
+    await expect(page.getByTestId('translation')).not.toHaveText('');
+
+    const view = await box(page, 'prompt-arena');
+    const right = view.x + view.width;
+    const edges = await page
+      .locator('[data-token]')
+      .evaluateAll((tokens) => tokens.map((token) => token.getBoundingClientRect().right));
+    expect(edges.length).toBeGreaterThan(20);
+    expect(Math.max(...edges)).toBeLessThanOrEqual(right + 1);
+    // At this width some phrase of the window is wider than a line, so it was marked.
+    expect(await page.locator('.nk-word.is-long').count()).toBeGreaterThan(0);
+  });
+
+  test('a touch screen shows a button in place of the Esc hint @mobile', async ({ page }) => {
+    await openTypingScreen(page);
+    await expect(page.getByTestId('prompt-text')).not.toHaveText('');
+    const coarse = await page.evaluate(() => window.matchMedia('(pointer: coarse)').matches);
+    test.skip(!coarse, 'needs a touch device');
+    const button = page.getByRole('button', { name: 'show the romaji' });
+    await button.click();
+    await expect(page.getByText(/^Revealed: /)).toBeVisible();
+  });
 });

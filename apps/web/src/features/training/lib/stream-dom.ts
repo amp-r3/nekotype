@@ -105,12 +105,25 @@ function emptyLineHeight(style: CSSStyleDeclaration, font: number): number {
   return Number.isNaN(line) ? Math.round(font * 1.5) : line;
 }
 
+// A prompt wider than the whole line may break between its groups (ADR 060). The mark is set here,
+// when the stream is measured, never on a keystroke. The words are put back to `nowrap` first, so
+// each is measured at its natural width.
+function markLongWords(elements: StreamElements): void {
+  const words = Array.from(elements.inner.querySelectorAll<HTMLElement>('.nk-word'));
+  for (const word of words) word.classList.remove('is-long');
+  const lineWidth = elements.view.clientWidth;
+  if (lineWidth === 0) return;
+  const wide = words.filter((word) => word.offsetWidth > lineWidth);
+  for (const word of wide) word.classList.add('is-long');
+}
+
 /** The one place that reads the layout. */
 function readLayout(
   elements: StreamElements,
   tokens: readonly HTMLElement[],
   lines: number,
 ): Measurement {
+  markLongWords(elements);
   const innerStyle = getComputedStyle(elements.inner);
   const innerFont = Number.parseFloat(innerStyle.fontSize);
   const bufferStyle = getComputedStyle(elements.buffer);

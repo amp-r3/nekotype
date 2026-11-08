@@ -14,6 +14,8 @@ export type ButtonProps = {
   readonly type?: 'button' | 'submit' | 'reset';
   readonly autoFocus?: boolean;
   readonly ariaLabel?: string;
+  // For a button that opens something under it.
+  readonly ariaExpanded?: boolean;
   readonly buttonRef?: Ref<HTMLButtonElement>;
 };
 
@@ -27,6 +29,7 @@ export function Button({
   type = 'button',
   autoFocus = false,
   ariaLabel,
+  ariaExpanded,
   buttonRef,
 }: ButtonProps): JSX.Element {
   const base =
@@ -53,6 +56,7 @@ export function Button({
         onClick={onClick}
         autoFocus={autoFocus}
         aria-label={ariaLabel}
+        aria-expanded={ariaExpanded}
         className={cx(base, sizeClasses, variantClasses, className)}
       >
         {children}
@@ -67,6 +71,7 @@ export function Button({
       onClick={onClick}
       autoFocus={autoFocus}
       aria-label={ariaLabel}
+      aria-expanded={ariaExpanded}
       className={cx(base, sizeClasses, variantClasses, className)}
     >
       {children}

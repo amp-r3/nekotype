@@ -161,3 +161,12 @@ export async function expectStoredTyping(
     })
     .toEqual(expected);
 }
+
+/**
+ * Opens the config bar when the screen is narrow enough to fold it into one line (below 640 px).
+ * A wider screen shows the bar already, and nothing is clicked.
+ */
+export async function openConfigBar(page: Page): Promise<void> {
+  const fold = page.locator('button[aria-expanded="false"]');
+  if ((await fold.count()) > 0) await fold.click();
+}

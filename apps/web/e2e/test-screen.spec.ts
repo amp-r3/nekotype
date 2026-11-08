@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openTypingScreen } from './lib/app';
+import { openTypingScreen, openConfigBar } from './lib/app';
 import { canonicalOfPrompt } from './lib/prompt';
 
 const INPUT = 'input[aria-label="Kana input sink"]';
@@ -23,6 +23,7 @@ test.describe('test screen: Restart and the focus', () => {
     { tag: '@mobile' },
     async ({ page }) => {
       await openTypingScreen(page);
+      await openConfigBar(page);
       await page.getByRole('radio', { name: 'Zen' }).click();
       const input = page.locator(INPUT);
 

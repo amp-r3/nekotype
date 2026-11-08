@@ -1,6 +1,8 @@
 import type { JSX } from 'preact';
+import { useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
-import { Segmented, Switch } from '@/shared/ui';
+import { useMediaQuery } from '@/shared/lib';
+import { Button, Segmented, Switch } from '@/shared/ui';
 import {
   scriptSetting,
   contentSetting,
@@ -18,6 +20,29 @@ import {
 import type { ScriptMode, ContentKind } from '@/entities/settings';
 import type { Strictness } from '@/entities/prompt';
 
+// The one line that names the mode while the bar is folded: `words · hiragana · relaxed · 30 s`.
+function modeSummary(
+  content: ContentKind,
+  script: ScriptMode,
+  strictness: Strictness,
+  config: ReturnType<typeof testConfig.peek>,
+): string {
+  const length =
+    config.kind === 'time'
+      ? t('config.seconds.summary', { n: config.seconds })
+      : config.kind === 'count'
+        ? t('config.prompts.summary', { n: config.prompts })
+        : t('config.test.zen');
+  return [
+    t(`config.content.${content}`),
+    t(`config.script.${script}`),
+    t(`config.strictness.${strictness}`),
+    length,
+  ]
+    .map((part) => part.toLocaleLowerCase())
+    .join(' · ');
+}
+
 // The speed-test options: script, material and strictness in the first row, test, length, weak
 // kana in the second (design: ModePanel).
 export function ModePanel(): JSX.Element {
@@ -26,6 +51,9 @@ export function ModePanel(): JSX.Element {
   const currentStrictness = strictnessSetting.value;
   const currentWeakFocus = weakFocusSetting.value;
   const currentTestConfig = testConfig.value;
+  // Below 640 px the bar is folded into one line with a button that opens it (ADR 059).
+  const narrow = useMediaQuery('(max-width: 639px)');
+  const [open, setOpen] = useState(false);
 
   const handleScriptChange = (val: ScriptMode) => {
     setScript(val);
@@ -63,86 +91,104 @@ export function ModePanel(): JSX.Element {
 
   const divider = <span aria-hidden="true" className="border-line hidden h-4 border-l sm:block" />;
 
+  const folded = narrow && !open;
+
   return (
     <div data-chrome className="flex w-full flex-col items-center gap-2 py-3 select-none">
-      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-        <Segmented<ScriptMode>
-          options={[
-            { value: 'hiragana', label: t('config.script.hiragana') },
-            { value: 'katakana', label: t('config.script.katakana') },
-            { value: 'both', label: t('config.script.both') },
-          ]}
-          value={currentScript}
-          onChange={handleScriptChange}
-          ariaLabel={t('config.script.label')}
-        />
-        {divider}
-        <Segmented<ContentKind>
-          options={[
-            { value: 'words', label: t('config.content.words') },
-            { value: 'phrases', label: t('config.content.phrases') },
-          ]}
-          value={currentContent}
-          onChange={handleContentChange}
-          ariaLabel={t('config.content.label')}
-        />
-        {divider}
-        <Segmented<Strictness>
-          options={[
-            { value: 'learner', label: t('config.strictness.learner') },
-            { value: 'ime', label: t('config.strictness.ime') },
-          ]}
-          value={currentStrictness}
-          onChange={handleStrictnessChange}
-          ariaLabel={t('config.strictness.label')}
-        />
-      </div>
+      {narrow && (
+        <Button
+          variant="text"
+          size="sm"
+          ariaExpanded={open}
+          onClick={() => {
+            setOpen(!open);
+          }}
+        >
+          {modeSummary(currentContent, currentScript, currentStrictness, currentTestConfig)}
+        </Button>
+      )}
+      {!folded && (
+        <>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <Segmented<ScriptMode>
+              options={[
+                { value: 'hiragana', label: t('config.script.hiragana') },
+                { value: 'katakana', label: t('config.script.katakana') },
+                { value: 'both', label: t('config.script.both') },
+              ]}
+              value={currentScript}
+              onChange={handleScriptChange}
+              ariaLabel={t('config.script.label')}
+            />
+            {divider}
+            <Segmented<ContentKind>
+              options={[
+                { value: 'words', label: t('config.content.words') },
+                { value: 'phrases', label: t('config.content.phrases') },
+              ]}
+              value={currentContent}
+              onChange={handleContentChange}
+              ariaLabel={t('config.content.label')}
+            />
+            {divider}
+            <Segmented<Strictness>
+              options={[
+                { value: 'learner', label: t('config.strictness.learner') },
+                { value: 'ime', label: t('config.strictness.ime') },
+              ]}
+              value={currentStrictness}
+              onChange={handleStrictnessChange}
+              ariaLabel={t('config.strictness.label')}
+            />
+          </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-        <Segmented<'time' | 'count' | 'zen'>
-          options={[
-            { value: 'time', label: t('config.test.time') },
-            { value: 'count', label: t('config.test.count') },
-            { value: 'zen', label: t('config.test.zen') },
-          ]}
-          value={currentTestConfig.kind}
-          onChange={handleTestKindChange}
-          ariaLabel={t('config.test.label')}
-        />
-        {
-          currentTestConfig.kind === 'time' ? (
-            <Segmented<15 | 30 | 60 | 120>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <Segmented<'time' | 'count' | 'zen'>
               options={[
-                { value: 15, label: t('config.seconds.option', { n: 15 }) },
-                { value: 30, label: t('config.seconds.option', { n: 30 }) },
-                { value: 60, label: t('config.seconds.option', { n: 60 }) },
-                { value: 120, label: t('config.seconds.option', { n: 120 }) },
+                { value: 'time', label: t('config.test.time') },
+                { value: 'count', label: t('config.test.count') },
+                { value: 'zen', label: t('config.test.zen') },
               ]}
-              value={currentTestConfig.seconds}
-              onChange={handleTimeSecondsChange}
-              ariaLabel={t('config.seconds.label')}
+              value={currentTestConfig.kind}
+              onChange={handleTestKindChange}
+              ariaLabel={t('config.test.label')}
             />
-          ) : currentTestConfig.kind === 'count' ? (
-            <Segmented<10 | 25 | 50 | 100>
-              options={[
-                { value: 10, label: '10' },
-                { value: 25, label: '25' },
-                { value: 50, label: '50' },
-                { value: 100, label: '100' },
-              ]}
-              value={currentTestConfig.prompts}
-              onChange={handleCountPromptsChange}
-              ariaLabel={t('config.prompts.label')}
+            {
+              currentTestConfig.kind === 'time' ? (
+                <Segmented<15 | 30 | 60 | 120>
+                  options={[
+                    { value: 15, label: t('config.seconds.option', { n: 15 }) },
+                    { value: 30, label: t('config.seconds.option', { n: 30 }) },
+                    { value: 60, label: t('config.seconds.option', { n: 60 }) },
+                    { value: 120, label: t('config.seconds.option', { n: 120 }) },
+                  ]}
+                  value={currentTestConfig.seconds}
+                  onChange={handleTimeSecondsChange}
+                  ariaLabel={t('config.seconds.label')}
+                />
+              ) : currentTestConfig.kind === 'count' ? (
+                <Segmented<10 | 25 | 50 | 100>
+                  options={[
+                    { value: 10, label: '10' },
+                    { value: 25, label: '25' },
+                    { value: 50, label: '50' },
+                    { value: 100, label: '100' },
+                  ]}
+                  value={currentTestConfig.prompts}
+                  onChange={handleCountPromptsChange}
+                  ariaLabel={t('config.prompts.label')}
+                />
+              ) : null /* Zen has no length: it goes on until it is ended by hand. */
+            }
+            {divider}
+            <Switch
+              checked={currentWeakFocus}
+              onChange={handleWeakFocusChange}
+              label={t('config.weakFocus')}
             />
-          ) : null /* Zen has no length: it goes on until it is ended by hand. */
-        }
-        {divider}
-        <Switch
-          checked={currentWeakFocus}
-          onChange={handleWeakFocusChange}
-          label={t('config.weakFocus')}
-        />
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

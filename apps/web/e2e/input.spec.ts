@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openTypingScreen } from './lib/app';
+import { openConfigBar, openTypingScreen } from './lib/app';
 import type { CDPSession, Locator, Page } from '@playwright/test';
 import { canonicalOfPrompt } from './lib/prompt';
 
@@ -45,6 +45,7 @@ test.describe('input: layouts', { tag: '@mobile' }, () => {
     page,
   }) => {
     await openTypingScreen(page);
+    await openConfigBar(page);
     await page.getByRole('radio', { name: 'Katakana' }).click();
     await pressCyrillic(page.getByRole('radio', { name: 'Katakana' }), 'ф');
     await expect(page.locator(FIELD)).toBeFocused();
