@@ -6,8 +6,8 @@ Instructions for AI coding agents working in this repository. `CLAUDE.md` is a s
 
 Nekotype is a keyboard-first web app for learning hiragana and katakana from zero, with progress tracking; typing Japanese words and phrases in romaji is its second part (ADR 058). Production: <https://nekotype.pages.dev> (Cloudflare Pages).
 
-- **Current code** is the v1 baseline in a pnpm monorepo (ADR 027; phases P0–P2 done): a Preact SPA in `apps/web/` (still a typing trainer: single kana, words, phrases), the stream input engine and kana tables in `packages/engine`, shared types and guards in `packages/shared`. State is in localStorage, there is no backend.
-- **Target** is the learning-first MVP in `docs/spec/`, delivered in phases P0–P7: adaptive kana learning on `/` with IndexedDB (P3), words and phrases from the content pipeline (P4), Pages Functions + D1 sync (P5), kana audio (P6), polish and release (P7).
+- **Current code** is the v1 baseline in a pnpm monorepo (ADR 027; phases P0–P3 done): a Preact SPA in `apps/web/` (learning on `/`, the typing trainer with words and phrases on `/type`), the stream input engine and kana tables in `packages/engine`, shared types, guards and merge functions in `packages/shared`. Settings and learning state are in IndexedDB, typing progress and the language in localStorage; there is no backend.
+- **Target** is the learning-first MVP in `docs/spec/`, delivered in phases P0–P7: adaptive kana learning on `/` with IndexedDB (done in P3), words and phrases from the content pipeline (P4), Pages Functions + D1 sync (P5), kana audio (P6), polish and release (P7).
 - Where documents disagree, `docs/spec/` wins over everything else. `README.md` and `docs/architecture/baseline-v1.md` describe the code after the latest finished phase; when a phase changes the code, update them in the same PR.
 
 ## Documents

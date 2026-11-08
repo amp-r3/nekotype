@@ -1,6 +1,6 @@
-> **Scope.** Describes the v1 baseline code as it stands after the P1 engine cutover: the application in `apps/web/src/` and the two packages it uses, `packages/engine` and `packages/shared`. Where it disagrees with the [MVP specification](../spec/README.md), the specification applies; this document is rewritten as the MVP phases land (spec item D21).
+> **Scope.** Describes the code as it stands after phase P3 (learning): the application in `apps/web/src/` and the two packages it uses, `packages/engine` and `packages/shared`. Where it disagrees with the [MVP specification](../spec/README.md), the specification applies; this document is rewritten as the MVP phases land (spec item D21). The name `baseline-v1` is historical.
 
-> **Direction.** [ADR 058](../adr/058-learning-first.md) made learning the core of the MVP: from P3, `/` is the learning screen and typing keeps words and phrases on `/type`. This document still describes the code as it is, a typing trainer with Words and Phrases (single kana and the row selection were removed in P3).
+> **Direction.** [ADR 058](../adr/058-learning-first.md) made learning the core of the MVP. Since P3, `/` is the learning screen and the typing trainer (words and phrases) lives on `/type`; single kana and the row selection were removed. Words and phrases from the content pipeline come in P4, sync in P5.
 
 # Nekotype Architecture Documentation
 
@@ -32,7 +32,7 @@ apps/web/src/
 ├── app/                  # Application root: shell (navigation, footer), routes, initialization, styles
 ├── pages/                # Full-page views: trainer, learn, stats, settings, about
 ├── features/             # User interaction workflows (training)
-├── entities/             # Core domain models and business state (kana, session, progress)
+├── entities/             # Core domain models and business state (kana, session, progress, learn)
 └── shared/               # Reusable primitives, UI components, i18n, storage, and utility libraries
 ```
 
@@ -301,6 +301,14 @@ Git hooks run the same checks earlier (`pre-commit`: staged formatting, typechec
 - Holds the practice settings (`script`, `content`, `strictness`, `weakFocus`), the display setting `showTranslation` (not a practice setting, so it does not reset a test, ADR 056), the test length `testConfig` and the learning settings (`learnStrictness`, `learnTrack`, `learnTargetMs`; the sound flag is stored only) as `ReadonlySignal`s, and the actions that change them (`setScript`, `setTestConfig`, `setLearnStrictness`, `setTrack`, `setTargetMs`, …). `initSettings(db)` reads the `settings` record (`current`) from IndexedDB, replaces a value that fails `isSettings` with the defaults and sets `settingsReady`; `app/route-view.tsx` shows the loading line until then. Each action writes the whole `Settings` document at once (no debounce, nothing waits for `pagehide`) and sets `updatedAt` from the `Clock`. It does not import `entities/prompt`: its `ScriptMode` and `ContentKind` derive from `ValidSettings`.
 - `content` defaults to `words`. A saved value that fails validation (for example the removed `single`) is replaced by the defaults, with no conversion (ADR 061); a stored `rowIds` is ignored.
 - Changing a setting does not reset the session here (a slice cannot import another); `setupSettingsResetWatcher` in `features/training` does.
+
+### `entities/learn`, `pages/learn` and the learning widgets (P3)
+
+- `entities/learn/lib` is the learning logic with no UI: track composition and dependencies (`tracks`), recall answer time with K (`answer-time`), confidence (`confidence`), one-at-a-time unlocking (`progress`), boxes and due dates on the local calendar day (`boxes`, `day`), streak (`streak`), 100 ms buckets and the daily median (`buckets`), and the cell state of the chart (`chart`). `entities/learn/model/store` holds the learning state as a `ReadonlySignal`; it loads the `delta` record when `/` loads, applies an answer, and writes once per answer after the keystroke handler through the injected `Scheduler` (a failing database means memory mode). Merge functions for `delta` are in `packages/shared` (`learn-runtime.ts`); property tests for them come in P5.
+- `pages/learn` is the learning screen: the chart of the selected track (`KanaChart`), "Mastered X of N", the streak, "Learn" and "Review (N)". `model/session.ts` is `createLearnSession(deps)` (`Clock`, `Scheduler`, `Rng`, the learning store, `AudioProvider`), a session of 25 tasks, and a review session of at most 20 recalls. `lib` holds task choice, distractors, the review queue, the summary and the hook binding the session to the input source. The session runtime and the summary are lazy chunks. ADR 015 keeps the session in the page, which is its only consumer.
+- `shared/ui` holds `KanaTask`, `createTaskController`, `OptionCard` and `KanaChart` as presentational components: data, states and strings come as props, and they import nothing from `entities` or `pages`. The input source (`shared/lib/input`) serves both the trainer and the learning session.
+- Learning and typing data are separate: typing code does not import `entities/learn`, a learning session does not write `kanaflow:progress:v1`, and no IndexedDB write happens inside a keystroke handler.
+- `packages/engine` also holds the table of visually similar kana and the track composition helpers (`kanaOf`, `kanaRows`) used for distractors and the chart.
 
 ### `entities/prompt`
 
