@@ -82,6 +82,19 @@ export const ru = {
   'learn.summary.retry': 'ещё раз',
 
   'settings.showTranslation': 'Показывать перевод под текстом',
+  'settings.learn.title': 'Обучение',
+  'settings.learn.strictness': 'Строгость в обучении',
+  'settings.learn.target': 'Целевое время ответа',
+  'settings.learn.targetValue': '{ms} мс',
+  'stats.learn.title': 'Обучение',
+  'stats.learn.median': 'Медианное время ответа по дням',
+  'stats.learn.medianHint': 'Чем ниже, тем лучше. Пунктир — ваша цель.',
+  'stats.learn.noData': 'На этой дорожке пока нет ответов.',
+  'stats.learn.target': 'цель {ms} мс',
+  'stats.learn.streakCurrent': 'Текущая серия: {days} д',
+  'stats.learn.streakBest': 'Лучшая серия: {days} д',
+  'stats.learn.mastered': 'Освоено: {done} из {total}',
+  'stats.learn.sessions': 'Сессии обучения: завершено {finished} из {started}',
 
   // Config bar
   'config.script.hiragana': 'Хирагана',

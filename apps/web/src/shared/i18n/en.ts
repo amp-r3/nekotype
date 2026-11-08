@@ -81,6 +81,19 @@ export const en = {
   'learn.summary.retry': 'retry',
 
   'settings.showTranslation': 'Show the translation under the text',
+  'settings.learn.title': 'Learning',
+  'settings.learn.strictness': 'Learning strictness',
+  'settings.learn.target': 'Target answer time',
+  'settings.learn.targetValue': '{ms} ms',
+  'stats.learn.title': 'Learning',
+  'stats.learn.median': 'Median answer time per day',
+  'stats.learn.medianHint': 'Lower is better. The dashed line is your target.',
+  'stats.learn.noData': 'No answers on this track yet.',
+  'stats.learn.target': 'target {ms} ms',
+  'stats.learn.streakCurrent': 'Current streak: {days} d',
+  'stats.learn.streakBest': 'Best streak: {days} d',
+  'stats.learn.mastered': 'Mastered: {done} of {total}',
+  'stats.learn.sessions': 'Learning sessions: {finished} finished of {started} started',
 
   // Config bar
   'config.script.hiragana': 'Hiragana',

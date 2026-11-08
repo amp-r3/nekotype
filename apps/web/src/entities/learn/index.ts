@@ -60,3 +60,6 @@ export {
 
 export type { CellState, ChartRowInfo, KanaCellInfo } from './lib/chart';
 export { cellInfos, chartRows } from './lib/chart';
+
+export type { TrackProgress } from './lib/progress';
+export { masteredCount, streaks, trackProgress } from './lib/progress';

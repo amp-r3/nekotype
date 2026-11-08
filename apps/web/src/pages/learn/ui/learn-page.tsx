@@ -11,7 +11,7 @@ import {
   cellInfos,
   currentStreak,
   initLearn,
-  isMastered,
+  masteredCount,
   keyOf,
   keysOfTrack,
   learnReady,
@@ -134,9 +134,7 @@ export function LearnPage(): JSX.Element {
   const state = learnState.value;
   const keys = keysOfTrack(track);
   const target = learnTargetMs.value;
-  const mastered = keys.filter((key) =>
-    isMastered(state.entries[key], state.recent[key] ?? [], target),
-  ).length;
+  const mastered = masteredCount(state, track, target);
   const now = defaultClock.now();
   const infos = cellInfos(track, state, target, now);
   const due = dueCount(state, track, now);
