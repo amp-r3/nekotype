@@ -49,6 +49,6 @@ export {
   isKanaKey,
 } from './lib/engine';
 
-export { buildPool, pickPrompt, rowsYieldKana } from './lib/picker';
+export { buildPool, pickPrompt } from './lib/picker';
 
 export { loadContent } from './api/content-loader';

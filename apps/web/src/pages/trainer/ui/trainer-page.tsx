@@ -38,17 +38,12 @@ export function TrainerPage(props: TrainerPageProps = {}): JSX.Element {
     focusInput();
     trainer.restart();
   };
-  // A dialog over a running test would let it run out behind it: opening one ends the test.
-  const openRows = (): void => {
-    if (session.phase.peek() === 'running') trainer.restart();
-  };
-
   // A layout effect: the first frame already shows a prompt, and unmounting stops the trainer at once.
   useLayoutEffect(() => trainer.start(), [trainer]);
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6">
-      <ModePanel onOpenRows={openRows} />
+      <ModePanel />
 
       {/* One slot for the notices, always there: a notice appearing must not move the text below. */}
       <div
@@ -66,10 +61,6 @@ export function TrainerPage(props: TrainerPageProps = {}): JSX.Element {
         ) : trainer.isLoadingContent.value ? (
           <span role="status" className="text-fur-dim animate-blink">
             {t('stage.contentLoading')}
-          </span>
-        ) : trainer.noKanaForRows.value ? (
-          <span role="status" className="text-fur-dim">
-            {t('stage.noKanaForRows')}
           </span>
         ) : null}
       </div>

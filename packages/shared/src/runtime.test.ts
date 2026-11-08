@@ -27,9 +27,8 @@ describe('shared/runtime guards', () => {
     const settings = (test: unknown): unknown => ({
       v: 1,
       script: 'both',
-      content: 'single',
+      content: 'words',
       strictness: 'learner',
-      rowIds: ['vowels', 'k'],
       weakFocus: true,
       test,
     });
@@ -51,12 +50,16 @@ describe('shared/runtime guards', () => {
     const base = {
       v: 1,
       script: 'both',
-      content: 'single',
+      content: 'words',
       strictness: 'learner',
-      rowIds: ['vowels'],
       weakFocus: true,
       test: { kind: 'time', seconds: 30 },
     };
+
+    it('rejects the removed single-kana content and a row selection is ignored (ADR 061)', () => {
+      expect(isSettings({ ...base, content: 'single' })).toBe(false);
+      expect(isSettings({ ...base, rowIds: ['vowels'] })).toBe(true);
+    });
 
     it('accepts settings saved without the field, and with a boolean', () => {
       expect(isSettings(base)).toBe(true);

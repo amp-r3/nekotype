@@ -83,7 +83,6 @@ test.describe('settings: show the translation', () => {
             script: 'hiragana',
             content: 'words',
             strictness: 'learner',
-            rowIds: ['vowels', 'k', 's', 't', 'n', 'h', 'm', 'y', 'r', 'w'],
             weakFocus: false,
             test: { kind: 'time', seconds: 120 },
           }),

@@ -12,7 +12,7 @@ describe('trainer UI: focus redirection and content loader error fallback', () =
   let container: HTMLDivElement;
 
   beforeEach(() => {
-    setContent('single');
+    setContent('words');
     container = document.createElement('div');
     document.body.appendChild(container);
   });

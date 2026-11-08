@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { PromptItem } from '@/entities/prompt';
-import { allKanaRows, buildPool } from '@/entities/prompt';
-import { getPracticeSettings } from '@/entities/settings';
+import { allKanaRows } from '@/entities/prompt';
 import type { KanaStats } from '@/entities/stats';
 import { computeWeight } from '@/entities/stats';
 import { createPromptWeights } from './prompt-weights';
@@ -44,8 +43,14 @@ describe('createPromptWeights (D20: computeItemWeight for words and phrases)', (
   });
 
   it('single kana weigh exactly what they weighed before the change', () => {
-    const rowIds = allKanaRows.map((r) => r.id);
-    const pool = buildPool({ ...getPracticeSettings(), script: 'both', content: 'single', rowIds });
+    const pool: PromptItem[] = allKanaRows.flatMap((row) =>
+      row.entries.flatMap((entry) => [
+        ...(entry.hiragana
+          ? [{ key: `hiragana:${entry.hiragana}`, text: entry.hiragana } satisfies PromptItem]
+          : []),
+        { key: `katakana:${entry.katakana}`, text: entry.katakana } satisfies PromptItem,
+      ]),
+    );
     const stats = new Map<string, KanaStats>([
       ['hiragana:あ', stat(30, 3)],
       ['katakana:ン', stat(5, 5)],

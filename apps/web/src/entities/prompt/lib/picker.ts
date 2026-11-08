@@ -1,78 +1,24 @@
-import type {
-  PoolSettings,
-  PromptItem,
-  ContentItem,
-  KanaKey,
-  RowId,
-  ScriptMode,
-} from '../model/types';
-import { allKanaRows } from '../model/data';
+import type { PoolSettings, PromptItem, ContentItem } from '../model/types';
 import type { Rng } from '@/shared/lib';
-import { DEFAULT_BASIC_ROWS } from '@/shared/lib';
 
+/**
+ * The prompts for the selected script: the loaded words or phrases. Empty while the vocabulary is
+ * not here or when it has nothing for the script; the caller shows no prompt then.
+ */
 export function buildPool(
   settings: PoolSettings,
   content?: readonly ContentItem[],
 ): readonly PromptItem[] {
-  if (settings.content === 'words' || settings.content === 'phrases') {
-    if (content && content.length > 0) {
-      const filtered = content.filter((item) => {
-        if (settings.script === 'both') return true;
-        return item.script === settings.script;
-      });
-
-      if (filtered.length > 0) {
-        return filtered.map((item) => ({
-          key: item.id,
-          text: item.text,
-          script: item.script,
-          meaning: item.meaning,
-          ...(item.readingHints ? { readingHints: item.readingHints } : {}),
-        }));
-      }
-    }
-    // Fallback if content pool is empty
-  }
-
-  const pool = buildKanaPool(settings.script, settings.rowIds);
-  if (pool.length > 0) return pool;
-
-  // D20: the selected rows give no kana for this script (extended rows hold katakana only,
-  // so katakana + ext rows, then a switch to hiragana). Fall back to the basic rows instead of
-  // leaving pickPrompt with an empty pool. The user's row selection is not changed.
-  return buildKanaPool(settings.script, DEFAULT_BASIC_ROWS);
-}
-
-function buildKanaPool(script: ScriptMode, rowIds: readonly RowId[]): readonly PromptItem[] {
-  const pool: PromptItem[] = [];
-  const selectedRowSet = new Set(rowIds);
-
-  for (const row of allKanaRows) {
-    if (!selectedRowSet.has(row.id)) continue;
-
-    const isExtended = row.category === 'extended';
-
-    for (const entry of row.entries) {
-      if (entry.hiragana && !isExtended) {
-        if (script === 'hiragana' || script === 'both') {
-          const key: KanaKey = `hiragana:${entry.hiragana}`;
-          pool.push({ key, text: entry.hiragana, script: 'hiragana' });
-        }
-      }
-
-      if (script === 'katakana' || script === 'both') {
-        const key: KanaKey = `katakana:${entry.katakana}`;
-        pool.push({ key, text: entry.katakana, script: 'katakana' });
-      }
-    }
-  }
-
-  return pool;
-}
-
-/** True when the selected rows give at least one kana for the script. */
-export function rowsYieldKana(settings: Pick<PoolSettings, 'script' | 'rowIds'>): boolean {
-  return buildKanaPool(settings.script, settings.rowIds).length > 0;
+  if (!content) return [];
+  return content
+    .filter((item) => settings.script === 'both' || item.script === settings.script)
+    .map((item) => ({
+      key: item.id,
+      text: item.text,
+      script: item.script,
+      meaning: item.meaning,
+      ...(item.readingHints ? { readingHints: item.readingHints } : {}),
+    }));
 }
 
 export function pickPrompt(

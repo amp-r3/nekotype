@@ -101,9 +101,8 @@ test.describe('zen: a test without a length, ended by hand', () => {
     });
     await chooseZen(page);
     await page.getByRole('radio', { name: 'Words' }).click();
-    // Until the vocabulary has loaded the screen shows single kana (one of them is ん), and the
-    // chunk, once it arrives, restarts the test. Only a word has a translation: wait for one
-    // before looking for the word.
+    // Until the vocabulary has loaded the screen shows no prompt, and the chunk, once it arrives,
+    // restarts the test. Wait for a translation before looking for the word.
     await expect(page.getByTestId('translation')).not.toHaveText('');
     const promptText = page.getByTestId('prompt-text');
     const steps = 400;

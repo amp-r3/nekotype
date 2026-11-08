@@ -20,8 +20,7 @@ const WORK_MAX_MS = 25;
 const FRAME_MAX_MS = 50;
 // Long enough that the test is still running after the slowest throttled run (about 15 s of keys).
 const TEST_SECONDS = 120;
-const CONTENTS = ['single', 'words', 'phrases'] as const;
-const DEFAULT_ROWS = ['vowels', 'k', 's', 't', 'n', 'h', 'm', 'y', 'r', 'w_n'];
+const CONTENTS = ['words', 'phrases'] as const;
 
 type Sample = { readonly work: number; readonly frame: number };
 
@@ -70,7 +69,7 @@ for (const content of CONTENTS) {
     page,
   }) => {
     await page.addInitScript(
-      ({ content, seconds, rowIds }) => {
+      ({ content, seconds }) => {
         localStorage.setItem(
           'kanaflow:settings:v1',
           JSON.stringify({
@@ -78,13 +77,12 @@ for (const content of CONTENTS) {
             script: 'hiragana',
             content,
             strictness: 'learner',
-            rowIds,
             weakFocus: false,
             test: { kind: 'time', seconds },
           }),
         );
       },
-      { content, seconds: TEST_SECONDS, rowIds: DEFAULT_ROWS },
+      { content, seconds: TEST_SECONDS },
     );
     const client = await page.context().newCDPSession(page);
     await client.send('Emulation.setCPUThrottlingRate', { rate: THROTTLE });

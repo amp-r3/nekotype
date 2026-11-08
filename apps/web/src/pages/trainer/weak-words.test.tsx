@@ -25,7 +25,7 @@ describe('D20: weak kana steer which word the trainer picks', () => {
     container.remove();
     vi.restoreAllMocks();
     resetProgress();
-    setContent('single');
+    setContent('words');
     setScript('both');
   });
 

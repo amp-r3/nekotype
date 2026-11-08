@@ -111,15 +111,6 @@ describe('test screen: focus, hidden interface and keys', () => {
     });
   });
 
-  describe('opening the rows dialog (L5)', () => {
-    it('ends the running test', () => {
-      key(field(), 'n');
-      expect(trainer.session.phase.value).toBe('running');
-      buttonByText(t('app.rows')).click();
-      expect(trainer.session.phase.value).toBe('idle');
-    });
-  });
-
   describe('the hidden interface (L6)', () => {
     it('Tab and Shift do not hide it again, any other key does', async () => {
       key(field(), 'n');

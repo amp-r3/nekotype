@@ -13,8 +13,6 @@ export { isApplePlatform } from './platform';
 
 export { currentPath, navigate, startRouter, isPlainLeftClick } from './router';
 
-export { DEFAULT_BASIC_ROWS } from './default-rows';
-
 export type { KeyValueStore } from './storage';
 export {
   MemoryKeyValueStore,

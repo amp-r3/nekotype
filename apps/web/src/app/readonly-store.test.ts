@@ -3,7 +3,6 @@ import {
   scriptSetting,
   contentSetting,
   strictnessSetting,
-  rowIdsSetting,
   weakFocusSetting,
   showTranslationSetting,
   testConfig,
@@ -25,7 +24,6 @@ type AssertFalse<T extends false> = T;
 export type _CheckScriptSetting = AssertFalse<IsWritable<typeof scriptSetting, 'value'>>;
 export type _CheckContentSetting = AssertFalse<IsWritable<typeof contentSetting, 'value'>>;
 export type _CheckStrictnessSetting = AssertFalse<IsWritable<typeof strictnessSetting, 'value'>>;
-export type _CheckRowIdsSetting = AssertFalse<IsWritable<typeof rowIdsSetting, 'value'>>;
 export type _CheckWeakFocusSetting = AssertFalse<IsWritable<typeof weakFocusSetting, 'value'>>;
 export type _CheckShowTranslationSetting = AssertFalse<
   IsWritable<typeof showTranslationSetting, 'value'>
@@ -61,7 +59,6 @@ describe('store state: ReadonlySignal guarantees', () => {
     expect(scriptSetting.value).toBeDefined();
     expect(contentSetting.value).toBeDefined();
     expect(strictnessSetting.value).toBeDefined();
-    expect(rowIdsSetting.value).toBeDefined();
     expect(weakFocusSetting.value).toBeDefined();
     expect(showTranslationSetting.value).toBeDefined();
     expect(testConfig.value).toBeDefined();

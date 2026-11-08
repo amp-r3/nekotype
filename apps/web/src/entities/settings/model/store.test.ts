@@ -6,7 +6,6 @@ import {
   scriptSetting,
   contentSetting,
   strictnessSetting,
-  rowIdsSetting,
   weakFocusSetting,
   showTranslationSetting,
   testConfig,
@@ -19,10 +18,6 @@ import {
   setStrictness,
   setWeakFocus,
   setShowTranslation,
-  toggleRow,
-  selectAllRows,
-  clearRows,
-  presetBasic,
 } from './store';
 import { MemoryKeyValueStore, STORAGE_KEYS } from '@/shared/lib';
 
@@ -32,44 +27,6 @@ describe('practice-settings store: domain rules, actions and persistence', () =>
   beforeEach(() => {
     store = new MemoryKeyValueStore();
     initSettings(store);
-    presetBasic();
-  });
-
-  it('toggleRow toggles row and prevents removing the last row (domain rule)', () => {
-    // Start with basic rows
-    presetBasic();
-    expect(rowIdsSetting.value.length).toBe(10);
-
-    // Toggle off 'k'
-    const ok = toggleRow('k');
-    expect(ok).toBe(true);
-    expect(rowIdsSetting.value.includes('k')).toBe(false);
-
-    // Toggle 'k' back on
-    const okOn = toggleRow('k');
-    expect(okOn).toBe(true);
-    expect(rowIdsSetting.value.includes('k')).toBe(true);
-
-    // Reduce to 1 row
-    clearRows('vowels');
-    expect(rowIdsSetting.value).toEqual(['vowels']);
-
-    // Attempt to toggle off the last remaining row -> rejected!
-    const rejected = toggleRow('vowels');
-    expect(rejected).toBe(false);
-    expect(rowIdsSetting.value).toEqual(['vowels']);
-  });
-
-  it('clearRows keeps at least 1 row (default: vowels)', () => {
-    selectAllRows(['vowels', 'k', 's']);
-    expect(rowIdsSetting.value.length).toBe(3);
-
-    clearRows();
-    expect(rowIdsSetting.value).toEqual(['vowels']);
-    expect(rowIdsSetting.value.length).toBeGreaterThanOrEqual(1);
-
-    clearRows('k');
-    expect(rowIdsSetting.value).toEqual(['k']);
   });
 
   it('script switch updates scriptSetting and getPracticeSettings', () => {
@@ -102,7 +59,6 @@ describe('practice-settings store: domain rules, actions and persistence', () =>
     setScript('katakana');
     setContent('phrases');
     setStrictness('ime');
-    clearRows('s');
     setWeakFocus(false);
     flushSettings();
 
@@ -115,17 +71,15 @@ describe('practice-settings store: domain rules, actions and persistence', () =>
     expect(scriptSetting.value).toBe('katakana');
     expect(contentSetting.value).toBe('phrases');
     expect(strictnessSetting.value).toBe('ime');
-    expect(rowIdsSetting.value).toEqual(['s']);
     expect(weakFocusSetting.value).toBe(false);
   });
 
   it('corrupted or wrong-version settings fall back to defaults', () => {
     // 1. Corrupted JSON
     store.set(STORAGE_KEYS.SETTINGS, '{invalid json');
-    presetBasic();
     initSettings(store);
     expect(scriptSetting.value).toBe('both');
-    expect(rowIdsSetting.value.length).toBe(10);
+    expect(contentSetting.value).toBe('words');
 
     // 2. Wrong version schema (e.g. v: 2)
     const wrongVersion = {
@@ -133,15 +87,34 @@ describe('practice-settings store: domain rules, actions and persistence', () =>
       script: 'katakana',
       content: 'words',
       strictness: 'ime',
-      rowIds: ['vowels'],
       weakFocus: true,
       test: { kind: 'time', seconds: 30 },
     };
     store.set(STORAGE_KEYS.SETTINGS, JSON.stringify(wrongVersion));
-    presetBasic();
     initSettings(store);
     // Should retain valid defaults
     expect(scriptSetting.value).toBe('both');
+  });
+
+  it('settings saved with the removed single-kana content fall back to the defaults (ADR 061)', () => {
+    setScript('katakana');
+    store.set(
+      STORAGE_KEYS.SETTINGS,
+      JSON.stringify({
+        v: 1,
+        script: 'katakana',
+        content: 'single',
+        strictness: 'ime',
+        rowIds: ['vowels'],
+        weakFocus: false,
+        test: { kind: 'time', seconds: 60 },
+      }),
+    );
+    initSettings(store);
+    expect(scriptSetting.value).toBe('both');
+    expect(contentSetting.value).toBe('words');
+    expect(strictnessSetting.value).toBe('learner');
+    expect(testConfig.value).toEqual(DEFAULT_TEST_CONFIG);
   });
 
   it('setTestConfig updates the config and persists it together with the practice settings', () => {
@@ -188,7 +161,6 @@ describe('practice-settings store: domain rules, actions and persistence', () =>
         script: 'hiragana',
         content: 'words',
         strictness: 'ime',
-        rowIds: ['vowels'],
         weakFocus: false,
         test: { kind: 'count', prompts: 25 },
       }),
@@ -207,7 +179,6 @@ describe('practice-settings store: domain rules, actions and persistence', () =>
         script: 'katakana',
         content: 'words',
         strictness: 'ime',
-        rowIds: ['vowels'],
         weakFocus: true,
         test: { kind: 'time', seconds: 30 },
       }),

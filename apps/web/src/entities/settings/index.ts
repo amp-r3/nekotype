@@ -11,7 +11,6 @@ export {
   scriptSetting,
   contentSetting,
   strictnessSetting,
-  rowIdsSetting,
   weakFocusSetting,
   showTranslationSetting,
   testConfig,
@@ -27,8 +26,4 @@ export {
   setWeakFocus,
   setShowTranslation,
   setTestConfig,
-  toggleRow,
-  selectAllRows,
-  clearRows,
-  presetBasic,
 } from './model/store';
