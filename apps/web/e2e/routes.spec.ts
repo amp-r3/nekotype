@@ -11,6 +11,13 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
     await expect(page).toHaveTitle('Settings — Nekotype');
   });
 
+  // The preview server falls back to the entry page for every path; the real 404 status of
+  // /learn on Pages is checked by the deployment smoke test (scripts/smoke-deploy.mjs).
+  test('/learn is gone: it shows the not-found screen', async ({ page }) => {
+    await page.goto('/learn');
+    await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
+  });
+
   test('navigation does not reload the page, and Back returns to a working trainer', async ({
     page,
   }) => {
@@ -20,7 +27,7 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
     });
 
     await page.getByRole('navigation').getByRole('link', { name: 'learn' }).click();
-    await expect(page).toHaveURL(/\/learn$/);
+    await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Learn' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'learn' })).toHaveAttribute('aria-current', 'page');
 
@@ -30,6 +37,7 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
     await page.goBack();
     await expect(page.getByRole('heading', { level: 1, name: 'Learn' })).toBeVisible();
     await page.goBack();
+    await expect(page).toHaveURL(/\/type$/);
     await expect(page.getByTestId('prompt-arena')).toBeVisible();
 
     // No document load happened on the way.
@@ -42,9 +50,9 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
   });
 
   test('typing on another screen does not start a test', async ({ page }) => {
-    await page.goto('/learn');
+    await page.goto('/');
     await page.keyboard.press('KeyA');
-    await page.getByRole('link', { name: 'test' }).click();
+    await page.getByRole('link', { name: 'type', exact: true }).click();
     await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
   });
 

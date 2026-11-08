@@ -7,7 +7,7 @@ const RU_CHUNK = '**/assets/ru-*.js';
 
 /** Ends a zen test with one prompt typed, by the Finish button. */
 async function finishZen(page: Page): Promise<void> {
-  await page.goto('/');
+  await page.goto('/type');
   await page.getByRole('radio', { name: 'Zen' }).click();
   await page.keyboard.type(await canonicalOfPrompt(page), { delay: 15 });
   await page.getByRole('button', { name: /^Finish/ }).click();
@@ -61,7 +61,7 @@ test.describe('the results screen is a lazy chunk', () => {
   }) => {
     const results = page.waitForResponse(/assets\/results-panel-.*\.js/);
     const ru = page.waitForResponse(/assets\/ru-.*\.js/);
-    await page.goto('/');
+    await page.goto('/type');
     await Promise.all([results, ru]);
 
     await context.setOffline(true);
@@ -86,7 +86,7 @@ test.describe('the Russian dictionary is a lazy chunk', () => {
       await new Promise((resolve) => setTimeout(resolve, 1200));
       await route.continue();
     });
-    await page.goto('/');
+    await page.goto('/type');
     await page.waitForTimeout(500);
     await expect(page.locator('#app nav')).toHaveCount(0);
 
@@ -96,7 +96,7 @@ test.describe('the Russian dictionary is a lazy chunk', () => {
 
   test('a failed dictionary falls back to English and keeps the saved choice', async ({ page }) => {
     await page.route(RU_CHUNK, (route) => route.abort());
-    await page.goto('/');
+    await page.goto('/type');
 
     await expect(page.getByRole('radio', { name: 'Hiragana' })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');

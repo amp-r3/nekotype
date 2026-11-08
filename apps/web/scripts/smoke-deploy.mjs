@@ -76,6 +76,8 @@ export async function checkDeployment(baseUrl, { fetchFn = fetch } = {}) {
     failures.push(`${missing} is a 404 marked immutable: it would be cached for a year`);
   }
   await expectNotFound('/smoke-no-such-page', 'unknown ');
+  // /learn was the learning screen's address before it moved to / (P3): it answers 404 now.
+  await expectNotFound('/learn', 'retired ');
 
   for (const path of assetPaths(entry)) {
     const { response, body } = await get(fetchFn, baseUrl, path);

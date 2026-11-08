@@ -4,9 +4,9 @@ import { t } from '@/shared/i18n';
 import { Button, Segmented } from '@/shared/ui';
 import { KanaChart } from '@/shared/ui/kana-chart';
 import { chartModel, kanaDetails } from '../lib/chart';
-import { learnStrictness, learnTargetMs, learnTrack, setTrack } from '@/entities/settings';
+import { learnTargetMs, learnTrack, setTrack } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
-import { defaultClock, defaultRng, defaultScheduler } from '@/shared/lib';
+import { defaultClock } from '@/shared/lib';
 import {
   cellInfos,
   currentStreak,
@@ -17,19 +17,14 @@ import {
   learnReady,
   learnState,
   localDay,
-  introduce,
-  recordRecall,
-  recordRecognition,
-  countSession,
 } from '@/entities/learn';
-import { createLearnSession } from '../model/session';
 import type { LearnSession } from '../model/session';
-import { silentAudio } from '../lib/audio';
-import { dueCount, reviewQueue } from '../lib/review-queue';
-import { SessionScreen } from './session-screen';
+import { dueCount } from '../lib/review-queue';
+import { loadSessionRuntime } from '../session-loader';
+import type { SessionRuntime } from '../session-loader';
 import { SummaryScreen } from './summary-screen';
 
-type View = 'home' | 'session' | 'summary';
+type View = 'home' | 'loading' | 'session' | 'summary';
 
 // The learning screen: track switch, progress, the kana chart and the learning session
 // (docs/spec/learning.md, "`/` screen"). The hidden input field belongs to the page and keeps the
@@ -37,27 +32,28 @@ type View = 'home' | 'session' | 'summary';
 export function LearnPage(): JSX.Element {
   const [view, setView] = useState<View>('home');
   const [session, setSession] = useState<LearnSession | null>(null);
+  const [runtime, setRuntime] = useState<SessionRuntime | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     void initLearn(() => learnTargetMs.value);
   }, []);
 
-  const startSession = useCallback((mode: 'learning' | 'review' = 'learning'): void => {
+  // The session code is a chunk of its own. The field is focused here, inside the click, before
+  // the chunk is awaited, so a phone keeps its keyboard.
+  const startSession = useCallback(async (mode: 'learning' | 'review' = 'learning') => {
     inputRef.current?.focus();
-    const track = learnTrack.value;
-    const next = createLearnSession({
-      track,
-      mode,
-      queue: mode === 'review' ? reviewQueue(learnState.value, track, defaultClock.now()) : [],
-      store: { state: learnState, introduce, recordRecall, recordRecognition, countSession },
-      clock: defaultClock,
-      scheduler: defaultScheduler,
-      rng: defaultRng,
-      audio: silentAudio,
-      strictness: () => learnStrictness.value,
-      targetMs: () => learnTargetMs.value,
-    });
+    setLoadFailed(false);
+    setView('loading');
+    const loaded = await loadSessionRuntime();
+    if (loaded === null) {
+      setLoadFailed(true);
+      setView('home');
+      return;
+    }
+    const next = loaded.openSession(mode);
+    setRuntime(loaded);
     setSession(next);
     setView('session');
     next.start();
@@ -91,11 +87,22 @@ export function LearnPage(): JSX.Element {
   );
 
   // The field is the first child in every view, so it stays mounted and keeps the focus.
-  if (view === 'session' && session !== null) {
+  if (view === 'loading') {
     return (
       <>
         {hiddenInput}
-        <SessionScreen
+        <p role="status" className="text-fur-dim text-ui-label py-12 text-center">
+          {t('route.loading')}
+        </p>
+      </>
+    );
+  }
+
+  if (view === 'session' && session !== null && runtime !== null) {
+    return (
+      <>
+        {hiddenInput}
+        <runtime.SessionScreen
           session={session}
           inputRef={inputRef}
           onLeave={toTable}
@@ -115,7 +122,7 @@ export function LearnPage(): JSX.Element {
         <SummaryScreen
           summary={summary}
           onContinue={() => {
-            startSession();
+            void startSession();
           }}
           onTable={toTable}
         />
@@ -164,7 +171,7 @@ export function LearnPage(): JSX.Element {
             variant="primary"
             size="lg"
             onClick={() => {
-              startSession();
+              void startSession();
             }}
           >
             {t('learn.continue')}
@@ -174,12 +181,18 @@ export function LearnPage(): JSX.Element {
             size="lg"
             disabled={due === 0}
             onClick={() => {
-              startSession('review');
+              void startSession('review');
             }}
           >
             {t('learn.review', { n: due })}
           </Button>
         </div>
+
+        {loadFailed && (
+          <p role="alert" className="text-miss text-ui-body">
+            {t('route.loadError')}
+          </p>
+        )}
 
         <KanaChart
           rows={chartModel(track, infos)}

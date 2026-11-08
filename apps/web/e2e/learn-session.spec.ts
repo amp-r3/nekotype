@@ -41,9 +41,9 @@ async function answer(page: Page, tapOptions: boolean): Promise<void> {
   }
 }
 
-test.describe('learning session on /learn', () => {
+test.describe('learning session on /', () => {
   test('a full session of 25 tasks ends on the summary @mobile', async ({ page, isMobile }) => {
-    await page.goto('/learn');
+    await page.goto('/');
     await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
     await page.getByRole('button', { name: 'Continue' }).click();
 
@@ -65,7 +65,7 @@ test.describe('learning session on /learn', () => {
   });
 
   test('leaving a session returns to the table and keeps the introduced kana', async ({ page }) => {
-    await page.goto('/learn');
+    await page.goto('/');
     await page.getByRole('button', { name: 'Continue' }).click();
     await expect(page.getByTestId('kana-task')).toHaveAttribute('data-kind', 'introduction');
     await answer(page, false);
@@ -76,7 +76,7 @@ test.describe('learning session on /learn', () => {
   });
 });
 
-test.describe('review session on /learn', () => {
+test.describe('review session on /', () => {
   const unlocked = ['あ', 'い', 'う', 'え', 'お'].map((kana) => `hiragana:${kana}`);
   const learn = {
     unlocked: {
@@ -91,7 +91,7 @@ test.describe('review session on /learn', () => {
   };
 
   test('reviews the one due kana and ends on the summary', async ({ page }) => {
-    await seedLearning(page, '/learn', learn);
+    await seedLearning(page, '/', learn);
     const review = page.getByRole('button', { name: 'Review (1)' });
     await expect(review).toBeEnabled();
     await review.click();
