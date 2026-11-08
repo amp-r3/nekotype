@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { openTypingScreen } from './lib/app';
 import type { Page } from '@playwright/test';
 import { canonicalOfPrompt } from './lib/prompt';
 
 const FINISH = { name: /^Finish/ };
 
 async function chooseZen(page: Page): Promise<void> {
-  await page.goto('/');
+  await openTypingScreen(page);
   const zen = page.getByRole('radio', { name: 'Zen' });
   await zen.click();
   await expect(zen).toHaveAttribute('aria-checked', 'true');

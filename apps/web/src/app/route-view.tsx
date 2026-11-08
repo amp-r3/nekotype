@@ -2,6 +2,7 @@ import type { JSX } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
+import { settingsReady } from '@/entities/settings';
 import { isRoutePath } from './route-paths';
 import { ensureRoute, failedRoutes, loadedRoutes } from './route-state';
 
@@ -30,7 +31,8 @@ export function RouteView({ path, onHome }: RouteViewProps): JSX.Element {
     );
   }
 
-  if (Page !== undefined) return <Page />;
+  // Screens read the settings; the shell around them has already been drawn.
+  if (Page !== undefined && settingsReady.value) return <Page />;
 
   if (failed) {
     return (

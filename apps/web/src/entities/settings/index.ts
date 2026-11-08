@@ -5,6 +5,7 @@ export type {
   TestConfig,
   TimeTestConfig,
   CountTestConfig,
+  LearnTrack,
 } from './model/types';
 
 export {
@@ -17,8 +18,12 @@ export {
   DEFAULT_TEST_CONFIG,
   DEFAULT_TIME_TEST,
   DEFAULT_COUNT_TEST,
+  DEFAULT_LEARN_TARGET_MS,
+  learnStrictness,
+  learnTrack,
+  learnTargetMs,
+  settingsReady,
   initSettings,
-  flushSettings,
   getPracticeSettings,
   setScript,
   setContent,
@@ -26,4 +31,7 @@ export {
   setWeakFocus,
   setShowTranslation,
   setTestConfig,
+  setLearnStrictness,
+  setTrack,
+  setTargetMs,
 } from './model/store';

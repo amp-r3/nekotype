@@ -26,14 +26,22 @@ export type ValidTestConfig =
   | { readonly kind: 'zen' };
 
 export type ValidSettings = {
-  readonly v: 1;
-  readonly script: 'hiragana' | 'katakana' | 'both';
-  readonly content: 'words' | 'phrases';
-  readonly strictness: 'learner' | 'ime';
-  readonly weakFocus: boolean;
-  // Added to v1 later: settings saved without it mean `true` (spec storage-sync.md, D18).
-  readonly showTranslation?: boolean;
-  readonly test: ValidTestConfig;
+  readonly typing: {
+    readonly script: 'hiragana' | 'katakana' | 'both';
+    readonly content: 'words' | 'phrases';
+    readonly strictness: 'learner' | 'ime';
+    readonly weakFocus: boolean;
+    readonly test: ValidTestConfig;
+    readonly showTranslation: boolean;
+  };
+  readonly learn: {
+    readonly strictness: 'learner' | 'ime';
+    readonly track: 'hiragana' | 'katakana';
+    // Target answer time of confidence: 1000–3000 in steps of 250.
+    readonly targetMs: number;
+    readonly sound: boolean;
+  };
+  readonly updatedAt: number;
 };
 
 export type ValidKanaStats = {

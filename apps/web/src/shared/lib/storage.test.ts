@@ -66,24 +66,26 @@ describe('storage: KeyValueStore implementations and guards', () => {
 
   it('guards validate valid settings and reject invalid/corrupted payloads', () => {
     const valid = {
-      v: 1,
-      script: 'both',
-      content: 'words',
-      strictness: 'learner',
-      weakFocus: true,
-      test: { kind: 'time', seconds: 30 },
+      typing: {
+        script: 'both',
+        content: 'words',
+        strictness: 'learner',
+        weakFocus: true,
+        test: { kind: 'time', seconds: 30 },
+        showTranslation: true,
+      },
+      learn: { strictness: 'learner', track: 'hiragana', targetMs: 1500, sound: true },
+      updatedAt: 0,
     };
     expect(isSettings(valid)).toBe(true);
 
-    // Wrong version
-    expect(isSettings({ ...valid, v: 2 })).toBe(false);
-    expect(isSettings({ ...valid, v: 0 })).toBe(false);
-
     // Corrupted field types
-    expect(isSettings({ ...valid, script: 'klingon' })).toBe(false);
-    expect(isSettings({ ...valid, content: 123 })).toBe(false);
-    expect(isSettings({ ...valid, content: 'single' })).toBe(false);
-    expect(isSettings({ ...valid, test: { kind: 'time', seconds: 999 } })).toBe(false);
+    expect(isSettings({ ...valid, typing: { ...valid.typing, script: 'klingon' } })).toBe(false);
+    expect(isSettings({ ...valid, typing: { ...valid.typing, content: 123 } })).toBe(false);
+    expect(isSettings({ ...valid, typing: { ...valid.typing, content: 'single' } })).toBe(false);
+    expect(
+      isSettings({ ...valid, typing: { ...valid.typing, test: { kind: 'time', seconds: 999 } } }),
+    ).toBe(false);
     expect(isSettings('not an object')).toBe(false);
     expect(isSettings(null)).toBe(false);
   });

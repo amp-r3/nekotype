@@ -22,54 +22,62 @@ describe('shared/runtime guards', () => {
     expect(isTestConfig(null)).toBe(false);
   });
 
-  // Zen is an addition: what was saved before it existed still passes, so no migration is needed.
-  describe('isSettings with a zen test', () => {
-    const settings = (test: unknown): unknown => ({
-      v: 1,
-      script: 'both',
-      content: 'words',
-      strictness: 'learner',
-      weakFocus: true,
-      test,
-    });
-
-    it('accepts the settings saved before zen existed', () => {
-      expect(isSettings(settings({ kind: 'time', seconds: 30 }))).toBe(true);
-      expect(isSettings(settings({ kind: 'count', prompts: 25 }))).toBe(true);
-    });
-
-    it('accepts a zen test and still rejects an unknown one', () => {
-      expect(isSettings(settings({ kind: 'zen' }))).toBe(true);
-      expect(isSettings(settings({ kind: 'sudden-death' }))).toBe(false);
-      expect(isSettings(settings(undefined))).toBe(false);
-    });
-  });
-
-  // showTranslation was added to v1 as an optional field (spec storage-sync.md, D18).
-  describe('isSettings with showTranslation', () => {
-    const base = {
-      v: 1,
-      script: 'both',
-      content: 'words',
-      strictness: 'learner',
-      weakFocus: true,
-      test: { kind: 'time', seconds: 30 },
+  describe('isSettings', () => {
+    const valid = {
+      typing: {
+        script: 'both',
+        content: 'words',
+        strictness: 'learner',
+        weakFocus: true,
+        test: { kind: 'time', seconds: 30 },
+        showTranslation: true,
+      },
+      learn: { strictness: 'learner', track: 'hiragana', targetMs: 1500, sound: true },
+      updatedAt: 0,
     };
-
-    it('rejects the removed single-kana content and a row selection is ignored (ADR 061)', () => {
-      expect(isSettings({ ...base, content: 'single' })).toBe(false);
-      expect(isSettings({ ...base, rowIds: ['vowels'] })).toBe(true);
+    const withTyping = (patch: Record<string, unknown>): unknown => ({
+      ...valid,
+      typing: { ...valid.typing, ...patch },
+    });
+    const withLearn = (patch: Record<string, unknown>): unknown => ({
+      ...valid,
+      learn: { ...valid.learn, ...patch },
     });
 
-    it('accepts settings saved without the field, and with a boolean', () => {
-      expect(isSettings(base)).toBe(true);
-      expect(isSettings({ ...base, showTranslation: false })).toBe(true);
-      expect(isSettings({ ...base, showTranslation: true })).toBe(true);
+    it('accepts the spec shape', () => {
+      expect(isSettings(valid)).toBe(true);
+      expect(isSettings(withTyping({ test: { kind: 'zen' } }))).toBe(true);
     });
 
-    it('rejects a value that is not a boolean', () => {
-      expect(isSettings({ ...base, showTranslation: 'no' })).toBe(false);
-      expect(isSettings({ ...base, showTranslation: null })).toBe(false);
+    it('rejects the removed single-kana content and an unknown test (ADR 061)', () => {
+      expect(isSettings(withTyping({ content: 'single' }))).toBe(false);
+      expect(isSettings(withTyping({ test: { kind: 'sudden-death' } }))).toBe(false);
+    });
+
+    it('requires showTranslation to be a boolean', () => {
+      const rest: Record<string, unknown> = { ...valid.typing };
+      delete rest['showTranslation'];
+      expect(isSettings({ ...valid, typing: rest })).toBe(false);
+      expect(isSettings(withTyping({ showTranslation: 'no' }))).toBe(false);
+    });
+
+    it('accepts targetMs from 1000 to 3000 in steps of 250 only', () => {
+      for (const ms of [1000, 1250, 1500, 2750, 3000]) {
+        expect(isSettings(withLearn({ targetMs: ms }))).toBe(true);
+      }
+      for (const ms of [750, 1100, 3250, '1500', Number.NaN]) {
+        expect(isSettings(withLearn({ targetMs: ms }))).toBe(false);
+      }
+    });
+
+    it('checks the learning fields and updatedAt', () => {
+      expect(isSettings(withLearn({ track: 'both' }))).toBe(false);
+      expect(isSettings(withLearn({ strictness: 'x' }))).toBe(false);
+      expect(isSettings(withLearn({ sound: 1 }))).toBe(false);
+      expect(isSettings({ ...valid, updatedAt: '0' })).toBe(false);
+      expect(isSettings({ typing: valid.typing, updatedAt: 0 })).toBe(false);
+      // The old flat shape is not valid any more.
+      expect(isSettings({ v: 1, ...valid.typing })).toBe(false);
     });
   });
 

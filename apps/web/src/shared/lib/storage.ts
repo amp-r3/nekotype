@@ -69,7 +69,7 @@ export const STORAGE_KEYS = {
  * Keys that earlier versions wrote and the code no longer uses (ADR 061). `kanaflow:settings:v1`
  * joins in P3 when settings move to IndexedDB, `kanaflow:progress:v1` in P4.
  */
-export const LEGACY_KEYS: readonly string[] = [];
+export const LEGACY_KEYS: readonly string[] = [STORAGE_KEYS.SETTINGS];
 
 /** Deletes the legacy keys without reading them. Called once IndexedDB has opened. */
 export function removeLegacyKeys(

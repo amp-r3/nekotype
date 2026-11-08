@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { expectStoredTyping, openTypingScreen, seedSettings } from './lib/app';
 
 test.describe('routes: direct visits, navigation without a reload, settings', () => {
   // The other screens and the unknown path are covered without a browser (app/App.test.tsx,
@@ -13,7 +14,7 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
   test('navigation does not reload the page, and Back returns to a working trainer', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     await page.evaluate(() => {
       Object.assign(window, { navigationMarker: 'kept' });
     });
@@ -74,22 +75,15 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
 
 test.describe('settings: show the translation', () => {
   test('turning it off keeps the stream in place and survives a reload', async ({ page }) => {
-    await page.addInitScript(() => {
-      if (localStorage.getItem('kanaflow:settings:v1') === null) {
-        localStorage.setItem(
-          'kanaflow:settings:v1',
-          JSON.stringify({
-            v: 1,
-            script: 'hiragana',
-            content: 'words',
-            strictness: 'learner',
-            weakFocus: false,
-            test: { kind: 'time', seconds: 120 },
-          }),
-        );
-      }
+    await seedSettings(page, {
+      typing: {
+        script: 'hiragana',
+        content: 'words',
+        weakFocus: false,
+        test: { kind: 'time', seconds: 120 },
+      },
     });
-    await page.goto('/');
+    await openTypingScreen(page);
     const translation = page.getByTestId('translation');
     await expect(translation).not.toHaveText('');
     const arena = page.getByTestId('prompt-arena');
@@ -100,10 +94,9 @@ test.describe('settings: show the translation', () => {
     await expect(toggle).toHaveAttribute('aria-checked', 'true');
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-checked', 'false');
-    // The settings are saved after a short delay.
-    await page.waitForTimeout(500);
+    await expectStoredTyping(page, 'showTranslation', false);
 
-    await page.goto('/');
+    await openTypingScreen(page);
     await expect(page.getByTestId('prompt-text')).not.toHaveText('');
     await expect(translation).toHaveText('');
     const after = await arena.boundingBox();

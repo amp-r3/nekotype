@@ -53,6 +53,8 @@ type Settings = {
 };
 ```
 
+Settings are written to IndexedDB on each change, outside keystroke handlers; nothing waits for `pagehide`, because a transaction started there may not commit before the page unloads. `updatedAt` is set at each change.
+
 The UI locale is device-local (`nekotype:locale`) and is not synced.
 
 ## Merge rules

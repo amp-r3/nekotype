@@ -1,7 +1,14 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MemoryKeyValueStore, STORAGE_KEYS, navigate, startRouter } from '@/shared/lib';
+import {
+  MemoryKeyValueStore,
+  STORAGE_KEYS,
+  databaseMode,
+  navigate,
+  startRouter,
+} from '@/shared/lib';
 import { initLocale, locale, setLocale } from '@/shared/i18n';
+import { settingsReady } from '@/entities/settings';
 import { initApp } from './init';
 
 describe('app/init', () => {
@@ -46,5 +53,16 @@ describe('app/init', () => {
 
     await setLocale('en', store);
     stop();
+  });
+
+  it('keeps the legacy keys and still loads the settings when IndexedDB is unavailable', async () => {
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, '{"v":1}');
+    await initApp();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(databaseMode.value).toBe('memory');
+    expect(settingsReady.value).toBe(true);
+    expect(localStorage.getItem(STORAGE_KEYS.SETTINGS)).toBe('{"v":1}');
+    localStorage.clear();
   });
 });
