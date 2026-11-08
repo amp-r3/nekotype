@@ -2,9 +2,11 @@ import type { Strictness } from '@nekotype/engine';
 import type { ValidSettings, ValidTestConfig } from '@/shared/lib';
 
 // Derived from the persisted shape, so this slice does not import the prompt slice.
-export type ScriptMode = ValidSettings['script'];
+export type ScriptMode = ValidSettings['typing']['script'];
 
-export type ContentKind = ValidSettings['content'];
+export type ContentKind = ValidSettings['typing']['content'];
+
+export type LearnTrack = ValidSettings['learn']['track'];
 
 export type TestConfig = ValidTestConfig;
 

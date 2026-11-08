@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { canonicalOfPrompt } from './lib/prompt';
+import { seedSettings } from './lib/app';
 
 // Keystroke latency (docs/spec/quality.md, "Budgets" and "Latency measurement"), measured by the
 // probe of the test build under 4x CPU throttling on each kind of content: 200 keystrokes in a
@@ -68,22 +69,14 @@ for (const content of CONTENTS) {
   test(`keystroke latency stays within the budgets at 4x CPU throttling: ${content}`, async ({
     page,
   }) => {
-    await page.addInitScript(
-      ({ content, seconds }) => {
-        localStorage.setItem(
-          'kanaflow:settings:v1',
-          JSON.stringify({
-            v: 1,
-            script: 'hiragana',
-            content,
-            strictness: 'learner',
-            weakFocus: false,
-            test: { kind: 'time', seconds },
-          }),
-        );
+    await seedSettings(page, {
+      typing: {
+        script: 'hiragana',
+        content,
+        weakFocus: false,
+        test: { kind: 'time', seconds: TEST_SECONDS },
       },
-      { content, seconds: TEST_SECONDS },
-    );
+    });
     const client = await page.context().newCDPSession(page);
     await client.send('Emulation.setCPUThrottlingRate', { rate: THROTTLE });
 

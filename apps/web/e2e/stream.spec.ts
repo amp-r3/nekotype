@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openTypingScreen } from './lib/app';
 import type { Page } from '@playwright/test';
 import { canonicalOfPrompt } from './lib/prompt';
 
@@ -14,7 +15,7 @@ test.describe('the text stream', () => {
   test('keeps the answer out of the DOM: tests work it out from the prompt text', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
     await expect(page.getByTestId('prompt-text')).not.toHaveText('');
     await expect(page.locator('[data-canonical]')).toHaveCount(0);
@@ -23,7 +24,7 @@ test.describe('the text stream', () => {
   test('shows the prompt to type and the prompts after it, with the caret at the start', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
 
     // Many tokens are drawn, numbered from 0, and the first prompt is the one to type.
@@ -38,7 +39,7 @@ test.describe('the text stream', () => {
   test('the caret moves and the typed kana change colour, without the text moving', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     const caret = page.locator('.nk-caret');
     const before = await caret.evaluate((el) => el.style.transform);
     const arenaBefore = await box(page, 'prompt-arena');
@@ -57,7 +58,7 @@ test.describe('the text stream', () => {
   });
 
   test('a wrong key marks the token and flashes the caret', async ({ page }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     // Watch the flash: the writer animates the caret's flash layer through opacity.
     await page.locator('.nk-caret__reject').evaluate((el) => {
       const original = el.animate.bind(el);
@@ -75,7 +76,7 @@ test.describe('the text stream', () => {
   });
 
   test('the translation of a word is shown under the stream', async ({ page }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     await page.getByRole('radio', { name: 'Words' }).click();
     await expect(page.getByTestId('prompt-text')).toHaveText(/^.{2,}$/);
     await expect(page.getByTestId('translation')).not.toHaveText('');
@@ -85,7 +86,7 @@ test.describe('the text stream', () => {
     'the stream shows two lines on a phone and three on a wide screen',
     { tag: '@mobile' },
     async ({ page }, testInfo) => {
-      await page.goto('/');
+      await openTypingScreen(page);
       // Rows of tokens that are inside the clipped view.
       const rows = () =>
         page.evaluate(() => {
@@ -199,7 +200,7 @@ test.describe('redrawing the stream', () => {
     test(`${content}: the text does not move under the fingers and the caret does not glide`, async ({
       page,
     }) => {
-      await page.goto('/');
+      await openTypingScreen(page);
       await page.getByRole('radio', { name: content }).click();
       await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
       await expect(page.getByTestId('prompt-text')).not.toHaveText('');
@@ -231,7 +232,7 @@ test.describe('the interface while a test runs', () => {
   test('starting a test hides the navigation, the modes and the footer without moving the text', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     const before = await box(page, 'prompt-arena');
     await expect(page.getByRole('navigation')).toBeVisible();
 
@@ -247,7 +248,7 @@ test.describe('the interface while a test runs', () => {
   });
 
   test('the first Tab reaches Restart, and Enter restarts', async ({ page }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     // A key pressed before the vocabulary has loaded is ignored, so wait for the prompt.
     await expect(page.getByTestId('prompt-text')).not.toHaveText('');
     await page.keyboard.press('KeyA');
@@ -264,7 +265,7 @@ test.describe('the interface while a test runs', () => {
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name === 'webkit-mobile', 'a touch screen has no mouse');
-    await page.goto('/');
+    await openTypingScreen(page);
     await expect(page.getByTestId('translation')).not.toHaveText('');
     await page.keyboard.press('KeyA');
     await expect(page.getByRole('navigation')).toBeHidden();
@@ -281,7 +282,7 @@ test.describe('the interface while a test runs', () => {
     'Restart shows when it has the focus, and always on a touch screen',
     { tag: '@mobile' },
     async ({ page }, testInfo) => {
-      await page.goto('/');
+      await openTypingScreen(page);
       const restart = page.getByRole('button', RESTART);
       if (testInfo.project.name === 'webkit-mobile') {
         await expect(restart).toHaveCSS('opacity', '1');

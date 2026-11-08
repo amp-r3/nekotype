@@ -36,7 +36,7 @@ apps/web/src/
 └── shared/               # Reusable primitives, UI components, i18n, storage, and utility libraries
 ```
 
-`shared/lib/idb` holds the IndexedDB layer (P3, ADR 061): a promise wrapper, `getDatabase()` (one connection per page load, or an in-memory store with a "data will not be saved" notice when the database cannot be opened) and the schema reset on a `SCHEMA_VERSION` mismatch. Nothing stores data there yet; settings move in the next step of P3.
+`shared/lib/idb` holds the IndexedDB layer (P3, ADR 061): a promise wrapper, `getDatabase()` (one connection per page load, or an in-memory store with a "data will not be saved" notice when the database cannot be opened) and the schema reset on a `SCHEMA_VERSION` mismatch. Settings are stored there (`settings` store, key `current`); `app/init.ts` deletes the legacy `kanaflow:settings:v1` key once the database has opened. Typing progress stays in `localStorage` (`kanaflow:progress:v1`) until P4, and so does `nekotype:locale`.
 
 ### Import Rules & Layer Hierarchy
 
@@ -298,7 +298,7 @@ Git hooks run the same checks earlier (`pre-commit`: staged formatting, typechec
 
 ### `entities/settings`
 
-- Holds the practice settings (`script`, `content`, `strictness`, `weakFocus`), the display setting `showTranslation` (optional in the stored v1 value, `true` when absent; not a practice setting, so it does not reset a test, ADR 056) and the test length `testConfig` as `ReadonlySignal`s, and the actions that change them (`setScript`, `setTestConfig`, …). `initSettings(store)` reads `kanaflow:settings:v1`; one debounced writer saves all the values together (`flushSettings()` on `pagehide`). It does not import `entities/prompt`: its `ScriptMode` and `ContentKind` derive from `ValidSettings`.
+- Holds the practice settings (`script`, `content`, `strictness`, `weakFocus`), the display setting `showTranslation` (not a practice setting, so it does not reset a test, ADR 056), the test length `testConfig` and the learning settings (`learnStrictness`, `learnTrack`, `learnTargetMs`; the sound flag is stored only) as `ReadonlySignal`s, and the actions that change them (`setScript`, `setTestConfig`, `setLearnStrictness`, `setTrack`, `setTargetMs`, …). `initSettings(db)` reads the `settings` record (`current`) from IndexedDB, replaces a value that fails `isSettings` with the defaults and sets `settingsReady`; `app/route-view.tsx` shows the loading line until then. Each action writes the whole `Settings` document at once (no debounce, nothing waits for `pagehide`) and sets `updatedAt` from the `Clock`. It does not import `entities/prompt`: its `ScriptMode` and `ContentKind` derive from `ValidSettings`.
 - `content` defaults to `words`. A saved value that fails validation (for example the removed `single`) is replaced by the defaults, with no conversion (ADR 061); a stored `rowIds` is ignored.
 - Changing a setting does not reset the session here (a slice cannot import another); `setupSettingsResetWatcher` in `features/training` does.
 

@@ -10,7 +10,7 @@ import {
   setTestConfig,
   strictnessSetting,
 } from '@/entities/settings';
-import { MemoryKeyValueStore } from '@/shared/lib';
+import { createMemoryDb } from '@/shared/lib';
 
 const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -22,8 +22,8 @@ const word: ContentItem = {
 };
 
 describe('trainer: prompt source, restarts and content loading', () => {
-  beforeEach(() => {
-    initSettings(new MemoryKeyValueStore());
+  beforeEach(async () => {
+    await initSettings(Promise.resolve(createMemoryDb()));
     // The vocabulary: the real chunks are not under test here.
     vi.spyOn(promptModule, 'loadContent').mockResolvedValue([word]);
     setContent('words');

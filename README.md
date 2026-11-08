@@ -157,7 +157,7 @@ Nekotype adheres to strict first-load asset caps, checked by `pnpm run budget` (
 
 ## ☁️ Deployment
 
-Nekotype is a fully static SPA (`apps/web/dist/`, no backend, state in `localStorage`) and ships to **Cloudflare Pages** at the domain root, so `VITE_BASE` stays at its default `/`.
+Nekotype is a fully static SPA (`apps/web/dist/`, no backend; settings in IndexedDB, typing progress and the language in `localStorage`) and ships to **Cloudflare Pages** at the domain root, so `VITE_BASE` stays at its default `/`.
 
 **Production:** <https://nekotype.pages.dev> · **Previews:** one URL per pull request.
 

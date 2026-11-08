@@ -3,7 +3,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, options, Fragment } from 'preact';
 import type { VNode } from 'preact';
 import { App } from './App';
-import { currentPath, navigate, startRouter } from '@/shared/lib';
+import { createMemoryDb, currentPath, navigate, startRouter } from '@/shared/lib';
+import { initSettings } from '@/entities/settings';
 import { setLocale, t } from '@/shared/i18n';
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
@@ -14,6 +15,7 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
 
   beforeEach(async () => {
     await setLocale('en');
+    await initSettings(Promise.resolve(createMemoryDb()));
     window.history.replaceState(null, '', '/');
     stopRouter = startRouter();
     container = document.createElement('div');

@@ -9,15 +9,14 @@ import {
   initSettings,
   setTestConfig,
 } from '@/entities/settings';
-import { MemoryKeyValueStore } from '@/shared/lib';
+import { createMemoryDb } from '@/shared/lib';
 
 describe('settings-watcher: one reactive effect calling the reset callback', () => {
   let resetCallCount = 0;
   let dispose: (() => void) | null = null;
 
-  beforeEach(() => {
-    const store = new MemoryKeyValueStore();
-    initSettings(store);
+  beforeEach(async () => {
+    await initSettings(Promise.resolve(createMemoryDb()));
     resetCallCount = 0;
     if (dispose) {
       dispose();

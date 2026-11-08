@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openTypingScreen } from './lib/app';
 import type { CDPSession, Locator, Page } from '@playwright/test';
 import { canonicalOfPrompt } from './lib/prompt';
 
@@ -16,7 +17,7 @@ test.describe('input: layouts', { tag: '@mobile' }, () => {
   test('a Cyrillic key asks to switch the layout, starts nothing and counts no mistake', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     await expect(page.locator(FIELD)).toBeFocused();
 
     await pressCyrillic(page.locator(FIELD), 'ф');
@@ -34,7 +35,7 @@ test.describe('input: layouts', { tag: '@mobile' }, () => {
   test('text inserted without a key press is handled the same way (beforeinput)', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     await page.keyboard.insertText('ы');
     await expect(page.getByText(LAYOUT_NOTICE)).toBeVisible();
     await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
@@ -43,7 +44,7 @@ test.describe('input: layouts', { tag: '@mobile' }, () => {
   test('a Cyrillic key pressed on a button is not typed either, and the field gets the focus', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     await page.getByRole('radio', { name: 'Katakana' }).click();
     await pressCyrillic(page.getByRole('radio', { name: 'Katakana' }), 'ф');
     await expect(page.locator(FIELD)).toBeFocused();
@@ -53,7 +54,7 @@ test.describe('input: layouts', { tag: '@mobile' }, () => {
 
 test.describe('input: keys that belong to the browser', () => {
   test('Ctrl+Enter on a link is not cancelled and keeps the focus', async ({ page }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     const link = page.getByRole('navigation').getByRole('link').first();
     await link.focus();
     const prevented = await link.evaluate((el) => {
@@ -95,7 +96,7 @@ test.describe('input: composition (IME emulated through the DevTools protocol)',
   );
 
   test('Latin composition (Gboard) is typed once and shows no IME notice', async ({ page }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     await page.getByRole('radio', { name: 'Count' }).click();
     await page.getByRole('radio', { name: '10', exact: true }).click();
     // Tapping the text focuses the field, which is where a mobile keyboard types.
@@ -124,7 +125,7 @@ test.describe('input: composition (IME emulated through the DevTools protocol)',
   });
 
   test('a Japanese IME that is on shows the notice once kana are composed', async ({ page }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     const client = await page.context().newCDPSession(page);
 
     await compose(client, 'k');
@@ -142,7 +143,7 @@ test.describe('input: composition (IME emulated through the DevTools protocol)',
   test('a Japanese IME that is on does not start the test with its first letter', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     const client = await page.context().newCDPSession(page);
 
     await compose(client, 'k');
@@ -153,7 +154,7 @@ test.describe('input: composition (IME emulated through the DevTools protocol)',
   });
 
   test('a Latin composition after kana hides the notice', async ({ page }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     const client = await page.context().newCDPSession(page);
 
     await compose(client, 'か');
@@ -166,7 +167,7 @@ test.describe('input: composition (IME emulated through the DevTools protocol)',
   });
 
   test('the converted kana are not typed, and nothing is doubled', async ({ page }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     const client = await page.context().newCDPSession(page);
     const before = await page.getByTestId('prompt-text').innerText();
 

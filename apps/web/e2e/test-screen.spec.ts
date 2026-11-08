@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openTypingScreen } from './lib/app';
 import { canonicalOfPrompt } from './lib/prompt';
 
 const INPUT = 'input[aria-label="Kana input sink"]';
@@ -8,7 +9,7 @@ const INPUT = 'input[aria-label="Kana input sink"]';
 // them are unit tests (test-screen-focus.test.tsx).
 test.describe('test screen: Restart and the focus', () => {
   test('Restart is hidden until the mouse is over it', async ({ page }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     const restart = page.getByRole('button', { name: 'Restart test' });
     await expect(restart).toHaveCSS('opacity', '0');
     await restart.hover();
@@ -21,7 +22,7 @@ test.describe('test screen: Restart and the focus', () => {
     'a click on Restart, on Finish and on Next test leaves the focus on the field',
     { tag: '@mobile' },
     async ({ page }) => {
-      await page.goto('/');
+      await openTypingScreen(page);
       await page.getByRole('radio', { name: 'Zen' }).click();
       const input = page.locator(INPUT);
 

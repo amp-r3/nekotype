@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { expectStoredTyping, openTypingScreen } from './lib/app';
 import { canonicalOfPrompt } from './lib/prompt';
 
 test.describe('focus redirection and keyboard-first typing', () => {
@@ -6,7 +7,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
     '(a) load, type immediately without clicking, the test starts',
     { tag: '@mobile' },
     async ({ page }) => {
-      await page.goto('/');
+      await openTypingScreen(page);
 
       const input = page.locator('input[aria-label="Kana input sink"]');
       await expect(input).toBeFocused();
@@ -23,7 +24,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
     '(b) click a ConfigBar button, press a letter: focus is on the input AND the letter was processed (also with a wrong letter: mistake counted)',
     { tag: '@mobile' },
     async ({ page }) => {
-      await page.goto('/');
+      await openTypingScreen(page);
       const input = page.locator('input[aria-label="Kana input sink"]');
 
       // Click a ConfigBar button (e.g. Katakana) to steal focus from input
@@ -43,25 +44,29 @@ test.describe('focus redirection and keyboard-first typing', () => {
     },
   );
 
-  test('(d) set words mode, reload: the first prompt is a word/phrase, never a single kana', async ({
+  test('(d) set phrases mode, reload: the first prompt is a word/phrase, never a single kana', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
 
     const input = page.locator('input[aria-label="Kana input sink"]');
     await expect(input).toBeFocused();
 
-    // Switch to Words mode
-    const wordsBtn = page.getByRole('radio', { name: 'Words' });
-    await wordsBtn.click();
-    await expect(wordsBtn).toHaveAttribute('aria-checked', 'true');
+    // Switch to Phrases (Words is the default, so only a change is written)
+    const phrasesBtn = page.getByRole('radio', { name: 'Phrases' });
+    await phrasesBtn.click();
+    await expect(phrasesBtn).toHaveAttribute('aria-checked', 'true');
 
-    // Allow 350ms for debounced persistence to localStorage
-    await page.waitForTimeout(350);
+    // The setting is written on the click; wait until it is stored before reloading.
+    await expectStoredTyping(page, 'content', 'phrases');
 
     // Reload the page
     await page.reload();
     await expect(input).toBeFocused();
+    await expect(page.getByRole('radio', { name: 'Phrases' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
 
     // First prompt must be a word/phrase (length >= 2 characters, never a single kana)
     const promptElement = page.getByTestId('prompt-text');
@@ -72,7 +77,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
   });
 
   test('(e) tab → enter restarts the test', async ({ page }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     const input = page.locator('input[aria-label="Kana input sink"]');
     await expect(input).toBeFocused();
 
@@ -98,7 +103,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
     '(f) a full count test (10 prompts, type canonical answers) ends on results screen, "Next test" via Enter starts a new idle test',
     { tag: '@mobile' },
     async ({ page }) => {
-      await page.goto('/');
+      await openTypingScreen(page);
       const input = page.locator('input[aria-label="Kana input sink"]');
       await expect(input).toBeFocused();
 
@@ -151,7 +156,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
   test('(i) a count test over words (ん at the end of prompts, next prompt shown early) ends on the results screen', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     const input = page.locator('input[aria-label="Kana input sink"]');
     await expect(input).toBeFocused();
 
@@ -185,7 +190,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
   });
 
   test('(g) RU/EN switch changes a visible label and survives a reload', async ({ page }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
 
     // Check initial English label of the script switch
     const scriptRadio = page.getByRole('radio', { name: 'Hiragana' });
@@ -200,9 +205,6 @@ test.describe('focus redirection and keyboard-first typing', () => {
     const ruScriptRadio = page.getByRole('radio', { name: 'Хирагана' });
     await expect(ruScriptRadio).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
-
-    // Allow 350ms for persistence
-    await page.waitForTimeout(350);
 
     // Reload page
     await page.reload();
@@ -220,7 +222,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
   test('(h) Space in the input does nothing; Esc reveals the answer and the prompt is assisted', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openTypingScreen(page);
     const input = page.locator('input[aria-label="Kana input sink"]');
     await expect(input).toBeFocused();
 
