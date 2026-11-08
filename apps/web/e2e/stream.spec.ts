@@ -248,6 +248,8 @@ test.describe('the interface while a test runs', () => {
 
   test('the first Tab reaches Restart, and Enter restarts', async ({ page }) => {
     await page.goto('/');
+    // A key pressed before the vocabulary has loaded is ignored, so wait for the prompt.
+    await expect(page.getByTestId('prompt-text')).not.toHaveText('');
     await page.keyboard.press('KeyA');
     await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'running');
 
