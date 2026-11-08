@@ -1,9 +1,11 @@
+Not used in the MVP (ADR 058).
+
 # RowPicker
 
-Выбор рядов для режима «кана». Открывается в `Dialog` из `ModePanel`. Значения — `RowId` движка.
+Row selection for content "kana" (removed by ADR 058 together with kana tests). Opens in a `Dialog` from `ModePanel`. Values are the engine's `RowId`s.
 
-- Группы: основные (vowels … w_n), звонкие (g … p), сочетания (ky … py). Расширенные ряды катаканы (ext_fa, ext_va, ext_wi, ext_ti, ext_che) показываются только при письме «катакана» или «обе»: для хираганы они не дают ни одной каны.
-- При переключении письма на хирагану выбранные расширенные ряды не удаляются из значения, но не показываются и не считаются: так же `personalBestKey` учитывает только ряды, которые дают кану для письма (`metrics.md`).
-- У группы есть действия «все» и «снять». Ряд — чекбокс (`role="checkbox"`): квадрат 12px, во включённом состоянии залит `eye`; кана в `jp-body` (при «обе» — катаканой); `RowId` в `mono-small`.
-- Ничего не выбрано → `Notice` «тест возьмёт базовые ряды»; пустой список заменяется значениями по умолчанию (`storage-sync.md`).
-- Длинный список прокручивается внутри тела диалога, действия остаются на месте.
+- Groups: basic (vowels … w_n), voiced (g … p), combinations (ky … py). Extended katakana rows (ext_fa, ext_va, ext_wi, ext_ti, ext_che) are shown only with script `katakana` or `both`: for hiragana they yield no kana.
+- When the script switches to hiragana, selected extended rows are not removed from the value but are neither shown nor counted: in the same way `personalBestKey` takes only the rows that yield kana for the script (`metrics.md`).
+- A group has `all` and `none` actions. A row is a checkbox (`role="checkbox"`): a 12px square filled `eye` when on; kana in `jp-body` (in katakana for `both`); the `RowId` in `mono-small`.
+- Nothing selected → `Notice` "the test will use the base rows"; an empty list is replaced with the defaults (`storage-sync.md`).
+- A long list scrolls inside the dialog body; the actions stay in place.

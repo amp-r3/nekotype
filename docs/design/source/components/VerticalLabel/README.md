@@ -1,7 +1,10 @@
+Not used in the MVP (ADR 058).
+
 # VerticalLabel
 
-Вертикальная подпись режима (`writing-mode: vertical-rl`) на экране результатов.
+The vertical mode label (`writing-mode: vertical-rl`) that stood next to KPM on typing results in v9 (`ことば・３０`).
 
-- Только кана, `・` и `０`–`９`: «ことば・３０», «かな・１５». В сабсете Noto нет вертикальных форм, поэтому маленькие каны и `ー` в подписи не используются.
-- Текст идёт из i18n. `ariaLabel` на языке интерфейса обязателен: «режим: слова, 30 секунд».
-- Больше нигде не используется.
+**Why it is out (decision 85):** mode labels come from i18n only, without Japanese — the mode line above KPM (`words · hiragana · relaxed · 60 s`, `phrases · 25` / `фразы · 25`, `words · zen` / `слова · zen`). A Japanese label would need more glyphs in the subsets and does not read for someone who is only learning kana.
+
+- Kept for the record: kana, `・` and `０`–`９` only; `ariaLabel` required.
+- The fullwidth digits `０`–`９` in the Noto subset were added for this label (Q15) and have no other use now — see the open questions.

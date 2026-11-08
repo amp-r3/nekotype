@@ -1,6 +1,6 @@
 # Cat
 
-Девять рисунков кошки: `cat-<стиль>-<состояние>.svg`, viewBox 96×96. В продукте только `geometry` (`neutral`, `sleep`, `content`). Файлы `line` и `silhouette` — архив, в продукте не используются.
+Nine cat drawings: `cat-<style>-<mood>.svg`, viewBox 96×96. The product uses `geometry` only (`neutral`, `sleep`, `content`). The `line` and `silhouette` files are an archive and are not used in the product.
 
-- Цвета зашиты: шерсть `#efe9dd` (`fur`), глаза `#a5c8dd` (`eye`), вырезы `#1c1e21` (`bg`). Ставить только на `bg`.
-- В интерфейсе используйте компонент `Cat`: он берёт цвета из токенов. Файлы нужны для мест вне приложения (OG-картинки, README, соцсети).
+- Colours are baked in: fur `#efe9dd` (`fur`), eyes `#a5c8dd` (`eye`), cut-outs `#1c1e21` (`bg`). Place on `bg` only.
+- In the interface use the `Cat` component: it takes its colours from tokens. The files are for places outside the app (OG images, README, social media).

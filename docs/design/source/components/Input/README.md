@@ -1,7 +1,7 @@
 # Input
 
-Поле формы: ник, подтверждение удаления, своё слово. Ввод в тесте — не поле: его рисует `TestArea`.
+A form field: nickname, deletion confirmation, a custom word. Typing-test input is not a field: `TestArea` draws it.
 
-- `bg-raised`, без рамки, `radius-sm`, высота `control-h`; каретка браузера `eye`.
-- Плейсхолдер — `fur-dim` (Q25): `untyped` разрешён только от 24px.
-- Ошибка — черта `miss` снизу и текст `miss`. Disabled — без заливки, рамка `line`.
+- `bg-raised`, no border, `radius-sm`, `control-h` height; browser caret `eye`.
+- Placeholder — `fur-dim` (Q25): `untyped` is allowed only from 24px.
+- Error — a `miss` underline at the bottom and `miss` text. Disabled — no fill, `line` border.

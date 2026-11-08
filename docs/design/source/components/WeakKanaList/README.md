@@ -1,6 +1,12 @@
 # WeakKanaList
 
-Пять самых слабых кан на результатах: кана, набранные написания, среднее время реакции, ошибки.
+Mistyped kana on typing results: `mistyped kana` / `каны с ошибками`. Up to 5, most errors first.
 
-- Кана в `jp-cell`, написания в `mono-small` / `fur-dim` через « · », числа в `mono-romaji` справа.
-- Строки разделены линией `line`, без карточек. Порядок задаёт движок метрик, компонент не сортирует.
+| column (en / ru) | content |
+| --- | --- |
+| `kana` / `кана` | `jp-cell` |
+| `romaji` / `ромадзи` | accepted spellings in `mono-small` / `fur-dim`, joined with " · ": `tsu · tu`, `fu · hu`, `nu` (U+00B7 in Mono is on "Glyphs to add to subsets") |
+| `errors` / `ошибки` | number of errors, `mono-romaji`, right-aligned |
+
+- No reaction-time column (ADR 058).
+- Rows separated by a `line`, no cards. The metrics engine sets the order; the component only cuts to 5.

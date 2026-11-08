@@ -1,9 +1,8 @@
 # HistoryTable
 
-Постраничная история тестов на `/stats`: дата, режим, KPM, точность, время.
+Paginated typing test history on `/stats`: `date` / `дата`, `mode` / `режим`, `kpm`, `accuracy` / `точность`, `time` / `время`. 10 rows per page, `Pagination` under the table.
 
-- Заголовки `ui-caption` / `fur-dim`, строки разделены `line`, числа справа в `mono-romaji`. Рекорд отмечен `PersonalBestBadge`.
-- Повтор (ADR 033) отмечается словом в столбце режима: «слова · 30 с · повтор». Рекордом он не бывает.
-- Подгрузка — `Notice` «загружаем историю…» под таблицей. Скелетонов и шиммера нет.
-- Контейнер ≤ 480px: каждая строка становится блоком из двух строк (дата сверху; режим, KPM, точность снизу), время скрыто.
-- Под таблицей стоит `Pagination`.
+- Headers `ui-caption` / `fur-dim`, rows separated by `line`, numbers right-aligned in `mono-romaji`.
+- Mode: `words · 60 s` / `слова · 60 с`, `phrases · 25`, `words · zen`. A repeat (ADR 033) is a word in the mode column: `words · 60 s · repeat` / `слова · 60 с · повтор`; it is never a personal best. A personal best gets `PersonalBestBadge`.
+- Loading the next page — a `Notice` `loading history…` / `загрузка истории…` under the table. No skeletons, no shimmer.
+- Container ≤ 480px: each row becomes a two-line block (date on top; mode, KPM, accuracy below), time is hidden.

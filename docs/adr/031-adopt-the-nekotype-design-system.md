@@ -1,6 +1,6 @@
 # ADR 031: Adopt the Nekotype Design System from P2
 
-- **Status:** In force. Amends A31. Amended by [ADR 058](058-learning-first.md): the navigation links learning at `/` and typing at `/type`.
+- **Status:** In force. Amends A31. Amended by [ADR 058](058-learning-first.md): the navigation links learning at `/` and typing at `/type`. Amended by [ADR 059](059-design-system-v10.md): the reference is version 10 of the design system, and the code takes its component names.
 - **Context:** A31 kept the MVP interface basic and planned a full redesign for v1.1. A design system for the product now exists as a [private artifact](https://claude.ai/artifact/22bxWBXuofNxqfnPzuvej1): tokens, components, logo and cat assets. It was written separately from the spec and disagreed with it on metrics, on what a test screen shows, and on motion.
 - **Decision:**
   - New screens follow the design system from P2. No separate redesign is planned. Views stay separated from logic, as "UI architecture" in [Frontend](../spec/frontend.md) requires.

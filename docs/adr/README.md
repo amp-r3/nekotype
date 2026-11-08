@@ -55,7 +55,7 @@ Append-only log of architectural decisions, one file per decision.
 | [028](028-empty-pool-falls-back-to-basic-rows.md)                                    | Empty Kana Pool Falls Back to the Basic Rows                                                 | Superseded by 058    |
 | [029](029-stream-engine-with-spelling-constraints.md)                                | Stream Engine with Spelling Constraints                                                      | In force             |
 | [030](030-observers-and-compaction-of-the-stream-matcher.md)                         | Observers and Compaction of the Stream Matcher                                               | In force             |
-| [031](031-adopt-the-nekotype-design-system.md)                                       | Adopt the Nekotype Design System from P2                                                     | Amended by 058       |
+| [031](031-adopt-the-nekotype-design-system.md)                                       | Adopt the Nekotype Design System from P2                                                     | Amended by 058, 059  |
 | [032](032-font-weights-for-the-design-system.md)                                     | Font Weights for the Design System                                                           | In force             |
 | [033](033-repeat-test.md)                                                            | Repeat Test                                                                                  | In force             |
 | [034](034-design-tokens-and-font-build.md)                                           | Design Tokens and Font Build                                                                 | In force             |
@@ -71,7 +71,7 @@ Append-only log of architectural decisions, one file per decision.
 | [044](044-row-names-are-romaji.md)                                                   | Kana Row Names Are Romaji                                                                    | In force             |
 | [045](045-e2e-on-production-bundle-and-gated-deploy.md)                              | e2e on the Production Bundle, and a Deploy Gated by a Smoke Test                             | In force             |
 | [046](046-trainer-lifecycle-and-content-loading.md)                                  | Trainer Lifecycle and Vocabulary Loading                                                     | Amended by 058       |
-| [047](047-stream-trimmed-by-whole-lines.md)                                          | Text Stream Trimmed by Whole Lines                                                           | In force             |
+| [047](047-stream-trimmed-by-whole-lines.md)                                          | Text Stream Trimmed by Whole Lines                                                           | Amended by 060       |
 | [048](048-worst-keystroke-latency-gate.md)                                           | Worst-Keystroke Latency Gate on Every Content Kind                                           | Amended by 058       |
 | [049](049-session-boundaries.md)                                                     | Session Boundaries: Injected Statistics, Config Read Once, Private Finish                    | In force             |
 | [050](050-completed-prompts-at-test-end.md)                                          | Prompts Completed at the End of a Test, and the Memory of a Long Test                        | In force             |
@@ -83,3 +83,5 @@ Append-only log of architectural decisions, one file per decision.
 | [056](056-show-translation-setting.md)                                               | The `showTranslation` Setting: an Optional Field of Settings v1                              | In force             |
 | [057](057-lazy-results-screen-and-russian-dictionary.md)                             | The Results Screen and the Russian Dictionary Are Lazy Chunks                                | In force             |
 | [058](058-learning-first.md)                                                         | Learning First, with Adaptive Unlocking of Kana                                              | In force             |
+| [059](059-design-system-v10.md)                                                      | Design System Version 10                                                                     | In force             |
+| [060](060-long-prompt-breaks-between-tokens.md)                                      | A Prompt Longer Than a Line Breaks Between Tokens                                            | In force             |
