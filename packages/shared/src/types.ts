@@ -19,6 +19,12 @@ export interface Scheduler {
   clearInterval(handle: TimeoutHandle): void;
 }
 
+/** Plays the sound of a kana; a provider that plays nothing stands in until P6 (learning.md, "Audio"). */
+export interface AudioProvider {
+  /** Never throws and never waits: a sound that fails is skipped. */
+  play(key: LearnKanaKey): void;
+}
+
 export type ValidTestConfig =
   | { readonly kind: 'time'; readonly seconds: 15 | 30 | 60 | 120 }
   | { readonly kind: 'count'; readonly prompts: 10 | 25 | 50 | 100 }
