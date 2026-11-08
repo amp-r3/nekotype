@@ -58,3 +58,15 @@ export function isPlainLeftClick(
     !event.altKey
   );
 }
+
+const _immersive = signal(false);
+
+/**
+ * True while a screen takes the whole window, a learning session for one: the navigation and the
+ * footer are not drawn.
+ */
+export const immersive: ReadonlySignal<boolean> = _immersive;
+
+export function setImmersive(on: boolean): void {
+  _immersive.value = on;
+}

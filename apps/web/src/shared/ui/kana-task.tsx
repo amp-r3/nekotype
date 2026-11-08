@@ -82,7 +82,7 @@ export function KanaTask({
     return () => {
       controller.destroy();
     };
-  }, [kind, kana, romaji, narrow]);
+  }, [kind, kana, romaji, narrow, session.n]);
 
   const solo = narrow ? 'text-jp-solo-sm' : 'text-jp-solo';
   const caret = (

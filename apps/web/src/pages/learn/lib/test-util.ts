@@ -1,4 +1,7 @@
 import type {
+  Clock,
+  Scheduler,
+  TimeoutHandle,
   LearnEntry,
   LearnKanaKey,
   LearnState,
@@ -52,4 +55,36 @@ export function stateWith(parts: {
     entries,
     recent,
   };
+}
+
+export class Clock0 implements Clock {
+  time = 1_700_000_000_000;
+  now(): number {
+    return this.time;
+  }
+}
+
+export class Timers implements Scheduler {
+  private nextId = 1;
+  readonly tasks = new Map<number, () => void>();
+  setTimeout(fn: () => void): TimeoutHandle {
+    const id = this.nextId++;
+    this.tasks.set(id, fn);
+    return { id };
+  }
+  clearTimeout(handle: TimeoutHandle): void {
+    if (typeof handle.id === 'number') this.tasks.delete(handle.id);
+  }
+  setInterval(fn: () => void): TimeoutHandle {
+    return this.setTimeout(fn);
+  }
+  clearInterval(handle: TimeoutHandle): void {
+    this.clearTimeout(handle);
+  }
+  /** Runs the timers that are pending now, once. */
+  flush(): void {
+    const due = [...this.tasks.values()];
+    this.tasks.clear();
+    for (const fn of due) fn();
+  }
 }

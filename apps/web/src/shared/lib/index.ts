@@ -11,7 +11,14 @@ export { useMediaQuery } from './use-media-query';
 
 export { isApplePlatform } from './platform';
 
-export { currentPath, navigate, startRouter, isPlainLeftClick } from './router';
+export {
+  currentPath,
+  navigate,
+  startRouter,
+  isPlainLeftClick,
+  immersive,
+  setImmersive,
+} from './router';
 
 export type { KeyValueStore } from './storage';
 export {

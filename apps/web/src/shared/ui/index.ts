@@ -25,15 +25,6 @@ export type { KbdProps } from './kbd';
 export { KeyboardIcon, ResetIcon, RefreshIcon, CheckIcon } from './icons';
 export type { IconProps } from './icons';
 
-export { KanaTask } from './kana-task';
-export type { KanaTaskProps, TaskLabels, TaskSession } from './kana-task';
-
-export { OptionCard } from './option-card';
-export type { OptionCardProps, OptionState } from './option-card';
-
-export { createTaskController } from './task-controller';
-export type { TaskController, TaskKind } from './task-controller';
-
-// `KanaChart` is not exported here: this barrel is in the initial graph, which would pull the chart
-// into the initial chunk. The learning screen imports it from '@/shared/ui/kana-chart' until
-// learning is the initial route.
+// `KanaChart`, `KanaTask`, `OptionCard` and `createTaskController` are not exported here: this barrel
+// is in the initial graph, which would pull them into the initial chunk. The learning screen imports
+// them from their own files ('@/shared/ui/kana-chart', …) until learning is the initial route.
