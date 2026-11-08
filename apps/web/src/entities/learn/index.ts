@@ -57,3 +57,6 @@ export {
   flushLearn,
   resetLearning,
 } from './model/store';
+
+export type { CellState, ChartRowInfo, KanaCellInfo } from './lib/chart';
+export { cellInfos, chartRows } from './lib/chart';
