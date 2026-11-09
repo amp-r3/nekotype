@@ -2,7 +2,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
-import { KanaChart } from './kana-chart';
+import { KanaChart, KanaChartPanel } from './kana-chart';
 import type { ChartCell, ChartCellState, ChartRow } from './kana-chart';
 
 const cell = (kana: string, state: ChartCellState = 'learning', due = false): ChartCell => ({
@@ -127,5 +127,67 @@ describe('KanaChart', () => {
     });
     expect(root.querySelector('[data-testid="kana-details"]')).toBeNull();
     expect(byKana(root, 'う').hasAttribute('aria-expanded')).toBe(false);
+  });
+
+  it('groups the rows of each block under its caption, the blocks side by side', () => {
+    const root = mount(
+      <KanaChart rows={rows} ariaLabel="x" blockLabels={{ basic: 'basic', dakuten: 'voiced' }} />,
+    );
+    const groups = Array.from(root.querySelectorAll('[role="rowgroup"]'));
+    expect(groups.map((group) => group.getAttribute('aria-label'))).toEqual(['basic', 'voiced']);
+    expect(groups[0]?.querySelectorAll('[role="row"]')).toHaveLength(2);
+    expect(groups[1]?.querySelectorAll('[role="row"]')).toHaveLength(1);
+    expect(root.querySelector('.nk-chart__grid')?.children).toHaveLength(2);
+  });
+
+  it('draws the legend: the four states, then the due mark', () => {
+    const labels = {
+      locked: 'locked',
+      learning: 'learning',
+      confident: 'confident',
+      mastered: 'mastered',
+      due: 'review due',
+    };
+    const root = mount(<KanaChart rows={rows} ariaLabel="x" legend={{ sample: 'あ', labels }} />);
+    const legend = root.querySelector('[data-testid="kana-legend"]');
+    expect(legend?.textContent).toBe('あlockedあlearningあconfidentあmasteredあreview due');
+    expect(legend?.querySelector('.is-due')).not.toBeNull();
+  });
+
+  it('shows no tooltip on a cell whose details are open, and Esc in the details closes them', async () => {
+    const root = mount(
+      <KanaChart
+        rows={rows}
+        ariaLabel="x"
+        renderDetails={(c, close) => (
+          <KanaChartPanel
+            kana={c.kana}
+            romaji="i"
+            lines={[{ text: 'learning' }, { text: 'median', dim: true }]}
+            closeLabel="close"
+            onClose={close}
+          />
+        )}
+      />,
+    );
+    const i = byKana(root, 'い');
+    await act(() => {
+      i.focus();
+    });
+    expect(root.querySelectorAll('[data-testid="kana-tooltip"]')).toHaveLength(1);
+    await act(() => {
+      i.click();
+    });
+    expect(root.querySelector('[data-testid="kana-tooltip"]')).toBeNull();
+    const panel = root.querySelector('[data-testid="kana-panel"]');
+    expect(panel?.textContent).toBe('いicloselearningmedian');
+    const close = Array.from(panel?.querySelectorAll('button') ?? []).find(
+      (button) => button.textContent === 'close',
+    );
+    if (close === undefined) throw new Error('no close button');
+    close.focus();
+    await press(close, 'Escape');
+    expect(root.querySelector('[data-testid="kana-panel"]')).toBeNull();
+    expect(document.activeElement).toBe(i);
   });
 });

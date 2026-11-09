@@ -35,6 +35,7 @@ export {
   MASTERED_BOX,
   dueAtFor,
   isDue,
+  isDueKana,
   isMastered,
   nextBox,
   reviewEntry,

@@ -25,6 +25,19 @@ export function isDue(entry: LearnEntry | undefined, now: number): boolean {
   return entry !== undefined && entry.box >= 1 && entry.dueAt <= now;
 }
 
+/**
+ * Due for a review: in box 1 or higher, `dueAt` has passed and the kana is confident (ADR 062). A
+ * kana that lost its confidence is learning: no due mark, no review.
+ */
+export function isDueKana(
+  entry: LearnEntry | undefined,
+  answers: readonly RecallAnswer[],
+  targetMs: number,
+  now: number,
+): boolean {
+  return isDue(entry, now) && isConfident(answers, targetMs);
+}
+
 const NEXT_BOX: Readonly<Record<LearnBox, LearnBox>> = { 0: 0, 1: 2, 2: 3, 3: 4, 4: 5, 5: 5 };
 
 export function nextBox(box: LearnBox): LearnBox {

@@ -4,7 +4,7 @@ import { canonicalFor } from '@/entities/prompt';
 import { createLearnStore, initialCounters } from '@/entities/learn';
 import { createLearnSession } from './session';
 import type { TaskPort } from './session';
-import { Clock0, Timers, key, seededRng, stateWith } from '../lib/test-util';
+import { Clock0, Timers, answers, key, seededRng, stateWith } from '../lib/test-util';
 import { reviewQueue } from '../lib/review-queue';
 
 const port: TaskPort = {
@@ -26,6 +26,8 @@ async function setup() {
       い: { box: 3, dueAt: clock.time - day },
       う: { box: 1, dueAt: clock.time + 5 * day },
     },
+    // Confident: only a confident kana is due (ADR 062).
+    recent: { あ: answers(10, 900), い: answers(10, 900), う: answers(10, 900) },
   });
   await db.put('delta', 'current', { learn, counters: initialCounters() });
   const store = createLearnStore({
@@ -35,7 +37,7 @@ async function setup() {
     targetMs: () => 1500,
   });
   await store.init();
-  const queue = reviewQueue(store.state.value, 'hiragana', clock.now());
+  const queue = reviewQueue(store.state.value, 'hiragana', 1500, clock.now());
   const play = vi.fn();
   const session = createLearnSession({
     track: 'hiragana',

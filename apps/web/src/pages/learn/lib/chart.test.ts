@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { LearnEntry, LearnKanaKey, RecallAnswer } from '@nekotype/shared/types';
 import { cellInfos, initialLearnState, keyOf } from '@/entities/learn';
 import type { KanaCellInfo } from '@/entities/learn';
-import { chartModel, kanaDetails, kanaStateLines } from './chart';
+import { chartBlockLabels, chartLegend, chartModel, kanaPanelLines, kanaStateLines } from './chart';
 
 const NOW = new Date(2026, 4, 10, 12).getTime();
 const DAY = new Date(2026, 4, 11).getTime();
@@ -63,15 +63,42 @@ describe('kanaStateLines', () => {
   });
 });
 
-describe('kanaDetails', () => {
-  it('lists the mixups, most first, and the recognition accuracy', () => {
-    expect(kanaDetails(cellOf(a))).toEqual([
-      'mixed up with い ×4, え ×2',
-      'recognition accuracy 78% (14 of 18)',
+describe('kanaPanelLines', () => {
+  it('holds the state, the median and accuracy, the mixups, most first, and the recognition accuracy', () => {
+    const lines = kanaPanelLines(cellOf(a));
+    expect(lines[0]?.text).toMatch(/^confident · next review: .+/);
+    expect(lines.slice(1)).toEqual([
+      { text: 'median 1000 ms · accuracy 100%', dim: true },
+      { text: 'mixed up with い ×4, え ×2' },
+      { text: 'recognition accuracy 78% (14 of 18)', dim: true },
     ]);
   });
   it('says so when there is nothing yet', () => {
-    expect(kanaDetails(cellOf(i))).toEqual(['no mixups yet', 'no recognition answers yet']);
+    expect(kanaPanelLines(cellOf(i)).slice(2)).toEqual([
+      { text: 'no mixups yet' },
+      { text: 'no recognition answers yet', dim: true },
+    ]);
+  });
+});
+
+describe('chart captions and legend', () => {
+  it("names every block and every state, and draws the swatches with the track's kana", () => {
+    expect(chartBlockLabels()).toEqual({
+      basic: 'basic',
+      dakuten: 'voiced',
+      yoon: 'combinations',
+      extended: 'extended',
+    });
+    expect(chartLegend('katakana')).toEqual({
+      sample: 'ア',
+      labels: {
+        locked: 'locked',
+        learning: 'learning',
+        confident: 'confident',
+        mastered: 'mastered',
+        due: 'review due',
+      },
+    });
   });
 });
 
