@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import type { LearnKanaKey, LearnState, Track } from '@nekotype/shared/types';
 import { createMemoryDb } from '@/shared/lib';
 import type { Db, Write } from '@/shared/lib';
@@ -7,6 +7,7 @@ import type { LearnStore } from './store';
 import { ManualScheduler, SeededRng, TestClock } from './test-util';
 import { keyOf, keysOfTrack } from '../lib/tracks';
 import { isConfident } from '../lib/confidence';
+import { initialLearnState } from '../lib/state';
 
 const A = keyOf('hiragana', 'あ');
 const KA = keyOf('hiragana', 'か');
@@ -332,27 +333,63 @@ describe('learn store: persistence', () => {
     await db.put('delta', 'current', { learn: { unlocked: 'x' }, counters: 1 });
     const { store } = setup({ db });
     await store.init();
-    expect(store.ready.value).toBe(true);
+    expect(store.status.value).toBe('ready');
     expect(store.state.value.unlocked.hiragana).toHaveLength(5);
     expect(store.state.value.entries).toEqual({});
   });
 
-  it('works from memory when the database fails', async () => {
-    const failing: Db = {
-      ...createMemoryDb(),
-      get: () => Promise.reject(new Error('closed')),
-      write: () => Promise.reject(new Error('closed')),
-    };
-    const { store, scheduler } = setup({ db: failing });
-    await store.init();
-    expect(store.ready.value).toBe(true);
-    answer(store, A);
-    const run = vi.fn(() => {
-      scheduler.runAll();
+  it('takes the error status when the read fails, and writes nothing until a read succeeds', async () => {
+    const db = createMemoryDb();
+    await db.put('delta', 'current', {
+      learn: {
+        ...initialLearnState(),
+        unlocked: { hiragana: keysOfTrack('hiragana').slice(0, 7), katakana: [] },
+      },
+      counters: { started: { typing: 0, learn: 3 }, finished: { typing: 0, learn: 2 } },
     });
-    expect(run).not.toThrow();
-    await expect(store.flush()).resolves.toBeUndefined();
-    expect(store.state.value.recent[A]).toHaveLength(1);
+    const stored = await db.get('delta', 'current');
+    let failing = true;
+    const flaky: Db = {
+      ...db,
+      get: (store, key) => (failing ? Promise.reject(new Error('closed')) : db.get(store, key)),
+    };
+    const writes = recordedWrites(flaky);
+    const { store, scheduler } = setup({ db: flaky });
+    expect(store.status.value).toBe('loading');
+    await store.init();
+    expect(store.status.value).toBe('error');
+    expect(store.ready.value).toBe(false);
+
+    // An answer after the failed read does not replace the stored record with the initial state.
+    answer(store, A);
+    scheduler.runAll();
+    await store.flush();
+    expect(writes).toHaveLength(0);
+    expect(await db.get('delta', 'current')).toEqual(stored);
+
+    // A retry that succeeds reads the stored state and lets writes through again.
+    failing = false;
+    await store.retry();
+    expect(store.status.value).toBe('ready');
+    expect(store.state.value.unlocked.hiragana).toHaveLength(7);
+    expect(store.counters.value.finished.learn).toBe(2);
+  });
+
+  it('stays in the error status when a retry fails too', async () => {
+    const failing: Db = { ...createMemoryDb(), get: () => Promise.reject(new Error('closed')) };
+    const { store } = setup({ db: failing });
+    await store.init();
+    await store.retry();
+    expect(store.status.value).toBe('error');
+  });
+
+  it('writes again after the stored record is reset', async () => {
+    const failing: Db = { ...createMemoryDb(), get: () => Promise.reject(new Error('closed')) };
+    const { store } = setup({ db: failing });
+    await store.init();
+    expect(store.status.value).toBe('error');
+    await store.reset();
+    expect(store.status.value).toBe('ready');
   });
 
   it('reset clears the state, the counters and the stored record', async () => {

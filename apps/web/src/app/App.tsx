@@ -45,7 +45,8 @@ export function App(): JSX.Element {
           />
         )}
 
-        {databaseMode.value === 'memory' && (
+        {/* `/` says it on its own reserved notice line. */}
+        {databaseMode.value === 'memory' && path !== '/' && (
           <p role="status" className="text-fur-dim text-ui-label mt-2">
             {t('storage.unavailable')}
           </p>

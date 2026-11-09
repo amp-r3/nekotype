@@ -1,14 +1,15 @@
 import type { JSX } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { t } from '@/shared/i18n';
-import { Segmented } from '@/shared/ui';
+import { Button, Notice, Segmented } from '@/shared/ui';
 import { defaultClock } from '@/shared/lib';
 import { learnTargetMs, learnTrack, setTrack } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
 import {
   initLearn,
   learnCounters,
-  learnReady,
+  learnStatus,
+  retryLearn,
   learnState,
   localDay,
   streaks,
@@ -22,7 +23,30 @@ export function StatsPage(): JSX.Element {
     void initLearn(() => learnTargetMs.value);
   }, []);
 
-  if (!learnReady.value) {
+  if (learnStatus.value === 'error') {
+    return (
+      <section className="max-w-layout-test mx-auto flex w-full flex-col items-start gap-6 py-12">
+        <Notice
+          tone="miss"
+          action={
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                void retryLearn();
+              }}
+            >
+              {t('learn.retry')}
+            </Button>
+          }
+        >
+          {t('learn.loadError')}
+        </Notice>
+      </section>
+    );
+  }
+
+  if (learnStatus.value !== 'ready') {
     return (
       <p role="status" className="text-fur-dim text-ui-label py-12 text-center">
         {t('route.loading')}

@@ -1,12 +1,13 @@
 import type { JSX } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
-import { t } from '@/shared/i18n';
-import { Button, Segmented } from '@/shared/ui';
+import { t, tParts, tPluralParts } from '@/shared/i18n';
+import type { TranslationPart } from '@/shared/i18n';
+import { Button, Notice, Segmented } from '@/shared/ui';
 import { KanaChart, KanaChartPanel } from '@/shared/ui/kana-chart';
 import { chartBlockLabels, chartLegend, chartModel, kanaPanelLines, romajiOf } from '../lib/chart';
 import { learnTargetMs, learnTrack, setTrack } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
-import { defaultClock } from '@/shared/lib';
+import { databaseMode, defaultClock } from '@/shared/lib';
 import {
   cellInfos,
   currentStreak,
@@ -14,9 +15,10 @@ import {
   masteredCount,
   keyOf,
   keysOfTrack,
-  learnReady,
   learnState,
+  learnStatus,
   localDay,
+  retryLearn,
 } from '@/entities/learn';
 import type { LearnSession } from '../model/session';
 import { dueCount } from '../lib/review-queue';
@@ -25,6 +27,33 @@ import type { SessionRuntime } from '../session-loader';
 import { SummaryScreen } from './summary-screen';
 
 type View = 'home' | 'loading' | 'session' | 'summary';
+
+// A translated line with its values set apart: numbers in the mono face, kana in the Japanese one.
+function Parts({
+  parts,
+  valueClass,
+  lang,
+}: {
+  readonly parts: readonly TranslationPart[];
+  readonly valueClass: string;
+  readonly lang?: string;
+}): JSX.Element {
+  return (
+    <>
+      {parts.map((part, at) =>
+        part.param ? (
+          <span key={at} className={valueClass} lang={lang}>
+            {part.text}
+          </span>
+        ) : (
+          part.text
+        ),
+      )}
+    </>
+  );
+}
+
+const kanaOfKey = (key: string): string => key.slice(key.indexOf(':') + 1);
 
 // The learning screen: track switch, progress, the kana chart and the learning session
 // (docs/spec/learning.md, "`/` screen"). The hidden input field belongs to the page and keeps the
@@ -35,10 +64,18 @@ export function LearnPage(): JSX.Element {
   const [runtime, setRuntime] = useState<SessionRuntime | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
+  const status = learnStatus.value;
 
   useEffect(() => {
     void initLearn(() => learnTargetMs.value);
   }, []);
+
+  // `continue` takes the focus when the screen is ready, so Enter starts the session (design 32).
+  useEffect(() => {
+    if (status !== 'ready' || view !== 'home') return;
+    actionsRef.current?.querySelector('button')?.focus({ preventScroll: true });
+  }, [status, view]);
 
   // The session code is a chunk of its own. The field is focused here, inside the click, before
   // the chunk is awaited, so a phone keeps its keyboard.
@@ -63,14 +100,6 @@ export function LearnPage(): JSX.Element {
     session?.leave();
     setView('home');
   }, [session]);
-
-  if (!learnReady.value) {
-    return (
-      <p role="status" className="text-fur-dim text-ui-label py-12 text-center">
-        {t('route.loading')}
-      </p>
-    );
-  }
 
   const hiddenInput = (
     <input
@@ -130,6 +159,7 @@ export function LearnPage(): JSX.Element {
     );
   }
 
+  const ready = status === 'ready';
   const track = learnTrack.value;
   const state = learnState.value;
   const keys = keysOfTrack(track);
@@ -139,35 +169,81 @@ export function LearnPage(): JSX.Element {
   const infos = cellInfos(track, state, target, now);
   const due = dueCount(state, track, target, now);
   const streak = currentStreak(state.activeDays, localDay(now));
+  // The streak and the first-visit line depend on the first answer, from any track.
+  const answered = state.activeDays.length > 0;
+  const vowels = keys.slice(0, 5).map(kanaOfKey).join(' ');
+
+  // One reserved line: what holds the screen back, most serious first.
+  const notice =
+    status === 'error'
+      ? { text: t('learn.loadError'), miss: true, retry: true }
+      : loadFailed
+        ? { text: t('route.loadError'), miss: true, retry: false }
+        : status === 'loading'
+          ? { text: t('learn.loading'), miss: false, retry: false }
+          : databaseMode.value === 'memory'
+            ? { text: t('learn.storage'), miss: false, retry: false }
+            : null;
 
   return (
     <>
       {hiddenInput}
       <section className="max-w-layout-max mx-auto flex w-full flex-col items-start gap-6 py-12">
-        <h1 className="text-ui-title text-fur">{t('page.learn')}</h1>
+        <h1 className="sr-only">{t('page.learn')}</h1>
 
-        <Segmented<LearnTrack>
-          options={[
-            { value: 'hiragana', label: t('learn.track.hiragana') },
-            { value: 'katakana', label: t('learn.track.katakana') },
-          ]}
-          value={track}
-          onChange={setTrack}
-          ariaLabel={t('learn.track.label')}
-        />
+        <div className="flex w-full flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+          <Segmented<LearnTrack>
+            options={[
+              { value: 'hiragana', label: t('learn.track.hiragana') },
+              { value: 'katakana', label: t('learn.track.katakana') },
+            ]}
+            value={track}
+            onChange={setTrack}
+            ariaLabel={t('learn.track.label')}
+          />
 
-        <p className="text-fur text-ui-body" data-testid="learn-mastered-count">
-          {t('learn.mastered', { done: mastered, total: keys.length })}
-        </p>
+          {/* The line keeps its height while loading, so the buttons do not jump. */}
+          {status !== 'error' && (
+            <p className={`text-fur-dim text-ui-body ${ready ? '' : 'invisible'}`}>
+              <span data-testid="learn-mastered-count">
+                <Parts
+                  parts={tParts('learn.mastered', { done: mastered, total: keys.length })}
+                  valueClass="text-mono-romaji text-fur font-mono"
+                />
+              </span>
+              {answered && (
+                <>
+                  <span aria-hidden="true"> · </span>
+                  <span data-testid="learn-streak">
+                    <Parts
+                      parts={tPluralParts('learn.streak', streak)}
+                      valueClass="text-mono-romaji text-fur font-mono"
+                    />
+                  </span>
+                </>
+              )}
+            </p>
+          )}
+        </div>
 
-        <p className="text-fur text-ui-body" data-testid="learn-streak">
-          {t('learn.streak', { days: streak })}
-        </p>
+        {ready && !answered && (
+          <p
+            className="text-fur-dim text-ui-body -mb-2 whitespace-nowrap"
+            data-testid="learn-first"
+          >
+            <Parts
+              parts={tParts('learn.first', { kana: vowels })}
+              valueClass="font-jp text-jp-body text-fur"
+              lang="ja"
+            />
+          </p>
+        )}
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div ref={actionsRef} className="flex flex-wrap items-center gap-3">
           <Button
             variant="primary"
             size="lg"
+            disabled={!ready}
             onClick={() => {
               void startSession();
             }}
@@ -177,40 +253,57 @@ export function LearnPage(): JSX.Element {
           <Button
             variant="secondary"
             size="lg"
-            disabled={due === 0}
+            disabled={!ready || due === 0}
             onClick={() => {
               void startSession('review');
             }}
           >
-            {t('learn.review', { n: due })}
+            {t('learn.review', { n: ready ? due : 0 })}
           </Button>
         </div>
 
-        {loadFailed && (
-          <p role="alert" className="text-miss text-ui-body">
-            {t('route.loadError')}
-          </p>
-        )}
+        <Notice
+          reserve
+          loading={status === 'loading'}
+          tone={notice?.miss === true ? 'miss' : undefined}
+          action={
+            notice?.retry === true ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  void retryLearn();
+                }}
+              >
+                {t('learn.retry')}
+              </Button>
+            ) : undefined
+          }
+        >
+          {notice?.text}
+        </Notice>
 
-        <KanaChart
-          rows={chartModel(track, infos)}
-          ariaLabel={t('learn.chart.label')}
-          blockLabels={chartBlockLabels()}
-          legend={chartLegend(track)}
-          renderDetails={(cell, close) => {
-            const info = infos.get(keyOf(track, cell.kana));
-            if (info === undefined) return null;
-            return (
-              <KanaChartPanel
-                kana={info.kana}
-                romaji={romajiOf(info.key)}
-                lines={kanaPanelLines(info)}
-                closeLabel={t('learn.chart.close')}
-                onClose={close}
-              />
-            );
-          }}
-        />
+        {ready && (
+          <KanaChart
+            rows={chartModel(track, infos)}
+            ariaLabel={t('learn.chart.label')}
+            blockLabels={chartBlockLabels()}
+            legend={chartLegend(track)}
+            renderDetails={(cell, close) => {
+              const info = infos.get(keyOf(track, cell.kana));
+              if (info === undefined) return null;
+              return (
+                <KanaChartPanel
+                  kana={info.kana}
+                  romaji={romajiOf(info.key)}
+                  lines={kanaPanelLines(info)}
+                  closeLabel={t('learn.chart.close')}
+                  onClose={close}
+                />
+              );
+            }}
+          />
+        )}
       </section>
     </>
   );
