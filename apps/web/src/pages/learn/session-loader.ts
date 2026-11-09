@@ -1,8 +1,9 @@
-import type { openSession, SessionScreen } from './ui/session-runtime';
+import type { openSession, SessionScreen, SummaryScreen } from './ui/session-runtime';
 
 type SessionRuntime = {
   readonly openSession: typeof openSession;
   readonly SessionScreen: typeof SessionScreen;
+  readonly SummaryScreen: typeof SummaryScreen;
 };
 
 let loaded: SessionRuntime | undefined;
