@@ -1,6 +1,6 @@
 import type { LearnKanaKey, LearnState, Rng, Track } from '@nekotype/shared/types';
 import { RECENT_ANSWERS } from '@nekotype/shared/runtime';
-import { accuracyOf, medianAnswerMs } from '@/entities/learn';
+import { accuracyOf, isConfident, medianAnswerMs } from '@/entities/learn';
 import { FOCUS_ANSWERS, FOCUS_SHARE, RECOGNITION_SHARE } from './constants';
 
 export type TaskKind = 'recall' | 'recognition';
@@ -62,7 +62,7 @@ function pickWeighted(
 
 /**
  * The kana of the next task, or `null` when none is introduced. Kana in focus (fewer than 10
- * recall answers) are taken with probability `FOCUS_SHARE` when there are kana both in and out of
+ * recall answers, or not confident: ADR 063) are taken with probability `FOCUS_SHARE` when there are kana both in and out of
  * focus, always when all are in focus, never when none is (A40).
  */
 export function chooseKana(input: TaskChoiceInput): LearnKanaKey | null {
@@ -70,9 +70,12 @@ export function chooseKana(input: TaskChoiceInput): LearnKanaKey | null {
   const all = candidatesOf(state, track);
   const others = all.filter((key) => key !== previous);
   const candidates = others.length > 0 ? others : all;
-  const inFocus = candidates.filter(
-    (key) => (state.recent[key]?.length ?? 0) < Math.min(FOCUS_ANSWERS, RECENT_ANSWERS),
-  );
+  const inFocus = candidates.filter((key) => {
+    const recent = state.recent[key] ?? [];
+    return (
+      recent.length < Math.min(FOCUS_ANSWERS, RECENT_ANSWERS) || !isConfident(recent, targetMs)
+    );
+  });
   const outOfFocus = candidates.filter((key) => !inFocus.includes(key));
   const takeFocus = inFocus.length > 0 && (outOfFocus.length === 0 || rng.next() < FOCUS_SHARE);
   if (takeFocus) return pickUniform(inFocus, rng);

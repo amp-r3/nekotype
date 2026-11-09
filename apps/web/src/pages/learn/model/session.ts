@@ -372,6 +372,8 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
     },
 
     leave() {
+      // The summary is kept: leaving after the end must not wipe it.
+      if (phase.value === 'summary') return;
       clearTimer();
       port = null;
       phase.value = 'idle';

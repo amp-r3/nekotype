@@ -82,8 +82,9 @@ Append-only log of architectural decisions, one file per decision.
 | [055](055-test-screen-focus-and-chrome.md)                                           | The Input Field Lives on the Page; Hover, Tab and Enter on the Test Screen                   | Amended by 058         |
 | [056](056-show-translation-setting.md)                                               | The `showTranslation` Setting: an Optional Field of Settings v1                              | Amended by 061         |
 | [057](057-lazy-results-screen-and-russian-dictionary.md)                             | The Results Screen and the Russian Dictionary Are Lazy Chunks                                | In force               |
-| [058](058-learning-first.md)                                                         | Learning First, with Adaptive Unlocking of Kana                                              | Amended by 061         |
+| [058](058-learning-first.md)                                                         | Learning First, with Adaptive Unlocking of Kana                                              | Amended by 061, 063    |
 | [059](059-design-system-v10.md)                                                      | Design System Version 10                                                                     | Amended by 062         |
 | [060](060-long-prompt-breaks-between-tokens.md)                                      | A Prompt Longer Than a Line Breaks Between Tokens                                            | In force               |
 | [061](061-schema-reset-before-release.md)                                            | The Local Schema Resets Instead of Migrating Until the Release                               | In force until release |
 | [062](062-design-review-of-the-p3-build.md)                                          | Design Review of the P3 Build: Details Panel, Due Kana, Displayed Romaji                     | In force               |
+| [063](063-unconfident-kana-in-focus.md)                                              | A Kana That Lost Its Confidence Is in Focus Again                                            | In force               |

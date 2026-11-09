@@ -107,6 +107,8 @@ export function useSessionInput(
       window.removeEventListener('focus', onFocus);
       window.removeEventListener('blur', onBlur);
       document.removeEventListener('visibilitychange', onVisibility);
+      // The screen is gone (Back, another page): stop the pause timer so no session is counted.
+      session.leave();
     };
   }, [session]);
 
