@@ -1,8 +1,7 @@
 import type { JSX } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { t, tParts, tPluralParts } from '@/shared/i18n';
-import type { TranslationPart } from '@/shared/i18n';
-import { Button, Notice, Segmented } from '@/shared/ui';
+import { Button, Notice, Parts, Segmented } from '@/shared/ui';
 import { KanaChart, KanaChartPanel } from '@/shared/ui/kana-chart';
 import { chartBlockLabels, chartLegend, chartModel, kanaPanelLines, romajiOf } from '../lib/chart';
 import { learnTargetMs, learnTrack, setTrack } from '@/entities/settings';
@@ -27,31 +26,6 @@ import type { SessionRuntime } from '../session-loader';
 import { SummaryScreen } from './summary-screen';
 
 type View = 'home' | 'loading' | 'session' | 'summary';
-
-// A translated line with its values set apart: numbers in the mono face, kana in the Japanese one.
-function Parts({
-  parts,
-  valueClass,
-  lang,
-}: {
-  readonly parts: readonly TranslationPart[];
-  readonly valueClass: string;
-  readonly lang?: string;
-}): JSX.Element {
-  return (
-    <>
-      {parts.map((part, at) =>
-        part.param ? (
-          <span key={at} className={valueClass} lang={lang}>
-            {part.text}
-          </span>
-        ) : (
-          part.text
-        ),
-      )}
-    </>
-  );
-}
 
 const kanaOfKey = (key: string): string => key.slice(key.indexOf(':') + 1);
 

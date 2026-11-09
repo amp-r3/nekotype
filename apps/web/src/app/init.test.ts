@@ -45,7 +45,7 @@ describe('app/init', () => {
 
     expect(document.title).toBe('Nekotype');
     navigate('/stats');
-    expect(document.title).toBe('Statistics — Nekotype');
+    expect(document.title).toBe('Stats — Nekotype');
     await setLocale('ru', store);
     expect(document.title).toBe('Статистика — Nekotype');
     navigate('/nowhere');

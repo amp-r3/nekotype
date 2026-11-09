@@ -7,7 +7,7 @@ import { t } from '@/shared/i18n';
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
 
-describe('stats page: learning section', () => {
+describe('stats page: nothing learned yet', () => {
   let container: HTMLDivElement;
 
   afterEach(() => {
@@ -15,18 +15,23 @@ describe('stats page: learning section', () => {
     container.remove();
   });
 
-  it('shows empty progress, streaks and counters of a fresh state', async () => {
+  it('shows the empty state with one action to the learning screen', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<StatsPage />, container);
     await act(settle);
 
-    const text = (id: string): string | null | undefined =>
-      container.querySelector(`[data-testid="${id}"]`)?.textContent;
-    expect(text('stats-mastered')).toBe(t('stats.learn.mastered', { done: 0, total: 104 }));
-    expect(text('stats-streak-current')).toBe(t('stats.learn.streakCurrent', { days: 0 }));
-    expect(text('stats-streak-best')).toBe(t('stats.learn.streakBest', { days: 0 }));
-    expect(text('stats-sessions')).toBe(t('stats.learn.sessions', { finished: 0, started: 0 }));
-    expect(text('stats-no-data')).toBe(t('stats.learn.noData'));
+    expect(container.querySelector('h1')?.textContent).toBe(t('page.stats'));
+    expect(container.textContent).toContain(t('stats.empty.title'));
+    expect(container.textContent).toContain(t('stats.empty.text'));
+    const action = Array.from(container.querySelectorAll('button')).find(
+      (button) => button.textContent === t('stats.empty.action'),
+    );
+    expect(action).toBeDefined();
+    // The sleeping cat is decorative.
+    expect(container.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+    // No numbers of an empty state are shown as if they were real.
+    expect(container.querySelector('[data-testid="stats-mastered"]')).toBeNull();
+    expect(container.querySelector('[data-testid="stats-median-chart"]')).toBeNull();
   });
 });
