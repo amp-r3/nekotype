@@ -81,7 +81,7 @@ Append-only log of architectural decisions, one file per decision.
 | [054](054-ci-in-the-playwright-image.md)                                             | CI Runs in the Playwright Image, with a Time Limit                                           | In force               |
 | [055](055-test-screen-focus-and-chrome.md)                                           | The Input Field Lives on the Page; Hover, Tab and Enter on the Test Screen                   | Amended by 058         |
 | [056](056-show-translation-setting.md)                                               | The `showTranslation` Setting: an Optional Field of Settings v1                              | Amended by 061         |
-| [057](057-lazy-results-screen-and-russian-dictionary.md)                             | The Results Screen and the Russian Dictionary Are Lazy Chunks                                | In force               |
+| [057](057-lazy-results-screen-and-russian-dictionary.md)                             | The Results Screen and the Russian Dictionary Are Lazy Chunks                                | Amended by 067         |
 | [058](058-learning-first.md)                                                         | Learning First, with Adaptive Unlocking of Kana                                              | Amended by 061, 063    |
 | [059](059-design-system-v10.md)                                                      | Design System Version 10                                                                     | Amended by 062, 065    |
 | [060](060-long-prompt-breaks-between-tokens.md)                                      | A Prompt Longer Than a Line Breaks Between Tokens                                            | In force               |
@@ -91,3 +91,4 @@ Append-only log of architectural decisions, one file per decision.
 | [064](064-agpl-code-reserved-brand.md)                                               | Code Under AGPL-3.0-only, Brand Reserved, Fonts Under OFL-1.1                                | In force               |
 | [065](065-cleaner-cat-and-logo-drawings.md)                                          | Cleaner Cat and Logo Drawings, a Smiling `content` Cat and a Reserved `grumpy` Cat           | In force               |
 | [066](066-about-page-design.md)                                                      | The `/about` Page: Sources, Terms and Paged Phrase Credits                                   | In force               |
+| [067](067-initial-chunk-before-p4.md)                                                | One Initial Chunk, Per-Screen Dictionary Parts and a Compact Kana Table                      | In force               |
