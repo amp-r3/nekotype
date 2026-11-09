@@ -82,7 +82,7 @@ function installInPage(): KeystrokeProbe {
     },
     forceLayout: () => {
       document
-        .querySelector('[data-testid="prompt-arena"] .nk-test__buffer')
+        .querySelector('[data-testid="prompt-arena"] .nk-test__buffer, [data-task-buffer]')
         ?.getBoundingClientRect();
     },
   });
