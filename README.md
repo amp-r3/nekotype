@@ -143,16 +143,16 @@ Nekotype adheres to strict first-load asset caps, checked by `pnpm run budget` (
 
 | Asset                      | Budget Limit | Actual (gzip / woff2)  | Status                    |
 | -------------------------- | ------------ | ---------------------- | ------------------------- |
-| **Initial HTML**           | $\le 5$ KB   | **0.49 KB**            | ✅ Passed                 |
-| **Initial JavaScript**     | $\le 35$ KB  | **32.56 KB**           | ✅ Passed                 |
-| **Initial CSS**            | $\le 10$ KB  | **7.23 KB**            | ✅ Passed                 |
+| **Initial HTML**           | $\le 5$ KB   | **0.50 KB**            | ✅ Passed                 |
+| **Initial JavaScript**     | $\le 35$ KB  | **32.33 KB**           | ✅ Passed                 |
+| **Initial CSS**            | $\le 10$ KB  | **7.88 KB**            | ✅ Passed                 |
 | **Noto Sans JP 400**       | $\le 45$ KB  | **20.77 KB** (woff2)   | ✅ Passed                 |
 | **JetBrains Mono 400/500** | $\le 45$ KB  | **10.79 / 10.61 KB**   | ✅ Passed                 |
 | **Golos Text 400/500**     | $\le 45$ KB  | **9.42 / 9.56 KB**     | ✅ Passed                 |
 | **Logo (SVG)**             | counted      | **1.45 KB**            | ✅ Passed                 |
-| **Total First Load**       | $\le 160$ KB | **102.88 KB**          | ✅ Passed (64% of budget) |
+| **Total First Load**       | $\le 160$ KB | **103.31 KB**          | ✅ Passed (65% of budget) |
 | **Lazy content chunk**     | $\le 40$ KB  | **2.05 KB** (largest)  | ✅ Passed                 |
-| **Lazy route chunk**       | $\le 25$ KB  | **10.54 KB** (largest) | ✅ Passed                 |
+| **Lazy route chunk**       | $\le 25$ KB  | **10.53 KB** (largest) | ✅ Passed                 |
 
 ---
 
