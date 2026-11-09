@@ -753,3 +753,20 @@ button.nk-cell.is-learning:hover {
   height: 28px;
   font-size: var(--text-jp-body);
 }
+
+/* ---- The result chart on /stats ----------------------------------------------------------------- */
+
+@keyframes nk-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Drawn in once when the screen appears (`pathLength` is 1, so the dash is the whole line). */
+.nk-rchart__line {
+  stroke-dasharray: 1;
+  animation: nk-draw var(--dur-draw) var(--ease-out) both;
+}

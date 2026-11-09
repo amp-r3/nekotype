@@ -40,14 +40,14 @@ export function SpeedChart({ series }: SpeedChartProps): JSX.Element | null {
           x2={svgWidth - paddingX}
           y2={svgHeight - paddingY}
           stroke="var(--chart-grid)"
-          strokeWidth="1"
+          stroke-width="1"
         />
         <polyline
           fill="none"
           stroke="var(--chart-kpm)"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
           points={polylinePoints}
         />
       </svg>

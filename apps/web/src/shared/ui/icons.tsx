@@ -13,9 +13,9 @@ export function KeyboardIcon({ size = 16, className = '' }: IconProps): JSX.Elem
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
       className={className}
       aria-hidden="true"
     >
@@ -33,9 +33,9 @@ export function ResetIcon({ size = 16, className = '' }: IconProps): JSX.Element
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
       className={className}
       aria-hidden="true"
     >
@@ -53,9 +53,9 @@ export function RefreshIcon({ size = 16, className = '' }: IconProps): JSX.Eleme
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
       className={className}
       aria-hidden="true"
     >
@@ -75,9 +75,9 @@ export function CheckIcon({ size = 16, className = '' }: IconProps): JSX.Element
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
       className={className}
       aria-hidden="true"
     >
