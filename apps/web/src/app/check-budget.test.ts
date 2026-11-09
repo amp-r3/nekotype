@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { randomBytes } from 'node:crypto';
-import { checkBudget, PROBE_MARKER } from '../../scripts/check-budget.mjs';
+import { checkBudget, PROBE_MARKER, SIGNALS_MARKER } from '../../scripts/check-budget.mjs';
 
 // Random bytes do not compress, so a file of N KB is about N KB raw, gzip and brotli.
 const KB = 1024;
@@ -33,6 +33,10 @@ type Fixture = {
   preload?: 'ok' | 'absent' | 'dangling' | 'no-crossorigin';
   // Put the latency probe's global into the bundle, as a test build would.
   probe?: boolean;
+  // Leave out the Preact integration of @preact/signals, as a wrong `sideEffects` would.
+  signals?: boolean;
+  // A dynamic import whose code was folded into the initial chunk.
+  lazyInInitial?: boolean;
 };
 
 const dirs: string[] = [];
@@ -65,9 +69,11 @@ function makeDist(f: Fixture): string {
   write(
     root,
     'assets/index.js',
-    f.probe === true
-      ? Buffer.concat([blob(f.jsKb ?? 10), Buffer.from(`;window.${PROBE_MARKER}={};`)])
-      : blob(f.jsKb ?? 10),
+    Buffer.concat([
+      blob(f.jsKb ?? 10),
+      Buffer.from(f.signals === false ? '' : `;const ${SIGNALS_MARKER}=1;`),
+      Buffer.from(f.probe === true ? `;window.${PROBE_MARKER}={};` : ''),
+    ]),
   );
   write(root, 'assets/index.css', blob(f.cssKb ?? 3));
   for (const font of fonts) write(root, font.file, blob(font.size));
@@ -93,6 +99,13 @@ function makeDist(f: Fixture): string {
   for (const [i, lazy] of (f.lazy ?? []).entries()) {
     write(root, `assets/lazy${i}.js`, blob(lazy.kb));
     manifest[lazy.src] = { file: `assets/lazy${i}.js`, src: lazy.src, isDynamicEntry: true };
+  }
+  if (f.lazyInInitial === true) {
+    manifest['src/pages/stats/index.ts'] = {
+      file: 'assets/index.js',
+      src: 'src/pages/stats/index.ts',
+      isDynamicEntry: true,
+    };
   }
   if (f.manifest !== false) write(root, '.vite/manifest.json', JSON.stringify(manifest));
   return root;
@@ -166,8 +179,24 @@ describe('check-budget', () => {
   it('fails when initial JS is over 35 KB, counting statically imported chunks', () => {
     expect(failuresFor({ jsKb: 36 })).toEqual([expect.stringContaining('Initial JS')]);
     // 20 + 20 KB: each file is under the limit, together they are not
-    expect(failuresFor({ jsKb: 20, sharedJsKb: 20 })).toEqual([
-      expect.stringContaining('Initial JS'),
+    expect(failuresFor({ jsKb: 20, sharedJsKb: 20 })).toEqual(
+      expect.arrayContaining([expect.stringContaining('Initial JS exceeded budget')]),
+    );
+  });
+
+  it('fails when the initial JS is more than one file', () => {
+    expect(failuresFor({ sharedJsKb: 1 })).toEqual([
+      expect.stringContaining('Initial JS is 2 files'),
+    ]);
+  });
+
+  it('fails when the initial JS lacks the Preact integration of signals', () => {
+    expect(failuresFor({ signals: false })).toEqual([expect.stringContaining('@preact/signals')]);
+  });
+
+  it('fails when a lazily imported module is folded into the initial chunk', () => {
+    expect(failuresFor({ lazyInInitial: true })).toEqual([
+      expect.stringContaining('src/pages/stats/index.ts is imported lazily'),
     ]);
   });
 
