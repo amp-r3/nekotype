@@ -42,7 +42,36 @@ function task(): HTMLElement {
   return root;
 }
 
+type ViewportWindow = {
+  happyDOM: { setViewport: (size: { width: number; height: number }) => void };
+};
+
+function hasViewport(w: unknown): w is ViewportWindow {
+  return typeof w === 'object' && w !== null && 'happyDOM' in w;
+}
+
+function resize(width: number): void {
+  if (!hasViewport(window)) throw new Error('no happyDOM');
+  window.happyDOM.setViewport({ width, height: 768 });
+}
+
 describe('KanaTask', () => {
+  it('does not rebuild the controller when the window width changes', async () => {
+    resize(1024);
+    const onReady = vi.fn<(controller: TaskController) => void>();
+    mount({ kind: 'recall', kana: 'ぬ', onReady });
+    resize(500);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(onReady).toHaveBeenCalledTimes(1);
+  });
+
+  it('sizes the kana by the width through CSS classes', () => {
+    mount({ kind: 'recall', kana: 'ぬ' });
+    const kana = container.querySelector('[data-task-kana]');
+    expect(kana?.classList.contains('max-sm:text-jp-solo-sm')).toBe(true);
+    expect(container.querySelector('.is-narrow, .is-wide')).toBeNull();
+  });
+
   it('shows the session line from the props', () => {
     mount({ kind: 'recall', kana: 'ぬ' });
     expect(container.querySelector('[data-testid="task-session"]')?.textContent).toBe(
@@ -227,9 +256,11 @@ describe('OptionCard', () => {
       container,
     );
     const [correct, wrong, idle] = Array.from(container.querySelectorAll('button'));
-    expect(correct?.getAttribute('aria-pressed')).toBe('true');
-    expect(wrong?.getAttribute('aria-pressed')).toBe('true');
-    expect(idle?.hasAttribute('aria-pressed')).toBe(false);
+    expect(correct?.classList.contains('is-correct')).toBe(true);
+    expect(wrong?.classList.contains('is-wrong')).toBe(true);
+    // The result is the accessible name's job (ariaLabel), not a toggle state.
+    for (const button of [correct, wrong, idle])
+      expect(button?.hasAttribute('aria-pressed')).toBe(false);
     expect(idle?.disabled).toBe(true);
   });
 });

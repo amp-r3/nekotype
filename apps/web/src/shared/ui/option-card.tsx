@@ -33,7 +33,6 @@ export function OptionCard({
       disabled={disabled}
       onClick={onClick}
       aria-label={ariaLabel}
-      aria-pressed={state === 'correct' || state === 'wrong' ? true : undefined}
     >
       <Kbd className="nk-opt__key">{String(n)}</Kbd>
       <span
