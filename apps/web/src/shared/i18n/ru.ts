@@ -3,7 +3,6 @@ import type { en } from './en';
 export const ru = {
   // Top bar
   'app.title': 'Nekotype',
-  'app.reset': 'Сбросить прогресс',
   'app.language': 'Язык интерфейса',
 
   // Navigation and routes
@@ -25,8 +24,7 @@ export const ru = {
   'route.retry': 'Повторить',
   'notFound.title': 'Страница не найдена',
   'notFound.home': 'Вернуться к тренажёру',
-  'settings.reset.description':
-    'Удаляет статистику набора и прогресс обучения, сохранённые в этом браузере.',
+  'settings.reset.description': 'Стирает прогресс обучения и статистику набора в этом браузере.',
 
   // Learning screen
   'learn.track.label': 'дорожка',
@@ -93,11 +91,21 @@ export const ru = {
   'learn.summary.failed': 'не удалось загрузить. проверьте соединение.',
   'learn.summary.retry': 'ещё раз',
 
-  'settings.showTranslation': 'Показывать перевод под текстом',
   'settings.learn.title': 'Обучение',
-  'settings.learn.strictness': 'Строгость в обучении',
-  'settings.learn.target': 'Целевое время ответа',
+  'settings.learn.strictness': 'строгость в обучении',
+  'settings.learn.strictnessHint': 'Мягкая также принимает «si» для し и «tu» для つ.',
+  'settings.learn.relaxed': 'мягкая',
+  'settings.learn.strictIme': 'строгая IME',
+  'settings.learn.target': 'целевое время ответа',
+  'settings.learn.targetHint':
+    'При меньшей цели каны позже становятся уверенными, а уверенные могут это утратить.',
   'settings.learn.targetValue': '{ms} мс',
+  'settings.typing.title': 'Набор',
+  'settings.showTranslation': 'перевод под текстом',
+  'settings.showTranslationHint': 'Перевод слова или фразы под текстом теста.',
+  'settings.data.title': 'Данные',
+  'settings.data.reset': 'сбросить прогресс',
+  'settings.data.resetAction': 'сбросить',
   'stats.learn.title': 'Обучение',
   'stats.learn.median': 'медиана ответа по дням, мс',
   'stats.learn.medianHint': 'меньше — лучше',
@@ -186,8 +194,9 @@ export const ru = {
 
   // Dialogs
   'dialog.close': 'Закрыть',
-  'reset.title': 'Сброс прогресса',
-  'reset.confirm': 'Вы уверены, что хотите удалить статистику набора и прогресс обучения?',
-  'reset.action': 'Стереть все',
-  'reset.cancel': 'Отмена',
+  'reset.title': 'Сбросить прогресс?',
+  'reset.confirm':
+    'Прогресс обучения и статистика набора в этом браузере будут стёрты. Это нельзя отменить.',
+  'reset.action': 'сбросить',
+  'reset.cancel': 'отмена',
 } as const satisfies Record<keyof typeof en, string>;

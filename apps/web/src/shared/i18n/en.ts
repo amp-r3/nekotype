@@ -1,7 +1,6 @@
 export const en = {
   // Top bar
   'app.title': 'Nekotype',
-  'app.reset': 'Reset Progress',
   'app.language': 'Interface language',
 
   // Navigation and routes
@@ -25,7 +24,7 @@ export const en = {
   'notFound.title': 'Page not found',
   'notFound.home': 'Back to the trainer',
   'settings.reset.description':
-    'Erases the typing statistics and the learning progress stored in this browser.',
+    'Erases learning progress and typing statistics stored in this browser.',
 
   // Learning screen
   'learn.track.label': 'track',
@@ -92,11 +91,22 @@ export const en = {
   'learn.summary.failed': 'failed to load. check the connection and try again.',
   'learn.summary.retry': 'retry',
 
-  'settings.showTranslation': 'Show the translation under the text',
   'settings.learn.title': 'Learning',
-  'settings.learn.strictness': 'Learning strictness',
-  'settings.learn.target': 'Target answer time',
+  'settings.learn.strictness': 'learning strictness',
+  'settings.learn.strictnessHint': 'Relaxed also accepts «si» for し and «tu» for つ.',
+  'settings.learn.relaxed': 'relaxed',
+  'settings.learn.strictIme': 'strict IME',
+  'settings.learn.target': 'target answer time',
+  'settings.learn.targetHint':
+    'With a lower target, kana become confident later, and kana already confident may stop being so.',
   'settings.learn.targetValue': '{ms} ms',
+  'settings.typing.title': 'Typing',
+  'settings.showTranslation': 'show the translation under the text',
+  'settings.showTranslationHint':
+    'A line under the typing text with the word or phrase translation.',
+  'settings.data.title': 'Data',
+  'settings.data.reset': 'reset progress',
+  'settings.data.resetAction': 'reset',
   'stats.learn.title': 'Learning',
   'stats.learn.median': 'daily median answer time, ms',
   'stats.learn.medianHint': 'lower is better',
@@ -185,11 +195,11 @@ export const en = {
 
   // Dialogs
   'dialog.close': 'Close',
-  'reset.title': 'Reset Progress',
+  'reset.title': 'Reset progress?',
   'reset.confirm':
-    'Are you sure you want to erase the typing statistics and the learning progress?',
-  'reset.action': 'Reset Everything',
-  'reset.cancel': 'Cancel',
+    'Learning progress and typing statistics in this browser will be erased. This cannot be undone.',
+  'reset.action': 'reset',
+  'reset.cancel': 'cancel',
 } as const satisfies Record<string, string>;
 
 export type TranslationKey = keyof typeof en;
