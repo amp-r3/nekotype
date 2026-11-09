@@ -306,6 +306,18 @@ test.describe('a phrase wider than the line (ADR 060)', () => {
     await openTypingScreen(page);
     await expect(page.getByTestId('translation')).not.toHaveText('');
 
+    // The phrases of the window are random, and the mark is set when the stream is measured, once
+    // the fonts are in. A window of short phrases only has nothing to mark: load another one.
+    const marked = async (): Promise<number> => {
+      await page.evaluate(() => document.fonts.ready.then(() => undefined));
+      return page.locator('.nk-word.is-long').count();
+    };
+    for (let attempt = 0; attempt < 12 && (await marked()) === 0; attempt++) {
+      await page.reload();
+      await openTypingScreen(page);
+      await expect(page.getByTestId('translation')).not.toHaveText('');
+    }
+
     const view = await box(page, 'prompt-arena');
     const right = view.x + view.width;
     const edges = await page
@@ -314,7 +326,7 @@ test.describe('a phrase wider than the line (ADR 060)', () => {
     expect(edges.length).toBeGreaterThan(20);
     expect(Math.max(...edges)).toBeLessThanOrEqual(right + 1);
     // At this width some phrase of the window is wider than a line, so it was marked.
-    expect(await page.locator('.nk-word.is-long').count()).toBeGreaterThan(0);
+    expect(await marked()).toBeGreaterThan(0);
   });
 
   test('a touch screen shows a button in place of the Esc hint @mobile', async ({ page }) => {

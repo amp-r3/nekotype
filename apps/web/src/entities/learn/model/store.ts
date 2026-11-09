@@ -1,4 +1,4 @@
-import { signal } from '@preact/signals';
+import { computed, signal } from '@preact/signals';
 import type { ReadonlySignal } from '@preact/signals';
 import type {
   Clock,
@@ -32,6 +32,8 @@ const DELTA_KEY = 'current';
 const META_STORE = 'meta';
 const INTERVALS_KEY = 'typingIntervals';
 
+export type LearnStatus = 'loading' | 'ready' | 'error';
+
 export type LearnStoreDeps = {
   /** The database; asked for when needed, so a reset works before the store is loaded. */
   readonly db: () => Promise<Db>;
@@ -60,10 +62,18 @@ export type RecognitionInput = {
 export interface LearnStore {
   readonly state: ReadonlySignal<LearnState>;
   readonly counters: ReadonlySignal<Counters>;
-  /** True once the state has been read from the database (or the initial state was taken). */
+  /**
+   * `loading` until the stored record has been read; `ready` once it has (or there was none, or it
+   * failed validation: the initial state is taken, ADR 061); `error` when reading it failed. After an
+   * error nothing is written, so the stored record is never replaced by the initial state.
+   */
+  readonly status: ReadonlySignal<LearnStatus>;
+  /** `status` is `ready`. */
   readonly ready: ReadonlySignal<boolean>;
   /** Reads the state once; later calls return the same promise. Never rejects. */
   init: () => Promise<void>;
+  /** Reads the state again after an error. Never rejects. */
+  retry: () => Promise<void>;
   /** An introduction: creates the kana's entry in box 0. It is not an answer. */
   introduce: (key: LearnKanaKey) => void;
   /** Records a recall answer; returns its answer time. */
@@ -84,7 +94,8 @@ function isIntervals(value: unknown): value is number[] {
 export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   const state = signal<LearnState>(initialLearnState());
   const counters = signal<Counters>(initialCounters());
-  const ready = signal(false);
+  const status = signal<LearnStatus>('loading');
+  const ready = computed(() => status.value === 'ready');
 
   let intervals: number[] = [];
   let lastAt = 0;
@@ -98,6 +109,9 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
 
   const write = (): Promise<void> => {
     pending = null;
+    // After a failed read the state in memory is not the stored one: writing it would replace the
+    // stored record with the initial state.
+    if (status.value === 'error') return writing;
     const learn = state.value;
     const stored = counters.value;
     const keep = intervals;
@@ -131,19 +145,22 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
 
   const init = (): Promise<void> => {
     loading ??= (async () => {
+      status.value = 'loading';
       try {
         const db = await deps.db();
         const doc = await db.get(DELTA_STORE, DELTA_KEY);
+        // No record, or one that fails validation: the initial state stands (ADR 061).
         if (isObject(doc) && isLearnState(doc['learn']) && isCounters(doc['counters'])) {
           state.value = unlock(doc['learn']);
           counters.value = doc['counters'];
         }
         const saved = await db.get(META_STORE, INTERVALS_KEY);
         if (isIntervals(saved)) intervals = saved.slice(-K_WINDOW);
+        status.value = 'ready';
       } catch {
-        // Unreadable: the initial state stands.
+        // The read failed: the record may be fine, so it is left alone until a retry succeeds.
+        status.value = 'error';
       }
-      ready.value = true;
     })();
     return loading;
   };
@@ -151,8 +168,15 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   return {
     state,
     counters,
+    status,
     ready,
     init,
+
+    retry() {
+      if (status.value !== 'error') return loading ?? init();
+      loading = null;
+      return init();
+    },
 
     introduce(key) {
       const current = state.value;
@@ -231,6 +255,8 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
       try {
         const db = await deps.db();
         await db.delete(DELTA_STORE, DELTA_KEY);
+        // The record is gone, so there is nothing a later write could replace.
+        status.value = 'ready';
       } catch {
         // The record could not be deleted; the next write replaces it.
       }
@@ -255,7 +281,9 @@ export function initLearn(targetMs: () => number): Promise<void> {
 
 export const learnState: ReadonlySignal<LearnState> = store.state;
 export const learnCounters: ReadonlySignal<Counters> = store.counters;
+export const learnStatus: ReadonlySignal<LearnStatus> = store.status;
 export const learnReady: ReadonlySignal<boolean> = store.ready;
+export const retryLearn = store.retry;
 export const introduce = store.introduce;
 export const recordRecall = store.recordRecall;
 export const recordRecognition = store.recordRecognition;

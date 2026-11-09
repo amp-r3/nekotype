@@ -34,14 +34,24 @@ describe('learn page: the top of the learning screen', () => {
     expect(unlockedKana(container)).toBe('あいうえお');
   });
 
-  it('shows no streak before the first answer', async () => {
+  it('hides the streak before the first answer and shows the first-visit line instead', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
     await act(settle);
-    expect(container.querySelector('[data-testid="learn-streak"]')?.textContent).toBe(
-      t('learn.streak', { days: 0 }),
+    expect(container.querySelector('[data-testid="learn-streak"]')).toBeNull();
+    expect(container.querySelector('[data-testid="learn-first"]')?.textContent).toBe(
+      t('learn.first', { kana: 'あ い う え お' }),
     );
+  });
+
+  it('gives `continue` the focus once the screen is ready, and names the buttons in lower case', async () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    render(<LearnPage />, container);
+    await act(settle);
+    expect(document.activeElement?.textContent).toBe(t('learn.continue'));
+    expect(t('learn.continue')).toBe('continue');
   });
 
   it('switches the track', async () => {
@@ -60,6 +70,9 @@ describe('learn page: the top of the learning screen', () => {
 
     expect(container.querySelector('[data-testid="learn-mastered-count"]')?.textContent).toBe(
       t('learn.mastered', { done: 0, total: 125 }),
+    );
+    expect(container.querySelector('[data-testid="learn-first"]')?.textContent).toBe(
+      t('learn.first', { kana: 'ア イ ウ エ オ' }),
     );
     expect(unlockedKana(container)).toBe('アイウエオ');
     expect(learnTrack.value).toBe('katakana');

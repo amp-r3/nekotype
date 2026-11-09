@@ -45,7 +45,7 @@ test.describe('learning session on /', () => {
   test('a full session of 25 tasks ends on the summary @mobile', async ({ page, isMobile }) => {
     await page.goto('/');
     await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('button', { name: 'continue' }).click();
 
     // The navigation is not drawn during a session.
     await expect(page.getByRole('navigation')).toHaveCount(0);
@@ -66,7 +66,7 @@ test.describe('learning session on /', () => {
 
   test('leaving a session returns to the table and keeps the introduced kana', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('button', { name: 'continue' }).click();
     await expect(page.getByTestId('kana-task')).toHaveAttribute('data-kind', 'introduction');
     await answer(page, false);
     await expect(page.getByTestId('task-session')).toHaveText('learning · 2 of 25');
@@ -95,7 +95,7 @@ test.describe('review session on /', () => {
 
   test('reviews the one due kana and ends on the summary', async ({ page }) => {
     await seedLearning(page, '/', learn);
-    const review = page.getByRole('button', { name: 'Review (1)' });
+    const review = page.getByRole('button', { name: 'review (1)' });
     await expect(review).toBeEnabled();
     await review.click();
 
@@ -106,6 +106,6 @@ test.describe('review session on /', () => {
     await expect(page.getByRole('heading', { name: 'session summary' })).toBeVisible();
     await page.getByRole('button', { name: 'to the table' }).click();
     // The kana moved to box 3, so it is not due any more.
-    await expect(page.getByRole('button', { name: 'Review (0)' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'review (0)' })).toBeDisabled();
   });
 });

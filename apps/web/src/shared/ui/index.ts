@@ -19,6 +19,9 @@ export type { NavProps, NavItem } from './nav';
 export { Footer } from './footer';
 export type { FooterProps } from './footer';
 
+export { Notice } from './notice';
+export type { NoticeProps } from './notice';
+
 export { Kbd } from './kbd';
 export type { KbdProps } from './kbd';
 
