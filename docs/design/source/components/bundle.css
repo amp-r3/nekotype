@@ -285,9 +285,12 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-kc__tip.is-end { left: auto; right: 0; transform: none; }
 .nk-kc__tip-line { display: block; text-align: left; }
 .nk-kc__detail { padding: var(--space-2) 0 var(--space-3) 36px; }
-.nk-kc__detail-cell { display: flex; flex-direction: column; gap: var(--space-1); max-width: 360px; }
-.nk-kc__detail-head { display: flex; align-items: baseline; gap: var(--space-2); }
-.nk-kc__close { margin-left: auto; }
+/* Details panel (decision 94): the one surface in the table — bg-raised, as fields and dialogs; no border, no shadow. */
+.nk-kc__panel { display: flex; flex-direction: column; gap: var(--space-3); max-width: 360px; padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--bg-raised); color: var(--fur); }
+.nk-kc__detail-head { display: flex; align-items: center; gap: var(--space-3); }
+.nk-kc__detail-kana { color: var(--fur); }
+.nk-kc__detail-lines { display: flex; flex-direction: column; gap: var(--space-1); }
+.nk-kc__close { margin-left: auto; margin-right: calc(-1 * var(--space-3)); }   /* the label lines up with the panel's right edge */
 .nk-kc__legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); color: var(--fur-dim); }
 
 /* ---------- Lesson ---------- */
