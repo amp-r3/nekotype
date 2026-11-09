@@ -63,7 +63,6 @@ export {
   recordRecall,
   recordRecognition,
   countSession,
-  flushLearn,
   resetLearning,
 } from './model/store';
 

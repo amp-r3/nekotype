@@ -1,4 +1,4 @@
-import { computed, signal } from '@preact/signals';
+import { computed, effect, signal, untracked } from '@preact/signals';
 import type { ReadonlySignal } from '@preact/signals';
 import type {
   Clock,
@@ -16,8 +16,14 @@ import {
   isLearnState,
   isObject,
 } from '@nekotype/shared/runtime';
-import type { Db } from '@/shared/lib';
-import { defaultClock, defaultScheduler, getDatabase } from '@/shared/lib';
+import type { ChangeChannel, Db } from '@/shared/lib';
+import {
+  changeChannel,
+  defaultClock,
+  defaultScheduler,
+  getDatabase,
+  reportWriteFailure,
+} from '@/shared/lib';
 import { K_WINDOW, intervalsOf, recallAnswerTime, typingK } from '../lib/answer-time';
 import type { Keystroke } from '../lib/answer-time';
 import { addRecallTime } from '../lib/buckets';
@@ -41,6 +47,10 @@ export type LearnStoreDeps = {
   readonly scheduler: Scheduler;
   /** The target answer time of confidence, read at each evaluation: a change applies at once. */
   readonly targetMs: () => number;
+  /** Other tabs: posted after a successful write; their messages make the store read again. */
+  readonly channel?: ChangeChannel;
+  /** A write failed (quota, a closed connection). */
+  readonly onWriteFailed?: () => void;
 };
 
 export type RecallInput = {
@@ -81,6 +91,8 @@ export interface LearnStore {
   recordRecognition: (input: RecognitionInput) => void;
   /** `started`: a session's first task; `finished`: a session that reached its summary. */
   countSession: (kind: 'started' | 'finished') => void;
+  /** Unlocks and moves boxes for the current target answer time; for a changed setting. */
+  reevaluate: () => void;
   /** Writes a pending change now, or waits for the write in progress. Never rejects. */
   flush: () => Promise<void>;
   /** "Reset progress": clears the learning state and its stored record. */
@@ -123,12 +135,37 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
           { op: 'put', store: DELTA_STORE, key: DELTA_KEY, value: { learn, counters: stored } },
           { op: 'put', store: META_STORE, key: INTERVALS_KEY, value: keep },
         ]);
+        deps.channel?.post();
       })
       .catch(() => {
         // The write failed (quota, a closed connection): the state holds for this page load.
+        deps.onWriteFailed?.();
       });
     return writing;
   };
+
+  // Another tab wrote the record: take it, in the chain of writes so that it is not read during our
+  // own. Until P5 merges the records, a change of our own that is not written yet is written over
+  // theirs.
+  const reload = (): Promise<void> => {
+    writing = writing
+      .then(async () => {
+        if (status.value !== 'ready' || pending !== null) return;
+        const db = await deps.db();
+        const doc = await db.get(DELTA_STORE, DELTA_KEY);
+        if (isObject(doc) && isLearnState(doc['learn']) && isCounters(doc['counters'])) {
+          state.value = unlock(doc['learn']);
+          counters.value = doc['counters'];
+        }
+        const saved = await db.get(META_STORE, INTERVALS_KEY);
+        if (isIntervals(saved)) intervals = saved.slice(-K_WINDOW);
+      })
+      .catch(() => {});
+    return writing;
+  };
+  deps.channel?.listen(() => {
+    void reload();
+  });
 
   // The write follows the answer outside the keystroke handler, once for a burst of changes.
   const schedule = (): void => {
@@ -176,6 +213,14 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
       if (status.value !== 'error') return loading ?? init();
       loading = null;
       return init();
+    },
+
+    reevaluate() {
+      if (status.value !== 'ready') return;
+      const next = unlock(state.value);
+      if (next === state.value) return;
+      state.value = next;
+      schedule();
     },
 
     introduce(key) {
@@ -271,11 +316,26 @@ const store = createLearnStore({
   clock: defaultClock,
   scheduler: defaultScheduler,
   targetMs: () => targetMsSource(),
+  channel: changeChannel('nekotype:learn'),
+  onWriteFailed: reportWriteFailure,
 });
+
+let watching = false;
 
 /** Binds the target answer time (`settings.learn.targetMs`) and loads the state; `/learn` calls it. */
 export function initLearn(targetMs: () => number): Promise<void> {
   targetMsSource = targetMs;
+  if (!watching) {
+    watching = true;
+    // A changed target can confirm kana: `untracked` keeps the effect off the state, so it runs on
+    // the setting only, not on each answer.
+    effect(() => {
+      targetMs();
+      untracked(() => {
+        store.reevaluate();
+      });
+    });
+  }
   return store.init();
 }
 
@@ -288,5 +348,4 @@ export const introduce = store.introduce;
 export const recordRecall = store.recordRecall;
 export const recordRecognition = store.recordRecognition;
 export const countSession = store.countSession;
-export const flushLearn = store.flush;
 export const resetLearning = store.reset;

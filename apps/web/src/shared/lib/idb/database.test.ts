@@ -144,3 +144,13 @@ describe('createDatabaseProvider', () => {
     expect(provider.mode.value).toBe('memory');
   });
 });
+
+describe('createDatabaseProvider: failed writes', () => {
+  it('switches to the memory notice when a write fails after the database opened', async () => {
+    const provider = createDatabaseProvider(new IDBFactory());
+    await provider.getDatabase();
+    expect(provider.mode.value).toBe('indexeddb');
+    provider.failWrites();
+    expect(provider.mode.value).toBe('memory');
+  });
+});
