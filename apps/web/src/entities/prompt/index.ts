@@ -44,10 +44,11 @@ export {
   compact,
   canonical,
   spellingsFor,
-  canonicalFor,
   createErrorLog,
   isKanaKey,
 } from './lib/engine';
+
+export { canonicalFor } from './lib/canonical';
 
 export { buildPool, pickPrompt } from './lib/picker';
 
