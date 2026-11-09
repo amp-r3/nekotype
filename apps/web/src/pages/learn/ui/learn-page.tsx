@@ -2,8 +2,8 @@ import type { JSX } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import { Button, Segmented } from '@/shared/ui';
-import { KanaChart } from '@/shared/ui/kana-chart';
-import { chartModel, kanaDetails } from '../lib/chart';
+import { KanaChart, KanaChartPanel } from '@/shared/ui/kana-chart';
+import { chartBlockLabels, chartLegend, chartModel, kanaPanelLines, romajiOf } from '../lib/chart';
 import { learnTargetMs, learnTrack, setTrack } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
 import { defaultClock } from '@/shared/lib';
@@ -137,13 +137,13 @@ export function LearnPage(): JSX.Element {
   const mastered = masteredCount(state, track, target);
   const now = defaultClock.now();
   const infos = cellInfos(track, state, target, now);
-  const due = dueCount(state, track, now);
+  const due = dueCount(state, track, target, now);
   const streak = currentStreak(state.activeDays, localDay(now));
 
   return (
     <>
       {hiddenInput}
-      <section className="max-w-layout-test mx-auto flex w-full flex-col items-start gap-6 py-12">
+      <section className="max-w-layout-max mx-auto flex w-full flex-col items-start gap-6 py-12">
         <h1 className="text-ui-title text-fur">{t('page.learn')}</h1>
 
         <Segmented<LearnTrack>
@@ -195,18 +195,19 @@ export function LearnPage(): JSX.Element {
         <KanaChart
           rows={chartModel(track, infos)}
           ariaLabel={t('learn.chart.label')}
+          blockLabels={chartBlockLabels()}
+          legend={chartLegend(track)}
           renderDetails={(cell, close) => {
             const info = infos.get(keyOf(track, cell.kana));
             if (info === undefined) return null;
             return (
-              <div className="flex flex-col items-start gap-1">
-                {kanaDetails(info).map((line) => (
-                  <p key={line}>{line}</p>
-                ))}
-                <Button variant="text" size="sm" onClick={close}>
-                  {t('learn.chart.close')}
-                </Button>
-              </div>
+              <KanaChartPanel
+                kana={info.kana}
+                romaji={romajiOf(info.key)}
+                lines={kanaPanelLines(info)}
+                closeLabel={t('learn.chart.close')}
+                onClose={close}
+              />
             );
           }}
         />

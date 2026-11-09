@@ -1,5 +1,6 @@
 import type { LearnKanaKey, Track } from '@nekotype/shared/types';
-import type { ChartCell, ChartRow } from '@/shared/ui/kana-chart';
+import type { RowCategory } from '@nekotype/engine';
+import type { ChartCell, ChartLegend, ChartRow, KanaChartPanelLine } from '@/shared/ui/kana-chart';
 import { locale, t } from '@/shared/i18n';
 import { chartRows, keyOf } from '@/entities/learn';
 import type { KanaCellInfo } from '@/entities/learn';
@@ -17,7 +18,8 @@ function dateOf(timestamp: number): string {
   );
 }
 
-function romajiOf(key: LearnKanaKey): string {
+/** The romaji of a kana as the chart shows it. */
+export function romajiOf(key: LearnKanaKey): string {
   return spellingsFor(key, 'ime')[0] ?? '';
 }
 
@@ -79,8 +81,10 @@ export function chartModel(
   }));
 }
 
-/** The details of an activated cell: the mixups and the recognition accuracy. */
-export function kanaDetails(info: KanaCellInfo): readonly string[] {
+/** The lines of the details panel of an activated cell (design 94): the state with the review
+ * timing, the median and accuracy, the mixups and the recognition accuracy. */
+export function kanaPanelLines(info: KanaCellInfo): readonly KanaChartPanelLine[] {
+  const lines = kanaStateLines(info);
   const mixups =
     info.mixups.length === 0
       ? t('learn.chart.noMixups')
@@ -96,5 +100,34 @@ export function kanaDetails(info: KanaCellInfo): readonly string[] {
           ok: correct,
           total: info.recognitions,
         });
-  return [mixups, recognition];
+  return [
+    { text: lines[1] ?? '' },
+    { text: lines[2] ?? '', dim: true },
+    { text: mixups },
+    { text: recognition, dim: true },
+  ];
+}
+
+/** The captions of the chart's blocks, by row category. */
+export function chartBlockLabels(): Readonly<Record<RowCategory, string>> {
+  return {
+    basic: t('learn.chart.block.basic'),
+    dakuten: t('learn.chart.block.voiced'),
+    yoon: t('learn.chart.block.combinations'),
+    extended: t('learn.chart.block.extended'),
+  };
+}
+
+/** The legend under the chart: the four states and the due mark. */
+export function chartLegend(track: Track): ChartLegend {
+  return {
+    sample: track === 'hiragana' ? 'あ' : 'ア',
+    labels: {
+      locked: t('learn.chart.state.locked'),
+      learning: t('learn.chart.state.learning'),
+      confident: t('learn.chart.state.confident'),
+      mastered: t('learn.chart.state.mastered'),
+      due: t('learn.chart.due'),
+    },
+  };
 }

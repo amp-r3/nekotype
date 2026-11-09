@@ -84,7 +84,10 @@ test.describe('review session on /', () => {
       katakana: unlocked.map((k) => k.replace(/^hiragana/, 'katakana')),
     },
     entries: { 'hiragana:あ': { box: 2, dueAt: 1, updatedAt: 1 } },
-    recent: {},
+    // Confident: only a confident kana is due (ADR 062).
+    recent: {
+      'hiragana:あ': Array.from({ length: 10 }, (_, i) => ({ at: i + 1, ms: 900, ok: true })),
+    },
     stats: {},
     activeDays: [],
     recallBuckets: { hiragana: {}, katakana: {} },

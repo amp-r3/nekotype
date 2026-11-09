@@ -552,11 +552,27 @@ html[data-testing] [data-chrome] {
 .nk-chart {
   display: flex;
   flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Blocks stand side by side and wrap: on a desktop they fill the width, on a phone they stack. */
+.nk-chart__grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-8);
+}
+
+.nk-chart__block {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-1);
 }
 
-.nk-chart__group.is-block-start {
-  margin-top: var(--space-4);
+.nk-chart__caption {
+  margin-bottom: var(--space-1);
+  padding-left: 40px;
+  color: var(--fur-dim);
 }
 
 .nk-chart__row {
@@ -575,6 +591,12 @@ html[data-testing] [data-chrome] {
 
 .nk-chart__slot {
   position: relative;
+}
+
+@media (max-width: 639px) {
+  .nk-chart__grid {
+    gap: var(--space-6);
+  }
 }
 
 /* A cell is 44px square; the state is shown by border, fill and marks, not by colour alone. */
@@ -643,8 +665,9 @@ button.nk-cell.is-learning:hover {
 .nk-chart__tip {
   position: absolute;
   z-index: 10;
-  top: calc(100% + var(--space-1));
-  left: 0;
+  bottom: calc(100% + var(--space-2));
+  left: 50%;
+  transform: translateX(-50%);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   background: var(--fur);
@@ -655,8 +678,77 @@ button.nk-cell.is-learning:hover {
   pointer-events: none;
 }
 
+.nk-chart__tip.is-start {
+  left: 0;
+  transform: none;
+}
+
+.nk-chart__tip.is-end {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
 .nk-chart__details {
-  padding: var(--space-2) var(--space-2) var(--space-2) 40px;
+  box-sizing: border-box;
+  /* As wide as its block: an open panel never widens the block and moves the blocks beside it. */
+  width: 0;
+  min-width: 100%;
+  padding: var(--space-2) 0 var(--space-3);
+}
+
+/* The details of a kana: the one surface in the table (design 94). */
+.nk-chart__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+}
+
+.nk-chart__panel-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+/* The label of `close` lines up with the panel's right padding. */
+.nk-chart__close {
+  margin-left: auto;
+  margin-right: calc(-1 * var(--space-2));
+}
+
+.nk-chart__panel-lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.nk-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
   color: var(--fur-dim);
-  font-size: var(--text-ui-label);
+}
+
+.nk-chart__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* The due mark is not a state: set apart from the four. */
+.nk-chart__legend-due {
+  margin-left: var(--space-4);
+}
+
+.nk-cell.nk-chart__swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: var(--text-jp-body);
 }

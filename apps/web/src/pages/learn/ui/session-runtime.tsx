@@ -20,7 +20,10 @@ export function openSession(mode: 'learning' | 'review'): LearnSession {
   return createLearnSession({
     track,
     mode,
-    queue: mode === 'review' ? reviewQueue(learnState.value, track, defaultClock.now()) : [],
+    queue:
+      mode === 'review'
+        ? reviewQueue(learnState.value, track, learnTargetMs.value, defaultClock.now())
+        : [],
     store: { state: learnState, introduce, recordRecall, recordRecognition, countSession },
     clock: defaultClock,
     scheduler: defaultScheduler,

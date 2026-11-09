@@ -33,8 +33,8 @@ test.describe('focus redirection and keyboard-first typing', () => {
       await katakanaBtn.click();
       await expect(katakanaBtn).toBeFocused();
 
-      // Press a wrong letter key (e.g. 'z' which is not a basic kana)
-      await page.keyboard.press('KeyZ');
+      // Press a wrong letter key: 'q' starts no kana, while 'z' starts ジ (zi), which a word may open with
+      await page.keyboard.press('KeyQ');
 
       // Focus must immediately move back to input
       await expect(input).toBeFocused();

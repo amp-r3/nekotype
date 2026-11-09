@@ -3,7 +3,7 @@ import type { RowCategory } from '@nekotype/engine';
 import type { LearnKanaKey, LearnState, Track } from '@nekotype/shared/types';
 import { isLearnKanaKey } from '@nekotype/shared/runtime';
 import { isConfident, accuracyOf, medianAnswerMs } from './confidence';
-import { isDue, isMastered } from './boxes';
+import { isDueKana, isMastered } from './boxes';
 import { keyOf, nextUnlock } from './tracks';
 
 export type CellState = 'locked' | 'learning' | 'confident' | 'mastered';
@@ -100,7 +100,7 @@ export function cellInfos(
         key,
         kana,
         state: cellState,
-        due: (cellState === 'confident' || cellState === 'mastered') && isDue(entry, now),
+        due: unlocked && isDueKana(entry, answers, targetMs, now),
         dueAt: unlocked && entry !== undefined && entry.box >= 1 ? entry.dueAt : null,
         introduced: entry !== undefined,
         opensNext: key === opening,
