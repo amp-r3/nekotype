@@ -5,7 +5,7 @@ import type { ChangeChannel, Db, Write } from '@/shared/lib';
 import { createLearnStore } from './store';
 import type { LearnStore } from './store';
 import { ManualScheduler, SeededRng, TestClock } from './test-util';
-import { keyOf, keysOfTrack } from '../lib/tracks';
+import { dependenciesOf, keyOf, keysOfTrack } from '../lib/tracks';
 import { isConfident } from '../lib/confidence';
 import { initialLearnState } from '../lib/state';
 
@@ -209,6 +209,11 @@ function simulate(
       for (const u of previous.unlocked[track]) {
         expect(isConfident(now.recent[u] ?? [], 1500)).toBe(true);
       }
+      // And never before its dependencies: each is unlocked already and confident.
+      for (const dep of dependenciesOf(track, k.slice(k.indexOf(':') + 1))) {
+        expect(previous.unlocked[track]).toContain(dep);
+        expect(isConfident(now.recent[dep] ?? [], 1500)).toBe(true);
+      }
       order.push(k);
     }
     previous = now;
@@ -249,6 +254,42 @@ describe('learn store: unlocking properties (simulated learner)', () => {
     // Only the vowels are open at the start; unlocking order follows the table otherwise.
     expect(at('ア')).toBeLessThan(at('カ'));
   });
+
+  const unlockPairs: readonly { track: Track; pairs: readonly (readonly [string, string])[] }[] = [
+    {
+      track: 'hiragana',
+      pairs: [
+        ['が', 'か'],
+        ['きゃ', 'き'],
+        ['きゃ', 'や'],
+        ['ぴょ', 'ぴ'],
+        ['ぴょ', 'よ'],
+      ],
+    },
+    {
+      track: 'katakana',
+      pairs: [
+        ['ガ', 'カ'],
+        ['キャ', 'キ'],
+        ['キャ', 'ヤ'],
+        ['ファ', 'フ'],
+        ['ファ', 'ア'],
+      ],
+    },
+  ];
+
+  it.each(unlockPairs)(
+    'unlocks every kana of $track after its dependencies, with errors',
+    ({ track, pairs }) => {
+      const { state, order } = simulate(track, 4, { fastMs: 600, slowMs: 1600, errorRate: 0.05 });
+      expect(state.unlocked[track]).toEqual(keysOfTrack(track));
+      const at = (kana: string) => order.indexOf(keyOf(track, kana));
+      for (const [kana, dep] of pairs) {
+        expect(at(dep)).toBeGreaterThan(-1);
+        expect(at(dep)).toBeLessThan(at(kana));
+      }
+    },
+  );
 
   it('does not unlock past a kana the learner is slow at', () => {
     const { state } = simulate('hiragana', 3, { fastMs: 2000, slowMs: 2500, errorRate: 0 }, 2000);
