@@ -380,7 +380,8 @@ export declare function Nav(props: NavProps): React.ReactElement;
 export interface FooterProps { links: { id: string; label: React.ReactNode; href?: string; onClick?: () => void }[]; hidden?: boolean }
 export declare function Footer(props: FooterProps): React.ReactElement;
 
-export type CatMood = 'neutral' | 'sleep' | 'content';
+/** `grumpy` is drawn in `geometry` only and has no place in the product yet (decision 98). */
+export type CatMood = 'neutral' | 'sleep' | 'content' | 'grumpy';
 export interface CatProps {
   /** Product style is 'geometry'. 'line' and 'silhouette' are archived. */
   variant?: 'geometry' | 'line' | 'silhouette';

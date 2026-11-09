@@ -30,14 +30,13 @@ export function Cat({ size = 96, className = '' }: CatProps): JSX.Element {
       className={`block flex-none ${className}`}
     >
       <path d="M14 84A34 30 0 0 1 82 84Z" style={FUR} />
-      <path d="M82 84A12 12 0 0 0 70 72L70 78A6 6 0 0 1 76 84Z" style={FUR} />
-      <circle cx="38" cy="56" r="15" style={FUR} />
       <circle cx="38" cy="56" r="15" style={GAP} />
-      <path d="M25 52L22 35L36 43Z" style={FUR} />
-      <path d="M51 52L54 35L40 43Z" style={FUR} />
-      <circle cx="38" cy="56" r="14" style={FUR} />
-      <path d="M29.8 57.0Q32.5 60.0 35.2 57.0" style={CUT} />
-      <path d="M40.8 57.0Q43.5 60.0 46.2 57.0" style={CUT} />
+      <path
+        d="M25.16 49.64L23.02 38.42A1.31 1.31 0 0 1 24.97 37.05L33.62 42.14A1.8 1.8 0 0 0 34.93 42.34A14 14 0 0 1 41.07 42.34A1.8 1.8 0 0 0 42.38 42.14L51.03 37.05A1.31 1.31 0 0 1 52.98 38.42L50.84 49.64A1.8 1.8 0 0 0 50.94 50.66A14 14 0 1 1 25.06 50.66A1.8 1.8 0 0 0 25.16 49.64Z"
+        style={FUR}
+      />
+      <path d="M29.8 57Q32.5 60 35.2 57" style={CUT} />
+      <path d="M40.8 57Q43.5 60 46.2 57" style={CUT} />
     </svg>
   );
 }
