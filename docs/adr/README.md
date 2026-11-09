@@ -88,3 +88,4 @@ Append-only log of architectural decisions, one file per decision.
 | [061](061-schema-reset-before-release.md)                                            | The Local Schema Resets Instead of Migrating Until the Release                               | In force until release |
 | [062](062-design-review-of-the-p3-build.md)                                          | Design Review of the P3 Build: Details Panel, Due Kana, Displayed Romaji                     | In force               |
 | [063](063-unconfident-kana-in-focus.md)                                              | A Kana That Lost Its Confidence Is in Focus Again                                            | In force               |
+| [064](064-agpl-code-reserved-brand.md)                                               | Code Under AGPL-3.0-only, Brand Reserved, Fonts Under OFL-1.1                                | In force               |

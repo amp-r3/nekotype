@@ -1,3 +1,5 @@
+// The cat's shapes below (the `path` and `circle` geometry) are a brand asset of amp-r3, all
+// rights reserved, and not covered by the AGPL; the rest of this file is. See NOTICE.md and BRAND.md.
 import type { JSX } from 'preact';
 
 // The white cat of the design system, `geometry` variant, asleep: the one picture of an empty

@@ -8,7 +8,7 @@
 
 **Status.** The code implements phases P0–P3 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md)): `/` teaches hiragana and katakana one kana at a time with introductions, recall, recognition and spaced reviews, with progress in IndexedDB, and typing Words and Phrases lives on `/type`. There is no backend yet (sync is P5, kana audio P6).
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Max%20Strict-blue.svg)](https://www.typescriptlang.org/)
 [![FSD: Verified](https://img.shields.io/badge/Architecture-Feature--Sliced%20Design-orange.svg)](https://feature-sliced.design/)
 [![Bundle Budget](https://img.shields.io/badge/First%20Load-102.9%20KB%20%2F%20160%20KB-success.svg)](#-performance-budgets)
@@ -220,8 +220,11 @@ pnpm dlx wrangler pages deploy apps/web/dist --project-name nekotype --branch=ma
 
 ## 📄 License
 
-- **Source Code:** [MIT License](LICENSE)
-- **Typography:**
-  - Noto Sans JP: [SIL Open Font License 1.1](apps/web/src/assets/fonts/OFL-NotoSansJP.txt)
-  - JetBrains Mono: [SIL Open Font License 1.1](apps/web/src/assets/fonts/OFL-JetBrainsMono.txt)
-  - Golos Text: [SIL Open Font License 1.1](apps/web/src/assets/fonts/OFL-GolosText.txt)
+Nekotype is licensed in three parts; [NOTICE.md](NOTICE.md) maps every file to its terms.
+
+- **Source code:** [GNU AGPL v3.0 only](LICENSE) (`AGPL-3.0-only`), with additional terms under section 7 (attribution, marking of modified versions, no trademark rights). If you run a modified version for users over a network, you must offer them its complete source code under the same licence.
+- **Brand and mascot:** the name "Nekotype", the logos, favicon, banners and the cat (including its geometry in code) are © amp-r3, all rights reserved, and not covered by the AGPL. Forks and other public versions must replace them: see [BRAND.md](BRAND.md).
+- **Fonts:** [SIL Open Font License 1.1](https://openfontlicense.org) (`OFL-1.1`):
+  - Noto Sans JP: [OFL-NotoSansJP.txt](apps/web/src/assets/fonts/OFL-NotoSansJP.txt)
+  - JetBrains Mono: [OFL-JetBrainsMono.txt](apps/web/src/assets/fonts/OFL-JetBrainsMono.txt)
+  - Golos Text: [OFL-GolosText.txt](apps/web/src/assets/fonts/OFL-GolosText.txt)

@@ -28,6 +28,7 @@ Start here. Each folder has its own `README.md` with an index.
 | What does the interface look like? Tokens, components, logo       | [design/README.md](design/README.md)                                         |
 | Why was something decided?                                        | [spec/decisions.md](spec/decisions.md) (A-items), then [adr/](adr/README.md) |
 | How the current v1 code is structured                             | [architecture/baseline-v1.md](architecture/baseline-v1.md)                   |
+| Licences of the code, brand and fonts                             | [../NOTICE.md](../NOTICE.md), [../BRAND.md](../BRAND.md)                     |
 | Setup, scripts, git hooks, deployment                             | [../README.md](../README.md)                                                 |
 | Rules for AI agents                                               | [../AGENTS.md](../AGENTS.md)                                                 |
 
