@@ -7,13 +7,13 @@ export const ru = {
 
   // Navigation and routes
   'nav.label': 'Основная навигация',
-  'nav.type': 'тест',
+  'nav.type': 'набор',
   'nav.learn': 'обучение',
   'nav.stats': 'статистика',
   'nav.settings': 'настройки',
   'nav.about': 'о проекте',
   'page.learn': 'Обучение',
-  'page.type': 'Тест',
+  'page.type': 'Набор',
   'page.stats': 'Статистика',
   'page.settings': 'Настройки',
   'page.about': 'О проекте',
