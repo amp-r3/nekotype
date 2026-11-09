@@ -714,6 +714,8 @@
     lowMiss: 'fewer errors', highMiss: 'more errors', fast: 'faster', slow: 'slower'
   };
   /* Tooltip / aria-label lines of a kana in the state mode (exception to Tooltip's one-line rule). */
+  /* Due = the mark: a confident or mastered kana whose review date has come. Review (N) counts exactly these kana and the
+     review session asks only them (decision 95): a learning kana is not scheduled for review, even in box 1 or higher. */
   function isDue(d) { return !!(d && d.due && (d.state === 'confident' || d.state === 'mastered')); }
   function kanaStateLines(k, d, L, romaji, nextUnlock) {
     if (!d) return [k, L.locked + (k === nextUnlock ? ' · ' + L.opensNext : '')];
@@ -722,20 +724,27 @@
     var l3 = !d.answers ? L.notIntroduced : L.stats(d.median, d.acc) + (d.answers < 10 ? ' · ' + L.answers(d.answers) : '');
     return [k + ' · ' + (romaji ? romaji(k) : ''), l2, l3];
   }
-  /* Activation details: mixups (kana chosen instead of this one in recognition, most first) and recognition accuracy.
-     Shown inline under the row of the activated cell. Not a card: no fill, no border. */
+  /* Activation details (decision 94): a panel on `bg-raised` under the row of the activated cell, with everything known
+     about the kana — head (kana, romaji, close), the state and review line, the median and accuracy line (the tooltip's
+     lines 2 and 3), the mixups (kana chosen instead of this one in recognition, most first) and the recognition accuracy. */
   function KanaChartDetails(p) {
     var L = Object.assign({}, KC_LABELS, p.labels), k = p.kana, d = p.data || {}, romaji = p.romaji || function () { return ''; };
     var mx = (d.mixups || []).slice().sort(function (a, b) { return b[1] - a[1]; }), rc = d.recog || [0, 0];
-    return h('div', { className: 'nk-kc__detail-cell', 'aria-live': 'polite' },
-      h('div', { className: 'nk-kc__detail-head' }, h('span', { className: 'jp-cell', lang: 'ja' }, k), h('span', { className: 'mono-romaji nk-dim' }, romaji(k)),
+    var lines = kanaStateLines(k, p.data, L, romaji, null);
+    return h('div', { className: 'nk-kc__panel', 'aria-live': 'polite' },
+      h('div', { className: 'nk-kc__detail-head' },
+        h('span', { className: 'jp-test-sm nk-kc__detail-kana', lang: 'ja' }, k),
+        h('span', { className: 'mono-romaji nk-dim' }, romaji(k)),
         p.onClose && h(Button, { variant: 'text', size: 'sm', className: 'nk-kc__close', onClick: p.onClose }, L.close)),
-      h('div', { className: 'ui-body' }, mx.length
-        ? [h('span', { key: 'l', className: 'nk-dim' }, L.mixedWith + ' '), mx.map(function (m, i) {
-            return h('span', { key: m[0], className: 'nk-kc__mix' }, h('span', { className: 'jp-body', lang: 'ja' }, m[0]), h('span', { className: 'nk-dim' }, ' ×' + m[1]), i < mx.length - 1 ? ', ' : '');
-          })]
-        : h('span', { className: 'nk-dim' }, L.noMixups)),
-      h('div', { className: 'ui-body nk-dim' }, rc[1] ? L.recog(Math.round(rc[0] / rc[1] * 100), rc[0], rc[1]) : L.noRecog));
+      h('div', { className: 'nk-kc__detail-lines ui-body' },
+        h('div', null, lines[1]),
+        h('div', { className: 'nk-dim' }, lines[2]),
+        h('div', null, mx.length
+          ? [h('span', { key: 'l', className: 'nk-dim' }, L.mixedWith + ' '), mx.map(function (m, i) {
+              return h('span', { key: m[0], className: 'nk-kc__mix' }, h('span', { className: 'jp-body', lang: 'ja' }, m[0]), h('span', { className: 'nk-dim' }, ' ×' + m[1]), i < mx.length - 1 ? ', ' : '');
+            })]
+          : h('span', { className: 'nk-dim' }, L.noMixups)),
+        h('div', { className: 'nk-dim' }, rc[1] ? L.recog(Math.round(rc[0] / rc[1] * 100), rc[0], rc[1]) : L.noRecog)));
   }
   function KanaChart(p) {
     var mode = p.mode || 'state', script = p.script || 'hiragana', data = p.data || {};
@@ -815,7 +824,7 @@
                 tabIndex: active === k || (!active && k === first) ? 0 : -1,
                 className: cx('nk-kc__cell', k.length > 1 ? 'jp-cell-sm' : 'jp-cell', cellCls(k), active === k && 'is-active'),
                 onFocus: function () { act[1](k); }, onMouseEnter: function () { act[1](k); }, onClick: function () { activate(k); } },
-                k, active === k && h('span', { className: cx('nk-kc__tip ui-caption', ci === 0 && 'is-start', ci >= n - 1 && n > 2 && 'is-end'), role: 'tooltip', lang: p.lang },
+                k, active === k && open !== k && h('span', { className: cx('nk-kc__tip ui-caption', ci === 0 && 'is-start', ci >= n - 1 && n > 2 && 'is-end'), role: 'tooltip', lang: p.lang },
                   lines.map(function (t, i) { return h('span', { key: i, className: 'nk-kc__tip-line' }, t); })));
             }));
           return open && cells.indexOf(open) >= 0 ? [row, details(open)] : row;

@@ -8,9 +8,11 @@ One task of a learning or review session on `/` (ADR 058): the session line, the
 
 | kind | prompt | input |
 | --- | --- | --- |
-| introduction | `new kana` / `новая кана` (`ui-caption`, `fur-dim`); the kana in `jp-solo` (`jp-solo-sm` below 640px), `fur`; under it the romaji as a ghost hint — `mono-counter` 24px, `untyped` | the user types the romaji once. Typed letters turn `fur`, like typed text in the stream; the `eye` caret stands before the next letter. A rejected key flashes the caret. Nothing is timed, no errors are recorded. |
+| introduction | `new kana` / `новая кана` (`ui-caption`, `fur-dim`); the kana in `jp-solo` (`jp-solo-sm` below 640px), `fur`; under it the romaji as a ghost hint — `mono-counter` 24px, `untyped` | the user types the shown romaji once; **only the shown spelling is accepted** — another spelling of the same kana (`hu` for ふ `fu`, `si` for し `shi`) is a rejected key: the caret flashes, nothing is recorded (decision 96). Typed letters turn `fur`, like typed text in the stream; the `eye` caret stands before the next letter. A rejected key flashes the caret. Nothing is timed, no errors are recorded. |
 | recall | the kana in `jp-solo` / `jp-solo-sm`, `fur` — the question, the most contrasting element on screen (principle 1); the answer time runs from its display, so it is never dimmed. The `eye` caret and buffer show that no answer has been given yet | caret before the kana; the romaji buffer under it from the caret (`eye`, `mono-romaji`; `mono-small` below 640px). The buffer's line is reserved — the kana never moves. ぬ: `n` → buffer `n`; `nu` → done. きゃ: `k`, `ky`, `kya`. A rejected key (`m` for ぬ) flashes the caret `miss`; the error is recorded, the answer goes on until the kana is typed in full. |
 | recognition | the romaji in `mono-hero` (`mono-hero-sm` below 640px), `fur` | four `OptionCard`s in one row; keys `1`–`4` (number row and numeric keypad), click or tap |
+
+**Romaji shown to the learner** (introduction hint, recognition prompt, `revealed: …`, the table's tooltip and details): the kana table's first IME spelling, except ん / ン, shown as `n` (one `n` completes the kana at the end of a task) — decision 96. Recall accepts every spelling of the learning strictness, as before.
 
 **After the answer** (`finish`):
 

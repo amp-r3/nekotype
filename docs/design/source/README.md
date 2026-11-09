@@ -6,7 +6,7 @@ The product's symbol is a white fluffy cat with blue eyes, and the palette comes
 
 1. **The kana is the hero.** On any screen with kana, the largest and highest-contrast element is the kana of the task or of the text stream. During a typing test, navigation and the config bar step back (see "Test screen"). During a learning task, the screen holds only what the task needs (defined with the learning session).
 2. **One accent.** `eye` marks "where you are now": the caret, the romaji buffer, the counter, the selected item (segments, the track switch), focus, the revealed romaji, the personal best badge and the mastered-kana mark. It never fills an area larger than a switch knob. The due mark is not `eye`.
-3. **Structure through spacing.** Blocks are separated by `space-12` or more, not by cards, borders or fills. A line appears only where groups would otherwise run together (table rows).
+3. **Structure through spacing.** Blocks are separated by `space-12` or more, not by cards, borders or fills. A line appears only where groups would otherwise run together (table rows). Exceptions with a surface: fields, dialogs and the kana table's details panel (`bg-raised`, decision 94).
 4. **Nothing without a function.** Every element either shows a state or performs an action. There is no confetti, no colour-coded judgement of results, no praise for a correct answer, and unlocking a kana is not celebrated: progress shows as state, not as words.
 
 ## Tone and copy
@@ -23,7 +23,7 @@ The product's symbol is a white fluffy cat with blue eyes, and the palette comes
 
 One theme — dark (`dark`). Every colour is a token; pages define no colours of their own, so themes can be added without changing the structure.
 
-- Background: `bg` (page) → `bg-raised` (fields, dialogs, switch track) → `bg-hover` (hover). `scrim` sits under a modal dialog.
+- Background: `bg` (page) → `bg-raised` (fields, dialogs, switch track, the kana details panel) → `bg-hover` (hover). `scrim` sits under a modal dialog.
 - Lines: `line` — decorative divider; `line-strong` — control boundary and learning kana (≥ 3:1).
 - Text: `fur` (main, correctly typed, the kana of a learning task) → `fur-dim` (secondary, translation, placeholders, live indicators, loading) → `untyped` (not typed yet, ghost hint — only ≥ 24px) → `fur-faint` (disabled and locked only).
 - Error — `miss`, the underline under an error — `miss-dim`. `miss` means only an error or a blocked action. There is no green in the system.
@@ -161,7 +161,7 @@ Top to bottom:
 2. First visit only — while the user has no answers: one line above the actions, `ui-body`, `fur-dim`, kana in `fur`, the kana never split across lines: `the first session introduces the vowels あ い う え お` / `первая сессия — гласные あ い う え お` (ア イ ウ エ オ on the katakana track).
 3. Actions: `continue` / `продолжить` — `primary`, `lg`, the only primary on the screen; `review (5)` / `повторение (5)` — `secondary`, `lg`, disabled at 0. Both are disabled until the progress has loaded.
 4. A reserved `Notice` line: while loading — `loading your progress…` / `загрузка прогресса…` (static); `progress cannot be saved in this browser` / `прогресс не сохраняется в этом браузере`; on a load error — `failed to load your progress. check the connection and try again.` / `не удалось загрузить прогресс. проверьте соединение.` in `miss` with `retry` / `ещё раз`.
-5. The kana table of the selected track — `KanaChart mode="state"`, drawn once the progress has loaded. While loading the progress line keeps its height, so the actions do not move.
+5. The kana table of the selected track — `KanaChart mode="state"`, drawn once the progress has loaded. While loading the progress line keeps its height, so the actions do not move. On a desktop its blocks (basic · voiced · combinations · extended) stand side by side across the page width (`layout-max`), with the legend under them; below 640px they stack (decision 93). An activated cell opens its details panel under its row (decision 94).
 
 Keyboard: no global keys on `/` (`Enter` on a table cell opens its details). When the screen is ready, `continue` takes focus, so `Enter` starts the session. `Tab` order: the track switch, `continue`, `review`, then into the table — one entry point, arrows inside; `Shift + Tab` from `continue` reaches the track switch.
 
@@ -170,7 +170,7 @@ Keyboard: no global keys on `/` (`Enter` on a table cell opens its details). Whe
 `continue` starts a learning session, `review (N)` a review session (ADR 058). Both hand focus to the hidden input in their click handler; it keeps focus for the whole session, so a phone keeps its on-screen keyboard open.
 
 - **Learning session** — 25 tasks of the selected track. Every unlocked kana that has not been introduced gets an introduction task: at the start in table order, or as the next task if it unlocks during the session. An introduction is one of the 25. The rest: two thirds recall, one third recognition; weak and new kana (fewer than 10 recall answers) come up more often; the same kana never comes twice in a row if there is another.
-- **Review session** — one recall task per due kana, at most 20, the most overdue first. Answers in a learning session move no boxes and no review dates.
+- **Review session** — one recall task per due kana, at most 20, the most overdue first. Due means the table's due mark: confident or mastered and the review date has come; `review (N)` counts the marks (decision 95). Answers in a learning session move no boxes and no review dates.
 - No session timer: no clock, no countdown, no answer time during a task.
 - A session cannot be resumed. Leaving keeps every recorded answer (state is written after each answer) but loses the summary.
 - From P6 the kana sounds after each task. There is no sound UI on the task screen — no button, no indicator — only the setting in `/settings`. A task never waits for the sound.
