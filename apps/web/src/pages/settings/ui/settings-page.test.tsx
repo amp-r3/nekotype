@@ -33,26 +33,52 @@ describe('settings page: Reset progress', () => {
 
     render(<SettingsPage />, container);
     await act(() => {
-      button(container, t('app.reset')).click();
+      button(container, t('settings.data.resetAction')).click();
     });
     await act(() => {
-      button(document.body, t('reset.action')).click();
+      const dialog = container.querySelector('dialog');
+      if (dialog === null) throw new Error('no dialog');
+      button(dialog, t('reset.action')).click();
     });
     await act(settle);
 
     expect(learnState.value.entries).toEqual({});
   });
 
-  it('changes the target answer time', async () => {
+  it('changes the target answer time with a select of nine values', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<SettingsPage />, container);
-    const range = container.querySelector<HTMLInputElement>('[data-testid="settings-target-ms"]');
-    if (!range) throw new Error('no range');
+    const select = container.querySelector<HTMLSelectElement>('[data-testid="settings-target-ms"]');
+    if (!select) throw new Error('no select');
+    expect(Array.from(select.options).map((option) => option.textContent)).toEqual(
+      [1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000].map((ms) => `${String(ms)} ms`),
+    );
+    expect(select.value).toBe('1500');
     await act(() => {
-      range.value = '2250';
-      range.dispatchEvent(new Event('input', { bubbles: true }));
+      select.value = '2250';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
     });
     expect(learnTargetMs.value).toBe(2250);
+  });
+
+  it('is in sections, with what each setting does, and no range input', () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    render(<SettingsPage />, container);
+    const headings = Array.from(container.querySelectorAll('h2')).filter(
+      (heading) => heading.closest('dialog') === null,
+    );
+    expect(headings.map((heading) => heading.textContent)).toEqual([
+      t('settings.learn.title'),
+      t('settings.typing.title'),
+      t('settings.data.title'),
+    ]);
+    expect(container.textContent).toContain(t('settings.learn.strictnessHint'));
+    expect(container.textContent).toContain(t('settings.learn.targetHint'));
+    expect(container.querySelector('input[type="range"]')).toBeNull();
+    // The labels are lower case.
+    expect(t('settings.learn.strictness')).toBe('learning strictness');
+    expect(t('settings.data.reset')).toBe('reset progress');
   });
 });

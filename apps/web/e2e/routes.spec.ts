@@ -58,16 +58,16 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
 
   test('settings: Reset progress asks for confirmation and can be cancelled', async ({ page }) => {
     await page.goto('/settings');
-    await page.getByRole('button', { name: 'Reset Progress' }).click();
+    await page.getByRole('button', { name: 'reset', exact: true }).click();
 
     const dialog = page.locator('dialog[open]');
     await expect(dialog).toBeVisible();
-    await expect(dialog).toContainText('Are you sure');
-    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).toContainText('This cannot be undone');
+    await dialog.getByRole('button', { name: 'cancel', exact: true }).click();
     await expect(page.locator('dialog[open]')).toHaveCount(0);
 
-    await page.getByRole('button', { name: 'Reset Progress' }).click();
-    await page.locator('dialog[open]').getByRole('button', { name: 'Reset Everything' }).click();
+    await page.getByRole('button', { name: 'reset', exact: true }).click();
+    await page.locator('dialog[open]').getByRole('button', { name: 'reset', exact: true }).click();
     await expect(page.locator('dialog[open]')).toHaveCount(0);
   });
 
