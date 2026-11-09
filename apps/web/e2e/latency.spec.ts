@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { canonicalOfPrompt } from './lib/prompt';
-import { seedSettings } from './lib/app';
+import { seedLearning, seedSettings } from './lib/app';
+import { learnStateWith, romajiOf } from './lib/kana';
 
 // Keystroke latency (docs/spec/quality.md, "Budgets" and "Latency measurement"), measured by the
 // probe of the test build under 4x CPU throttling on each kind of content: 200 keystrokes in a
@@ -152,3 +153,83 @@ for (const content of CONTENTS) {
     ).toBeLessThanOrEqual(FRAME_MAX_MS);
   });
 }
+
+// The recall task of a learning session: the keys go through the same input source, and the task
+// controller writes the buffer and the caret.
+const SESSIONS = 2;
+const SESSION_TASKS = 25;
+
+// Plays one task of whatever kind is on screen, correctly, with the keys of a typist.
+async function answerTask(page: Page): Promise<void> {
+  const kind = await page.getByTestId('kana-task').getAttribute('data-kind');
+  if (kind === 'recognition') {
+    const wanted = (await page.getByTestId('task-prompt').textContent()) ?? '';
+    const labels = await page.locator('.nk-opt .nk-opt__label').allTextContents();
+    const index = labels.findIndex((label) => romajiOf.get(label) === wanted);
+    expect(index).toBeGreaterThanOrEqual(0);
+    await page.keyboard.press(`Digit${String(index + 1)}`);
+    return;
+  }
+  const romaji =
+    kind === 'introduction'
+      ? ((await page.locator('.nk-task__ghost').getAttribute('aria-label')) ?? '')
+      : romajiOf.get((await page.locator('[data-task-kana]').first().textContent()) ?? '');
+  expect(romaji).toBeTruthy();
+  for (const key of romaji ?? '') {
+    await page.keyboard.press(key);
+    await page.waitForTimeout(50);
+  }
+}
+
+test(`keystroke latency of recall stays within the budgets at ${THROTTLE}x CPU throttling`, async ({
+  page,
+}) => {
+  await seedLearning(
+    page,
+    '/',
+    learnStateWith(['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ']),
+  );
+  const client = await page.context().newCDPSession(page);
+  await client.send('Emulation.setCPUThrottlingRate', { rate: THROTTLE });
+
+  await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
+  await page.evaluate(() => {
+    const probe: unknown = Reflect.get(window, '__nekotypeProbe');
+    if (probe === null || typeof probe !== 'object') throw new Error('no probe');
+    const reset: unknown = Reflect.get(probe, 'reset');
+    if (typeof reset === 'function') Reflect.apply(reset, probe, []);
+  });
+  await page.getByRole('button', { name: 'continue' }).click();
+
+  for (let session = 1; session <= SESSIONS; session++) {
+    for (let n = 1; n <= SESSION_TASKS; n++) {
+      await expect(page.getByTestId('task-session')).toHaveText(
+        `learning · ${String(n)} of ${String(SESSION_TASKS)}`,
+      );
+      await answerTask(page);
+    }
+    await expect(page.getByRole('heading', { name: 'session summary' })).toBeVisible();
+    // A click, not Enter: the test does not depend on the hidden field's Enter handling.
+    if (session < SESSIONS) await page.getByRole('button', { name: /continue/ }).click();
+  }
+  await page.waitForTimeout(200);
+
+  const samples = (await readSamples(page)).filter(
+    (s) => Number.isFinite(s.work) && Number.isFinite(s.frame),
+  );
+  expect(samples.length, 'a sample for the keys of two sessions').toBeGreaterThan(40);
+  const works = samples.map((s) => s.work);
+  const frames = samples.map((s) => s.frame);
+  const work = percentile(works, 0.95);
+  const frame = percentile(frames, 0.95);
+  const report =
+    `recall: ${String(samples.length)} keys, work p95 ${work.toFixed(2)} ms (budget ${WORK_BUDGET_MS}, max ${Math.max(...works).toFixed(2)}, ceiling ${WORK_MAX_MS}), ` +
+    `frame p95 ${frame.toFixed(2)} ms (budget ${FRAME_BUDGET_MS.toFixed(1)}, max ${Math.max(...frames).toFixed(2)}, ceiling ${FRAME_MAX_MS})`;
+  test.info().annotations.push({ type: 'latency', description: report });
+  console.log(`\nKeystroke latency of recall at ${THROTTLE}x CPU throttling\n${report}`);
+
+  expect(work, 'keystroke work, p95').toBeLessThanOrEqual(WORK_BUDGET_MS);
+  expect(frame, 'keystroke to next frame, p95').toBeLessThanOrEqual(FRAME_BUDGET_MS);
+  expect(Math.max(...works), 'keystroke work, worst').toBeLessThanOrEqual(WORK_MAX_MS);
+  expect(Math.max(...frames), 'keystroke to next frame, worst').toBeLessThanOrEqual(FRAME_MAX_MS);
+});
