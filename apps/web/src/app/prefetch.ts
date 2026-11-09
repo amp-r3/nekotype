@@ -16,7 +16,7 @@ export type PrefetchDeps = {
   readonly content: ContentKind;
   readonly loadRoute: (path: (typeof ROUTE_PATHS)[number]) => Promise<unknown>;
   readonly loadContent: (kind: VocabularyKind) => Promise<unknown>;
-  // The other lazy pieces of the first screen: the results panel, the session summary and the Russian dictionary.
+  // The other lazy pieces: the results panel, the session summary and both whole dictionaries.
   readonly loadExtras: readonly (() => Promise<unknown>)[];
 };
 
@@ -61,6 +61,7 @@ export function schedulePrefetch(content: () => ContentKind): void {
           () => import('@/pages/trainer').then((module) => module.prefetchResultsPanel()),
           prefetchSummaryPanel,
           prefetchSessionRuntime,
+          () => preloadLocale('en'),
           () => preloadLocale('ru'),
         ],
       });

@@ -1,0 +1,26 @@
+// The strings of the stats screen (`/stats`): a chunk of their own, loaded with the screen.
+export const statsEn = {
+  'stats.learn.title': 'Learning',
+  'stats.learn.median': 'daily median answer time, ms',
+  'stats.learn.medianHint': 'lower is better',
+  'stats.learn.noData': 'no answers on this track yet',
+  'stats.learn.target': 'target {ms} ms',
+  'stats.learn.tip': '{date} · {ms} ms',
+  'stats.learn.tipNone': '{date} · no answers',
+  'stats.learn.streakCurrent': 'current streak',
+  'stats.learn.streakBest': 'best streak',
+  'stats.learn.days.one': 'day',
+  'stats.learn.days.few': 'days',
+  'stats.learn.days.many': 'days',
+  'stats.learn.days.other': 'days',
+  'stats.learn.mastered': 'mastered',
+  'stats.learn.trackProgress': '{track} {done} of {total}',
+  'stats.counters.title': 'Counters',
+  'stats.counters.started': 'started',
+  'stats.counters.finished': 'finished',
+  'stats.counters.learning': 'learning sessions',
+  'stats.empty.title': 'No statistics yet',
+  'stats.empty.text':
+    'Learn your first kana: answer times, streaks and typing results will appear here.',
+  'stats.empty.action': 'to learning',
+} as const satisfies Record<string, string>;

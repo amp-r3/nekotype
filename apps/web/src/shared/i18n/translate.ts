@@ -1,8 +1,8 @@
 import { dictionary, locale } from './locale';
-import type { TranslationKey } from './en';
+import type { TranslationKey } from './keys';
 
 export function t(key: TranslationKey, params?: Record<string, string | number>): string {
-  let str: string = dictionary.value[key];
+  let str: string = dictionary.value[key] ?? key;
 
   if (params) {
     for (const [pKey, pVal] of Object.entries(params)) {
@@ -25,7 +25,7 @@ export function tParts(
   key: TranslationKey,
   params: Record<string, string | number> = {},
 ): readonly TranslationPart[] {
-  const str: string = dictionary.value[key];
+  const str: string = dictionary.value[key] ?? key;
   const parts: TranslationPart[] = [];
   let from = 0;
   for (const match of str.matchAll(/\{(\w+)\}/g)) {

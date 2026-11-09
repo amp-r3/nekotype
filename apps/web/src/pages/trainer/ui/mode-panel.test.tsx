@@ -3,6 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { ModePanel } from './mode-panel';
+import { loadDictionaryPart } from '@/shared/i18n';
+
+// The route brings the strings of the screen; here the test does.
+await loadDictionaryPart('type');
 
 let container: HTMLDivElement;
 

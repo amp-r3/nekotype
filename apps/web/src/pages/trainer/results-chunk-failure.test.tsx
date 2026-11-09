@@ -6,6 +6,10 @@ import type { Trainer } from '@/features/training';
 import type { PromptItem } from '@/entities/prompt';
 import { setTestConfig } from '@/entities/settings';
 import { TrainerPage } from './ui/trainer-page';
+import { loadDictionaryPart } from '@/shared/i18n';
+
+// The route brings the strings of the screen; here the test does.
+await loadDictionaryPart('type');
 
 // The results chunk cannot be fetched.
 vi.mock('./ui/results-panel', () => {

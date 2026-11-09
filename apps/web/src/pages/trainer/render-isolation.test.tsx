@@ -9,6 +9,10 @@ import type { PromptItem } from '@/entities/prompt';
 import { setTestConfig } from '@/entities/settings';
 import { MIN_AHEAD_TOKENS } from '@/features/training';
 import { loadResultsPanel } from './results-loader';
+import { loadDictionaryPart } from '@/shared/i18n';
+
+// The route brings the strings of the screen; here the test does.
+await loadDictionaryPart('type');
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));

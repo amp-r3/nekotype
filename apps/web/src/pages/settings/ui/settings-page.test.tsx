@@ -4,8 +4,11 @@ import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { SettingsPage } from './settings-page';
 import { introduce, keyOf, learnState } from '@/entities/learn';
-import { t } from '@/shared/i18n';
+import { t, loadDictionaryPart } from '@/shared/i18n';
 import { learnTargetMs } from '@/entities/settings';
+
+// The route brings the strings of the screen; here the test does.
+await loadDictionaryPart('settings');
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
 
