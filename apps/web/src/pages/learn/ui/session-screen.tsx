@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { useEffect } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
 import type { RefObject } from 'preact';
 import { useComputed, useSignalEffect } from '@preact/signals';
 import { t } from '@/shared/i18n';
@@ -11,7 +11,7 @@ import { OptionCard } from '@/shared/ui/option-card';
 import type { OptionState } from '@/shared/ui/option-card';
 import type { LearnKanaKey } from '@nekotype/shared/types';
 import { useSessionInput } from '../lib/use-session-input';
-import type { LearnSession, Notice } from '../model/session';
+import type { LearnSession, Notice, TaskView } from '../model/session';
 
 export type SessionScreenProps = {
   readonly session: LearnSession;
@@ -35,6 +35,18 @@ function noticeText(notice: Notice): string {
     case 'next':
     case 'none':
       return '';
+  }
+}
+
+// What a screen reader hears when a new task appears.
+function announce(task: TaskView): string {
+  switch (task.kind) {
+    case 'introduction':
+      return t('learn.session.ask.introduction', { kana: task.kana, romaji: task.romaji });
+    case 'recall':
+      return t('learn.session.ask.recall', { kana: task.kana });
+    case 'recognition':
+      return t('learn.session.ask.recognition', { romaji: task.romaji });
   }
 }
 
@@ -64,8 +76,16 @@ export function SessionScreen({
   onLeave,
   onEnd,
 }: SessionScreenProps): JSX.Element | null {
-  const { onReady } = useSessionInput(session, inputRef);
-  const notice = useComputed(() => noticeText(session.notice.value));
+  const { source, onReady } = useSessionInput(session, inputRef);
+  // A wrong layout or an IME beats the notice of the session, as on /type.
+  const notice = useComputed(() =>
+    source.layoutNotice.value
+      ? t('stage.switchLayout')
+      : source.imeNotice.value
+        ? t('stage.turnImeOff')
+        : noticeText(session.notice.value),
+  );
+  const live = useRef<HTMLParagraphElement>(null);
   const coarse = useMediaQuery('(pointer: coarse)');
 
   // The page changes view for the end of the session only, not for each of its phases.
@@ -82,6 +102,11 @@ export function SessionScreen({
 
   const task = session.task.value;
   const choice = session.choice.value;
+
+  useEffect(() => {
+    if (live.current !== null && task !== null) live.current.textContent = announce(task);
+  }, [task]);
+
   if (task === null) return null;
 
   const optionState = (key: LearnKanaKey): OptionState => {
@@ -93,16 +118,38 @@ export function SessionScreen({
   // After a wrong choice the next task waits: Enter, Space or a click go on. The hint is a key and a
   // word, and on a touch screen, which has no Enter, a button.
   const waiting = choice !== null && !choice.correct;
+  const answer = (
+    <span className="sr-only">{t('learn.session.answer', { kana: kanaOfKey(task.key) })}</span>
+  );
   const goOn = coarse ? (
-    <Button variant="text" size="sm" className="nk-task__next" onClick={session.advance}>
-      {t('learn.session.next')}
-    </Button>
+    <span role="status" className="inline-flex items-center gap-2">
+      <Button variant="text" size="sm" className="nk-task__next" onClick={session.advance}>
+        {t('learn.session.next')}
+      </Button>
+      {answer}
+    </span>
   ) : (
     <span role="status" className="inline-flex items-center gap-2">
       <Kbd>{t('key.enter')}</Kbd>
       {t('learn.session.next')}
+      {answer}
     </span>
   );
+
+  const labelProp = (key: LearnKanaKey): { ariaLabel?: string } => {
+    const state = optionState(key);
+    const kana = kanaOfKey(key);
+    switch (state) {
+      case 'correct':
+        return { ariaLabel: t('learn.option.correct', { kana }) };
+      case 'wrong':
+        return { ariaLabel: t('learn.option.wrong', { kana }) };
+      case 'reveal':
+        return { ariaLabel: t('learn.option.reveal', { kana }) };
+      case 'idle':
+        return {};
+    }
+  };
 
   const shown =
     task.kind === 'recognition'
@@ -114,19 +161,32 @@ export function SessionScreen({
   return (
     <div
       className="flex flex-1 flex-col"
-      onClick={(event) => {
-        // The options and the buttons of the task act for themselves.
+      onMouseDown={(event) => {
+        // The buttons of the task must not take the focus from the field: a phone keeps its keyboard.
         const target = event.target;
         if (
           target instanceof Element &&
-          target.closest('.nk-opt, .nk-task__leave, .nk-task__show, .nk-task__next')
+          target.closest('.nk-opt, .nk-task__show, .nk-task__next') !== null
         ) {
+          event.preventDefault();
+        }
+      }}
+      onClick={(event) => {
+        // The options and the buttons of the task act for themselves.
+        const target = event.target;
+        if (target instanceof Element && target.closest('.nk-task__leave') !== null) return;
+        if (
+          target instanceof Element &&
+          target.closest('.nk-opt, .nk-task__show, .nk-task__next') !== null
+        ) {
+          inputRef.current?.focus({ preventScroll: true });
           return;
         }
         if (session.phase.value === 'waiting') session.advance();
         else inputRef.current?.focus();
       }}
     >
+      <p ref={live} className="sr-only" aria-live="polite" />
       <KanaTask
         kind={task.kind}
         {...shown}
@@ -144,6 +204,7 @@ export function SessionScreen({
               n={index + 1}
               kana
               state={optionState(option)}
+              {...labelProp(option)}
               disabled={choice !== null}
               onClick={() => {
                 session.choose(index);

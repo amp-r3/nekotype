@@ -85,6 +85,8 @@ export function LearnPage(): JSX.Element {
       spellcheck={false}
       lang="en"
       aria-label={t('learn.session.input')}
+      tabIndex={-1}
+      aria-hidden={view === 'home' ? 'true' : undefined}
       className="sr-only"
     />
   );
@@ -128,6 +130,7 @@ export function LearnPage(): JSX.Element {
             void startSession();
           }}
           onTable={toTable}
+          inputRef={inputRef}
         />
       </>
     );

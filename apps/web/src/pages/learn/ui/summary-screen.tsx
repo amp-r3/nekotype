@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import type { RefObject } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import { Button, Kbd } from '@/shared/ui';
@@ -10,14 +11,21 @@ export type SummaryScreenProps = {
   /** Starts another learning session; called inside the click so a phone keeps its keyboard. */
   readonly onContinue: () => void;
   readonly onTable: () => void;
+  /** The hidden field of the page: it holds the focus, so Enter on it still means "continue". */
+  readonly inputRef: RefObject<HTMLInputElement | null>;
 };
 
 /**
  * The end of a session: the summary (a chunk of its own) and the two actions, which work while the
  * chunk loads or has failed. Enter is "continue" wherever the focus is, except on a link, a control
- * or in a dialog.
+ * other than the page's hidden field, or in a dialog.
  */
-export function SummaryScreen({ summary, onContinue, onTable }: SummaryScreenProps): JSX.Element {
+export function SummaryScreen({
+  summary,
+  onContinue,
+  onTable,
+  inputRef,
+}: SummaryScreenProps): JSX.Element {
   const Panel = summaryPanel.value;
   const failed = summaryLoadFailed.value;
 
@@ -32,6 +40,7 @@ export function SummaryScreen({ summary, onContinue, onTable }: SummaryScreenPro
       const target = event.target;
       if (
         target instanceof Element &&
+        target !== inputRef.current &&
         target.closest('a, button, select, textarea, input, [role="radio"], dialog[open]') !== null
       ) {
         return;
@@ -44,7 +53,7 @@ export function SummaryScreen({ summary, onContinue, onTable }: SummaryScreenPro
     return () => {
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [onContinue]);
+  }, [onContinue, inputRef]);
 
   return (
     <section className="max-w-layout-test mx-auto flex w-full flex-col items-start gap-8 py-12">
