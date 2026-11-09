@@ -19,5 +19,8 @@ export default defineConfig({
   build: {
     target: 'es2022',
     manifest: true,
+    // Every target browser but Safari 16 supports `modulepreload`; there the chunks still load,
+    // only without the parallel prefetch. The polyfill would cost every visitor ~0.3 KB.
+    modulePreload: { polyfill: false },
   },
 });
