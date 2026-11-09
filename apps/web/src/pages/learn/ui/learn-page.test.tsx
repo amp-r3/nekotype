@@ -34,6 +34,16 @@ describe('learn page: the top of the learning screen', () => {
     expect(unlockedKana(container)).toBe('あいうえお');
   });
 
+  it('keeps the hidden field out of the Tab order and out of the tree on the home view', async () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    render(<LearnPage />, container);
+    await act(settle);
+    const field = container.querySelector('input');
+    expect(field?.tabIndex).toBe(-1);
+    expect(field?.getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('hides the streak before the first answer and shows the first-visit line instead', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);

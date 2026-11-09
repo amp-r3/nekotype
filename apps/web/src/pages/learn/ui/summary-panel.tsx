@@ -21,7 +21,7 @@ function Section({
 }): JSX.Element {
   return (
     <section data-testid={testId} className="flex flex-col gap-2">
-      <h3 className="text-fur-dim text-ui-caption">{title}</h3>
+      <h2 className="text-fur-dim text-ui-caption">{title}</h2>
       {children}
     </section>
   );
@@ -65,7 +65,7 @@ export function SummaryPanel({ summary }: SummaryPanelProps): JSX.Element {
   const confused = summary.mixups.length > 0 || summary.errors.length > 0;
   return (
     <div className="flex flex-col gap-6" data-testid="summary">
-      <h2 className="text-ui-heading text-fur">{t('learn.summary.title')}</h2>
+      <h1 className="text-ui-heading text-fur">{t('learn.summary.title')}</h1>
       {isEmptySummary(summary) && (
         <p className="text-fur-dim text-ui-body">{t('learn.summary.empty')}</p>
       )}

@@ -251,6 +251,52 @@ describe('learning session screen', () => {
     }
   });
 
+  it('shows the layout notice for a letter of another layout and clears it on the next right key', async () => {
+    const env = setup(11);
+    await mount(env.session);
+    await toTask(env, 'recall');
+    const notice = (): string | undefined =>
+      container.querySelector('.nk-task__notice')?.textContent ?? undefined;
+    press('ф', 'KeyA');
+    await act(tick);
+    expect(notice()).toBe(t('stage.switchLayout'));
+    press('a', 'KeyA');
+    await act(tick);
+    expect(notice()).not.toBe(t('stage.switchLayout'));
+  });
+
+  it('names the right option after a wrong choice and says the answer in the status', async () => {
+    const env = setup(5);
+    await mount(env.session);
+    await toTask(env, 'recognition');
+    const task = env.session.task.value;
+    if (task?.kind !== 'recognition') throw new Error('not recognition');
+    const wrong = task.options.findIndex((key) => key !== task.key) + 1;
+    press(String(wrong), `Digit${String(wrong)}`);
+    await act(tick);
+    const kana = (key: string): string => key.slice(key.indexOf(':') + 1);
+    const names = Array.from(container.querySelectorAll('.nk-opt')).map((b) =>
+      b.getAttribute('aria-label'),
+    );
+    expect(names).toContain(t('learn.option.reveal', { kana: kana(task.key) }));
+    expect(names).toContain(t('learn.option.wrong', { kana: kana(task.options[wrong - 1] ?? '') }));
+    expect(container.querySelector('[role="status"]')?.textContent).toContain(
+      t('learn.session.answer', { kana: kana(task.key) }),
+    );
+  });
+
+  it('announces a new recall task in a polite live region', async () => {
+    const env = setup(11);
+    await mount(env.session);
+    await toTask(env, 'recall');
+    await act(tick);
+    const task = env.session.task.value;
+    if (task?.kind !== 'recall') throw new Error('not recall');
+    expect(container.querySelector('[aria-live="polite"].sr-only')?.textContent).toBe(
+      t('learn.session.ask.recall', { kana: task.kana }),
+    );
+  });
+
   it('writes no IndexedDB record inside a keystroke handler, and does not touch typing progress', async () => {
     const env = setup(11);
     await mount(env.session);
