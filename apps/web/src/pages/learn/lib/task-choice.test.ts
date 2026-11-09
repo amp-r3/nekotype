@@ -157,11 +157,13 @@ describe('chooseKana', () => {
     expect(c('い')).toBeLessThan(c('う'));
   });
 
-  it('weights errors: more errors, more draws', () => {
+  it('weights errors: a confident kana with one error is drawn more than one without', () => {
+    // One error in 10 answers (accuracy 0.9) is still confident; more errors put the kana in
+    // focus (ADR 063), where it is drawn uniformly.
     const state = allIntroduced({
       あ: answers(10, 1000),
-      い: answers(10, 1000, 5),
-      う: answers(10, 1000, 3),
+      い: answers(10, 1000, 10),
+      う: answers(10, 1000),
       え: answers(10, 1000),
       お: answers(10, 1000),
     });
@@ -173,7 +175,6 @@ describe('chooseKana', () => {
     }
     const c = (k: string) => counts.get(key(k)) ?? 0;
     expect(c('あ')).toBeLessThan(c('い'));
-    expect(c('い')).toBeLessThan(c('う'));
   });
 });
 
@@ -201,5 +202,62 @@ describe('chooseTask', () => {
         rng: seededRng(1),
       }),
     ).toBeNull();
+  });
+});
+
+describe('chooseKana: kana that lost their confidence', () => {
+  it('keeps an unconfident kana with 10 answers in focus', () => {
+    const rest = [
+      'か',
+      'き',
+      'く',
+      'け',
+      'こ',
+      'さ',
+      'し',
+      'す',
+      'せ',
+      'そ',
+      'た',
+      'ち',
+      'つ',
+      'て',
+      'と',
+      'な',
+      'に',
+      'ぬ',
+      'ね',
+      'の',
+      'は',
+      'ひ',
+      'ふ',
+      'へ',
+      'ほ',
+      'ま',
+      'み',
+      'む',
+      'め',
+      'も',
+    ];
+    const state = stateWith({
+      unlocked: ['あ', ...rest],
+      entries: Object.fromEntries(['あ', ...rest].map((k) => [k, {}])),
+      // 10 answers, 2 of them wrong: accuracy 0.8 is below the confidence threshold.
+      recent: {
+        あ: answers(10, 1000, 5),
+        ...Object.fromEntries(rest.map((k) => [k, answers(10, 1000)])),
+      },
+    });
+    const rng = seededRng(4);
+    let hits = 0;
+    const n = 1000;
+    for (let i = 0; i < n; i++) {
+      if (
+        chooseKana({ track: 'hiragana', state, targetMs: T, previous: null, rng }) === key('あ')
+      ) {
+        hits += 1;
+      }
+    }
+    expect(hits / n).toBeGreaterThanOrEqual(0.4);
   });
 });

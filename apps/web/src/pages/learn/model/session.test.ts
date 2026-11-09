@@ -413,3 +413,36 @@ describe('learning session: leaving', () => {
     expect(env.session.phase.value).toBe('idle');
   });
 });
+
+describe('learning session: determinism and leaving', () => {
+  function record(env: ReturnType<typeof setup>): string[] {
+    env.session.start();
+    const seen: string[] = [];
+    for (let i = 0; i < 25; i++) {
+      const task = env.session.task.value;
+      if (task === null) break;
+      seen.push(
+        `${task.kind}:${task.key}:${task.kind === 'recognition' ? task.options.join(',') : ''}`,
+      );
+      answerRight(env);
+    }
+    return seen;
+  }
+
+  it('gives the same tasks, kana and options for the same state and seed', () => {
+    const first = record(setup({ seed: 7 }));
+    const second = record(setup({ seed: 7 }));
+    expect(first).toHaveLength(25);
+    expect(second).toEqual(first);
+  });
+
+  it('keeps the summary when the screen leaves the session after its end', () => {
+    const env = setup({ tasks: 1 });
+    env.session.start();
+    answerRight(env);
+    expect(env.session.phase.value).toBe('summary');
+    env.session.leave();
+    expect(env.session.phase.value).toBe('summary');
+    expect(env.session.summary.value).not.toBeNull();
+  });
+});
