@@ -70,6 +70,16 @@ function blocksOf(rows: readonly ChartRow[]): readonly Block[] {
   return blocks;
 }
 
+// `:focus-visible` is true for focus by keys, and for a call of `focus()` after keys; false after a
+// click. A browser without the selector counts as keyboard focus.
+function isKeyboardFocus(element: HTMLElement): boolean {
+  try {
+    return element.matches(':focus-visible');
+  } catch {
+    return true;
+  }
+}
+
 /**
  * The kana table of a track: a grid of buttons with one tab stop, its blocks side by side. It draws
  * what it is given and knows nothing of learning; the states and the strings come from the caller.
@@ -173,15 +183,20 @@ export function KanaChart({
                   onKeyDown={(event) => {
                     onCellKeyDown(event, rowAt, slot, cell);
                   }}
-                  onFocus={() => {
+                  onFocus={(event) => {
                     setStop(cell.id);
-                    setFocused(cell.id);
+                    // Only keyboard focus shows the tooltip: the focus that returns to the cell
+                    // after the details are closed by a click must not pin it there.
+                    setFocused(isKeyboardFocus(event.currentTarget) ? cell.id : null);
                   }}
                   onBlur={() => {
                     setFocused((current) => (current === cell.id ? null : current));
                   }}
                   onMouseEnter={() => {
                     setHover(cell.id);
+                  }}
+                  onMouseLeave={() => {
+                    setHover((current) => (current === cell.id ? null : current));
                   }}
                 >
                   {cell.kana}
