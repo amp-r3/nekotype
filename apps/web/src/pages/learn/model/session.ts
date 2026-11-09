@@ -11,11 +11,12 @@ import type {
   Track,
 } from '@nekotype/shared/types';
 import type { KeyIntent } from '@/shared/lib';
-import { canonical, canonicalFor, compile, isComplete, start, step } from '@/entities/prompt';
+import { compile, isComplete, start, step } from '@/entities/prompt';
 import type { MatchState, Matcher, Strictness } from '@/entities/prompt';
 import type { Keystroke, LearnStore } from '@/entities/learn';
 import { ANSWER_PAUSE_MS, SESSION_TASKS } from '../lib/constants';
 import { recognitionOptions } from '../lib/distractors';
+import { displayRomaji } from '../lib/romaji';
 import { summarize } from '../lib/summary';
 import type { Mixup, SessionSummary } from '../lib/summary';
 import { chooseTask } from '../lib/task-choice';
@@ -154,8 +155,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
   };
 
   const begin = (): void => {
-    if (matcher === null) return;
-    matchState = start(matcher);
+    matchState = matcher === null ? null : start(matcher);
     typed = '';
     keystrokes = [];
     shownAt = clock.now();
@@ -215,7 +215,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
         kind: 'recognition',
         n,
         key,
-        romaji: canonicalFor(key),
+        romaji: displayRomaji(key),
         options: recognitionOptions({
           track,
           answer: key,
@@ -226,10 +226,11 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
         }),
       };
     } else {
-      matcher = compile([{ key, text: kana }], deps.strictness());
+      // An introduction takes only the romaji it shows, so only recall needs the matcher.
+      matcher = next.kind === 'recall' ? compile([{ key, text: kana }], deps.strictness()) : null;
       task.value =
         next.kind === 'introduction'
-          ? { kind: 'introduction', n, key, kana, romaji: canonicalFor(key) }
+          ? { kind: 'introduction', n, key, kana, romaji: displayRomaji(key) }
           : { kind: 'recall', n, key, kana };
     }
     choice.value = null;
@@ -256,7 +257,24 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
     hold();
   };
 
+  // An introduction takes only the romaji it shows (ADR 062): another spelling of the kana is a
+  // rejected key, so the ghost hint and the typed letters always agree. Nothing is recorded.
+  const typeIntroduction = (current: TaskView & { kind: 'introduction' }, char: string): void => {
+    if (port === null) return;
+    if (current.romaji[typed.length] !== char) {
+      port.reject();
+      return;
+    }
+    typed += char;
+    port.type(typed.length);
+    if (typed.length === current.romaji.length) completeTyped(current);
+  };
+
   const typeChar = (current: TaskView, char: string): void => {
+    if (current.kind === 'introduction') {
+      typeIntroduction(current, char);
+      return;
+    }
     if (matcher === null || matchState === null || port === null) return;
     const t = clock.now() - shownAt;
     const next = step(matcher, matchState, char);
@@ -270,12 +288,8 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
     }
     matchState = next;
     typed += char;
-    if (current.kind === 'recall') {
-      keystrokes.push({ t, accepted: true });
-      port.setBuffer(typed);
-    } else if (current.kind === 'introduction') {
-      port.type(Math.min(typed.length, current.romaji.length));
-    }
+    keystrokes.push({ t, accepted: true });
+    port.setBuffer(typed);
     if (isComplete(matcher, next)) completeTyped(current);
   };
 
@@ -285,7 +299,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
     if (phase.value !== 'task' || port === null || matcher === null) return;
     keystrokes.push({ t: clock.now() - shownAt, accepted: false });
     ok = false;
-    notice.value = { kind: 'revealed', answer: canonical(matcher, 0) };
+    notice.value = { kind: 'revealed', answer: displayRomaji(current.key) };
   };
 
   return {

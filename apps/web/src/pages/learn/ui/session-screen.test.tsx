@@ -6,6 +6,7 @@ import { act } from 'preact/test-utils';
 import { STORAGE_KEYS, createMemoryDb, immersive } from '@/shared/lib';
 import type { Db, Write } from '@/shared/lib';
 import { canonicalFor } from '@/entities/prompt';
+import { t } from '@/shared/i18n';
 import { createLearnStore } from '@/entities/learn';
 import { createLearnSession } from '../model/session';
 import type { LearnSession } from '../model/session';
@@ -209,6 +210,45 @@ describe('learning session screen', () => {
     press('Enter');
     await act(tick);
     expect(env.session.task.value).not.toBe(task);
+  });
+
+  it('hints how to go on after a wrong choice: Enter and the word next, and a button on a touch screen', async () => {
+    for (const touch of [false, true]) {
+      vi.stubGlobal('matchMedia', (query: string) => ({
+        matches: touch && query.includes('pointer: coarse'),
+        media: query,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      }));
+      const env = setup(5);
+      await mount(env.session);
+      await toTask(env, 'recognition');
+      const task = env.session.task.value;
+      if (task?.kind !== 'recognition') throw new Error('not recognition');
+      const wrong = task.options.findIndex((key) => key !== task.key) + 1;
+      press(String(wrong), `Digit${String(wrong)}`);
+      await act(tick);
+
+      const hint = container.querySelector('.nk-task__notice');
+      const goOn = Array.from(container.querySelectorAll('button')).find((button) =>
+        button.classList.contains('nk-task__next'),
+      );
+      if (touch) {
+        expect(goOn?.textContent).toBe(t('learn.session.next'));
+        expect(hint?.querySelector('kbd')).toBeNull();
+        await act(() => {
+          goOn?.click();
+        });
+        await act(tick);
+        expect(env.session.task.value).not.toBe(task);
+      } else {
+        expect(goOn).toBeUndefined();
+        expect(hint?.querySelector('kbd')?.textContent).toBe(t('key.enter'));
+        expect(hint?.textContent).toContain(t('learn.session.next'));
+      }
+      render(null, container);
+      vi.unstubAllGlobals();
+    }
   });
 
   it('writes no IndexedDB record inside a keystroke handler, and does not touch typing progress', async () => {

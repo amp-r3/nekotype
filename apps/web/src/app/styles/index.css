@@ -438,7 +438,8 @@ html[data-testing] [data-chrome] {
 }
 
 .nk-task.is-coarse .nk-task__leave,
-.nk-task.is-coarse .nk-task__show {
+.nk-task.is-coarse .nk-task__show,
+.nk-task.is-coarse .nk-task__next {
   min-height: var(--touch-min);
 }
 
