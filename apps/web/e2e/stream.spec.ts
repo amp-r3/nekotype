@@ -69,7 +69,7 @@ test.describe('the text stream', () => {
     });
 
     await page.keyboard.press('Digit1'); // ignored: not a letter
-    await page.keyboard.press('KeyZ'); // never the start of a kana
+    await page.keyboard.press('KeyQ'); // starts no kana (unlike z: ジュ opens with zi)
     await expect(page.locator('[data-token="0"]')).toHaveClass(/is-miss/);
     await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-rejected', 'true');
     await expect.poll(() => page.evaluate(() => Reflect.get(window, 'flashed'))).toBe(true);
