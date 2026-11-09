@@ -42,6 +42,8 @@ export interface DatabaseProvider {
   /** One promise per page load; it never rejects: a failure resolves to the memory store. */
   getDatabase(): Promise<Db>;
   mode: ReadonlySignal<DatabaseMode>;
+  /** A write failed after the database opened: what follows may not be saved. */
+  failWrites(): void;
 }
 
 export function createDatabaseProvider(factory: IDBFactory | undefined): DatabaseProvider {
@@ -55,6 +57,9 @@ export function createDatabaseProvider(factory: IDBFactory | undefined): Databas
 
   return {
     mode,
+    failWrites() {
+      mode.value = 'memory';
+    },
     getDatabase() {
       opening ??= (async () => {
         if (!factory) return fallback();
@@ -80,3 +85,8 @@ export function getDatabase(): Promise<Db> {
 
 /** `memory` shows the "data will not be saved" notice. */
 export const databaseMode: ReadonlySignal<DatabaseMode> = provider.mode;
+
+/** A write failed after the database opened: what follows may not be saved, so the notice shows. */
+export function reportWriteFailure(): void {
+  provider.failWrites();
+}

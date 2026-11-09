@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import type { LearnKanaKey, LearnState, Track } from '@nekotype/shared/types';
 import { createMemoryDb } from '@/shared/lib';
-import type { Db, Write } from '@/shared/lib';
+import type { ChangeChannel, Db, Write } from '@/shared/lib';
 import { createLearnStore } from './store';
 import type { LearnStore } from './store';
 import { ManualScheduler, SeededRng, TestClock } from './test-util';
@@ -485,5 +485,115 @@ describe('learn store: boxes, streak and buckets', () => {
       recognitionErrors: 100,
       mixups: { [KA]: 100 },
     });
+  });
+});
+
+/** Two or more tabs: a post of one reaches the listeners of the others. */
+function channelBus(): () => ChangeChannel {
+  const members: { listener: (() => void) | null }[] = [];
+  return () => {
+    const me: { listener: (() => void) | null } = { listener: null };
+    members.push(me);
+    return {
+      post: () => {
+        for (const other of members) if (other !== me) other.listener?.();
+      },
+      listen: (onChange) => {
+        me.listener = onChange;
+      },
+    };
+  };
+}
+
+describe('learn store: two tabs', () => {
+  function tab(db: Db, channel: ChangeChannel) {
+    const scheduler = new ManualScheduler();
+    const store = createLearnStore({
+      db: () => Promise.resolve(db),
+      clock: new TestClock(),
+      scheduler,
+      targetMs: () => 1500,
+      channel,
+    });
+    return { store, scheduler };
+  }
+
+  it('reads the record another tab wrote, and writes both answers when it answers after', async () => {
+    const db = createMemoryDb();
+    const newChannel = channelBus();
+    const a = tab(db, newChannel());
+    const b = tab(db, newChannel());
+    await a.store.init();
+    await b.store.init();
+
+    answer(a.store, A);
+    a.scheduler.runAll();
+    await a.store.flush();
+    await b.store.flush();
+    expect(b.store.state.value.recent[A]).toHaveLength(1);
+
+    answer(b.store, A);
+    b.scheduler.runAll();
+    await b.store.flush();
+    await a.store.flush();
+    expect(a.store.state.value.recent[A]).toHaveLength(2);
+    expect(b.store.state.value.recent[A]).toHaveLength(2);
+  });
+
+  it('keeps a change of its own that is not written yet', async () => {
+    const db = createMemoryDb();
+    const newChannel = channelBus();
+    const a = tab(db, newChannel());
+    const b = tab(db, newChannel());
+    await a.store.init();
+    await b.store.init();
+    answer(b.store, KA);
+    answer(a.store, A);
+    a.scheduler.runAll();
+    await a.store.flush();
+    await b.store.flush();
+    expect(b.store.state.value.recent[KA]).toHaveLength(1);
+    expect(b.store.state.value.recent[A]).toBeUndefined();
+  });
+});
+
+describe('learn store: write failures and the target', () => {
+  it('reports a write that fails', async () => {
+    const db = createMemoryDb();
+    const onWriteFailed = vi.fn();
+    const scheduler = new ManualScheduler();
+    const again = createLearnStore({
+      db: () => Promise.resolve({ ...db, write: () => Promise.reject(new Error('quota')) }),
+      clock: new TestClock(),
+      scheduler,
+      targetMs: () => 1500,
+      onWriteFailed,
+    });
+    await again.init();
+    answer(again, A);
+    scheduler.runAll();
+    await again.flush();
+    expect(onWriteFailed).toHaveBeenCalled();
+  });
+
+  it('unlocks the next kana and moves the box when the target rises, without a new answer', async () => {
+    const { store, scheduler, target } = setup();
+    await store.init();
+    const vowels = keysOfTrack('hiragana').slice(0, 5);
+    for (const key of vowels) {
+      store.introduce(key);
+      for (let i = 0; i < 10; i++) answer(store, key, 1800);
+    }
+    scheduler.runAll();
+    await store.flush();
+    expect(store.state.value.unlocked.hiragana).toHaveLength(5);
+    expect(store.state.value.entries[A]?.box).toBe(0);
+    expect(scheduler.pending).toBe(0);
+
+    target.ms = 2000;
+    store.reevaluate();
+    expect(store.state.value.unlocked.hiragana).toHaveLength(6);
+    expect(store.state.value.entries[A]?.box).toBe(1);
+    expect(scheduler.pending).toBe(1);
   });
 });

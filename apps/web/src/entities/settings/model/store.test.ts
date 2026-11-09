@@ -25,8 +25,8 @@ import {
   setTrack,
   setTargetMs,
 } from './store';
-import { createMemoryDb } from '@/shared/lib';
-import type { Db, Clock } from '@/shared/lib';
+import { createMemoryDb, databaseMode } from '@/shared/lib';
+import type { ChangeChannel, Db, Clock } from '@/shared/lib';
 
 const fixedClock = (now: number): Clock => ({ now: () => now });
 
@@ -204,5 +204,55 @@ describe('settings store: actions and persistence in IndexedDB', () => {
     expect(DEFAULT_TIME_TEST).toEqual({ kind: 'time', seconds: 30 });
     expect(DEFAULT_COUNT_TEST).toEqual({ kind: 'count', prompts: 25 });
     expect(DEFAULT_TEST_CONFIG).toBe(DEFAULT_TIME_TEST);
+  });
+});
+
+describe('settings across tabs and failed writes', () => {
+  function fakeChannel() {
+    let listener: (() => void) | null = null;
+    const posts = { count: 0 };
+    const channel: ChangeChannel = {
+      post: () => {
+        posts.count += 1;
+      },
+      listen: (onChange) => {
+        listener = onChange;
+      },
+    };
+    return { channel, posts, fire: () => listener?.() };
+  }
+
+  it('posts after a write and reads the document again when another tab posts', async () => {
+    const db = createMemoryDb();
+    const fake = fakeChannel();
+    await initSettings(Promise.resolve(db), { now: () => 5 }, fake.channel);
+    setTrack('hiragana');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(fake.posts.count).toBe(1);
+
+    await db.put('settings', 'current', {
+      typing: {
+        script: 'both',
+        content: 'words',
+        strictness: 'learner',
+        weakFocus: true,
+        test: DEFAULT_TEST_CONFIG,
+        showTranslation: true,
+      },
+      learn: { strictness: 'learner', track: 'katakana', targetMs: 2000, sound: true },
+      updatedAt: 9,
+    });
+    fake.fire();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(learnTrack.value).toBe('katakana');
+    expect(learnTargetMs.value).toBe(2000);
+  });
+
+  it('switches the database to memory when a write fails', async () => {
+    const db: Db = { ...createMemoryDb(), put: () => Promise.reject(new Error('quota')) };
+    await initSettings(Promise.resolve(db), { now: () => 5 }, fakeChannel().channel);
+    setTrack('katakana');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(databaseMode.value).toBe('memory');
   });
 });

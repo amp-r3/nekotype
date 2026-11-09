@@ -11,8 +11,8 @@ import type {
   LearnTrack,
 } from './types';
 import type { ValidSettings } from '@/shared/lib';
-import type { Clock, Db } from '@/shared/lib';
-import { defaultClock, isSettings } from '@/shared/lib';
+import type { ChangeChannel, Clock, Db } from '@/shared/lib';
+import { changeChannel, defaultClock, isSettings, reportWriteFailure } from '@/shared/lib';
 
 export const DEFAULT_TIME_TEST: TimeTestConfig = { kind: 'time', seconds: 30 };
 export const DEFAULT_COUNT_TEST: CountTestConfig = { kind: 'count', prompts: 25 };
@@ -50,6 +50,8 @@ export const settingsReady: ReadonlySignal<boolean> = _settingsReady;
 
 let boundDb: Db | null = null;
 let boundClock: Clock = defaultClock;
+let boundChannel: ChangeChannel = { post() {}, listen() {} };
+let listeningTo: ChangeChannel | null = null;
 
 function snapshot(): ValidSettings {
   return {
@@ -93,35 +95,63 @@ function persist(): void {
   _updatedAt.value = boundClock.now();
   const db = boundDb;
   if (!db) return;
-  db.put(SETTINGS_STORE, SETTINGS_KEY, snapshot()).catch(() => {
-    // The write failed (quota, a closed connection): the setting holds for this page load.
-  });
+  db.put(SETTINGS_STORE, SETTINGS_KEY, snapshot())
+    .then(() => {
+      boundChannel.post();
+    })
+    .catch(() => {
+      // The write failed (quota, a closed connection): the setting holds for this page load.
+      reportWriteFailure();
+    });
+}
+
+function apply(saved: ValidSettings): void {
+  _scriptSetting.value = saved.typing.script;
+  _contentSetting.value = saved.typing.content;
+  _strictnessSetting.value = saved.typing.strictness;
+  _weakFocusSetting.value = saved.typing.weakFocus;
+  _showTranslationSetting.value = saved.typing.showTranslation;
+  _testConfig.value = saved.typing.test;
+  _learnStrictness.value = saved.learn.strictness;
+  _learnTrack.value = saved.learn.track;
+  _learnTargetMs.value = saved.learn.targetMs;
+  _learnSound.value = saved.learn.sound;
+  _updatedAt.value = saved.updatedAt;
+}
+
+// Another tab wrote the document: take it.
+async function reread(): Promise<void> {
+  try {
+    const saved = await boundDb?.get(SETTINGS_STORE, SETTINGS_KEY);
+    if (isSettings(saved)) apply(saved);
+  } catch {
+    // Unreadable: this tab's settings stand.
+  }
 }
 
 /**
  * Reads the settings from the `settings` store; a value that fails validation is replaced by the
  * defaults (ADR 061). Resolves once `settingsReady` is true. Never rejects.
  */
-export async function initSettings(db: Promise<Db>, clock: Clock = defaultClock): Promise<void> {
+export async function initSettings(
+  db: Promise<Db>,
+  clock: Clock = defaultClock,
+  channel: ChangeChannel = changeChannel('nekotype:settings'),
+): Promise<void> {
   boundClock = clock;
+  boundChannel = channel;
+  if (listeningTo !== channel) {
+    listeningTo = channel;
+    channel.listen(() => {
+      void reread();
+    });
+  }
   applyDefaults();
   try {
     const opened = await db;
     boundDb = opened;
     const saved = await opened.get(SETTINGS_STORE, SETTINGS_KEY);
-    if (isSettings(saved)) {
-      _scriptSetting.value = saved.typing.script;
-      _contentSetting.value = saved.typing.content;
-      _strictnessSetting.value = saved.typing.strictness;
-      _weakFocusSetting.value = saved.typing.weakFocus;
-      _showTranslationSetting.value = saved.typing.showTranslation;
-      _testConfig.value = saved.typing.test;
-      _learnStrictness.value = saved.learn.strictness;
-      _learnTrack.value = saved.learn.track;
-      _learnTargetMs.value = saved.learn.targetMs;
-      _learnSound.value = saved.learn.sound;
-      _updatedAt.value = saved.updatedAt;
-    }
+    if (isSettings(saved)) apply(saved);
   } catch {
     // Unreadable: the defaults stand.
   }
