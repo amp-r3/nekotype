@@ -90,3 +90,4 @@ Append-only log of architectural decisions, one file per decision.
 | [063](063-unconfident-kana-in-focus.md)                                              | A Kana That Lost Its Confidence Is in Focus Again                                            | In force               |
 | [064](064-agpl-code-reserved-brand.md)                                               | Code Under AGPL-3.0-only, Brand Reserved, Fonts Under OFL-1.1                                | In force               |
 | [065](065-cleaner-cat-and-logo-drawings.md)                                          | Cleaner Cat and Logo Drawings, a Smiling `content` Cat and a Reserved `grumpy` Cat           | In force               |
+| [066](066-about-page-design.md)                                                      | The `/about` Page: Sources, Terms and Paged Phrase Credits                                   | In force               |
