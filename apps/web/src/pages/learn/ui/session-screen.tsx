@@ -3,7 +3,8 @@ import { useEffect } from 'preact/hooks';
 import type { RefObject } from 'preact';
 import { useComputed, useSignalEffect } from '@preact/signals';
 import { t } from '@/shared/i18n';
-import { setImmersive } from '@/shared/lib';
+import { setImmersive, useMediaQuery } from '@/shared/lib';
+import { Button, Kbd } from '@/shared/ui';
 import { KanaTask } from '@/shared/ui/kana-task';
 import type { TaskLabels } from '@/shared/ui/kana-task';
 import { OptionCard } from '@/shared/ui/option-card';
@@ -30,8 +31,8 @@ function noticeText(notice: Notice): string {
       return t('learn.session.revealed', { answer: notice.answer });
     case 'restarted':
       return t('learn.session.restarted');
+    // The hint to go on is drawn by the screen itself (a key and a word, or a button on touch).
     case 'next':
-      return t('learn.session.next');
     case 'none':
       return '';
   }
@@ -65,6 +66,7 @@ export function SessionScreen({
 }: SessionScreenProps): JSX.Element | null {
   const { onReady } = useSessionInput(session, inputRef);
   const notice = useComputed(() => noticeText(session.notice.value));
+  const coarse = useMediaQuery('(pointer: coarse)');
 
   // The page changes view for the end of the session only, not for each of its phases.
   useSignalEffect(() => {
@@ -88,6 +90,20 @@ export function SessionScreen({
     return key === task.key && !choice.correct ? 'reveal' : 'idle';
   };
 
+  // After a wrong choice the next task waits: Enter, Space or a click go on. The hint is a key and a
+  // word, and on a touch screen, which has no Enter, a button.
+  const waiting = choice !== null && !choice.correct;
+  const goOn = coarse ? (
+    <Button variant="text" size="sm" className="nk-task__next" onClick={session.advance}>
+      {t('learn.session.next')}
+    </Button>
+  ) : (
+    <span role="status" className="inline-flex items-center gap-2">
+      <Kbd>{t('key.enter')}</Kbd>
+      {t('learn.session.next')}
+    </span>
+  );
+
   const shown =
     task.kind === 'recognition'
       ? { romaji: task.romaji }
@@ -103,7 +119,7 @@ export function SessionScreen({
         const target = event.target;
         if (
           target instanceof Element &&
-          target.closest('.nk-opt, .nk-task__leave, .nk-task__show')
+          target.closest('.nk-opt, .nk-task__leave, .nk-task__show, .nk-task__next')
         ) {
           return;
         }
@@ -116,7 +132,7 @@ export function SessionScreen({
         {...shown}
         session={{ kind: session.mode, n: task.n, total: session.total }}
         labels={labels()}
-        notice={<span role="status">{notice}</span>}
+        notice={waiting ? goOn : <span role="status">{notice}</span>}
         onLeave={onLeave}
         onShow={session.reveal}
         onReady={onReady}

@@ -4,7 +4,7 @@ import type { ChartCell, ChartLegend, ChartRow, KanaChartPanelLine } from '@/sha
 import { locale, t } from '@/shared/i18n';
 import { chartRows, keyOf } from '@/entities/learn';
 import type { KanaCellInfo } from '@/entities/learn';
-import { spellingsFor } from '@/entities/prompt';
+import { displayRomaji } from './romaji';
 
 const SEPARATOR = ' · ';
 
@@ -20,7 +20,7 @@ function dateOf(timestamp: number): string {
 
 /** The romaji of a kana as the chart shows it. */
 export function romajiOf(key: LearnKanaKey): string {
-  return spellingsFor(key, 'ime')[0] ?? '';
+  return displayRomaji(key);
 }
 
 /**

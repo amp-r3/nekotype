@@ -5,7 +5,8 @@ import { canonicalFor } from '@/entities/prompt';
 import { createLearnStore, keyOf } from '@/entities/learn';
 import { createLearnSession } from './session';
 import type { LearnSession, TaskPort } from './session';
-import { Clock0, Timers, key as hira, seededRng } from '../lib/test-util';
+import { Clock0, Timers, key as hira, seededRng, stateWith } from '../lib/test-util';
+import { initialCounters } from '@/entities/learn';
 
 function port(): TaskPort & { calls: string[] } {
   const calls: string[] = [];
@@ -42,6 +43,36 @@ function setup(options: { tasks?: number; seed?: number } = {}) {
     ...(options.tasks === undefined ? {} : { tasks: options.tasks }),
   });
   return { clock, scheduler, store, session, play };
+}
+
+/** A session whose first task is the introduction of `kana`: it is the one unlocked kana without an entry. */
+async function introducing(kana: string, strictness: 'learner' | 'ime' = 'learner') {
+  const clock = new Clock0();
+  const scheduler = new Timers();
+  const db = createMemoryDb();
+  await db.put('delta', 'current', {
+    learn: stateWith({ unlocked: [kana] }),
+    counters: initialCounters(),
+  });
+  const store = createLearnStore({
+    db: () => Promise.resolve(db),
+    clock,
+    scheduler,
+    targetMs: () => 1500,
+  });
+  await store.init();
+  const session = createLearnSession({
+    track: 'hiragana',
+    store,
+    clock,
+    scheduler,
+    rng: seededRng(3),
+    audio: { play: vi.fn() },
+    strictness: () => strictness,
+    targetMs: () => 1500,
+  });
+  session.start();
+  return { clock, scheduler, store, session };
 }
 
 /** Puts the task on screen the way the view does, and returns its port. */
@@ -169,6 +200,75 @@ describe('learning session: flow', () => {
     const task = env.session.task.value;
     expect(task?.kind).toBe('introduction');
     expect(task?.kind === 'introduction' ? task.kana : '').toBe('か');
+  });
+});
+
+describe('learning session: the introduction takes only the romaji it shows (ADR 062)', () => {
+  it('rejects another spelling of the kana: hu for ふ, which shows fu', async () => {
+    const env = await introducing('ふ');
+    const task = env.session.task.value;
+    expect(task).toMatchObject({ kind: 'introduction', romaji: 'fu' });
+    const p = show(env.session);
+    typeRomaji(env.session, 'h');
+    expect(p.calls).toEqual(['reject']);
+    typeRomaji(env.session, 'fu');
+    expect(p.calls).toEqual(['reject', 'type:1', 'type:2', 'finish:correct']);
+    expect(env.store.state.value.entries[hira('ふ')]).toBeDefined();
+    // Nothing is recorded: an introduction is not an answer.
+    expect(env.store.state.value.recent).toEqual({});
+  });
+
+  it.each([
+    ['し', 'shi', 'si'],
+    ['つ', 'tsu', 'tu'],
+    ['ち', 'chi', 'ti'],
+  ])('shows %s as %s and does not take %s', async (kana, shown, other) => {
+    const env = await introducing(kana);
+    expect(env.session.task.value).toMatchObject({ kind: 'introduction', romaji: shown });
+    const p = show(env.session);
+    typeRomaji(env.session, other);
+    // The first letter is shared (s, t, t); the second is not the shown one.
+    expect(p.calls.at(-1)).toBe('reject');
+    expect(p.calls).not.toContain('finish:correct');
+  });
+
+  it('shows ん as n and completes it on one n', async () => {
+    const env = await introducing('ん');
+    expect(env.session.task.value).toMatchObject({ kind: 'introduction', kana: 'ん', romaji: 'n' });
+    const p = show(env.session);
+    typeRomaji(env.session, 'n');
+    expect(p.calls).toEqual(['type:1', 'finish:correct']);
+  });
+
+  it('shows ん as n in a recognition prompt and as the answer after Esc, in both strictnesses', async () => {
+    for (const strictness of ['learner', 'ime'] as const) {
+      const env = await introducing('ん', strictness);
+      show(env.session);
+      typeRomaji(env.session, 'n');
+      env.scheduler.flush();
+      let recognition = false;
+      let revealed = false;
+      // Only ん is unlocked, so the tasks are about it; stop once both cases have been seen.
+      for (let guard = 0; guard < 24 && !(recognition && revealed); guard++) {
+        const task = env.session.task.value;
+        show(env.session);
+        if (task?.kind === 'recognition') {
+          expect(task.romaji).toBe('n');
+          recognition = true;
+          env.session.choose(task.options.indexOf(task.key));
+        } else if (task?.kind === 'recall') {
+          if (!revealed) {
+            env.session.handleIntent({ kind: 'reveal' });
+            expect(env.session.notice.value).toEqual({ kind: 'revealed', answer: 'n' });
+            revealed = true;
+          }
+          typeRomaji(env.session, 'n');
+        }
+        env.scheduler.flush();
+      }
+      expect(recognition).toBe(true);
+      expect(revealed).toBe(true);
+    }
   });
 });
 
