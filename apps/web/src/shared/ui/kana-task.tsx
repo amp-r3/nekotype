@@ -68,7 +68,6 @@ export function KanaTask({
   onReady,
   coarse,
 }: KanaTaskProps): JSX.Element {
-  const narrow = useMediaQuery('(max-width: 639px)');
   const touch = useMediaQuery('(pointer: coarse)');
   const isCoarse = coarse ?? touch;
   const root = useRef<HTMLElement>(null);
@@ -82,9 +81,10 @@ export function KanaTask({
     return () => {
       controller.destroy();
     };
-  }, [kind, kana, romaji, narrow, session.n]);
+  }, [kind, kana, romaji, session.n]);
 
-  const solo = narrow ? 'text-jp-solo-sm' : 'text-jp-solo';
+  // The size follows the width through CSS: a resize never rebuilds the controller.
+  const solo = 'text-jp-solo max-sm:text-jp-solo-sm';
   const caret = (
     <span data-task-caret className="nk-caret" aria-hidden="true">
       <span data-task-flash className="nk-caret__reject" />
@@ -129,17 +129,14 @@ export function KanaTask({
           </>
         )}
         {kind === 'recall' && (
-          <span className={cx('nk-task__line', narrow ? 'is-narrow' : 'is-wide')}>
+          <span className="nk-task__line">
             <span data-task-kana className={cx('nk-task__kana font-jp', solo)} lang="ja">
               {kana}
             </span>
             {caret}
             <span
               data-task-buffer
-              className={cx(
-                'nk-task__buffer font-mono',
-                narrow ? 'text-mono-small' : 'text-mono-romaji',
-              )}
+              className="nk-task__buffer text-mono-romaji max-sm:text-mono-small font-mono"
               aria-hidden="true"
             />
           </span>
@@ -147,10 +144,7 @@ export function KanaTask({
         {kind === 'recognition' && (
           <span
             data-testid="task-prompt"
-            className={cx(
-              'nk-task__romaji font-mono',
-              narrow ? 'text-mono-hero-sm' : 'text-mono-hero',
-            )}
+            className="nk-task__romaji text-mono-hero max-sm:text-mono-hero-sm font-mono"
           >
             {romaji}
           </span>
