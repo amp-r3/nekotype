@@ -1,10 +1,11 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { signal } from '@preact/signals';
 import { TrainerPage } from './ui/trainer-page';
 import { createTrainer } from '@/features/training';
 import type { Trainer } from '@/features/training';
+import * as promptModule from '@/entities/prompt';
 import type { PromptItem } from '@/entities/prompt';
 import { setShowTranslation } from '@/entities/settings';
 import { loadDictionaryPart } from '@/shared/i18n';
@@ -29,6 +30,8 @@ describe('translation line: the Source link', () => {
   let trainer: Trainer;
 
   beforeEach(async () => {
+    // Real chunks arrive on their own time and would restart the test; the prompts here are fixed.
+    vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([]);
     prompt.value = word;
     setShowTranslation(true);
     container = document.createElement('div');
@@ -39,6 +42,7 @@ describe('translation line: the Source link', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     render(null, container);
     container.remove();
     setShowTranslation(true);

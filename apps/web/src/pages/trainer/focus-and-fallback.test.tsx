@@ -12,6 +12,8 @@ describe('trainer UI: focus redirection and content loader error fallback', () =
   let container: HTMLDivElement;
 
   beforeEach(() => {
+    // Real chunks arrive on their own time and would restart the test; the prompts here are fixed.
+    vi.spyOn(kanaModule, 'loadChunk').mockResolvedValue([]);
     setContent('words');
     container = document.createElement('div');
     document.body.appendChild(container);
