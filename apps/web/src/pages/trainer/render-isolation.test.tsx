@@ -205,6 +205,7 @@ describe('render isolation: a zen test', () => {
   let prevDiffed: ((vnode: VNode) => void) | undefined;
 
   beforeEach(async () => {
+    vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([]);
     setTestConfig({ kind: 'zen' });
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -218,6 +219,7 @@ describe('render isolation: a zen test', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     if (prevDiffed) {
       options.diffed = prevDiffed;
     } else {
