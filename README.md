@@ -54,13 +54,18 @@
 
 A pnpm workspace ([ADR 027](docs/adr/027-pnpm-workspace-layout-for-the-monorepo.md)); packages are consumed as TypeScript source, with no build step.
 
-| Path               | Package            | Contents                                                                                   |
-| ------------------ | ------------------ | ------------------------------------------------------------------------------------------ |
-| `apps/web/`        | `@nekotype/web`    | The Preact single-page app (Feature-Sliced Design), its tests, e2e tests, scripts, assets  |
-| `packages/engine/` | `@nekotype/engine` | The NFA romaji engine and the kana tables; imports nothing, runs in a browser or a Worker  |
-| `packages/shared/` | `@nekotype/shared` | Types (`Clock`, `Rng`, `Scheduler`, …) and runtime type guards shared with a future server |
+| Path                | Package             | Contents                                                                                                          |
+| ------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `apps/web/`         | `@nekotype/web`     | The Preact single-page app (Feature-Sliced Design), its tests, e2e tests, scripts, assets                         |
+| `packages/engine/`  | `@nekotype/engine`  | The NFA romaji engine and the kana tables; imports nothing, runs in a browser or a Worker                         |
+| `packages/shared/`  | `@nekotype/shared`  | Types (`Clock`, `Rng`, `Scheduler`, …) and runtime type guards shared with a future server                        |
+| `packages/content/` | `@nekotype/content` | The content pipeline (build tool, never bundled): pinned sources, parsers; generates words and phrases from P4 on |
 
 Root scripts run the package scripts with `pnpm -r`; run one package directly with `pnpm --filter @nekotype/web run <script>`.
+
+### Content pipeline
+
+Words and phrases are generated, never edited by hand. The input files are pinned in `packages/content/sources.json` and mirrored as assets of a GitHub release ([ADR 068](docs/adr/068-content-sources-mirrored-as-release-assets.md)). `pnpm --filter @nekotype/content run fetch` downloads them into `packages/content/.cache/` and checks the sha256; it needs the system `bzip2`. The build and its reports are added in P4; details are in [packages/content/README.md](packages/content/README.md) and [docs/spec/content.md](docs/spec/content.md).
 
 ---
 

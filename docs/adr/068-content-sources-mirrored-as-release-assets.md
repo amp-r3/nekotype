@@ -1,0 +1,11 @@
+# ADR 068: Content Sources Mirrored as Release Assets
+
+- **Status:** In force.
+- **Context:** The [content pipeline](../spec/content.md) must be reproducible: the same pinned inputs give the same words and phrases. Tatoeba exports are regenerated weekly and JMdict daily, and both servers publish only the latest file, so a sha256 recorded today could not be fetched next month. The JLPT lists are already pinned by commit.
+- **Decision:**
+  1. The input files are downloaded once from upstream (`fetch --upstream`) and uploaded unchanged as assets of a GitHub release `content-sources-YYYY-MM-DD` in the `nekotype` repository. `users_sentences.csv` (≈ 99 MB) is mirrored gzip-compressed.
+  2. `packages/content/sources.json` records for each file the upstream URL, the mirror URL, sha256, size, retrieval date and licence. A normal `fetch` downloads from the mirror and fails on a hash mismatch.
+  3. The release notes list each file, its upstream URL, licence and attribution. [NOTICE.md](../../NOTICE.md) says the mirrored files keep their own licences.
+  4. **Waller's licence version** (the open point of [ADR 066](066-about-page-design.md)). The site states "Creative Commons BY" with no version (Wayback Machine snapshot of `tanos.co.uk/jlpt/sharing/`, 2026-09-04; the live site did not answer on 2026-11-11). It is recorded as `CC BY, version not stated`; `/about` shows `CC BY` without a link, as the design already does.
+- **Justification:** A mirror under our control keeps every build reproducible and offline-friendly at no cost (GitHub release assets are free). The licences (CC BY-SA 4.0, CC BY 2.0 FR, CC BY) allow redistribution with attribution. Committing the files to the repository was rejected: ≈ 60 MB of binary data in git history.
+- **Consequences:** Refreshing the sources is a deliberate act: a new dated release and a `sources.json` change in one PR. The content build needs the system `bzip2` and runs by hand, never in CI. JMdict's server (`ftp.edrdg.org`) is unreliable, so `fetch --upstream` accepts a manually downloaded `JMdict.gz`. It did not answer on 2026-11-11, so the mirrored JMdict is the Wayback Machine capture of 2026-07-05 (JMdict created that day); `sources.json` records this. The next refresh takes a fresh file from EDRDG.
