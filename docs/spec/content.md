@@ -23,10 +23,12 @@ JMdict has fewer Russian glosses than English. The pipeline reads `ru` where pre
 ## Words
 
 1. Download the pinned files from the mirror (see "Sources"); the URL, checksum and size of each are recorded in `packages/content/sources.json`. The XML is parsed with a streaming parser that resolves JMdict entities.
-2. Select N5–N4 entries by the JMdict entry ids from the pinned JLPT mapping. Fallback, used only if the mapping source becomes unavailable: entries whose kana reading carries `news1`, `ichi1`, `spec1`, `spec2` or `gai1`. Order: entries with `nfXX` by ascending rank first; then the remaining entries ordered by the number of priority tags (descending) and then by entry sequence number. The result is capped at 2,000 items.
-3. Take the first non-search-only kana reading and the first 1–3 English senses.
-4. Script is derived from the reading: hiragana-only or katakana-only; mixed readings are excluded.
-5. **Homonyms:** entries with the same reading and script merge into one item; its translation lists the first sense of up to 3 entries, ordered by priority. The item id is derived from script and reading.
+2. Select N5–N4 entries by the JMdict entry ids from the pinned JLPT mapping. Fallback, used only if `sources.json` has no JLPT mapping: entries whose first non-search-only kana reading carries `news1`, `ichi1`, `spec1`, `spec2` or `gai1`. Order: entries with `nfXX` by ascending rank first; then the remaining entries ordered by the number of priority tags (descending) and then by entry sequence number. The result is capped at 2,000 items.
+3. **Items.** One item per row of the N5 and N4 files (N5 first, then N4, file order). A row is one (entry, reading) pair, and its `kana` column MUST be a `reb` of the entry that is not search-only (`re_inf` other than `sk`), otherwise the row is excluded (`readingNotInEntry`). The same pair in both lists is one item (`duplicate`).
+4. **Meaning.** The senses that apply to the reading are those without `stagr` or whose `stagr` lists it, and that have an English gloss (`gloss` without `xml:lang`, or `eng`). The meaning is the first gloss of each of the first 3 such senses, joined with `; `; senses are dropped from the end while the text is longer than 60 characters (the first one always stays). A row with no such sense is excluded (`noEnglishSense`).
+5. **Script** is derived from the reading: hiragana-only or katakana-only (`ー` counts as either); a mixed reading is excluded (`mixedScript`).
+6. **Homonyms:** items with the same script and reading merge into one with the id `w:<script>:<reading>`; its meaning is the first gloss of the first sense of up to 3 entries, in item order, joined and shortened by the same 60-character rule. The merged item stays at the position of its first appearance.
+7. **Russian coverage.** For each selected item the build records whether any of its entries has a Russian gloss and writes totals and a percentage (`ru-coverage.json`); `ru` is not written to the chunks.
 
 ## Phrases
 

@@ -1,6 +1,6 @@
 # @nekotype/content
 
-The content pipeline: reads the pinned source files and (from PR 2 on) generates the words and phrases the typing screen loads. It is a build tool: its dependencies are devDependencies and never reach the web bundle; `apps/web` does not import it. The specification is [docs/spec/content.md](../../docs/spec/content.md).
+The content pipeline: reads the pinned source files and generates the words and phrases the typing screen loads. It is a build tool: its dependencies are devDependencies and never reach the web bundle; `apps/web` does not import it. The specification is [docs/spec/content.md](../../docs/spec/content.md).
 
 ## Requirements
 
@@ -17,6 +17,14 @@ pnpm --filter @nekotype/content run fetch --upstream # refresh the mirror (see b
 ```
 
 Refreshing the mirror: `fetch --upstream` downloads every file from its upstream URL into `.cache/upstream/`, gzips `users_sentences.csv`, and prints the sha256 and size of each file and the `gh release create` command. If `ftp.edrdg.org` does not answer, download `JMdict.gz` by hand and put it at `.cache/upstream/JMdict.gz`; the script continues with it. Create a release with a new date, upload the files, then update `release`, `mirror`, `sha256`, `bytes` and `retrieved` in `sources.json`.
+
+## Build
+
+```bash
+pnpm --filter @nekotype/content run build   # word step on .cache/; prints the counts
+```
+
+The current `build` runs the word step only: it reads the JLPT lists and JMdict from `.cache/` (run `fetch` first) and writes `words-report.json`, `ru-coverage.json` and `words.json` into `.cache/build/`. It fails when compile failures exceed 5% of the selected words. The phrase step, the chunks and the manifest are added in the following PRs.
 
 ## Source formats
 
@@ -36,3 +44,7 @@ The JLPT CSV has one row per (entry, reading) pair: the same `jmdict_seq` can oc
 ### Transcription markup
 
 A transcription is plain kana and punctuation with furigana groups: `[kanji|reading]` or `[kanji|r1|r2|…]`. The readings after the first `|` belong to single kanji and are concatenated: `[場所|ば|しょ]` is ばしょ, `[0点|れい|てん]` is れいてん. The base can be Latin letters (`[Twitter|ツイッター]`). A symbol Tatoeba does not read is a group with an empty reading (`[―|]`, `[-|]`, `[㌔|]`): such a sentence is unreadable and is excluded. `parseTranscription` returns `null` for an empty reading, an unbalanced or nested bracket and a `|` outside a group. Plain rows without brackets exist (`ごめん、ぼーっとしてた。`).
+
+### JMdict
+
+The original multilingual XML. The tags (`re_inf`, `pos`, `misc`, …) are written as entities declared in the internal DTD subset (`<re_inf>&sk;</re_inf>`); the parser reads each entity as its own name (`sk`). Glosses without `xml:lang` are English; `xml:lang="rus"` marks Russian ones. A sense can be restricted to some readings (`stagr`) and a reading to some kanji (`re_restr`). Many senses carry only glosses of other languages and no English gloss.
