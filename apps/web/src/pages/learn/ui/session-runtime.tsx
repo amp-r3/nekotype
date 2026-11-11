@@ -13,6 +13,8 @@ import { silentAudio } from '../lib/audio';
 import { reviewQueue } from '../lib/review-queue';
 
 export { SessionScreen } from './session-screen';
+// The end of a session is reached only through a session, so its screen travels with this chunk.
+export { SummaryScreen } from './summary-screen';
 
 /** Opens a learning or review session of the selected track on the current learning state. */
 export function openSession(mode: 'learning' | 'review'): LearnSession {

@@ -3,10 +3,13 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { getDatabase } from '@/shared/lib';
-import { t } from '@/shared/i18n';
+import { t, loadDictionaryPart } from '@/shared/i18n';
 import { learnTrack } from '@/entities/settings';
 import { initialLearnState, localDay } from '@/entities/learn';
 import { StatsPage } from './stats-page';
+
+// The route brings the strings of the screen; here the test does.
+await loadDictionaryPart('stats');
 
 // A file of its own: the learning store is read once per page load, so the record is seeded before
 // the page first renders.

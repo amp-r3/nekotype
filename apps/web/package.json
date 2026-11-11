@@ -4,6 +4,10 @@
   "private": true,
   "license": "AGPL-3.0-only",
   "type": "module",
+  "sideEffects": [
+    "**/*.css",
+    "./src/app/main.tsx"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",

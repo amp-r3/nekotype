@@ -1,0 +1,1044 @@
+{
+  "basicRows": [
+    {
+      "id": "vowels",
+      "name": "A - I - U - E - O",
+      "category": "basic",
+      "entries": [
+        {
+          "hiragana": "あ",
+          "katakana": "ア",
+          "ime": ["a"],
+          "learner": []
+        },
+        {
+          "hiragana": "い",
+          "katakana": "イ",
+          "ime": ["i"],
+          "learner": []
+        },
+        {
+          "hiragana": "う",
+          "katakana": "ウ",
+          "ime": ["u"],
+          "learner": []
+        },
+        {
+          "hiragana": "え",
+          "katakana": "エ",
+          "ime": ["e"],
+          "learner": []
+        },
+        {
+          "hiragana": "お",
+          "katakana": "オ",
+          "ime": ["o"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "k",
+      "name": "Ka - Ki - Ku - Ke - Ko",
+      "category": "basic",
+      "entries": [
+        {
+          "hiragana": "か",
+          "katakana": "カ",
+          "ime": ["ka"],
+          "learner": []
+        },
+        {
+          "hiragana": "き",
+          "katakana": "キ",
+          "ime": ["ki"],
+          "learner": []
+        },
+        {
+          "hiragana": "く",
+          "katakana": "ク",
+          "ime": ["ku"],
+          "learner": []
+        },
+        {
+          "hiragana": "け",
+          "katakana": "ケ",
+          "ime": ["ke"],
+          "learner": []
+        },
+        {
+          "hiragana": "こ",
+          "katakana": "コ",
+          "ime": ["ko"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "s",
+      "name": "Sa - Shi - Su - Se - So",
+      "category": "basic",
+      "entries": [
+        {
+          "hiragana": "さ",
+          "katakana": "サ",
+          "ime": ["sa"],
+          "learner": []
+        },
+        {
+          "hiragana": "し",
+          "katakana": "シ",
+          "ime": ["shi", "si"],
+          "learner": []
+        },
+        {
+          "hiragana": "す",
+          "katakana": "ス",
+          "ime": ["su"],
+          "learner": []
+        },
+        {
+          "hiragana": "せ",
+          "katakana": "セ",
+          "ime": ["se"],
+          "learner": []
+        },
+        {
+          "hiragana": "そ",
+          "katakana": "ソ",
+          "ime": ["so"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "t",
+      "name": "Ta - Chi - Tsu - Te - To",
+      "category": "basic",
+      "entries": [
+        {
+          "hiragana": "た",
+          "katakana": "タ",
+          "ime": ["ta"],
+          "learner": []
+        },
+        {
+          "hiragana": "ち",
+          "katakana": "チ",
+          "ime": ["chi", "ti"],
+          "learner": []
+        },
+        {
+          "hiragana": "つ",
+          "katakana": "ツ",
+          "ime": ["tsu", "tu"],
+          "learner": []
+        },
+        {
+          "hiragana": "て",
+          "katakana": "テ",
+          "ime": ["te"],
+          "learner": []
+        },
+        {
+          "hiragana": "と",
+          "katakana": "ト",
+          "ime": ["to"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "n",
+      "name": "Na - Ni - Nu - Ne - No",
+      "category": "basic",
+      "entries": [
+        {
+          "hiragana": "な",
+          "katakana": "ナ",
+          "ime": ["na"],
+          "learner": []
+        },
+        {
+          "hiragana": "に",
+          "katakana": "ニ",
+          "ime": ["ni"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぬ",
+          "katakana": "ヌ",
+          "ime": ["nu"],
+          "learner": []
+        },
+        {
+          "hiragana": "ね",
+          "katakana": "ネ",
+          "ime": ["ne"],
+          "learner": []
+        },
+        {
+          "hiragana": "の",
+          "katakana": "ノ",
+          "ime": ["no"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "h",
+      "name": "Ha - Hi - Fu - He - Ho",
+      "category": "basic",
+      "entries": [
+        {
+          "hiragana": "は",
+          "katakana": "ハ",
+          "ime": ["ha"],
+          "learner": []
+        },
+        {
+          "hiragana": "ひ",
+          "katakana": "ヒ",
+          "ime": ["hi"],
+          "learner": []
+        },
+        {
+          "hiragana": "ふ",
+          "katakana": "フ",
+          "ime": ["fu", "hu"],
+          "learner": []
+        },
+        {
+          "hiragana": "へ",
+          "katakana": "ヘ",
+          "ime": ["he"],
+          "learner": []
+        },
+        {
+          "hiragana": "ほ",
+          "katakana": "ホ",
+          "ime": ["ho"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "m",
+      "name": "Ma - Mi - Mu - Me - Mo",
+      "category": "basic",
+      "entries": [
+        {
+          "hiragana": "ま",
+          "katakana": "マ",
+          "ime": ["ma"],
+          "learner": []
+        },
+        {
+          "hiragana": "み",
+          "katakana": "ミ",
+          "ime": ["mi"],
+          "learner": []
+        },
+        {
+          "hiragana": "む",
+          "katakana": "ム",
+          "ime": ["mu"],
+          "learner": []
+        },
+        {
+          "hiragana": "め",
+          "katakana": "メ",
+          "ime": ["me"],
+          "learner": []
+        },
+        {
+          "hiragana": "も",
+          "katakana": "モ",
+          "ime": ["mo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "y",
+      "name": "Ya - Yu - Yo",
+      "category": "basic",
+      "entries": [
+        {
+          "hiragana": "や",
+          "katakana": "ヤ",
+          "ime": ["ya"],
+          "learner": []
+        },
+        {
+          "hiragana": "ゆ",
+          "katakana": "ユ",
+          "ime": ["yu"],
+          "learner": []
+        },
+        {
+          "hiragana": "よ",
+          "katakana": "ヨ",
+          "ime": ["yo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "r",
+      "name": "Ra - Ri - Ru - Re - Ro",
+      "category": "basic",
+      "entries": [
+        {
+          "hiragana": "ら",
+          "katakana": "ラ",
+          "ime": ["ra"],
+          "learner": []
+        },
+        {
+          "hiragana": "り",
+          "katakana": "リ",
+          "ime": ["ri"],
+          "learner": []
+        },
+        {
+          "hiragana": "る",
+          "katakana": "ル",
+          "ime": ["ru"],
+          "learner": []
+        },
+        {
+          "hiragana": "れ",
+          "katakana": "レ",
+          "ime": ["re"],
+          "learner": []
+        },
+        {
+          "hiragana": "ろ",
+          "katakana": "ロ",
+          "ime": ["ro"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "w_n",
+      "name": "Wa - Wo - N",
+      "category": "basic",
+      "entries": [
+        {
+          "hiragana": "わ",
+          "katakana": "ワ",
+          "ime": ["wa"],
+          "learner": []
+        },
+        {
+          "hiragana": "を",
+          "katakana": "ヲ",
+          "ime": ["wo"],
+          "learner": ["o"]
+        },
+        {
+          "hiragana": "ん",
+          "katakana": "ン",
+          "ime": ["nn", "n'"],
+          "learner": ["n"]
+        }
+      ]
+    }
+  ],
+  "dakutenRows": [
+    {
+      "id": "g",
+      "name": "Ga - Gi - Gu - Ge - Go",
+      "category": "dakuten",
+      "entries": [
+        {
+          "hiragana": "が",
+          "katakana": "ガ",
+          "ime": ["ga"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぎ",
+          "katakana": "ギ",
+          "ime": ["gi"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぐ",
+          "katakana": "グ",
+          "ime": ["gu"],
+          "learner": []
+        },
+        {
+          "hiragana": "げ",
+          "katakana": "ゲ",
+          "ime": ["ge"],
+          "learner": []
+        },
+        {
+          "hiragana": "ご",
+          "katakana": "ゴ",
+          "ime": ["go"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "z",
+      "name": "Za - Ji - Zu - Ze - Zo",
+      "category": "dakuten",
+      "entries": [
+        {
+          "hiragana": "ざ",
+          "katakana": "ザ",
+          "ime": ["za"],
+          "learner": []
+        },
+        {
+          "hiragana": "じ",
+          "katakana": "ジ",
+          "ime": ["ji", "zi"],
+          "learner": []
+        },
+        {
+          "hiragana": "ず",
+          "katakana": "ズ",
+          "ime": ["zu"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぜ",
+          "katakana": "ゼ",
+          "ime": ["ze"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぞ",
+          "katakana": "ゾ",
+          "ime": ["zo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "d",
+      "name": "Da - Di - Du - De - Do",
+      "category": "dakuten",
+      "entries": [
+        {
+          "hiragana": "だ",
+          "katakana": "ダ",
+          "ime": ["da"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぢ",
+          "katakana": "ヂ",
+          "ime": ["di"],
+          "learner": ["ji", "zi", "dzi"]
+        },
+        {
+          "hiragana": "づ",
+          "katakana": "ヅ",
+          "ime": ["du"],
+          "learner": ["zu", "dzu"]
+        },
+        {
+          "hiragana": "で",
+          "katakana": "デ",
+          "ime": ["de"],
+          "learner": []
+        },
+        {
+          "hiragana": "ど",
+          "katakana": "ド",
+          "ime": ["do"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": "Ba - Bi - Bu - Be - Bo",
+      "category": "dakuten",
+      "entries": [
+        {
+          "hiragana": "ば",
+          "katakana": "バ",
+          "ime": ["ba"],
+          "learner": []
+        },
+        {
+          "hiragana": "び",
+          "katakana": "ビ",
+          "ime": ["bi"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぶ",
+          "katakana": "ブ",
+          "ime": ["bu"],
+          "learner": []
+        },
+        {
+          "hiragana": "べ",
+          "katakana": "ベ",
+          "ime": ["be"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぼ",
+          "katakana": "ボ",
+          "ime": ["bo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "p",
+      "name": "Pa - Pi - Pu - Pe - Po",
+      "category": "dakuten",
+      "entries": [
+        {
+          "hiragana": "ぱ",
+          "katakana": "パ",
+          "ime": ["pa"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぴ",
+          "katakana": "ピ",
+          "ime": ["pi"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぷ",
+          "katakana": "プ",
+          "ime": ["pu"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぺ",
+          "katakana": "ペ",
+          "ime": ["pe"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぽ",
+          "katakana": "ポ",
+          "ime": ["po"],
+          "learner": []
+        }
+      ]
+    }
+  ],
+  "yoonRows": [
+    {
+      "id": "ky",
+      "name": "Kya - Kyu - Kyo",
+      "category": "yoon",
+      "entries": [
+        {
+          "hiragana": "きゃ",
+          "katakana": "キャ",
+          "ime": ["kya"],
+          "learner": []
+        },
+        {
+          "hiragana": "きゅ",
+          "katakana": "キュ",
+          "ime": ["kyu"],
+          "learner": []
+        },
+        {
+          "hiragana": "きょ",
+          "katakana": "キョ",
+          "ime": ["kyo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "sh",
+      "name": "Sha - Shu - Sho",
+      "category": "yoon",
+      "entries": [
+        {
+          "hiragana": "しゃ",
+          "katakana": "シャ",
+          "ime": ["sha", "sya"],
+          "learner": []
+        },
+        {
+          "hiragana": "しゅ",
+          "katakana": "シュ",
+          "ime": ["shu", "syu"],
+          "learner": []
+        },
+        {
+          "hiragana": "しょ",
+          "katakana": "ショ",
+          "ime": ["sho", "syo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "ch",
+      "name": "Cha - Chu - Cho",
+      "category": "yoon",
+      "entries": [
+        {
+          "hiragana": "ちゃ",
+          "katakana": "チャ",
+          "ime": ["cha", "tya"],
+          "learner": ["cya"]
+        },
+        {
+          "hiragana": "ちゅ",
+          "katakana": "チュ",
+          "ime": ["chu", "tyu"],
+          "learner": ["cyu"]
+        },
+        {
+          "hiragana": "ちょ",
+          "katakana": "チョ",
+          "ime": ["cho", "tyo"],
+          "learner": ["cyo"]
+        }
+      ]
+    },
+    {
+      "id": "ny",
+      "name": "Nya - Nyu - Nyo",
+      "category": "yoon",
+      "entries": [
+        {
+          "hiragana": "にゃ",
+          "katakana": "ニャ",
+          "ime": ["nya"],
+          "learner": []
+        },
+        {
+          "hiragana": "にゅ",
+          "katakana": "ニュ",
+          "ime": ["nyu"],
+          "learner": []
+        },
+        {
+          "hiragana": "にょ",
+          "katakana": "ニョ",
+          "ime": ["nyo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "hy",
+      "name": "Hya - Hyu - Hyo",
+      "category": "yoon",
+      "entries": [
+        {
+          "hiragana": "ひゃ",
+          "katakana": "ヒャ",
+          "ime": ["hya"],
+          "learner": []
+        },
+        {
+          "hiragana": "ひゅ",
+          "katakana": "ヒュ",
+          "ime": ["hyu"],
+          "learner": []
+        },
+        {
+          "hiragana": "ひょ",
+          "katakana": "ヒョ",
+          "ime": ["hyo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "my",
+      "name": "Mya - Myu - Myo",
+      "category": "yoon",
+      "entries": [
+        {
+          "hiragana": "みゃ",
+          "katakana": "ミャ",
+          "ime": ["mya"],
+          "learner": []
+        },
+        {
+          "hiragana": "みゅ",
+          "katakana": "ミュ",
+          "ime": ["myu"],
+          "learner": []
+        },
+        {
+          "hiragana": "みょ",
+          "katakana": "ミョ",
+          "ime": ["myo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "ry",
+      "name": "Rya - Ryu - Ryo",
+      "category": "yoon",
+      "entries": [
+        {
+          "hiragana": "りゃ",
+          "katakana": "リャ",
+          "ime": ["rya"],
+          "learner": []
+        },
+        {
+          "hiragana": "りゅ",
+          "katakana": "リュ",
+          "ime": ["ryu"],
+          "learner": []
+        },
+        {
+          "hiragana": "りょ",
+          "katakana": "リョ",
+          "ime": ["ryo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "gy",
+      "name": "Gya - Gyu - Gyo",
+      "category": "yoon",
+      "entries": [
+        {
+          "hiragana": "ぎゃ",
+          "katakana": "ギャ",
+          "ime": ["gya"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぎゅ",
+          "katakana": "ギュ",
+          "ime": ["gyu"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぎょ",
+          "katakana": "ギョ",
+          "ime": ["gyo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "j",
+      "name": "Ja - Ju - Jo",
+      "category": "yoon",
+      "entries": [
+        {
+          "hiragana": "じゃ",
+          "katakana": "ジャ",
+          "ime": ["ja", "zya", "jya"],
+          "learner": []
+        },
+        {
+          "hiragana": "じゅ",
+          "katakana": "ジュ",
+          "ime": ["ju", "zyu", "jyu"],
+          "learner": []
+        },
+        {
+          "hiragana": "じょ",
+          "katakana": "ジョ",
+          "ime": ["jo", "zyo", "jyo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "by",
+      "name": "Bya - Byu - Byo",
+      "category": "yoon",
+      "entries": [
+        {
+          "hiragana": "びゃ",
+          "katakana": "ビャ",
+          "ime": ["bya"],
+          "learner": []
+        },
+        {
+          "hiragana": "びゅ",
+          "katakana": "ビュ",
+          "ime": ["byu"],
+          "learner": []
+        },
+        {
+          "hiragana": "びょ",
+          "katakana": "ビョ",
+          "ime": ["byo"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "py",
+      "name": "Pya - Pyu - Pyo",
+      "category": "yoon",
+      "entries": [
+        {
+          "hiragana": "ぴゃ",
+          "katakana": "ピャ",
+          "ime": ["pya"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぴゅ",
+          "katakana": "ピュ",
+          "ime": ["pyu"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぴょ",
+          "katakana": "ピョ",
+          "ime": ["pyo"],
+          "learner": []
+        }
+      ]
+    }
+  ],
+  "extendedRows": [
+    {
+      "id": "ext_fa",
+      "name": "Fa - Fi - Fe - Fo",
+      "category": "extended",
+      "entries": [
+        {
+          "katakana": "ファ",
+          "ime": ["fa"],
+          "learner": ["fua", "huxa"]
+        },
+        {
+          "katakana": "フィ",
+          "ime": ["fi"],
+          "learner": ["fui", "huxi"]
+        },
+        {
+          "katakana": "フェ",
+          "ime": ["fe"],
+          "learner": ["fue", "huxe"]
+        },
+        {
+          "katakana": "フォ",
+          "ime": ["fo"],
+          "learner": ["fuo", "huxo"]
+        }
+      ]
+    },
+    {
+      "id": "ext_va",
+      "name": "Va - Vi - Vu - Ve - Vo",
+      "category": "extended",
+      "entries": [
+        {
+          "katakana": "ヴァ",
+          "ime": ["va"],
+          "learner": ["buxa"]
+        },
+        {
+          "katakana": "ヴィ",
+          "ime": ["vi"],
+          "learner": ["buxi"]
+        },
+        {
+          "katakana": "ヴ",
+          "ime": ["vu"],
+          "learner": []
+        },
+        {
+          "katakana": "ヴェ",
+          "ime": ["ve"],
+          "learner": ["buxe"]
+        },
+        {
+          "katakana": "ヴォ",
+          "ime": ["vo"],
+          "learner": ["buxo"]
+        }
+      ]
+    },
+    {
+      "id": "ext_wi",
+      "name": "Wi - We - Who (Wo)",
+      "category": "extended",
+      "entries": [
+        {
+          "katakana": "ウィ",
+          "ime": ["wi"],
+          "learner": ["whi", "uxi"]
+        },
+        {
+          "katakana": "ウェ",
+          "ime": ["we"],
+          "learner": ["whe", "uxe"]
+        },
+        {
+          "katakana": "ウォ",
+          "ime": ["who"],
+          "learner": ["wo", "uxo"]
+        }
+      ]
+    },
+    {
+      "id": "ext_ti",
+      "name": "Thi - Twu - Dhi - Dwu - Thu - Dhu",
+      "category": "extended",
+      "entries": [
+        {
+          "katakana": "ティ",
+          "ime": ["thi"],
+          "learner": ["ti", "texi"]
+        },
+        {
+          "katakana": "トゥ",
+          "ime": ["twu"],
+          "learner": ["tu", "toxu"]
+        },
+        {
+          "katakana": "ディ",
+          "ime": ["dhi"],
+          "learner": ["di", "dexi"]
+        },
+        {
+          "katakana": "ドゥ",
+          "ime": ["dwu"],
+          "learner": ["du", "doxu"]
+        },
+        {
+          "katakana": "テュ",
+          "ime": ["thu"],
+          "learner": ["texyu"]
+        },
+        {
+          "katakana": "デュ",
+          "ime": ["dhu"],
+          "learner": ["dexyu"]
+        }
+      ]
+    },
+    {
+      "id": "ext_che",
+      "name": "She - Je - Che",
+      "category": "extended",
+      "entries": [
+        {
+          "katakana": "シェ",
+          "ime": ["she"],
+          "learner": ["sye", "sixe"]
+        },
+        {
+          "katakana": "ジェ",
+          "ime": ["je"],
+          "learner": ["zye", "jye", "zixe"]
+        },
+        {
+          "katakana": "チェ",
+          "ime": ["che"],
+          "learner": ["tye", "cye", "tixe"]
+        }
+      ]
+    }
+  ],
+  "standaloneRows": [
+    {
+      "id": "small",
+      "entries": [
+        {
+          "hiragana": "ぁ",
+          "katakana": "ァ",
+          "ime": ["xa", "la"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぃ",
+          "katakana": "ィ",
+          "ime": ["xi", "li"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぅ",
+          "katakana": "ゥ",
+          "ime": ["xu", "lu"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぇ",
+          "katakana": "ェ",
+          "ime": ["xe", "le"],
+          "learner": []
+        },
+        {
+          "hiragana": "ぉ",
+          "katakana": "ォ",
+          "ime": ["xo", "lo"],
+          "learner": []
+        },
+        {
+          "hiragana": "ゃ",
+          "katakana": "ャ",
+          "ime": ["xya", "lya"],
+          "learner": []
+        },
+        {
+          "hiragana": "ゅ",
+          "katakana": "ュ",
+          "ime": ["xyu", "lyu"],
+          "learner": []
+        },
+        {
+          "hiragana": "ょ",
+          "katakana": "ョ",
+          "ime": ["xyo", "lyo"],
+          "learner": []
+        },
+        {
+          "hiragana": "ゎ",
+          "katakana": "ヮ",
+          "ime": ["xwa", "lwa"],
+          "learner": []
+        },
+        {
+          "katakana": "ヵ",
+          "ime": ["xka", "lka"],
+          "learner": []
+        },
+        {
+          "katakana": "ヶ",
+          "ime": ["xke", "lke"],
+          "learner": []
+        }
+      ]
+    },
+    {
+      "id": "archaic",
+      "entries": [
+        {
+          "hiragana": "ゐ",
+          "katakana": "ヰ",
+          "ime": ["wyi"],
+          "learner": []
+        },
+        {
+          "hiragana": "ゑ",
+          "katakana": "ヱ",
+          "ime": ["wye"],
+          "learner": []
+        }
+      ]
+    }
+  ]
+}

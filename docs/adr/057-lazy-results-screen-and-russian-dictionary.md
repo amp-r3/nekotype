@@ -1,6 +1,6 @@
 # ADR 057: The Results Screen and the Russian Dictionary Are Lazy Chunks
 
-- **Status:** In force.
+- **Status:** In force. Amended by [ADR 067](067-initial-chunk-before-p4.md) (per-screen dictionary parts).
 - **Context:** The initial JS stood at 34.59 KB of the 35 KB budget (33.42 KB at the end of P2), and P3 adds metrics, IndexedDB and a new results screen. The results screen is shown only when a test ends, and the Russian dictionary is needed only by Russian users, yet both were in the initial chunk.
 - **Decision:**
   - **Results.** `pages/trainer/results-loader.ts` imports `ui/results-panel` dynamically and keeps the loaded component, a failure flag and the request in flight (the same approach as `app/route-state.ts`). `TrainerPage` loads it when a test ends; `schedulePrefetch` loads it on idle, so in practice the chunk is there before the first test ends. Until it is, `ResultsPending` shows the loading notice (`route.loading`), or `route.loadError` with Retry on a failure. Next test and Enter work in both states.

@@ -3,8 +3,10 @@ import { batch, signal } from '@preact/signals';
 import type { KeyValueStore } from '@/shared/lib';
 import { STORAGE_KEYS } from '@/shared/lib';
 import type { Dictionary } from './dictionary';
-import { loadDictionary, loadedDictionary } from './dictionary';
+import { assemble, loadWords } from './dictionary';
 import { en } from './en';
+import type { DictionaryPart } from './keys';
+import { DICTIONARY_PARTS } from './keys';
 
 export type Locale = 'en' | 'ru';
 
@@ -34,26 +36,32 @@ function apply(newLocale: Locale, words: Dictionary): void {
   });
 }
 
+// The screen parts asked for so far: a language switch brings them along.
+const wantedParts = new Set<DictionaryPart>();
+
 // Numbers the switches, so a dictionary that arrives after a later choice does not undo it.
 let latestSwitch = 0;
 
 /**
- * Switches to a language once its dictionary is loaded. False if it could not be loaded, or if
- * another switch was asked for in the meantime: the last choice wins.
+ * Switches to a language once its dictionary is loaded: the core and every part a screen has asked
+ * for. False if it could not be loaded, or if another switch was asked for in the meantime: the
+ * last choice wins.
  */
 async function switchTo(newLocale: Locale): Promise<boolean> {
   latestSwitch += 1;
   const request = latestSwitch;
-  const ready = loadedDictionary(newLocale);
-  if (ready !== undefined) {
-    apply(newLocale, ready);
-    return true;
-  }
   try {
-    const words = await loadDictionary(newLocale);
-    if (request !== latestSwitch) return false;
-    apply(newLocale, words);
-    return true;
+    // A screen may ask for its part while the core loads; the loop brings that part too.
+    for (;;) {
+      const ready = assemble(newLocale, wantedParts);
+      if (ready !== undefined) {
+        apply(newLocale, ready);
+        return true;
+      }
+      const pieces: readonly ('core' | DictionaryPart)[] = ['core', ...wantedParts];
+      await Promise.all(pieces.map((piece) => loadWords(newLocale, piece)));
+      if (request !== latestSwitch) return false;
+    }
   } catch {
     return false;
   }
@@ -81,7 +89,30 @@ export async function setLocale(
   return switched;
 }
 
-/** Fetches a dictionary ahead of time, so the language can be switched without the network. */
+/**
+ * Loads the part of a screen in the current language and adds it to the dictionary. Rejects if it
+ * could not be loaded, so the screen reports the error; a later call tries again.
+ */
+export async function loadDictionaryPart(part: DictionaryPart): Promise<void> {
+  for (;;) {
+    const current = _locale.value;
+    await loadWords(current, part);
+    // A switch that started earlier did not know about this part: the loop loads it again.
+    if (_locale.value !== current) continue;
+    wantedParts.add(part);
+    const words = assemble(current, wantedParts);
+    if (words !== undefined) apply(current, words);
+    return;
+  }
+}
+
+/**
+ * Fetches a whole dictionary (the core and every screen part) ahead of time, so the language can
+ * be switched and every screen opened without the network.
+ */
 export function preloadLocale(wanted: Locale): Promise<unknown> {
-  return loadDictionary(wanted);
+  return Promise.all([
+    loadWords(wanted, 'core'),
+    ...DICTIONARY_PARTS.map((part) => loadWords(wanted, part)),
+  ]);
 }

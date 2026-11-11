@@ -5,6 +5,10 @@ import { ResultsPanel } from './ui/results-panel';
 import { createSession } from '@/features/training';
 import type { Session } from '@/features/training';
 import type { Clock } from '@/shared/lib';
+import { loadDictionaryPart } from '@/shared/i18n';
+
+// The route brings the strings of the screen; here the test does.
+await loadDictionaryPart('type');
 
 // Spec "Keyboard": Enter on the results screen is "Next test". The button must have the focus the
 // moment the screen is on display; a key pressed right after it appears must not be lost.

@@ -21,6 +21,10 @@ const CONTENT_SOURCE = /(^|\/)(words|phrases)\.[cm]?[jt]s$|(^|\/)content\//;
 // The global the probe publishes; it appears in no other place of the application.
 export const PROBE_MARKER = '__nekotypeProbe';
 
+// A name only @preact/signals' Preact integration carries. That module hooks into Preact when it is
+// imported; a `sideEffects` setting that dropped it would leave every signal-driven render dead.
+export const SIGNALS_MARKER = 'ReactiveTextNode';
+
 const kb = (bytes) => bytes / 1024;
 const fmt = (bytes) => `${kb(bytes).toFixed(2)} KB`;
 
@@ -121,6 +125,29 @@ export function checkBudget(distDir) {
     line('initial', css, s);
     cssGzip += s.gzip;
     cssBrotli += s.brotli;
+  }
+
+  // Everything the entry loads statically is one chunk (vite.config.ts, `codeSplitting`).
+  const initialJs = [...initial]
+    .map((key) => manifest[key]?.file)
+    .filter((file) => file !== undefined && file.endsWith('.js'));
+  if (initialJs.length !== 1) {
+    failures.push(
+      `Initial JS is ${initialJs.length} files (${initialJs.join(', ')}); the entry is meant to be one chunk (vite.config.ts, codeSplitting)`,
+    );
+  }
+  if (
+    !initialJs.some((file) => readFileSync(join(distDir, file), 'utf-8').includes(SIGNALS_MARKER))
+  ) {
+    failures.push(
+      'The initial JS lacks the Preact integration of @preact/signals: check `sideEffects` in package.json',
+    );
+  }
+  // A dynamic import must stay a chunk of its own, not be folded into the first load.
+  for (const [key, chunk] of Object.entries(manifest)) {
+    if (chunk.isDynamicEntry === true && initialJs.includes(chunk.file)) {
+      failures.push(`${key} is imported lazily but its code is in the initial chunk ${chunk.file}`);
+    }
   }
 
   // Images the entry imports and Vite did not inline (the logo) are part of the first load.

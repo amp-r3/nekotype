@@ -23,7 +23,6 @@ import type { LearnSession } from '../model/session';
 import { dueCount } from '../lib/review-queue';
 import { loadSessionRuntime } from '../session-loader';
 import type { SessionRuntime } from '../session-loader';
-import { SummaryScreen } from './summary-screen';
 
 type View = 'home' | 'loading' | 'session' | 'summary';
 
@@ -120,11 +119,11 @@ export function LearnPage(): JSX.Element {
   }
 
   const summary = session?.summary.value ?? null;
-  if (view === 'summary' && summary !== null) {
+  if (view === 'summary' && summary !== null && runtime !== null) {
     return (
       <>
         {hiddenInput}
-        <SummaryScreen
+        <runtime.SummaryScreen
           summary={summary}
           onContinue={() => {
             void startSession();
