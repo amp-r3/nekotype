@@ -48,9 +48,11 @@ export type ReadingHint = {
 export type PromptItem = {
   readonly key: string;
   readonly text: string;
-  readonly script?: Script;
-  readonly meaning?: { readonly en: string; readonly ru: string };
+  readonly script?: Script | 'mixed';
+  readonly meaning?: { readonly en: string };
   readonly readingHints?: readonly ReadingHint[];
+  // A phrase from Tatoeba: the sentence behind the "source" link.
+  readonly tatoebaId?: number;
 };
 
 export type Strictness = 'learner' | 'ime';

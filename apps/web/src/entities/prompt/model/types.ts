@@ -23,9 +23,11 @@ export type ContentKind = 'words' | 'phrases';
 export type ContentItem = {
   readonly id: string;
   readonly text: string;
-  readonly script: Script;
-  readonly meaning: { readonly en: string; readonly ru: string };
+  // `mixed` (kana with katakana words in one sentence) is for phrases only.
+  readonly script: Script | 'mixed';
+  readonly meaning: { readonly en: string };
   readonly readingHints?: readonly ReadingHint[];
+  readonly tatoebaId?: number;
 };
 
 // What the pool builder reads from the user's settings; the settings slice is not imported here.

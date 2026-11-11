@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { canonical, compile, extend, isComplete, start, step } from './engine';
 import type { MatchState, Matcher } from './engine';
-import { wordsData } from '../model/data/words';
-import { phrasesData } from '../model/data/phrases';
+import { wordsFixture, phrasesFixture } from '../model/fixtures';
 import type { PromptItem } from '../model/types';
 
 function feed(m: Matcher, input: string, from?: MatchState): MatchState | null {
@@ -32,8 +31,8 @@ class DeterministicRng {
 
 const KEYS = "abcdefghijklmnopqrstuvwxyz-'".split('');
 
-// Every word and phrase of the baseline content, with its reading hints.
-const allPrompts: PromptItem[] = [...wordsData, ...phrasesData].map((c) => ({
+// Every word and phrase of the hand-written fixtures, with its reading hints.
+const allPrompts: PromptItem[] = [...wordsFixture, ...phrasesFixture].map((c) => ({
   key: c.id,
   text: c.text,
   ...(c.readingHints ? { readingHints: c.readingHints } : {}),

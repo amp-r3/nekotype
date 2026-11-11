@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { useComputed } from '@preact/signals';
-import { t, locale } from '@/shared/i18n';
+import { t } from '@/shared/i18n';
 import { isApplePlatform, useMediaQuery } from '@/shared/lib';
 import { testConfig, showTranslationSetting } from '@/entities/settings';
 import { Kbd, RefreshIcon, Button } from '@/shared/ui';
@@ -49,8 +49,15 @@ export function TestStage({ session, input, onRestart }: TestStageProps): JSX.El
   const translation = useComputed(() => {
     const meaning = session.currentPrompt.value?.meaning;
     if (meaning === undefined || !showTranslationSetting.value) return '';
-    return locale.value === 'ru' ? meaning.ru : meaning.en;
+    // English in both locales: the translations come from Tatoeba and JMdict (content.md).
+    return meaning.en;
   });
+  // The Tatoeba licence wants the author credited, so the link stays when the translation is off.
+  const sourceHref = useComputed(() => {
+    const id = session.currentPrompt.value?.tatoebaId;
+    return id === undefined ? '' : `https://tatoeba.org/sentences/${id}`;
+  });
+  const sourceHidden = useComputed(() => sourceHref.value === '');
 
   return (
     <div
@@ -70,9 +77,26 @@ export function TestStage({ session, input, onRestart }: TestStageProps): JSX.El
         <span className="text-eye text-mono-romaji font-mono">{revealed}</span>
       </div>
 
-      <p data-testid="translation" className="text-fur-dim text-ui-body min-h-12 text-center">
-        {translation}
-      </p>
+      {/* Two lines are reserved, so a long translation or the link does not move the stream. */}
+      <div className="text-fur-dim flex min-h-12 flex-wrap items-baseline justify-center gap-x-4 gap-y-1 text-center">
+        <p data-testid="translation" className="text-ui-body m-0 flex-[1_1_320px]">
+          {translation}
+        </p>
+        <a
+          data-testid="source-link"
+          href={sourceHref}
+          hidden={sourceHidden}
+          target="_blank"
+          rel="noopener"
+          // A press on the link must not move the keyboard out of the hidden field.
+          onMouseDown={(e) => {
+            e.preventDefault();
+          }}
+          className="text-ui-caption hover:text-fur underline"
+        >
+          {t('stage.source')}
+        </a>
+      </div>
 
       <div className="text-fur-dim text-ui-caption flex w-full flex-wrap items-center justify-between gap-3 pt-2">
         {touch ? (

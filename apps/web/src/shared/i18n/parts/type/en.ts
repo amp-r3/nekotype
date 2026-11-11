@@ -30,6 +30,7 @@ export const typeEn = {
   'stage.clickToFocus': 'Click to focus',
   'key.ctrlEnter': 'ctrl + enter',
   'key.cmdEnter': '⌘ + enter',
+  'stage.source': 'source',
   'stage.showRomaji': 'show the romaji',
   'stage.escHint': 'Esc to reveal canonical romaji',
   'key.tabEnter': 'tab → enter',

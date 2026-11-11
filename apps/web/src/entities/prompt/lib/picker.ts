@@ -10,15 +10,19 @@ export function buildPool(
   content?: readonly ContentItem[],
 ): readonly PromptItem[] {
   if (!content) return [];
-  return content
-    .filter((item) => settings.script === 'both' || item.script === settings.script)
-    .map((item) => ({
-      key: item.id,
-      text: item.text,
-      script: item.script,
-      meaning: item.meaning,
-      ...(item.readingHints ? { readingHints: item.readingHints } : {}),
-    }));
+  return (
+    content
+      // Mixed phrases have both scripts in them: offered only when both are selected.
+      .filter((item) => settings.script === 'both' || item.script === settings.script)
+      .map((item) => ({
+        key: item.id,
+        text: item.text,
+        script: item.script,
+        meaning: item.meaning,
+        ...(item.readingHints ? { readingHints: item.readingHints } : {}),
+        ...(item.tatoebaId !== undefined ? { tatoebaId: item.tatoebaId } : {}),
+      }))
+  );
 }
 
 export function pickPrompt(

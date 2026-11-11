@@ -123,7 +123,7 @@ describe('check-budget', () => {
       makeDist({
         lazy: [
           { src: 'src/pages/stats/index.ts', kb: 20 },
-          { src: 'src/entities/prompt/model/data/words.ts', kb: 30 },
+          { src: 'src/entities/prompt/content/words-hiragana.json', kb: 30 },
         ],
       }),
     );
@@ -225,7 +225,7 @@ describe('check-budget', () => {
   it('does not count lazy chunks in the initial JS', () => {
     const failures = failuresFor({
       jsKb: 30,
-      lazy: [{ src: 'src/entities/prompt/model/data/words.ts', kb: 39 }],
+      lazy: [{ src: 'src/entities/prompt/content/words-hiragana.json', kb: 39 }],
     });
     expect(failures).toEqual([]);
   });
@@ -236,15 +236,15 @@ describe('check-budget', () => {
   });
 
   it('applies 40 KB to a content chunk, found by its source and not by file name', () => {
-    // 30 KB is fine for content (words.ts) but too big for a route
+    // 30 KB is fine for content (a words chunk) but too big for a route
     expect(
-      failuresFor({ lazy: [{ src: 'src/entities/prompt/model/data/words.ts', kb: 30 }] }),
+      failuresFor({ lazy: [{ src: 'src/entities/prompt/content/words-hiragana.json', kb: 30 }] }),
     ).toEqual([]);
     expect(failuresFor({ lazy: [{ src: 'src/pages/stats/index.ts', kb: 30 }] })).toEqual([
       expect.stringContaining('Lazy route chunk'),
     ]);
     expect(
-      failuresFor({ lazy: [{ src: 'src/entities/prompt/model/data/phrases.ts', kb: 41 }] }),
+      failuresFor({ lazy: [{ src: 'src/entities/prompt/content/phrases-mixed.json', kb: 41 }] }),
     ).toEqual([expect.stringContaining('Content chunk')]);
     expect(failuresFor({ lazy: [{ src: 'content/n5-words.ts', kb: 41 }] })).toEqual([
       expect.stringContaining('Content chunk'),

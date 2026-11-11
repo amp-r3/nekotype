@@ -156,7 +156,7 @@ Nekotype adheres to strict first-load asset caps, checked by `pnpm run budget` (
 | **Golos Text 400/500**     | $\le 45$ KB  | **9.42 / 9.56 KB**     | ✅ Passed                 |
 | **Logo (SVG)**             | counted      | **1.45 KB**            | ✅ Passed                 |
 | **Total First Load**       | $\le 160$ KB | **103.31 KB**          | ✅ Passed (65% of budget) |
-| **Lazy content chunk**     | $\le 40$ KB  | **2.05 KB** (largest)  | ✅ Passed                 |
+| **Lazy content chunk**     | $\le 40$ KB  | **24.15 KB** (largest) | ✅ Passed                 |
 | **Lazy route chunk**       | $\le 25$ KB  | **10.53 KB** (largest) | ✅ Passed                 |
 
 ---

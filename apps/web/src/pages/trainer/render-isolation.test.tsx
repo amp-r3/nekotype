@@ -1,10 +1,11 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, options, Fragment } from 'preact';
 import type { VNode } from 'preact';
 import { TrainerPage } from './ui/trainer-page';
 import { createTrainer } from '@/features/training';
 import type { Trainer } from '@/features/training';
+import * as promptModule from '@/entities/prompt';
 import type { PromptItem } from '@/entities/prompt';
 import { setTestConfig } from '@/entities/settings';
 import { MIN_AHEAD_TOKENS } from '@/features/training';
@@ -32,6 +33,9 @@ describe('render isolation: the hot path renders nothing', () => {
   beforeEach(async () => {
     // The results screen is a lazy chunk; the checks below count its render like any other.
     await loadResultsPanel();
+    // The real chunks load on their own time and would render the page mid-test; the prompts here
+    // are fixed anyway.
+    vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([]);
     setTestConfig({ kind: 'time', seconds: 120 });
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -45,6 +49,7 @@ describe('render isolation: the hot path renders nothing', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     if (prevDiffed) {
       options.diffed = prevDiffed;
     } else {
@@ -200,6 +205,7 @@ describe('render isolation: a zen test', () => {
   let prevDiffed: ((vnode: VNode) => void) | undefined;
 
   beforeEach(async () => {
+    vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([]);
     setTestConfig({ kind: 'zen' });
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -213,6 +219,7 @@ describe('render isolation: a zen test', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     if (prevDiffed) {
       options.diffed = prevDiffed;
     } else {

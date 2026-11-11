@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { createTrainer } from '@/features/training';
 import type { Trainer } from '@/features/training';
+import * as promptModule from '@/entities/prompt';
 import type { PromptItem } from '@/entities/prompt';
 import { setTestConfig } from '@/entities/settings';
 import { TrainerPage } from './ui/trainer-page';
@@ -24,6 +25,8 @@ describe('results screen: the chunk fails to load', () => {
   let trainer: Trainer;
 
   beforeEach(async () => {
+    // Real chunks arrive on their own time and would restart the test; the prompts here are fixed.
+    vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([]);
     setTestConfig({ kind: 'zen' });
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -42,6 +45,7 @@ describe('results screen: the chunk fails to load', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     render(null, container);
     container.remove();
     document.documentElement.removeAttribute('data-testing');

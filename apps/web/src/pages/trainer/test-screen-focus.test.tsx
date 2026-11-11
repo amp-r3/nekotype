@@ -1,9 +1,10 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { TrainerPage } from './ui/trainer-page';
 import { createTrainer } from '@/features/training';
 import type { Trainer } from '@/features/training';
+import * as promptModule from '@/entities/prompt';
 import type { PromptItem } from '@/entities/prompt';
 import { setTestConfig } from '@/entities/settings';
 import { t } from '@/shared/i18n';
@@ -20,6 +21,8 @@ describe('test screen: focus, hidden interface and keys', () => {
   let trainer: Trainer;
 
   beforeEach(async () => {
+    // Real chunks arrive on their own time and would restart the test; the prompts here are fixed.
+    vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([]);
     setTestConfig({ kind: 'count', prompts: 10 });
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -29,6 +32,7 @@ describe('test screen: focus, hidden interface and keys', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     render(null, container);
     container.remove();
     document.documentElement.removeAttribute('data-testing');

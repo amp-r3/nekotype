@@ -31,6 +31,7 @@ export const typeRu = {
   'stage.clickToFocus': 'Нажмите для фокусировки',
   'key.ctrlEnter': 'ctrl + enter',
   'key.cmdEnter': '⌘ + enter',
+  'stage.source': 'источник',
   'stage.showRomaji': 'показать ромадзи',
   'stage.escHint': 'Esc чтобы показать правильный ответ',
   'key.tabEnter': 'tab → enter',

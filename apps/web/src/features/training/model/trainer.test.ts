@@ -18,14 +18,14 @@ const word: ContentItem = {
   id: 'word:neko',
   text: 'ねこ',
   script: 'hiragana',
-  meaning: { en: 'cat', ru: 'кошка' },
+  meaning: { en: 'cat' },
 };
 
 describe('trainer: prompt source, restarts and content loading', () => {
   beforeEach(async () => {
     await initSettings(Promise.resolve(createMemoryDb()));
     // The vocabulary: the real chunks are not under test here.
-    vi.spyOn(promptModule, 'loadContent').mockResolvedValue([word]);
+    vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([word]);
     setContent('words');
     setScript('both');
   });
@@ -74,9 +74,9 @@ describe('trainer: prompt source, restarts and content loading', () => {
       id: 'word:pan',
       text: 'パン',
       script: 'katakana',
-      meaning: { en: 'bread', ru: 'хлеб' },
+      meaning: { en: 'bread' },
     };
-    vi.spyOn(promptModule, 'loadContent').mockResolvedValue([word, pan]);
+    vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([word, pan]);
     setScript('katakana');
     const trainer = createTrainer({ rng: { next: () => 0 } });
     const stop = trainer.start();
@@ -86,7 +86,7 @@ describe('trainer: prompt source, restarts and content loading', () => {
   });
 
   it('loads vocabulary once per kind, and restarts with it', async () => {
-    const load = vi.spyOn(promptModule, 'loadContent').mockResolvedValue([word]);
+    const load = vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([word]);
     setScript('hiragana');
     const trainer = createTrainer({ rng: { next: () => 0 } });
     const stop = trainer.start();
@@ -95,7 +95,7 @@ describe('trainer: prompt source, restarts and content loading', () => {
     await flush();
 
     expect(load).toHaveBeenCalledTimes(1);
-    expect(load).toHaveBeenCalledWith('words');
+    expect(load).toHaveBeenCalledWith('words-hiragana');
     expect(trainer.isLoadingContent.value).toBe(false);
     expect(trainer.contentLoadFailed.value).toBe(false);
     expect(trainer.session.currentPrompt.value?.text).toBe('ねこ');
@@ -109,13 +109,54 @@ describe('trainer: prompt source, restarts and content loading', () => {
     stop();
   });
 
+  it('loads the chunks of the selected script, each once, and the union for both', async () => {
+    const load = vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([word]);
+    setScript('hiragana');
+    const trainer = createTrainer({ rng: { next: () => 0 } });
+    const stop = trainer.start();
+    await flush();
+    expect(load.mock.calls).toEqual([['words-hiragana']]);
+
+    setScript('both');
+    await flush();
+    expect(load.mock.calls).toEqual([['words-hiragana'], ['words-katakana']]);
+
+    setScript('katakana');
+    await flush();
+    expect(load).toHaveBeenCalledTimes(2);
+    stop();
+  });
+
+  it('with both scripts the pool waits for every chunk of the kind', async () => {
+    const resolvers = new Map<string, (items: readonly ContentItem[]) => void>();
+    vi.spyOn(promptModule, 'loadChunk').mockImplementation(
+      (chunk) =>
+        new Promise((r) => {
+          resolvers.set(chunk, r);
+        }),
+    );
+    setScript('both');
+    const trainer = createTrainer({ rng: { next: () => 0 } });
+    const stop = trainer.start();
+    resolvers.get('words-hiragana')?.([word]);
+    await flush();
+    expect(trainer.isLoadingContent.value).toBe(true);
+    expect(trainer.session.currentPrompt.value).toBeNull();
+    resolvers.get('words-katakana')?.([]);
+    await flush();
+    expect(trainer.isLoadingContent.value).toBe(false);
+    expect(trainer.session.currentPrompt.value?.text).toBe('ねこ');
+    stop();
+  });
+
   // Spec "Loading" (frontend.md): a failed load keeps the setting; there is nothing to type until
   // Retry succeeds.
   it('a failed load reports it, keeps the setting and shows no prompt until Retry', async () => {
     const load = vi
-      .spyOn(promptModule, 'loadContent')
+      .spyOn(promptModule, 'loadChunk')
       .mockRejectedValueOnce(new Error('chunk failed'))
       .mockResolvedValue([word]);
+    setScript('hiragana');
     const trainer = createTrainer({ rng: { next: () => 0 } });
     const stop = trainer.start();
     await flush();
@@ -139,8 +180,8 @@ describe('trainer: prompt source, restarts and content loading', () => {
 
   it('a failure of a kind that is no longer selected shows nothing and keeps the test', async () => {
     let fail: (error: Error) => void = () => {};
-    vi.spyOn(promptModule, 'loadContent').mockImplementation((kind) =>
-      kind === 'words'
+    vi.spyOn(promptModule, 'loadChunk').mockImplementation((chunk) =>
+      chunk.startsWith('words')
         ? new Promise((_, reject) => {
             fail = reject;
           })
@@ -164,8 +205,8 @@ describe('trainer: prompt source, restarts and content loading', () => {
 
   it('a chunk that arrives late does not reset a running test of another content', async () => {
     let resolveWords: (items: readonly ContentItem[]) => void = () => {};
-    vi.spyOn(promptModule, 'loadContent').mockImplementation((kind) =>
-      kind === 'words'
+    vi.spyOn(promptModule, 'loadChunk').mockImplementation((chunk) =>
+      chunk.startsWith('words')
         ? new Promise((r) => {
             resolveWords = r;
           })
@@ -188,7 +229,7 @@ describe('trainer: prompt source, restarts and content loading', () => {
 
   it('input is blocked and no prompt is shown while the selected content loads', async () => {
     let resolve: (items: readonly ContentItem[]) => void = () => {};
-    vi.spyOn(promptModule, 'loadContent').mockReturnValue(
+    vi.spyOn(promptModule, 'loadChunk').mockReturnValue(
       new Promise((r) => {
         resolve = r;
       }),
@@ -212,12 +253,13 @@ describe('trainer: prompt source, restarts and content loading', () => {
 
   it("parallel loads do not clear each other's indicator", async () => {
     const resolvers = new Map<string, (items: readonly ContentItem[]) => void>();
-    vi.spyOn(promptModule, 'loadContent').mockImplementation(
-      (kind) =>
+    vi.spyOn(promptModule, 'loadChunk').mockImplementation(
+      (chunk) =>
         new Promise((r) => {
-          resolvers.set(kind, r);
+          resolvers.set(chunk.split('-')[0] ?? chunk, r);
         }),
     );
+    setScript('hiragana');
     const trainer = createTrainer({ rng: { next: () => 0 } });
     const stop = trainer.start();
     setContent('words');
@@ -275,7 +317,7 @@ describe('trainer: prompt source, restarts and content loading', () => {
 
   it('a load that finishes after stop() does not touch the session', async () => {
     let resolve: (items: readonly ContentItem[]) => void = () => {};
-    vi.spyOn(promptModule, 'loadContent').mockReturnValue(
+    vi.spyOn(promptModule, 'loadChunk').mockReturnValue(
       new Promise((r) => {
         resolve = r;
       }),
