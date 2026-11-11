@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "fetch": "tsx src/fetch.ts",
-    "build": "tsx src/build.ts"
+    "generate": "tsx src/build.ts"
   },
   "dependencies": {
     "@nekotype/engine": "workspace:*",

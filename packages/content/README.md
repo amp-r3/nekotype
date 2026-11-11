@@ -18,13 +18,15 @@ pnpm --filter @nekotype/content run fetch --upstream # refresh the mirror (see b
 
 Refreshing the mirror: `fetch --upstream` downloads every file from its upstream URL into `.cache/upstream/`, gzips `users_sentences.csv`, and prints the sha256 and size of each file and the `gh release create` command. If `ftp.edrdg.org` does not answer, download `JMdict.gz` by hand and put it at `.cache/upstream/JMdict.gz`; the script continues with it. Create a release with a new date, upload the files, then update `release`, `mirror`, `sha256`, `bytes` and `retrieved` in `sources.json`.
 
-## Build
+## Generate
 
 ```bash
-pnpm --filter @nekotype/content run build   # word step on .cache/; prints the counts
+pnpm --filter @nekotype/content run generate   # word step on .cache/; prints the counts
 ```
 
-The current `build` runs the word step only: it reads the JLPT lists and JMdict from `.cache/` (run `fetch` first) and writes `words-report.json`, `ru-coverage.json` and `words.json` into `.cache/build/`. It fails when compile failures exceed 5% of the selected words. The phrase step, the chunks and the manifest are added in the following PRs.
+The current `generate` runs the word step only: it reads the JLPT lists and JMdict from `.cache/` (run `fetch` first) and writes `words-report.json`, `ru-coverage.json` and `words.json` into `.cache/build/`. It fails when compile failures exceed 5% of the selected words. The phrase step, the chunks and the manifest are added in the following PRs.
+
+It is not named `build` on purpose: the root `pnpm run build` runs every package's `build`, and CI has no `.cache/`.
 
 ## Source formats
 
