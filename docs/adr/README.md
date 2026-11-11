@@ -93,3 +93,4 @@ Append-only log of architectural decisions, one file per decision.
 | [066](066-about-page-design.md)                                                      | The `/about` Page: Sources, Terms and Paged Phrase Credits                                   | In force               |
 | [067](067-initial-chunk-before-p4.md)                                                | One Initial Chunk, Per-Screen Dictionary Parts and a Compact Kana Table                      | In force               |
 | [068](068-content-sources-mirrored-as-release-assets.md)                             | Content Sources Mirrored as Release Assets                                                   | In force               |
+| [069](069-word-readings-and-meanings.md)                                             | Word Readings and Meanings                                                                   | In force               |

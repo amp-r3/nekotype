@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "fetch": "tsx src/fetch.ts"
+    "fetch": "tsx src/fetch.ts",
+    "generate": "tsx src/build.ts"
   },
   "dependencies": {
     "@nekotype/engine": "workspace:*",

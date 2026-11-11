@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE JMdict [
+<!ELEMENT JMdict (entry*)>
+<!ENTITY sk "search-only kana form">
+<!ENTITY uk "word usually written using kana alone">
+<!ENTITY n "noun (common) (futsuumeishi)">
+]>
+<JMdict>
+<entry>
+<ent_seq>1000001</ent_seq>
+<k_ele><keb>会う</keb><ke_pri>ichi1</ke_pri></k_ele>
+<r_ele><reb>あう</reb><re_pri>ichi1</re_pri><re_pri>nf26</re_pri></r_ele>
+<sense><pos>&n;</pos><gloss>to meet</gloss><gloss>to encounter</gloss></sense>
+<sense><gloss>to see</gloss></sense>
+<sense><gloss xml:lang="rus">встречаться</gloss></sense>
+<sense><gloss xml:lang="eng">to have an accident</gloss></sense>
+</entry>
+<entry>
+<ent_seq>1000002</ent_seq>
+<r_ele><reb>こちら</reb><re_pri>ichi1</re_pri></r_ele>
+<r_ele><reb>こっち</reb><re_pri>ichi1</re_pri></r_ele>
+<r_ele><reb>こち</reb><re_inf>&sk;</re_inf></r_ele>
+<sense><gloss>this way</gloss></sense>
+<sense><stagr>こちら</stagr><gloss>this person</gloss></sense>
+<sense><stagr>こっち</stagr><gloss>this side</gloss></sense>
+</entry>
+<entry>
+<ent_seq>1000003</ent_seq>
+<k_ele><keb>橋</keb></k_ele>
+<r_ele><reb>はし</reb><re_pri>news1</re_pri><re_pri>nf10</re_pri></r_ele>
+<sense><gloss>bridge</gloss></sense>
+<sense><gloss xml:lang="rus">мост</gloss></sense>
+</entry>
+<entry>
+<ent_seq>1000004</ent_seq>
+<k_ele><keb>箸</keb></k_ele>
+<r_ele><reb>はし</reb><re_pri>spec1</re_pri><re_pri>ichi1</re_pri></r_ele>
+<sense><gloss>chopsticks</gloss></sense>
+</entry>
+<entry>
+<ent_seq>1000005</ent_seq>
+<k_ele><keb>端</keb></k_ele>
+<r_ele><reb>はし</reb></r_ele>
+<sense><gloss>edge</gloss></sense>
+</entry>
+<entry>
+<ent_seq>1000006</ent_seq>
+<k_ele><keb>珈琲</keb></k_ele>
+<r_ele><reb>コーヒー</reb><re_pri>gai1</re_pri></r_ele>
+<sense><gloss>coffee</gloss></sense>
+</entry>
+<entry>
+<ent_seq>1000007</ent_seq>
+<k_ele><keb>一日中</keb></k_ele>
+<r_ele><reb>いちにちじゅう</reb><re_pri>news1</re_pri></r_ele>
+<r_ele><reb>1にちじゅう</reb></r_ele>
+<sense><gloss>all day long, throughout the whole day, from morning till night</gloss></sense>
+<sense><gloss>the entire day, without a pause</gloss></sense>
+<sense><gloss>whole day</gloss></sense>
+</entry>
+<entry>
+<ent_seq>1000008</ent_seq>
+<r_ele><reb>アルバイト</reb><re_pri>news2</re_pri></r_ele>
+<sense><gloss>part-time job</gloss></sense>
+</entry>
+</JMdict>
