@@ -21,10 +21,16 @@ Refreshing the mirror: `fetch --upstream` downloads every file from its upstream
 ## Generate
 
 ```bash
-pnpm --filter @nekotype/content run generate   # word and phrase steps on .cache/; prints the counts
+pnpm --filter @nekotype/content run generate   # the full build on .cache/; prints counts and chunk sizes
+pnpm --filter @nekotype/web run fonts          # then: rebuild glyphs.txt and the Noto subset (ADR 071)
 ```
 
-The current `generate` runs the word and phrase steps: it reads the pinned files from `.cache/` (run `fetch` first) and writes `words-report.json`, `ru-coverage.json`, `words.json`, `phrases-report.json`, `phrases.json` and `credits.json` into `.cache/build/`, and `audit-sample.md` into the package folder (commit it: the maintainer checks it in review). It fails when compile failures exceed 5% of the selected words, or of the phrases that passed the filters, and when fewer than 300 phrases qualify. The phrase step takes about 40 s and about 1 GB of memory (kuromoji, ratings). The chunks and the manifest are added in the following PRs.
+`generate` reads the pinned files from `.cache/` (run `fetch` first), runs the word and phrase steps (the phrase step takes about 40 s and about 1 GB of memory: kuromoji, ratings) and writes:
+
+- the chunks `words-hiragana`, `words-katakana`, `phrases-hiragana`, `phrases-katakana`, `phrases-mixed`, `credits` and `manifest.json` into `apps/web/src/entities/prompt/content/` (commit them; `apps/web` does not import them yet). Keys are sorted, indentation is 2 spaces, the folder is excluded from Prettier. `contentVersion` is defined in [content.md](../../docs/spec/content.md) and checked by `src/output.test.ts` against the committed files;
+- `build-report.json` (counts, raw and gzip size of every chunk, the selection reports with the compile failures), `ru-coverage.json` (words with a Russian gloss) and `audit-sample.md` (50 phrases for the manual reading check) into this folder. Commit them: the maintainer reads them in review.
+
+The build fails when compile failures exceed 5% of the selected items of a source (the words; the phrases that passed the filters), when a phrase lacks credit data, when fewer than 300 phrases qualify, or when a chunk is over 40 KB gzip. It serialises the output twice and compares hashes, and two runs on the same sources give identical files.
 
 The phrase step reads the sentences with kuromoji (IPADIC, shipped in the package) and filters them as [content.md](../../docs/spec/content.md) "Phrases" says (`src/phrases.ts`); `src/tatoeba/load.ts` streams the exports into indexes.
 

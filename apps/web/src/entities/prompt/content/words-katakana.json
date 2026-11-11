@@ -1,0 +1,866 @@
+[
+  {
+    "id": "w:katakana:アパート",
+    "meaning": {
+      "en": "apartment building; apartment"
+    },
+    "script": "katakana",
+    "text": "アパート"
+  },
+  {
+    "id": "w:katakana:エレベーター",
+    "meaning": {
+      "en": "elevator; elevator"
+    },
+    "script": "katakana",
+    "text": "エレベーター"
+  },
+  {
+    "id": "w:katakana:カップ",
+    "meaning": {
+      "en": "cup (drinking vessel, measure, brassiere, prize, etc.)"
+    },
+    "script": "katakana",
+    "text": "カップ"
+  },
+  {
+    "id": "w:katakana:カメラ",
+    "meaning": {
+      "en": "camera"
+    },
+    "script": "katakana",
+    "text": "カメラ"
+  },
+  {
+    "id": "w:katakana:カレー",
+    "meaning": {
+      "en": "curry (esp. Japanese curry); rice and curry"
+    },
+    "script": "katakana",
+    "text": "カレー"
+  },
+  {
+    "id": "w:katakana:カレンダー",
+    "meaning": {
+      "en": "calendar; calender (machine for flattening things)"
+    },
+    "script": "katakana",
+    "text": "カレンダー"
+  },
+  {
+    "id": "w:katakana:ギター",
+    "meaning": {
+      "en": "guitar"
+    },
+    "script": "katakana",
+    "text": "ギター"
+  },
+  {
+    "id": "w:katakana:キロ",
+    "meaning": {
+      "en": "kilo-; kilogram; kilometre"
+    },
+    "script": "katakana",
+    "text": "キロ"
+  },
+  {
+    "id": "w:katakana:キログラム",
+    "meaning": {
+      "en": "kilogram"
+    },
+    "script": "katakana",
+    "text": "キログラム"
+  },
+  {
+    "id": "w:katakana:キロメートル",
+    "meaning": {
+      "en": "kilometer"
+    },
+    "script": "katakana",
+    "text": "キロメートル"
+  },
+  {
+    "id": "w:katakana:クラス",
+    "meaning": {
+      "en": "class"
+    },
+    "script": "katakana",
+    "text": "クラス"
+  },
+  {
+    "id": "w:katakana:グラム",
+    "meaning": {
+      "en": "gram"
+    },
+    "script": "katakana",
+    "text": "グラム"
+  },
+  {
+    "id": "w:katakana:コート",
+    "meaning": {
+      "en": "coat; coating"
+    },
+    "script": "katakana",
+    "text": "コート"
+  },
+  {
+    "id": "w:katakana:コーヒー",
+    "meaning": {
+      "en": "coffee"
+    },
+    "script": "katakana",
+    "text": "コーヒー"
+  },
+  {
+    "id": "w:katakana:コップ",
+    "meaning": {
+      "en": "cop"
+    },
+    "script": "katakana",
+    "text": "コップ"
+  },
+  {
+    "id": "w:katakana:コピー",
+    "meaning": {
+      "en": "copy; book jacket blurb; (advertising) slogan"
+    },
+    "script": "katakana",
+    "text": "コピー"
+  },
+  {
+    "id": "w:katakana:シャツ",
+    "meaning": {
+      "en": "shirt (undergarment)"
+    },
+    "script": "katakana",
+    "text": "シャツ"
+  },
+  {
+    "id": "w:katakana:シャワー",
+    "meaning": {
+      "en": "shower"
+    },
+    "script": "katakana",
+    "text": "シャワー"
+  },
+  {
+    "id": "w:katakana:スカート",
+    "meaning": {
+      "en": "skirt"
+    },
+    "script": "katakana",
+    "text": "スカート"
+  },
+  {
+    "id": "w:katakana:ストーブ",
+    "meaning": {
+      "en": "(room) heater"
+    },
+    "script": "katakana",
+    "text": "ストーブ"
+  },
+  {
+    "id": "w:katakana:スプーン",
+    "meaning": {
+      "en": "spoon; spoon lure"
+    },
+    "script": "katakana",
+    "text": "スプーン"
+  },
+  {
+    "id": "w:katakana:スポーツ",
+    "meaning": {
+      "en": "sport"
+    },
+    "script": "katakana",
+    "text": "スポーツ"
+  },
+  {
+    "id": "w:katakana:ズボン",
+    "meaning": {
+      "en": "trousers"
+    },
+    "script": "katakana",
+    "text": "ズボン"
+  },
+  {
+    "id": "w:katakana:スリッパ",
+    "meaning": {
+      "en": "slipper"
+    },
+    "script": "katakana",
+    "text": "スリッパ"
+  },
+  {
+    "id": "w:katakana:セーター",
+    "meaning": {
+      "en": "sweater"
+    },
+    "script": "katakana",
+    "text": "セーター"
+  },
+  {
+    "id": "w:katakana:ゼロ",
+    "meaning": {
+      "en": "zero; nothing"
+    },
+    "script": "katakana",
+    "text": "ゼロ"
+  },
+  {
+    "id": "w:katakana:タクシー",
+    "meaning": {
+      "en": "taxi"
+    },
+    "script": "katakana",
+    "text": "タクシー"
+  },
+  {
+    "id": "w:katakana:テープ",
+    "meaning": {
+      "en": "tape"
+    },
+    "script": "katakana",
+    "text": "テープ"
+  },
+  {
+    "id": "w:katakana:テーブル",
+    "meaning": {
+      "en": "table"
+    },
+    "script": "katakana",
+    "text": "テーブル"
+  },
+  {
+    "id": "w:katakana:テープレコーダー",
+    "meaning": {
+      "en": "tape recorder"
+    },
+    "script": "katakana",
+    "text": "テープレコーダー"
+  },
+  {
+    "id": "w:katakana:テスト",
+    "meaning": {
+      "en": "test (of ability, knowledge, etc.)"
+    },
+    "script": "katakana",
+    "text": "テスト"
+  },
+  {
+    "id": "w:katakana:デパート",
+    "meaning": {
+      "en": "department store; department"
+    },
+    "script": "katakana",
+    "text": "デパート"
+  },
+  {
+    "id": "w:katakana:テレビ",
+    "meaning": {
+      "en": "television; TV program"
+    },
+    "script": "katakana",
+    "text": "テレビ"
+  },
+  {
+    "id": "w:katakana:ドア",
+    "meaning": {
+      "en": "door"
+    },
+    "script": "katakana",
+    "text": "ドア"
+  },
+  {
+    "id": "w:katakana:トイレ",
+    "meaning": {
+      "en": "toilet; going to the toilet"
+    },
+    "script": "katakana",
+    "text": "トイレ"
+  },
+  {
+    "id": "w:katakana:ナイフ",
+    "meaning": {
+      "en": "knife"
+    },
+    "script": "katakana",
+    "text": "ナイフ"
+  },
+  {
+    "id": "w:katakana:ニュース",
+    "meaning": {
+      "en": "news"
+    },
+    "script": "katakana",
+    "text": "ニュース"
+  },
+  {
+    "id": "w:katakana:ネクタイ",
+    "meaning": {
+      "en": "tie"
+    },
+    "script": "katakana",
+    "text": "ネクタイ"
+  },
+  {
+    "id": "w:katakana:ノート",
+    "meaning": {
+      "en": "notebook; note; (musical) note"
+    },
+    "script": "katakana",
+    "text": "ノート"
+  },
+  {
+    "id": "w:katakana:パーティー",
+    "meaning": {
+      "en": "party (social gathering)"
+    },
+    "script": "katakana",
+    "text": "パーティー"
+  },
+  {
+    "id": "w:katakana:バス",
+    "meaning": {
+      "en": "bus; bus"
+    },
+    "script": "katakana",
+    "text": "バス"
+  },
+  {
+    "id": "w:katakana:バター",
+    "meaning": {
+      "en": "butter"
+    },
+    "script": "katakana",
+    "text": "バター"
+  },
+  {
+    "id": "w:katakana:パン",
+    "meaning": {
+      "en": "bread; staff of life"
+    },
+    "script": "katakana",
+    "text": "パン"
+  },
+  {
+    "id": "w:katakana:ハンカチ",
+    "meaning": {
+      "en": "handkerchief"
+    },
+    "script": "katakana",
+    "text": "ハンカチ"
+  },
+  {
+    "id": "w:katakana:フィルム",
+    "meaning": {
+      "en": "film"
+    },
+    "script": "katakana",
+    "text": "フィルム"
+  },
+  {
+    "id": "w:katakana:プール",
+    "meaning": {
+      "en": "(swimming) pool; pool (cue sport)"
+    },
+    "script": "katakana",
+    "text": "プール"
+  },
+  {
+    "id": "w:katakana:フォーク",
+    "meaning": {
+      "en": "fork; forkball"
+    },
+    "script": "katakana",
+    "text": "フォーク"
+  },
+  {
+    "id": "w:katakana:ページ",
+    "meaning": {
+      "en": "page; nth page"
+    },
+    "script": "katakana",
+    "text": "ページ"
+  },
+  {
+    "id": "w:katakana:ベッド",
+    "meaning": {
+      "en": "bed"
+    },
+    "script": "katakana",
+    "text": "ベッド"
+  },
+  {
+    "id": "w:katakana:ペット",
+    "meaning": {
+      "en": "pet; trumpet"
+    },
+    "script": "katakana",
+    "text": "ペット"
+  },
+  {
+    "id": "w:katakana:ペン",
+    "meaning": {
+      "en": "pen"
+    },
+    "script": "katakana",
+    "text": "ペン"
+  },
+  {
+    "id": "w:katakana:ボールペン",
+    "meaning": {
+      "en": "ball-point pen"
+    },
+    "script": "katakana",
+    "text": "ボールペン"
+  },
+  {
+    "id": "w:katakana:ポケット",
+    "meaning": {
+      "en": "pocket"
+    },
+    "script": "katakana",
+    "text": "ポケット"
+  },
+  {
+    "id": "w:katakana:ポスト",
+    "meaning": {
+      "en": "postbox; post; post (e.g. goalpost)"
+    },
+    "script": "katakana",
+    "text": "ポスト"
+  },
+  {
+    "id": "w:katakana:ボタン",
+    "meaning": {
+      "en": "tree peony (Paeonia suffruticosa)"
+    },
+    "script": "katakana",
+    "text": "ボタン"
+  },
+  {
+    "id": "w:katakana:ホテル",
+    "meaning": {
+      "en": "hotel"
+    },
+    "script": "katakana",
+    "text": "ホテル"
+  },
+  {
+    "id": "w:katakana:マッチ",
+    "meaning": {
+      "en": "match (contest); matching (with)"
+    },
+    "script": "katakana",
+    "text": "マッチ"
+  },
+  {
+    "id": "w:katakana:メートル",
+    "meaning": {
+      "en": "metre (unit of length); meter"
+    },
+    "script": "katakana",
+    "text": "メートル"
+  },
+  {
+    "id": "w:katakana:ラジオ",
+    "meaning": {
+      "en": "radio"
+    },
+    "script": "katakana",
+    "text": "ラジオ"
+  },
+  {
+    "id": "w:katakana:ラジカセ",
+    "meaning": {
+      "en": "radio-cassette player"
+    },
+    "script": "katakana",
+    "text": "ラジカセ"
+  },
+  {
+    "id": "w:katakana:ラジオカセット",
+    "meaning": {
+      "en": "radio-cassette"
+    },
+    "script": "katakana",
+    "text": "ラジオカセット"
+  },
+  {
+    "id": "w:katakana:レコード",
+    "meaning": {
+      "en": "(phonograph) record; record (esp. in sports)"
+    },
+    "script": "katakana",
+    "text": "レコード"
+  },
+  {
+    "id": "w:katakana:レストラン",
+    "meaning": {
+      "en": "restaurant (esp. Western-style)"
+    },
+    "script": "katakana",
+    "text": "レストラン"
+  },
+  {
+    "id": "w:katakana:ワイシャツ",
+    "meaning": {
+      "en": "(formal) shirt"
+    },
+    "script": "katakana",
+    "text": "ワイシャツ"
+  },
+  {
+    "id": "w:katakana:アクセサリー",
+    "meaning": {
+      "en": "accessory (fashion); accessory (audio, car, camera, etc.)"
+    },
+    "script": "katakana",
+    "text": "アクセサリー"
+  },
+  {
+    "id": "w:katakana:アジア",
+    "meaning": {
+      "en": "Asia"
+    },
+    "script": "katakana",
+    "text": "アジア"
+  },
+  {
+    "id": "w:katakana:アナウンサー",
+    "meaning": {
+      "en": "announcer"
+    },
+    "script": "katakana",
+    "text": "アナウンサー"
+  },
+  {
+    "id": "w:katakana:アフリカ",
+    "meaning": {
+      "en": "Africa"
+    },
+    "script": "katakana",
+    "text": "アフリカ"
+  },
+  {
+    "id": "w:katakana:アメリカ",
+    "meaning": {
+      "en": "(United States of) America; America (land mass)"
+    },
+    "script": "katakana",
+    "text": "アメリカ"
+  },
+  {
+    "id": "w:katakana:アルコール",
+    "meaning": {
+      "en": "alcohol; alcoholic drink; (alcohol-based) hand sanitizer"
+    },
+    "script": "katakana",
+    "text": "アルコール"
+  },
+  {
+    "id": "w:katakana:アルバイト",
+    "meaning": {
+      "en": "part-time job; part-time worker"
+    },
+    "script": "katakana",
+    "text": "アルバイト"
+  },
+  {
+    "id": "w:katakana:エスカレーター",
+    "meaning": {
+      "en": "escalator"
+    },
+    "script": "katakana",
+    "text": "エスカレーター"
+  },
+  {
+    "id": "w:katakana:オートバイ",
+    "meaning": {
+      "en": "motorcycle"
+    },
+    "script": "katakana",
+    "text": "オートバイ"
+  },
+  {
+    "id": "w:katakana:カーテン",
+    "meaning": {
+      "en": "curtain"
+    },
+    "script": "katakana",
+    "text": "カーテン"
+  },
+  {
+    "id": "w:katakana:ガス",
+    "meaning": {
+      "en": "gas (as a fuel); gas (state of matter); poison gas"
+    },
+    "script": "katakana",
+    "text": "ガス"
+  },
+  {
+    "id": "w:katakana:ガソリン",
+    "meaning": {
+      "en": "gasoline"
+    },
+    "script": "katakana",
+    "text": "ガソリン"
+  },
+  {
+    "id": "w:katakana:ガソリンスタンド",
+    "meaning": {
+      "en": "gas station"
+    },
+    "script": "katakana",
+    "text": "ガソリンスタンド"
+  },
+  {
+    "id": "w:katakana:ガラス",
+    "meaning": {
+      "en": "glass"
+    },
+    "script": "katakana",
+    "text": "ガラス"
+  },
+  {
+    "id": "w:katakana:ケーキ",
+    "meaning": {
+      "en": "cake"
+    },
+    "script": "katakana",
+    "text": "ケーキ"
+  },
+  {
+    "id": "w:katakana:コンサート",
+    "meaning": {
+      "en": "concert"
+    },
+    "script": "katakana",
+    "text": "コンサート"
+  },
+  {
+    "id": "w:katakana:コンピュータ",
+    "meaning": {
+      "en": "computer"
+    },
+    "script": "katakana",
+    "text": "コンピュータ"
+  },
+  {
+    "id": "w:katakana:コンピューター",
+    "meaning": {
+      "en": "computer"
+    },
+    "script": "katakana",
+    "text": "コンピューター"
+  },
+  {
+    "id": "w:katakana:サラダ",
+    "meaning": {
+      "en": "salad"
+    },
+    "script": "katakana",
+    "text": "サラダ"
+  },
+  {
+    "id": "w:katakana:サンダル",
+    "meaning": {
+      "en": "sandal"
+    },
+    "script": "katakana",
+    "text": "サンダル"
+  },
+  {
+    "id": "w:katakana:サンドイッチ",
+    "meaning": {
+      "en": "sandwich"
+    },
+    "script": "katakana",
+    "text": "サンドイッチ"
+  },
+  {
+    "id": "w:katakana:ジャム",
+    "meaning": {
+      "en": "jam"
+    },
+    "script": "katakana",
+    "text": "ジャム"
+  },
+  {
+    "id": "w:katakana:スーツ",
+    "meaning": {
+      "en": "suit (clothing); suit"
+    },
+    "script": "katakana",
+    "text": "スーツ"
+  },
+  {
+    "id": "w:katakana:スーツケース",
+    "meaning": {
+      "en": "suitcase"
+    },
+    "script": "katakana",
+    "text": "スーツケース"
+  },
+  {
+    "id": "w:katakana:スクリーン",
+    "meaning": {
+      "en": "screen"
+    },
+    "script": "katakana",
+    "text": "スクリーン"
+  },
+  {
+    "id": "w:katakana:ステーキ",
+    "meaning": {
+      "en": "steak"
+    },
+    "script": "katakana",
+    "text": "ステーキ"
+  },
+  {
+    "id": "w:katakana:ステレオ",
+    "meaning": {
+      "en": "stereo (sound); stereo (player, set); stereo"
+    },
+    "script": "katakana",
+    "text": "ステレオ"
+  },
+  {
+    "id": "w:katakana:ソフト",
+    "meaning": {
+      "en": "soft; software; soft hat"
+    },
+    "script": "katakana",
+    "text": "ソフト"
+  },
+  {
+    "id": "w:katakana:タイプ",
+    "meaning": {
+      "en": "type; type (of person); typewriter"
+    },
+    "script": "katakana",
+    "text": "タイプ"
+  },
+  {
+    "id": "w:katakana:チェック",
+    "meaning": {
+      "en": "check (pattern); check; check (mark)"
+    },
+    "script": "katakana",
+    "text": "チェック"
+  },
+  {
+    "id": "w:katakana:テキスト",
+    "meaning": {
+      "en": "text; textbook"
+    },
+    "script": "katakana",
+    "text": "テキスト"
+  },
+  {
+    "id": "w:katakana:テニス",
+    "meaning": {
+      "en": "tennis"
+    },
+    "script": "katakana",
+    "text": "テニス"
+  },
+  {
+    "id": "w:katakana:パート",
+    "meaning": {
+      "en": "part; part-timer; part-time (work)"
+    },
+    "script": "katakana",
+    "text": "パート"
+  },
+  {
+    "id": "w:katakana:パソコン",
+    "meaning": {
+      "en": "personal computer"
+    },
+    "script": "katakana",
+    "text": "パソコン"
+  },
+  {
+    "id": "w:katakana:ハンドバッグ",
+    "meaning": {
+      "en": "handbag"
+    },
+    "script": "katakana",
+    "text": "ハンドバッグ"
+  },
+  {
+    "id": "w:katakana:ピアノ",
+    "meaning": {
+      "en": "piano (instrument); piano (dynamic)"
+    },
+    "script": "katakana",
+    "text": "ピアノ"
+  },
+  {
+    "id": "w:katakana:ビル",
+    "meaning": {
+      "en": "multi-floor building"
+    },
+    "script": "katakana",
+    "text": "ビル"
+  },
+  {
+    "id": "w:katakana:ファックス",
+    "meaning": {
+      "en": "fax; fax machine"
+    },
+    "script": "katakana",
+    "text": "ファックス"
+  },
+  {
+    "id": "w:katakana:プレゼント",
+    "meaning": {
+      "en": "present"
+    },
+    "script": "katakana",
+    "text": "プレゼント"
+  },
+  {
+    "id": "w:katakana:ベル",
+    "meaning": {
+      "en": "bell"
+    },
+    "script": "katakana",
+    "text": "ベル"
+  },
+  {
+    "id": "w:katakana:レジ",
+    "meaning": {
+      "en": "(cash) register; checkout (counter)"
+    },
+    "script": "katakana",
+    "text": "レジ"
+  },
+  {
+    "id": "w:katakana:レポート",
+    "meaning": {
+      "en": "report; reportage"
+    },
+    "script": "katakana",
+    "text": "レポート"
+  },
+  {
+    "id": "w:katakana:リポート",
+    "meaning": {
+      "en": "report; reportage"
+    },
+    "script": "katakana",
+    "text": "リポート"
+  },
+  {
+    "id": "w:katakana:ワープロ",
+    "meaning": {
+      "en": "word processor"
+    },
+    "script": "katakana",
+    "text": "ワープロ"
+  }
+]

@@ -53,6 +53,9 @@ Generated files are committed to `apps/web/src/entities/prompt/content/` and loa
 | `words-hiragana`, `words-katakana`                      | `ContentItem[]`                 |
 | `phrases-hiragana`, `phrases-katakana`, `phrases-mixed` | `ContentItem[]`                 |
 | `credits`                                               | `PhraseCredit[]`, `/about` only |
+| `manifest`                                              | `ContentManifest`               |
+
+Each chunk is the file `<chunk>.json` (for example `words-hiragana.json`). Files are written with sorted keys, 2-space indentation and a final newline, so the build is byte-for-byte reproducible; the folder is excluded from Prettier. `credits.json` is sorted by sentence id.
 
 The script setting selects chunks: `hiragana` or `katakana` loads that script's chunk, and `both` loads all chunks of the content type.
 
@@ -67,23 +70,24 @@ type ContentItem = {
 };
 type PhraseCredit = {
   id: string;
+  text: string; // the kana of the phrase, so `/about` loads this one chunk
   sentence: { id: number; author: string };
   translation: { id: number; author: string };
   transcriptionAuthor: string | null; // null: machine-generated, verified by kuromoji
 };
 type ContentManifest = {
-  contentVersion: string; // first 12 hex digits of SHA-256 over sources.json and all chunks
+  contentVersion: string; // first 12 hex digits of SHA-256, defined below
   counts: Record<string, number>; // items per chunk
 };
 ```
 
-`contentVersion` contains no date, so the build stays reproducible. The manifest is small enough to ship in the initial bundle and is the source of `TestResult.contentVersion`.
+`contentVersion` is the first 12 hex digits of the SHA-256 over `<file name>\n<file bytes>\n` for `packages/content/sources.json` and then for every chunk file in the order of their names (`manifest.json` is not part of it). It contains no date, so the build stays reproducible; a unit test recomputes it from the committed files. The manifest is small enough to ship in the initial bundle and is the source of `TestResult.contentVersion`.
 
 ## Build checks
 
-- Every item MUST compile with the engine in both strictness modes. An item that fails (for example, an unknown character) is excluded and listed in `packages/content/build-report.json`.
+- Every item MUST compile with the engine in both strictness modes. An item that fails (for example, an unknown character) is excluded and listed in `packages/content/build-report.json`. The build also writes `ru-coverage.json` and `audit-sample.md` next to it.
 - **Exclusion threshold:** counted per source, after the selection filters above, and over compile failures only. The build fails if compile failures exceed 5% of the selected items of any source.
-- The glyph set updates `glyphs.txt` and the font subset; the font budget is in [Budgets and quality](quality.md).
+- The glyph set (the kana table, every character of the generated chunks, and `ーっッゃゅょャュョァィゥェォ、。`) updates `glyphs.txt` and the font subset ([ADR 071](../adr/071-glyph-set-from-generated-content.md)); the font budget is in [Budgets and quality](quality.md).
 - The manifest carries `contentVersion`, which is written into every `TestResult`.
 - Chunks are split by type and script; each chunk is at most 40 KB gzip.
 

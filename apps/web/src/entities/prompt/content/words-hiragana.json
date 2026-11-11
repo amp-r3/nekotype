@@ -1,0 +1,9338 @@
+[
+  {
+    "id": "w:hiragana:あう",
+    "meaning": {
+      "en": "to meet; to come together"
+    },
+    "script": "hiragana",
+    "text": "あう"
+  },
+  {
+    "id": "w:hiragana:あお",
+    "meaning": {
+      "en": "blue; green; green light (traffic)"
+    },
+    "script": "hiragana",
+    "text": "あお"
+  },
+  {
+    "id": "w:hiragana:あおい",
+    "meaning": {
+      "en": "blue; green; pale (facial color)"
+    },
+    "script": "hiragana",
+    "text": "あおい"
+  },
+  {
+    "id": "w:hiragana:あか",
+    "meaning": {
+      "en": "red; red-containing colour (e.g. brown, pink, orange)"
+    },
+    "script": "hiragana",
+    "text": "あか"
+  },
+  {
+    "id": "w:hiragana:あかい",
+    "meaning": {
+      "en": "red; Red"
+    },
+    "script": "hiragana",
+    "text": "あかい"
+  },
+  {
+    "id": "w:hiragana:あかるい",
+    "meaning": {
+      "en": "light; bright (colour); cheerful"
+    },
+    "script": "hiragana",
+    "text": "あかるい"
+  },
+  {
+    "id": "w:hiragana:あき",
+    "meaning": {
+      "en": "autumn"
+    },
+    "script": "hiragana",
+    "text": "あき"
+  },
+  {
+    "id": "w:hiragana:あく",
+    "meaning": {
+      "en": "to open (e.g. doors); to open (e.g. business, etc.)"
+    },
+    "script": "hiragana",
+    "text": "あく"
+  },
+  {
+    "id": "w:hiragana:あける",
+    "meaning": {
+      "en": "to open (a door, etc.); to open (for business, etc.)"
+    },
+    "script": "hiragana",
+    "text": "あける"
+  },
+  {
+    "id": "w:hiragana:あげる",
+    "meaning": {
+      "en": "to raise; to move something (to a higher place)"
+    },
+    "script": "hiragana",
+    "text": "あげる"
+  },
+  {
+    "id": "w:hiragana:あさ",
+    "meaning": {
+      "en": "morning; breakfast"
+    },
+    "script": "hiragana",
+    "text": "あさ"
+  },
+  {
+    "id": "w:hiragana:あさごはん",
+    "meaning": {
+      "en": "breakfast"
+    },
+    "script": "hiragana",
+    "text": "あさごはん"
+  },
+  {
+    "id": "w:hiragana:あさって",
+    "meaning": {
+      "en": "day after tomorrow; wrong (e.g. direction)"
+    },
+    "script": "hiragana",
+    "text": "あさって"
+  },
+  {
+    "id": "w:hiragana:あし",
+    "meaning": {
+      "en": "foot; leg; gait"
+    },
+    "script": "hiragana",
+    "text": "あし"
+  },
+  {
+    "id": "w:hiragana:あした",
+    "meaning": {
+      "en": "tomorrow"
+    },
+    "script": "hiragana",
+    "text": "あした"
+  },
+  {
+    "id": "w:hiragana:あそこ",
+    "meaning": {
+      "en": "there; genitals; that far"
+    },
+    "script": "hiragana",
+    "text": "あそこ"
+  },
+  {
+    "id": "w:hiragana:あそぶ",
+    "meaning": {
+      "en": "to play (games, sports)"
+    },
+    "script": "hiragana",
+    "text": "あそぶ"
+  },
+  {
+    "id": "w:hiragana:あたたかい",
+    "meaning": {
+      "en": "warm; considerate; warm (of a colour)"
+    },
+    "script": "hiragana",
+    "text": "あたたかい"
+  },
+  {
+    "id": "w:hiragana:あたま",
+    "meaning": {
+      "en": "head; hair (on one's head); mind"
+    },
+    "script": "hiragana",
+    "text": "あたま"
+  },
+  {
+    "id": "w:hiragana:あたらしい",
+    "meaning": {
+      "en": "new"
+    },
+    "script": "hiragana",
+    "text": "あたらしい"
+  },
+  {
+    "id": "w:hiragana:あちら",
+    "meaning": {
+      "en": "that way; that (one); that person"
+    },
+    "script": "hiragana",
+    "text": "あちら"
+  },
+  {
+    "id": "w:hiragana:あつい",
+    "meaning": {
+      "en": "hot; hot (to the touch); thick"
+    },
+    "script": "hiragana",
+    "text": "あつい"
+  },
+  {
+    "id": "w:hiragana:あっち",
+    "meaning": {
+      "en": "that way; that (one); that person"
+    },
+    "script": "hiragana",
+    "text": "あっち"
+  },
+  {
+    "id": "w:hiragana:あと",
+    "meaning": {
+      "en": "behind; after; remainder"
+    },
+    "script": "hiragana",
+    "text": "あと"
+  },
+  {
+    "id": "w:hiragana:あなた",
+    "meaning": {
+      "en": "you; dear"
+    },
+    "script": "hiragana",
+    "text": "あなた"
+  },
+  {
+    "id": "w:hiragana:あに",
+    "meaning": {
+      "en": "older brother"
+    },
+    "script": "hiragana",
+    "text": "あに"
+  },
+  {
+    "id": "w:hiragana:あね",
+    "meaning": {
+      "en": "older sister"
+    },
+    "script": "hiragana",
+    "text": "あね"
+  },
+  {
+    "id": "w:hiragana:あの",
+    "meaning": {
+      "en": "say"
+    },
+    "script": "hiragana",
+    "text": "あの"
+  },
+  {
+    "id": "w:hiragana:あびる",
+    "meaning": {
+      "en": "to dash over oneself (e.g. water)"
+    },
+    "script": "hiragana",
+    "text": "あびる"
+  },
+  {
+    "id": "w:hiragana:あぶない",
+    "meaning": {
+      "en": "dangerous; in danger; uncertain"
+    },
+    "script": "hiragana",
+    "text": "あぶない"
+  },
+  {
+    "id": "w:hiragana:あまい",
+    "meaning": {
+      "en": "sweet-tasting; fragrant (smelling); lightly salted"
+    },
+    "script": "hiragana",
+    "text": "あまい"
+  },
+  {
+    "id": "w:hiragana:あまり",
+    "meaning": {
+      "en": "remainder; (not) very; too much"
+    },
+    "script": "hiragana",
+    "text": "あまり"
+  },
+  {
+    "id": "w:hiragana:あめ",
+    "meaning": {
+      "en": "rain; (hard) candy"
+    },
+    "script": "hiragana",
+    "text": "あめ"
+  },
+  {
+    "id": "w:hiragana:あらう",
+    "meaning": {
+      "en": "to wash; to inquire into; to purify (one's heart)"
+    },
+    "script": "hiragana",
+    "text": "あらう"
+  },
+  {
+    "id": "w:hiragana:ある",
+    "meaning": {
+      "en": "to be; to have; to be located"
+    },
+    "script": "hiragana",
+    "text": "ある"
+  },
+  {
+    "id": "w:hiragana:あるく",
+    "meaning": {
+      "en": "to walk"
+    },
+    "script": "hiragana",
+    "text": "あるく"
+  },
+  {
+    "id": "w:hiragana:あれ",
+    "meaning": {
+      "en": "huh?"
+    },
+    "script": "hiragana",
+    "text": "あれ"
+  },
+  {
+    "id": "w:hiragana:いい",
+    "meaning": {
+      "en": "good; sufficient; profitable (deal, business offer, etc.)"
+    },
+    "script": "hiragana",
+    "text": "いい"
+  },
+  {
+    "id": "w:hiragana:よい",
+    "meaning": {
+      "en": "good; sufficient; profitable (deal, business offer, etc.)"
+    },
+    "script": "hiragana",
+    "text": "よい"
+  },
+  {
+    "id": "w:hiragana:いいえ",
+    "meaning": {
+      "en": "no; you're welcome"
+    },
+    "script": "hiragana",
+    "text": "いいえ"
+  },
+  {
+    "id": "w:hiragana:いう",
+    "meaning": {
+      "en": "to say; to name; to go (e.g. \"the alarm went ping\")"
+    },
+    "script": "hiragana",
+    "text": "いう"
+  },
+  {
+    "id": "w:hiragana:いえ",
+    "meaning": {
+      "en": "house; family; lineage"
+    },
+    "script": "hiragana",
+    "text": "いえ"
+  },
+  {
+    "id": "w:hiragana:いかが",
+    "meaning": {
+      "en": "how; questionable"
+    },
+    "script": "hiragana",
+    "text": "いかが"
+  },
+  {
+    "id": "w:hiragana:いく",
+    "meaning": {
+      "en": "to go; to move through; to go (well, badly, etc.)"
+    },
+    "script": "hiragana",
+    "text": "いく"
+  },
+  {
+    "id": "w:hiragana:いくつ",
+    "meaning": {
+      "en": "how many; how old"
+    },
+    "script": "hiragana",
+    "text": "いくつ"
+  },
+  {
+    "id": "w:hiragana:いくら",
+    "meaning": {
+      "en": "how much; something over; however (much)"
+    },
+    "script": "hiragana",
+    "text": "いくら"
+  },
+  {
+    "id": "w:hiragana:いけ",
+    "meaning": {
+      "en": "pond"
+    },
+    "script": "hiragana",
+    "text": "いけ"
+  },
+  {
+    "id": "w:hiragana:いしゃ",
+    "meaning": {
+      "en": "doctor"
+    },
+    "script": "hiragana",
+    "text": "いしゃ"
+  },
+  {
+    "id": "w:hiragana:いす",
+    "meaning": {
+      "en": "chair; post"
+    },
+    "script": "hiragana",
+    "text": "いす"
+  },
+  {
+    "id": "w:hiragana:いそがしい",
+    "meaning": {
+      "en": "busy; restless"
+    },
+    "script": "hiragana",
+    "text": "いそがしい"
+  },
+  {
+    "id": "w:hiragana:いたい",
+    "meaning": {
+      "en": "painful; cringy"
+    },
+    "script": "hiragana",
+    "text": "いたい"
+  },
+  {
+    "id": "w:hiragana:いち",
+    "meaning": {
+      "en": "one; best; first"
+    },
+    "script": "hiragana",
+    "text": "いち"
+  },
+  {
+    "id": "w:hiragana:いちにち",
+    "meaning": {
+      "en": "one day; all day (long); first day of the month"
+    },
+    "script": "hiragana",
+    "text": "いちにち"
+  },
+  {
+    "id": "w:hiragana:いちばん",
+    "meaning": {
+      "en": "number one; best; game"
+    },
+    "script": "hiragana",
+    "text": "いちばん"
+  },
+  {
+    "id": "w:hiragana:いつ",
+    "meaning": {
+      "en": "when; normal times"
+    },
+    "script": "hiragana",
+    "text": "いつ"
+  },
+  {
+    "id": "w:hiragana:いつか",
+    "meaning": {
+      "en": "5th day of the month; five days"
+    },
+    "script": "hiragana",
+    "text": "いつか"
+  },
+  {
+    "id": "w:hiragana:いっしょ",
+    "meaning": {
+      "en": "(doing) together; one lump; the same"
+    },
+    "script": "hiragana",
+    "text": "いっしょ"
+  },
+  {
+    "id": "w:hiragana:いつつ",
+    "meaning": {
+      "en": "five; five years of age; eight o'clock (old time system)"
+    },
+    "script": "hiragana",
+    "text": "いつつ"
+  },
+  {
+    "id": "w:hiragana:いつも",
+    "meaning": {
+      "en": "always; never; usual"
+    },
+    "script": "hiragana",
+    "text": "いつも"
+  },
+  {
+    "id": "w:hiragana:いぬ",
+    "meaning": {
+      "en": "dog (Canis (lupus) familiaris); squealer; loser"
+    },
+    "script": "hiragana",
+    "text": "いぬ"
+  },
+  {
+    "id": "w:hiragana:いま",
+    "meaning": {
+      "en": "now; another"
+    },
+    "script": "hiragana",
+    "text": "いま"
+  },
+  {
+    "id": "w:hiragana:いみ",
+    "meaning": {
+      "en": "meaning"
+    },
+    "script": "hiragana",
+    "text": "いみ"
+  },
+  {
+    "id": "w:hiragana:いもうと",
+    "meaning": {
+      "en": "younger sister"
+    },
+    "script": "hiragana",
+    "text": "いもうと"
+  },
+  {
+    "id": "w:hiragana:いや",
+    "meaning": {
+      "en": "disliking; unpleasant; no!"
+    },
+    "script": "hiragana",
+    "text": "いや"
+  },
+  {
+    "id": "w:hiragana:いりぐち",
+    "meaning": {
+      "en": "entrance"
+    },
+    "script": "hiragana",
+    "text": "いりぐち"
+  },
+  {
+    "id": "w:hiragana:いる",
+    "meaning": {
+      "en": "to be (of animate objects); to be needed"
+    },
+    "script": "hiragana",
+    "text": "いる"
+  },
+  {
+    "id": "w:hiragana:いれる",
+    "meaning": {
+      "en": "to put in; to admit; to accept"
+    },
+    "script": "hiragana",
+    "text": "いれる"
+  },
+  {
+    "id": "w:hiragana:いろ",
+    "meaning": {
+      "en": "colour; complexion; look (on one's face)"
+    },
+    "script": "hiragana",
+    "text": "いろ"
+  },
+  {
+    "id": "w:hiragana:いろいろ",
+    "meaning": {
+      "en": "various; variously; various things"
+    },
+    "script": "hiragana",
+    "text": "いろいろ"
+  },
+  {
+    "id": "w:hiragana:うえ",
+    "meaning": {
+      "en": "above; top; surface"
+    },
+    "script": "hiragana",
+    "text": "うえ"
+  },
+  {
+    "id": "w:hiragana:うしろ",
+    "meaning": {
+      "en": "back"
+    },
+    "script": "hiragana",
+    "text": "うしろ"
+  },
+  {
+    "id": "w:hiragana:うすい",
+    "meaning": {
+      "en": "thin (of an object); pale; watery"
+    },
+    "script": "hiragana",
+    "text": "うすい"
+  },
+  {
+    "id": "w:hiragana:うた",
+    "meaning": {
+      "en": "song; classical Japanese poem (esp. tanka); modern poetry"
+    },
+    "script": "hiragana",
+    "text": "うた"
+  },
+  {
+    "id": "w:hiragana:うたう",
+    "meaning": {
+      "en": "to sing; to sing of (love, beauty, etc.) in a poem"
+    },
+    "script": "hiragana",
+    "text": "うたう"
+  },
+  {
+    "id": "w:hiragana:うまれる",
+    "meaning": {
+      "en": "to be born"
+    },
+    "script": "hiragana",
+    "text": "うまれる"
+  },
+  {
+    "id": "w:hiragana:うみ",
+    "meaning": {
+      "en": "sea"
+    },
+    "script": "hiragana",
+    "text": "うみ"
+  },
+  {
+    "id": "w:hiragana:うる",
+    "meaning": {
+      "en": "to sell; to betray; to make (oneself) known"
+    },
+    "script": "hiragana",
+    "text": "うる"
+  },
+  {
+    "id": "w:hiragana:うるさい",
+    "meaning": {
+      "en": "noisy; annoying; fussy"
+    },
+    "script": "hiragana",
+    "text": "うるさい"
+  },
+  {
+    "id": "w:hiragana:うわぎ",
+    "meaning": {
+      "en": "coat; top"
+    },
+    "script": "hiragana",
+    "text": "うわぎ"
+  },
+  {
+    "id": "w:hiragana:え",
+    "meaning": {
+      "en": "picture; image (TV, film, etc.)"
+    },
+    "script": "hiragana",
+    "text": "え"
+  },
+  {
+    "id": "w:hiragana:えいが",
+    "meaning": {
+      "en": "movie"
+    },
+    "script": "hiragana",
+    "text": "えいが"
+  },
+  {
+    "id": "w:hiragana:えいがかん",
+    "meaning": {
+      "en": "movie theatre"
+    },
+    "script": "hiragana",
+    "text": "えいがかん"
+  },
+  {
+    "id": "w:hiragana:えいご",
+    "meaning": {
+      "en": "English (language)"
+    },
+    "script": "hiragana",
+    "text": "えいご"
+  },
+  {
+    "id": "w:hiragana:ええ",
+    "meaning": {
+      "en": "yes; um; huh?"
+    },
+    "script": "hiragana",
+    "text": "ええ"
+  },
+  {
+    "id": "w:hiragana:えき",
+    "meaning": {
+      "en": "railway station"
+    },
+    "script": "hiragana",
+    "text": "えき"
+  },
+  {
+    "id": "w:hiragana:えんぴつ",
+    "meaning": {
+      "en": "(wooden) pencil"
+    },
+    "script": "hiragana",
+    "text": "えんぴつ"
+  },
+  {
+    "id": "w:hiragana:おいしい",
+    "meaning": {
+      "en": "good(-tasting); attractive (offer, opportunity, etc.)"
+    },
+    "script": "hiragana",
+    "text": "おいしい"
+  },
+  {
+    "id": "w:hiragana:おおい",
+    "meaning": {
+      "en": "many; large amount of; frequent"
+    },
+    "script": "hiragana",
+    "text": "おおい"
+  },
+  {
+    "id": "w:hiragana:おおきい",
+    "meaning": {
+      "en": "big; loud; extensive"
+    },
+    "script": "hiragana",
+    "text": "おおきい"
+  },
+  {
+    "id": "w:hiragana:おおきな",
+    "meaning": {
+      "en": "big"
+    },
+    "script": "hiragana",
+    "text": "おおきな"
+  },
+  {
+    "id": "w:hiragana:おおぜい",
+    "meaning": {
+      "en": "crowd of people; in great numbers"
+    },
+    "script": "hiragana",
+    "text": "おおぜい"
+  },
+  {
+    "id": "w:hiragana:おかあさん",
+    "meaning": {
+      "en": "mother; wife"
+    },
+    "script": "hiragana",
+    "text": "おかあさん"
+  },
+  {
+    "id": "w:hiragana:おかし",
+    "meaning": {
+      "en": "confections"
+    },
+    "script": "hiragana",
+    "text": "おかし"
+  },
+  {
+    "id": "w:hiragana:おかね",
+    "meaning": {
+      "en": "money"
+    },
+    "script": "hiragana",
+    "text": "おかね"
+  },
+  {
+    "id": "w:hiragana:おきる",
+    "meaning": {
+      "en": "to get up; to wake up"
+    },
+    "script": "hiragana",
+    "text": "おきる"
+  },
+  {
+    "id": "w:hiragana:おく",
+    "meaning": {
+      "en": "to put; hundred million"
+    },
+    "script": "hiragana",
+    "text": "おく"
+  },
+  {
+    "id": "w:hiragana:おくさん",
+    "meaning": {
+      "en": "wife"
+    },
+    "script": "hiragana",
+    "text": "おくさん"
+  },
+  {
+    "id": "w:hiragana:おさけ",
+    "meaning": {
+      "en": "alcohol"
+    },
+    "script": "hiragana",
+    "text": "おさけ"
+  },
+  {
+    "id": "w:hiragana:おさら",
+    "meaning": {
+      "en": "plate"
+    },
+    "script": "hiragana",
+    "text": "おさら"
+  },
+  {
+    "id": "w:hiragana:おじいさん",
+    "meaning": {
+      "en": "grandfather; male senior-citizen"
+    },
+    "script": "hiragana",
+    "text": "おじいさん"
+  },
+  {
+    "id": "w:hiragana:おしえる",
+    "meaning": {
+      "en": "to teach; to tell; to preach"
+    },
+    "script": "hiragana",
+    "text": "おしえる"
+  },
+  {
+    "id": "w:hiragana:おじさん",
+    "meaning": {
+      "en": "uncle; old man; manybar goatfish (Parupeneus multifasciatus)"
+    },
+    "script": "hiragana",
+    "text": "おじさん"
+  },
+  {
+    "id": "w:hiragana:おす",
+    "meaning": {
+      "en": "to push; to press (down); to stamp (e.g. one's name)"
+    },
+    "script": "hiragana",
+    "text": "おす"
+  },
+  {
+    "id": "w:hiragana:おそい",
+    "meaning": {
+      "en": "slow; late; too late"
+    },
+    "script": "hiragana",
+    "text": "おそい"
+  },
+  {
+    "id": "w:hiragana:おちゃ",
+    "meaning": {
+      "en": "tea (esp. green or barley); tea break; tea ceremony"
+    },
+    "script": "hiragana",
+    "text": "おちゃ"
+  },
+  {
+    "id": "w:hiragana:おてあらい",
+    "meaning": {
+      "en": "toilet"
+    },
+    "script": "hiragana",
+    "text": "おてあらい"
+  },
+  {
+    "id": "w:hiragana:おとうさん",
+    "meaning": {
+      "en": "father; husband"
+    },
+    "script": "hiragana",
+    "text": "おとうさん"
+  },
+  {
+    "id": "w:hiragana:おとうと",
+    "meaning": {
+      "en": "younger brother"
+    },
+    "script": "hiragana",
+    "text": "おとうと"
+  },
+  {
+    "id": "w:hiragana:おとこ",
+    "meaning": {
+      "en": "man; fellow; male lover"
+    },
+    "script": "hiragana",
+    "text": "おとこ"
+  },
+  {
+    "id": "w:hiragana:おとこのこ",
+    "meaning": {
+      "en": "boy; young man"
+    },
+    "script": "hiragana",
+    "text": "おとこのこ"
+  },
+  {
+    "id": "w:hiragana:おととい",
+    "meaning": {
+      "en": "day before yesterday"
+    },
+    "script": "hiragana",
+    "text": "おととい"
+  },
+  {
+    "id": "w:hiragana:おととし",
+    "meaning": {
+      "en": "year before last"
+    },
+    "script": "hiragana",
+    "text": "おととし"
+  },
+  {
+    "id": "w:hiragana:おとな",
+    "meaning": {
+      "en": "adult"
+    },
+    "script": "hiragana",
+    "text": "おとな"
+  },
+  {
+    "id": "w:hiragana:おなか",
+    "meaning": {
+      "en": "belly"
+    },
+    "script": "hiragana",
+    "text": "おなか"
+  },
+  {
+    "id": "w:hiragana:おなじ",
+    "meaning": {
+      "en": "same; anyway"
+    },
+    "script": "hiragana",
+    "text": "おなじ"
+  },
+  {
+    "id": "w:hiragana:おにいさん",
+    "meaning": {
+      "en": "older brother; young man"
+    },
+    "script": "hiragana",
+    "text": "おにいさん"
+  },
+  {
+    "id": "w:hiragana:おねえさん",
+    "meaning": {
+      "en": "older sister; young lady; miss"
+    },
+    "script": "hiragana",
+    "text": "おねえさん"
+  },
+  {
+    "id": "w:hiragana:おばあさん",
+    "meaning": {
+      "en": "grandmother; old woman"
+    },
+    "script": "hiragana",
+    "text": "おばあさん"
+  },
+  {
+    "id": "w:hiragana:おばさん",
+    "meaning": {
+      "en": "aunt"
+    },
+    "script": "hiragana",
+    "text": "おばさん"
+  },
+  {
+    "id": "w:hiragana:おふろ",
+    "meaning": {
+      "en": "bath"
+    },
+    "script": "hiragana",
+    "text": "おふろ"
+  },
+  {
+    "id": "w:hiragana:おべんとう",
+    "meaning": {
+      "en": "bento"
+    },
+    "script": "hiragana",
+    "text": "おべんとう"
+  },
+  {
+    "id": "w:hiragana:おぼえる",
+    "meaning": {
+      "en": "to memorize; to learn; to feel"
+    },
+    "script": "hiragana",
+    "text": "おぼえる"
+  },
+  {
+    "id": "w:hiragana:おまわりさん",
+    "meaning": {
+      "en": "police officer"
+    },
+    "script": "hiragana",
+    "text": "おまわりさん"
+  },
+  {
+    "id": "w:hiragana:おもい",
+    "meaning": {
+      "en": "heavy; heavy (feeling); slow"
+    },
+    "script": "hiragana",
+    "text": "おもい"
+  },
+  {
+    "id": "w:hiragana:おもしろい",
+    "meaning": {
+      "en": "interesting; amusing; enjoyable"
+    },
+    "script": "hiragana",
+    "text": "おもしろい"
+  },
+  {
+    "id": "w:hiragana:およぐ",
+    "meaning": {
+      "en": "to swim; to struggle through (a crowd)"
+    },
+    "script": "hiragana",
+    "text": "およぐ"
+  },
+  {
+    "id": "w:hiragana:おりる",
+    "meaning": {
+      "en": "to descend (e.g. a mountain); to alight (e.g. from bus)"
+    },
+    "script": "hiragana",
+    "text": "おりる"
+  },
+  {
+    "id": "w:hiragana:おわる",
+    "meaning": {
+      "en": "to end; to finish; to finish doing"
+    },
+    "script": "hiragana",
+    "text": "おわる"
+  },
+  {
+    "id": "w:hiragana:おんがく",
+    "meaning": {
+      "en": "music"
+    },
+    "script": "hiragana",
+    "text": "おんがく"
+  },
+  {
+    "id": "w:hiragana:おんな",
+    "meaning": {
+      "en": "woman; female lover"
+    },
+    "script": "hiragana",
+    "text": "おんな"
+  },
+  {
+    "id": "w:hiragana:おんなのこ",
+    "meaning": {
+      "en": "girl; young woman"
+    },
+    "script": "hiragana",
+    "text": "おんなのこ"
+  },
+  {
+    "id": "w:hiragana:がいこく",
+    "meaning": {
+      "en": "foreign country"
+    },
+    "script": "hiragana",
+    "text": "がいこく"
+  },
+  {
+    "id": "w:hiragana:がいこくじん",
+    "meaning": {
+      "en": "foreigner"
+    },
+    "script": "hiragana",
+    "text": "がいこくじん"
+  },
+  {
+    "id": "w:hiragana:かいしゃ",
+    "meaning": {
+      "en": "company; one's workplace"
+    },
+    "script": "hiragana",
+    "text": "かいしゃ"
+  },
+  {
+    "id": "w:hiragana:かいだん",
+    "meaning": {
+      "en": "stairs"
+    },
+    "script": "hiragana",
+    "text": "かいだん"
+  },
+  {
+    "id": "w:hiragana:かいもの",
+    "meaning": {
+      "en": "shopping"
+    },
+    "script": "hiragana",
+    "text": "かいもの"
+  },
+  {
+    "id": "w:hiragana:かう",
+    "meaning": {
+      "en": "to buy; to value (highly)"
+    },
+    "script": "hiragana",
+    "text": "かう"
+  },
+  {
+    "id": "w:hiragana:かえす",
+    "meaning": {
+      "en": "to return (something); to turn over; to pay back"
+    },
+    "script": "hiragana",
+    "text": "かえす"
+  },
+  {
+    "id": "w:hiragana:かえる",
+    "meaning": {
+      "en": "to return; to change"
+    },
+    "script": "hiragana",
+    "text": "かえる"
+  },
+  {
+    "id": "w:hiragana:かかる",
+    "meaning": {
+      "en": "to take (a resource, e.g. time or money); to hang"
+    },
+    "script": "hiragana",
+    "text": "かかる"
+  },
+  {
+    "id": "w:hiragana:かぎ",
+    "meaning": {
+      "en": "key; lock; key (to a problem, success, etc.)"
+    },
+    "script": "hiragana",
+    "text": "かぎ"
+  },
+  {
+    "id": "w:hiragana:かく",
+    "meaning": {
+      "en": "to write; to draw"
+    },
+    "script": "hiragana",
+    "text": "かく"
+  },
+  {
+    "id": "w:hiragana:がくせい",
+    "meaning": {
+      "en": "student (esp. a university student)"
+    },
+    "script": "hiragana",
+    "text": "がくせい"
+  },
+  {
+    "id": "w:hiragana:かける",
+    "meaning": {
+      "en": "to hang up (e.g. a coat, a picture on the wall)"
+    },
+    "script": "hiragana",
+    "text": "かける"
+  },
+  {
+    "id": "w:hiragana:かさ",
+    "meaning": {
+      "en": "umbrella; something shaped like an umbrella or a conical hat"
+    },
+    "script": "hiragana",
+    "text": "かさ"
+  },
+  {
+    "id": "w:hiragana:かす",
+    "meaning": {
+      "en": "to lend; to rent out; to hand (over)"
+    },
+    "script": "hiragana",
+    "text": "かす"
+  },
+  {
+    "id": "w:hiragana:かぜ",
+    "meaning": {
+      "en": "wind; (common) cold"
+    },
+    "script": "hiragana",
+    "text": "かぜ"
+  },
+  {
+    "id": "w:hiragana:かぞく",
+    "meaning": {
+      "en": "family"
+    },
+    "script": "hiragana",
+    "text": "かぞく"
+  },
+  {
+    "id": "w:hiragana:かた",
+    "meaning": {
+      "en": "direction; person; method of"
+    },
+    "script": "hiragana",
+    "text": "かた"
+  },
+  {
+    "id": "w:hiragana:がっこう",
+    "meaning": {
+      "en": "school"
+    },
+    "script": "hiragana",
+    "text": "がっこう"
+  },
+  {
+    "id": "w:hiragana:かてい",
+    "meaning": {
+      "en": "home"
+    },
+    "script": "hiragana",
+    "text": "かてい"
+  },
+  {
+    "id": "w:hiragana:かど",
+    "meaning": {
+      "en": "corner; (street) corner"
+    },
+    "script": "hiragana",
+    "text": "かど"
+  },
+  {
+    "id": "w:hiragana:かばん",
+    "meaning": {
+      "en": "bag"
+    },
+    "script": "hiragana",
+    "text": "かばん"
+  },
+  {
+    "id": "w:hiragana:かびん",
+    "meaning": {
+      "en": "(flower) vase"
+    },
+    "script": "hiragana",
+    "text": "かびん"
+  },
+  {
+    "id": "w:hiragana:かみ",
+    "meaning": {
+      "en": "paper; hair (on the head)"
+    },
+    "script": "hiragana",
+    "text": "かみ"
+  },
+  {
+    "id": "w:hiragana:かようび",
+    "meaning": {
+      "en": "Tuesday"
+    },
+    "script": "hiragana",
+    "text": "かようび"
+  },
+  {
+    "id": "w:hiragana:からい",
+    "meaning": {
+      "en": "spicy; salty; harsh (criticism)"
+    },
+    "script": "hiragana",
+    "text": "からい"
+  },
+  {
+    "id": "w:hiragana:からだ",
+    "meaning": {
+      "en": "body; torso; build"
+    },
+    "script": "hiragana",
+    "text": "からだ"
+  },
+  {
+    "id": "w:hiragana:かりる",
+    "meaning": {
+      "en": "to borrow; to rent"
+    },
+    "script": "hiragana",
+    "text": "かりる"
+  },
+  {
+    "id": "w:hiragana:かるい",
+    "meaning": {
+      "en": "light (i.e. not heavy); light (i.e. of foot); non-serious"
+    },
+    "script": "hiragana",
+    "text": "かるい"
+  },
+  {
+    "id": "w:hiragana:かわ",
+    "meaning": {
+      "en": "river; River"
+    },
+    "script": "hiragana",
+    "text": "かわ"
+  },
+  {
+    "id": "w:hiragana:かわいい",
+    "meaning": {
+      "en": "cute; dear; innocent"
+    },
+    "script": "hiragana",
+    "text": "かわいい"
+  },
+  {
+    "id": "w:hiragana:かんじ",
+    "meaning": {
+      "en": "kanji"
+    },
+    "script": "hiragana",
+    "text": "かんじ"
+  },
+  {
+    "id": "w:hiragana:き",
+    "meaning": {
+      "en": "tree; spirit"
+    },
+    "script": "hiragana",
+    "text": "き"
+  },
+  {
+    "id": "w:hiragana:きいろ",
+    "meaning": {
+      "en": "yellow"
+    },
+    "script": "hiragana",
+    "text": "きいろ"
+  },
+  {
+    "id": "w:hiragana:きいろい",
+    "meaning": {
+      "en": "yellow; high-pitched (voice)"
+    },
+    "script": "hiragana",
+    "text": "きいろい"
+  },
+  {
+    "id": "w:hiragana:きえる",
+    "meaning": {
+      "en": "to disappear; to go out (of a fire, light, etc.)"
+    },
+    "script": "hiragana",
+    "text": "きえる"
+  },
+  {
+    "id": "w:hiragana:きく",
+    "meaning": {
+      "en": "to hear; to listen (e.g. to music); to ask"
+    },
+    "script": "hiragana",
+    "text": "きく"
+  },
+  {
+    "id": "w:hiragana:きた",
+    "meaning": {
+      "en": "north; the North; North Korea"
+    },
+    "script": "hiragana",
+    "text": "きた"
+  },
+  {
+    "id": "w:hiragana:きたない",
+    "meaning": {
+      "en": "dirty; disordered; indecent (language, etc.)"
+    },
+    "script": "hiragana",
+    "text": "きたない"
+  },
+  {
+    "id": "w:hiragana:きっさてん",
+    "meaning": {
+      "en": "coffee shop; kissaten"
+    },
+    "script": "hiragana",
+    "text": "きっさてん"
+  },
+  {
+    "id": "w:hiragana:きって",
+    "meaning": {
+      "en": "stamp (postage); merchandise certificate"
+    },
+    "script": "hiragana",
+    "text": "きって"
+  },
+  {
+    "id": "w:hiragana:きっぷ",
+    "meaning": {
+      "en": "ticket"
+    },
+    "script": "hiragana",
+    "text": "きっぷ"
+  },
+  {
+    "id": "w:hiragana:きのう",
+    "meaning": {
+      "en": "yesterday"
+    },
+    "script": "hiragana",
+    "text": "きのう"
+  },
+  {
+    "id": "w:hiragana:きゅう",
+    "meaning": {
+      "en": "nine; sudden"
+    },
+    "script": "hiragana",
+    "text": "きゅう"
+  },
+  {
+    "id": "w:hiragana:く",
+    "meaning": {
+      "en": "nine"
+    },
+    "script": "hiragana",
+    "text": "く"
+  },
+  {
+    "id": "w:hiragana:ぎゅうにく",
+    "meaning": {
+      "en": "beef"
+    },
+    "script": "hiragana",
+    "text": "ぎゅうにく"
+  },
+  {
+    "id": "w:hiragana:ぎゅうにゅう",
+    "meaning": {
+      "en": "(cow's) milk"
+    },
+    "script": "hiragana",
+    "text": "ぎゅうにゅう"
+  },
+  {
+    "id": "w:hiragana:きょう",
+    "meaning": {
+      "en": "today"
+    },
+    "script": "hiragana",
+    "text": "きょう"
+  },
+  {
+    "id": "w:hiragana:きょうしつ",
+    "meaning": {
+      "en": "classroom; department (in a university); class"
+    },
+    "script": "hiragana",
+    "text": "きょうしつ"
+  },
+  {
+    "id": "w:hiragana:きょうだい",
+    "meaning": {
+      "en": "brothers and sisters; half-siblings; mate"
+    },
+    "script": "hiragana",
+    "text": "きょうだい"
+  },
+  {
+    "id": "w:hiragana:きょねん",
+    "meaning": {
+      "en": "last year"
+    },
+    "script": "hiragana",
+    "text": "きょねん"
+  },
+  {
+    "id": "w:hiragana:きらい",
+    "meaning": {
+      "en": "disliked; tendency; distinction"
+    },
+    "script": "hiragana",
+    "text": "きらい"
+  },
+  {
+    "id": "w:hiragana:きる",
+    "meaning": {
+      "en": "to cut; to wear (from the shoulders down)"
+    },
+    "script": "hiragana",
+    "text": "きる"
+  },
+  {
+    "id": "w:hiragana:きれい",
+    "meaning": {
+      "en": "pretty; clean; completely"
+    },
+    "script": "hiragana",
+    "text": "きれい"
+  },
+  {
+    "id": "w:hiragana:ぎんこう",
+    "meaning": {
+      "en": "bank"
+    },
+    "script": "hiragana",
+    "text": "ぎんこう"
+  },
+  {
+    "id": "w:hiragana:きんようび",
+    "meaning": {
+      "en": "Friday"
+    },
+    "script": "hiragana",
+    "text": "きんようび"
+  },
+  {
+    "id": "w:hiragana:くすり",
+    "meaning": {
+      "en": "medicine; efficacious chemical (gunpowder, pesticide, etc.)"
+    },
+    "script": "hiragana",
+    "text": "くすり"
+  },
+  {
+    "id": "w:hiragana:ください",
+    "meaning": {
+      "en": "please (give me); please (do for me)"
+    },
+    "script": "hiragana",
+    "text": "ください"
+  },
+  {
+    "id": "w:hiragana:くだもの",
+    "meaning": {
+      "en": "fruit"
+    },
+    "script": "hiragana",
+    "text": "くだもの"
+  },
+  {
+    "id": "w:hiragana:くち",
+    "meaning": {
+      "en": "mouth; opening; mouth (of a bottle)"
+    },
+    "script": "hiragana",
+    "text": "くち"
+  },
+  {
+    "id": "w:hiragana:くつ",
+    "meaning": {
+      "en": "shoe"
+    },
+    "script": "hiragana",
+    "text": "くつ"
+  },
+  {
+    "id": "w:hiragana:くつした",
+    "meaning": {
+      "en": "socks"
+    },
+    "script": "hiragana",
+    "text": "くつした"
+  },
+  {
+    "id": "w:hiragana:くに",
+    "meaning": {
+      "en": "country; region; national government"
+    },
+    "script": "hiragana",
+    "text": "くに"
+  },
+  {
+    "id": "w:hiragana:くもり",
+    "meaning": {
+      "en": "cloudiness; fog (on a mirror, glasses, etc.); gloom"
+    },
+    "script": "hiragana",
+    "text": "くもり"
+  },
+  {
+    "id": "w:hiragana:くもる",
+    "meaning": {
+      "en": "to get cloudy; to cloud up; to be gloomy"
+    },
+    "script": "hiragana",
+    "text": "くもる"
+  },
+  {
+    "id": "w:hiragana:くらい",
+    "meaning": {
+      "en": "dark; depressed; dark (in colour)"
+    },
+    "script": "hiragana",
+    "text": "くらい"
+  },
+  {
+    "id": "w:hiragana:くる",
+    "meaning": {
+      "en": "to come (spatially or temporally); to come back"
+    },
+    "script": "hiragana",
+    "text": "くる"
+  },
+  {
+    "id": "w:hiragana:くるま",
+    "meaning": {
+      "en": "car; wheel"
+    },
+    "script": "hiragana",
+    "text": "くるま"
+  },
+  {
+    "id": "w:hiragana:くろ",
+    "meaning": {
+      "en": "black; black stone; guilt"
+    },
+    "script": "hiragana",
+    "text": "くろ"
+  },
+  {
+    "id": "w:hiragana:くろい",
+    "meaning": {
+      "en": "black; dark; suspicious"
+    },
+    "script": "hiragana",
+    "text": "くろい"
+  },
+  {
+    "id": "w:hiragana:けいかん",
+    "meaning": {
+      "en": "police officer"
+    },
+    "script": "hiragana",
+    "text": "けいかん"
+  },
+  {
+    "id": "w:hiragana:けさ",
+    "meaning": {
+      "en": "this morning"
+    },
+    "script": "hiragana",
+    "text": "けさ"
+  },
+  {
+    "id": "w:hiragana:けす",
+    "meaning": {
+      "en": "to erase; to turn off (a light, TV, heater, etc.)"
+    },
+    "script": "hiragana",
+    "text": "けす"
+  },
+  {
+    "id": "w:hiragana:けっこう",
+    "meaning": {
+      "en": "splendid; sufficient; not needing (any more of something)"
+    },
+    "script": "hiragana",
+    "text": "けっこう"
+  },
+  {
+    "id": "w:hiragana:けっこん",
+    "meaning": {
+      "en": "marriage"
+    },
+    "script": "hiragana",
+    "text": "けっこん"
+  },
+  {
+    "id": "w:hiragana:げつようび",
+    "meaning": {
+      "en": "Monday"
+    },
+    "script": "hiragana",
+    "text": "げつようび"
+  },
+  {
+    "id": "w:hiragana:げんかん",
+    "meaning": {
+      "en": "entrance"
+    },
+    "script": "hiragana",
+    "text": "げんかん"
+  },
+  {
+    "id": "w:hiragana:げんき",
+    "meaning": {
+      "en": "lively; healthy"
+    },
+    "script": "hiragana",
+    "text": "げんき"
+  },
+  {
+    "id": "w:hiragana:ご",
+    "meaning": {
+      "en": "five"
+    },
+    "script": "hiragana",
+    "text": "ご"
+  },
+  {
+    "id": "w:hiragana:こうえん",
+    "meaning": {
+      "en": "(public) park"
+    },
+    "script": "hiragana",
+    "text": "こうえん"
+  },
+  {
+    "id": "w:hiragana:こうさてん",
+    "meaning": {
+      "en": "crossing"
+    },
+    "script": "hiragana",
+    "text": "こうさてん"
+  },
+  {
+    "id": "w:hiragana:こうちゃ",
+    "meaning": {
+      "en": "black tea"
+    },
+    "script": "hiragana",
+    "text": "こうちゃ"
+  },
+  {
+    "id": "w:hiragana:こうばん",
+    "meaning": {
+      "en": "police box; alternation; alternating (current, stress, etc.)"
+    },
+    "script": "hiragana",
+    "text": "こうばん"
+  },
+  {
+    "id": "w:hiragana:こえ",
+    "meaning": {
+      "en": "voice; singing (of a bird); voice"
+    },
+    "script": "hiragana",
+    "text": "こえ"
+  },
+  {
+    "id": "w:hiragana:ここ",
+    "meaning": {
+      "en": "here; this point; these past ... (e.g. three years)"
+    },
+    "script": "hiragana",
+    "text": "ここ"
+  },
+  {
+    "id": "w:hiragana:ごご",
+    "meaning": {
+      "en": "afternoon"
+    },
+    "script": "hiragana",
+    "text": "ごご"
+  },
+  {
+    "id": "w:hiragana:ここのか",
+    "meaning": {
+      "en": "9th day of the month; nine days"
+    },
+    "script": "hiragana",
+    "text": "ここのか"
+  },
+  {
+    "id": "w:hiragana:ここのつ",
+    "meaning": {
+      "en": "nine; nine years of age; twelve o'clock (old time system)"
+    },
+    "script": "hiragana",
+    "text": "ここのつ"
+  },
+  {
+    "id": "w:hiragana:ごぜん",
+    "meaning": {
+      "en": "morning"
+    },
+    "script": "hiragana",
+    "text": "ごぜん"
+  },
+  {
+    "id": "w:hiragana:こたえる",
+    "meaning": {
+      "en": "to answer"
+    },
+    "script": "hiragana",
+    "text": "こたえる"
+  },
+  {
+    "id": "w:hiragana:こちら",
+    "meaning": {
+      "en": "this way; here; this (one)"
+    },
+    "script": "hiragana",
+    "text": "こちら"
+  },
+  {
+    "id": "w:hiragana:こっち",
+    "meaning": {
+      "en": "this way; here; this (one)"
+    },
+    "script": "hiragana",
+    "text": "こっち"
+  },
+  {
+    "id": "w:hiragana:ことし",
+    "meaning": {
+      "en": "this year"
+    },
+    "script": "hiragana",
+    "text": "ことし"
+  },
+  {
+    "id": "w:hiragana:ことば",
+    "meaning": {
+      "en": "language; word; speech"
+    },
+    "script": "hiragana",
+    "text": "ことば"
+  },
+  {
+    "id": "w:hiragana:こども",
+    "meaning": {
+      "en": "child"
+    },
+    "script": "hiragana",
+    "text": "こども"
+  },
+  {
+    "id": "w:hiragana:この",
+    "meaning": {
+      "en": "this; last (couple of years, etc.); you (as in \"you liar\")"
+    },
+    "script": "hiragana",
+    "text": "この"
+  },
+  {
+    "id": "w:hiragana:ごはん",
+    "meaning": {
+      "en": "cooked rice; meal"
+    },
+    "script": "hiragana",
+    "text": "ごはん"
+  },
+  {
+    "id": "w:hiragana:こまる",
+    "meaning": {
+      "en": "to be troubled; to be bothered; to be badly off"
+    },
+    "script": "hiragana",
+    "text": "こまる"
+  },
+  {
+    "id": "w:hiragana:これ",
+    "meaning": {
+      "en": "hey"
+    },
+    "script": "hiragana",
+    "text": "これ"
+  },
+  {
+    "id": "w:hiragana:こんげつ",
+    "meaning": {
+      "en": "this month"
+    },
+    "script": "hiragana",
+    "text": "こんげつ"
+  },
+  {
+    "id": "w:hiragana:こんしゅう",
+    "meaning": {
+      "en": "this week"
+    },
+    "script": "hiragana",
+    "text": "こんしゅう"
+  },
+  {
+    "id": "w:hiragana:こんな",
+    "meaning": {
+      "en": "this sort of"
+    },
+    "script": "hiragana",
+    "text": "こんな"
+  },
+  {
+    "id": "w:hiragana:こんばん",
+    "meaning": {
+      "en": "tonight"
+    },
+    "script": "hiragana",
+    "text": "こんばん"
+  },
+  {
+    "id": "w:hiragana:さあ",
+    "meaning": {
+      "en": "come (on); all right; well"
+    },
+    "script": "hiragana",
+    "text": "さあ"
+  },
+  {
+    "id": "w:hiragana:さいふ",
+    "meaning": {
+      "en": "wallet"
+    },
+    "script": "hiragana",
+    "text": "さいふ"
+  },
+  {
+    "id": "w:hiragana:さかな",
+    "meaning": {
+      "en": "fish"
+    },
+    "script": "hiragana",
+    "text": "さかな"
+  },
+  {
+    "id": "w:hiragana:さき",
+    "meaning": {
+      "en": "point; head (of a line); first"
+    },
+    "script": "hiragana",
+    "text": "さき"
+  },
+  {
+    "id": "w:hiragana:さく",
+    "meaning": {
+      "en": "to bloom; to rise up (of breaking waves)"
+    },
+    "script": "hiragana",
+    "text": "さく"
+  },
+  {
+    "id": "w:hiragana:さくぶん",
+    "meaning": {
+      "en": "writing (an essay, prose, etc.)"
+    },
+    "script": "hiragana",
+    "text": "さくぶん"
+  },
+  {
+    "id": "w:hiragana:さす",
+    "meaning": {
+      "en": "to shine; to be visible; to be tinged with"
+    },
+    "script": "hiragana",
+    "text": "さす"
+  },
+  {
+    "id": "w:hiragana:ざっし",
+    "meaning": {
+      "en": "magazine"
+    },
+    "script": "hiragana",
+    "text": "ざっし"
+  },
+  {
+    "id": "w:hiragana:さとう",
+    "meaning": {
+      "en": "sugar"
+    },
+    "script": "hiragana",
+    "text": "さとう"
+  },
+  {
+    "id": "w:hiragana:さむい",
+    "meaning": {
+      "en": "cold (e.g. weather); uninteresting (esp. joke)"
+    },
+    "script": "hiragana",
+    "text": "さむい"
+  },
+  {
+    "id": "w:hiragana:さらいねん",
+    "meaning": {
+      "en": "year after next"
+    },
+    "script": "hiragana",
+    "text": "さらいねん"
+  },
+  {
+    "id": "w:hiragana:さん",
+    "meaning": {
+      "en": "three"
+    },
+    "script": "hiragana",
+    "text": "さん"
+  },
+  {
+    "id": "w:hiragana:さんぽ",
+    "meaning": {
+      "en": "walk"
+    },
+    "script": "hiragana",
+    "text": "さんぽ"
+  },
+  {
+    "id": "w:hiragana:し",
+    "meaning": {
+      "en": "four; city"
+    },
+    "script": "hiragana",
+    "text": "し"
+  },
+  {
+    "id": "w:hiragana:よん",
+    "meaning": {
+      "en": "four"
+    },
+    "script": "hiragana",
+    "text": "よん"
+  },
+  {
+    "id": "w:hiragana:しお",
+    "meaning": {
+      "en": "salt; hardship; saltiness"
+    },
+    "script": "hiragana",
+    "text": "しお"
+  },
+  {
+    "id": "w:hiragana:しかし",
+    "meaning": {
+      "en": "however"
+    },
+    "script": "hiragana",
+    "text": "しかし"
+  },
+  {
+    "id": "w:hiragana:じかん",
+    "meaning": {
+      "en": "time; hour; period"
+    },
+    "script": "hiragana",
+    "text": "じかん"
+  },
+  {
+    "id": "w:hiragana:しごと",
+    "meaning": {
+      "en": "work; work"
+    },
+    "script": "hiragana",
+    "text": "しごと"
+  },
+  {
+    "id": "w:hiragana:じしょ",
+    "meaning": {
+      "en": "dictionary; letter of resignation"
+    },
+    "script": "hiragana",
+    "text": "じしょ"
+  },
+  {
+    "id": "w:hiragana:しずか",
+    "meaning": {
+      "en": "quiet; slow; calm"
+    },
+    "script": "hiragana",
+    "text": "しずか"
+  },
+  {
+    "id": "w:hiragana:した",
+    "meaning": {
+      "en": "below; bottom; beneath"
+    },
+    "script": "hiragana",
+    "text": "した"
+  },
+  {
+    "id": "w:hiragana:しち",
+    "meaning": {
+      "en": "seven"
+    },
+    "script": "hiragana",
+    "text": "しち"
+  },
+  {
+    "id": "w:hiragana:なな",
+    "meaning": {
+      "en": "seven"
+    },
+    "script": "hiragana",
+    "text": "なな"
+  },
+  {
+    "id": "w:hiragana:しつもん",
+    "meaning": {
+      "en": "question"
+    },
+    "script": "hiragana",
+    "text": "しつもん"
+  },
+  {
+    "id": "w:hiragana:じてんしゃ",
+    "meaning": {
+      "en": "bicycle"
+    },
+    "script": "hiragana",
+    "text": "じてんしゃ"
+  },
+  {
+    "id": "w:hiragana:じどうしゃ",
+    "meaning": {
+      "en": "car"
+    },
+    "script": "hiragana",
+    "text": "じどうしゃ"
+  },
+  {
+    "id": "w:hiragana:しぬ",
+    "meaning": {
+      "en": "to die; to lose spirit; to cease"
+    },
+    "script": "hiragana",
+    "text": "しぬ"
+  },
+  {
+    "id": "w:hiragana:じびき",
+    "meaning": {
+      "en": "dictionary"
+    },
+    "script": "hiragana",
+    "text": "じびき"
+  },
+  {
+    "id": "w:hiragana:じぶん",
+    "meaning": {
+      "en": "myself; I; you"
+    },
+    "script": "hiragana",
+    "text": "じぶん"
+  },
+  {
+    "id": "w:hiragana:しまる",
+    "meaning": {
+      "en": "to be shut; to be firm (of a body, face, etc.); to be locked"
+    },
+    "script": "hiragana",
+    "text": "しまる"
+  },
+  {
+    "id": "w:hiragana:しめる",
+    "meaning": {
+      "en": "to close; to tie"
+    },
+    "script": "hiragana",
+    "text": "しめる"
+  },
+  {
+    "id": "w:hiragana:じゃ",
+    "meaning": {
+      "en": "then"
+    },
+    "script": "hiragana",
+    "text": "じゃ"
+  },
+  {
+    "id": "w:hiragana:じゃあ",
+    "meaning": {
+      "en": "then"
+    },
+    "script": "hiragana",
+    "text": "じゃあ"
+  },
+  {
+    "id": "w:hiragana:しゃしん",
+    "meaning": {
+      "en": "photograph; moving picture"
+    },
+    "script": "hiragana",
+    "text": "しゃしん"
+  },
+  {
+    "id": "w:hiragana:じゅう",
+    "meaning": {
+      "en": "ten; book containing a collection of poems"
+    },
+    "script": "hiragana",
+    "text": "じゅう"
+  },
+  {
+    "id": "w:hiragana:とお",
+    "meaning": {
+      "en": "ten; ten years of age; book containing a collection of poems"
+    },
+    "script": "hiragana",
+    "text": "とお"
+  },
+  {
+    "id": "w:hiragana:じゅぎょう",
+    "meaning": {
+      "en": "lesson"
+    },
+    "script": "hiragana",
+    "text": "じゅぎょう"
+  },
+  {
+    "id": "w:hiragana:しゅくだい",
+    "meaning": {
+      "en": "homework; pending issue"
+    },
+    "script": "hiragana",
+    "text": "しゅくだい"
+  },
+  {
+    "id": "w:hiragana:じょうず",
+    "meaning": {
+      "en": "skillful; flattery"
+    },
+    "script": "hiragana",
+    "text": "じょうず"
+  },
+  {
+    "id": "w:hiragana:じょうぶ",
+    "meaning": {
+      "en": "healthy"
+    },
+    "script": "hiragana",
+    "text": "じょうぶ"
+  },
+  {
+    "id": "w:hiragana:しょうゆ",
+    "meaning": {
+      "en": "soy sauce"
+    },
+    "script": "hiragana",
+    "text": "しょうゆ"
+  },
+  {
+    "id": "w:hiragana:しょくどう",
+    "meaning": {
+      "en": "dining room; restaurant"
+    },
+    "script": "hiragana",
+    "text": "しょくどう"
+  },
+  {
+    "id": "w:hiragana:しる",
+    "meaning": {
+      "en": "to know; to sense; to understand"
+    },
+    "script": "hiragana",
+    "text": "しる"
+  },
+  {
+    "id": "w:hiragana:しろ",
+    "meaning": {
+      "en": "white; innocence; blank space"
+    },
+    "script": "hiragana",
+    "text": "しろ"
+  },
+  {
+    "id": "w:hiragana:しろい",
+    "meaning": {
+      "en": "white; blank (e.g. paper); innocent"
+    },
+    "script": "hiragana",
+    "text": "しろい"
+  },
+  {
+    "id": "w:hiragana:しんぶん",
+    "meaning": {
+      "en": "newspaper"
+    },
+    "script": "hiragana",
+    "text": "しんぶん"
+  },
+  {
+    "id": "w:hiragana:すいようび",
+    "meaning": {
+      "en": "Wednesday"
+    },
+    "script": "hiragana",
+    "text": "すいようび"
+  },
+  {
+    "id": "w:hiragana:すう",
+    "meaning": {
+      "en": "to breathe in; to suck; to absorb"
+    },
+    "script": "hiragana",
+    "text": "すう"
+  },
+  {
+    "id": "w:hiragana:すき",
+    "meaning": {
+      "en": "liking; liking (romantically); faddism"
+    },
+    "script": "hiragana",
+    "text": "すき"
+  },
+  {
+    "id": "w:hiragana:すくない",
+    "meaning": {
+      "en": "few"
+    },
+    "script": "hiragana",
+    "text": "すくない"
+  },
+  {
+    "id": "w:hiragana:すぐに",
+    "meaning": {
+      "en": "immediately"
+    },
+    "script": "hiragana",
+    "text": "すぐに"
+  },
+  {
+    "id": "w:hiragana:すこし",
+    "meaning": {
+      "en": "a little; a little while; a little way"
+    },
+    "script": "hiragana",
+    "text": "すこし"
+  },
+  {
+    "id": "w:hiragana:すずしい",
+    "meaning": {
+      "en": "cool; clear (e.g. eyes); clear"
+    },
+    "script": "hiragana",
+    "text": "すずしい"
+  },
+  {
+    "id": "w:hiragana:すむ",
+    "meaning": {
+      "en": "to live (of humans); to finish"
+    },
+    "script": "hiragana",
+    "text": "すむ"
+  },
+  {
+    "id": "w:hiragana:する",
+    "meaning": {
+      "en": "to do; to cause to become; to serve as"
+    },
+    "script": "hiragana",
+    "text": "する"
+  },
+  {
+    "id": "w:hiragana:すわる",
+    "meaning": {
+      "en": "to sit (down); to assume (a position)"
+    },
+    "script": "hiragana",
+    "text": "すわる"
+  },
+  {
+    "id": "w:hiragana:せ",
+    "meaning": {
+      "en": "back; reverse; height"
+    },
+    "script": "hiragana",
+    "text": "せ"
+  },
+  {
+    "id": "w:hiragana:せいと",
+    "meaning": {
+      "en": "pupil"
+    },
+    "script": "hiragana",
+    "text": "せいと"
+  },
+  {
+    "id": "w:hiragana:せっけん",
+    "meaning": {
+      "en": "soap"
+    },
+    "script": "hiragana",
+    "text": "せっけん"
+  },
+  {
+    "id": "w:hiragana:せびろ",
+    "meaning": {
+      "en": "business suit"
+    },
+    "script": "hiragana",
+    "text": "せびろ"
+  },
+  {
+    "id": "w:hiragana:せまい",
+    "meaning": {
+      "en": "narrow; limited"
+    },
+    "script": "hiragana",
+    "text": "せまい"
+  },
+  {
+    "id": "w:hiragana:せん",
+    "meaning": {
+      "en": "thousand; line"
+    },
+    "script": "hiragana",
+    "text": "せん"
+  },
+  {
+    "id": "w:hiragana:せんげつ",
+    "meaning": {
+      "en": "last month"
+    },
+    "script": "hiragana",
+    "text": "せんげつ"
+  },
+  {
+    "id": "w:hiragana:せんしゅう",
+    "meaning": {
+      "en": "last week"
+    },
+    "script": "hiragana",
+    "text": "せんしゅう"
+  },
+  {
+    "id": "w:hiragana:せんせい",
+    "meaning": {
+      "en": "teacher; sensei; intimate or teasing form of address"
+    },
+    "script": "hiragana",
+    "text": "せんせい"
+  },
+  {
+    "id": "w:hiragana:せんたく",
+    "meaning": {
+      "en": "washing; relaxation"
+    },
+    "script": "hiragana",
+    "text": "せんたく"
+  },
+  {
+    "id": "w:hiragana:ぜんぶ",
+    "meaning": {
+      "en": "all"
+    },
+    "script": "hiragana",
+    "text": "ぜんぶ"
+  },
+  {
+    "id": "w:hiragana:そうじ",
+    "meaning": {
+      "en": "cleaning"
+    },
+    "script": "hiragana",
+    "text": "そうじ"
+  },
+  {
+    "id": "w:hiragana:そうして",
+    "meaning": {
+      "en": "and"
+    },
+    "script": "hiragana",
+    "text": "そうして"
+  },
+  {
+    "id": "w:hiragana:そして",
+    "meaning": {
+      "en": "and"
+    },
+    "script": "hiragana",
+    "text": "そして"
+  },
+  {
+    "id": "w:hiragana:そこ",
+    "meaning": {
+      "en": "there (place relatively near listener)"
+    },
+    "script": "hiragana",
+    "text": "そこ"
+  },
+  {
+    "id": "w:hiragana:そちら",
+    "meaning": {
+      "en": "that way; there; that (one)"
+    },
+    "script": "hiragana",
+    "text": "そちら"
+  },
+  {
+    "id": "w:hiragana:そっち",
+    "meaning": {
+      "en": "that way; there; that (one)"
+    },
+    "script": "hiragana",
+    "text": "そっち"
+  },
+  {
+    "id": "w:hiragana:そと",
+    "meaning": {
+      "en": "outside; the open (air); other place"
+    },
+    "script": "hiragana",
+    "text": "そと"
+  },
+  {
+    "id": "w:hiragana:その",
+    "meaning": {
+      "en": "that; part (as in \"part two\"); um ..."
+    },
+    "script": "hiragana",
+    "text": "その"
+  },
+  {
+    "id": "w:hiragana:そば",
+    "meaning": {
+      "en": "(place) near by; as soon as"
+    },
+    "script": "hiragana",
+    "text": "そば"
+  },
+  {
+    "id": "w:hiragana:そら",
+    "meaning": {
+      "en": "sky; weather; far-off place"
+    },
+    "script": "hiragana",
+    "text": "そら"
+  },
+  {
+    "id": "w:hiragana:それ",
+    "meaning": {
+      "en": "there!; go on!"
+    },
+    "script": "hiragana",
+    "text": "それ"
+  },
+  {
+    "id": "w:hiragana:それから",
+    "meaning": {
+      "en": "and then"
+    },
+    "script": "hiragana",
+    "text": "それから"
+  },
+  {
+    "id": "w:hiragana:それでは",
+    "meaning": {
+      "en": "well, ...; so; that way (would mean ...)"
+    },
+    "script": "hiragana",
+    "text": "それでは"
+  },
+  {
+    "id": "w:hiragana:だいがく",
+    "meaning": {
+      "en": "university"
+    },
+    "script": "hiragana",
+    "text": "だいがく"
+  },
+  {
+    "id": "w:hiragana:たいしかん",
+    "meaning": {
+      "en": "embassy"
+    },
+    "script": "hiragana",
+    "text": "たいしかん"
+  },
+  {
+    "id": "w:hiragana:だいじょうぶ",
+    "meaning": {
+      "en": "safe; certainly; no thanks"
+    },
+    "script": "hiragana",
+    "text": "だいじょうぶ"
+  },
+  {
+    "id": "w:hiragana:だいすき",
+    "meaning": {
+      "en": "liking very much"
+    },
+    "script": "hiragana",
+    "text": "だいすき"
+  },
+  {
+    "id": "w:hiragana:たいせつ",
+    "meaning": {
+      "en": "important; precious; careful"
+    },
+    "script": "hiragana",
+    "text": "たいせつ"
+  },
+  {
+    "id": "w:hiragana:だいどころ",
+    "meaning": {
+      "en": "kitchen; financial situation"
+    },
+    "script": "hiragana",
+    "text": "だいどころ"
+  },
+  {
+    "id": "w:hiragana:たいへん",
+    "meaning": {
+      "en": "very; immense; serious"
+    },
+    "script": "hiragana",
+    "text": "たいへん"
+  },
+  {
+    "id": "w:hiragana:たかい",
+    "meaning": {
+      "en": "high; expensive; high (level)"
+    },
+    "script": "hiragana",
+    "text": "たかい"
+  },
+  {
+    "id": "w:hiragana:たくさん",
+    "meaning": {
+      "en": "a lot; enough; enough"
+    },
+    "script": "hiragana",
+    "text": "たくさん"
+  },
+  {
+    "id": "w:hiragana:だす",
+    "meaning": {
+      "en": "to take out; to put out; to submit (e.g. thesis)"
+    },
+    "script": "hiragana",
+    "text": "だす"
+  },
+  {
+    "id": "w:hiragana:たつ",
+    "meaning": {
+      "en": "to stand (up)"
+    },
+    "script": "hiragana",
+    "text": "たつ"
+  },
+  {
+    "id": "w:hiragana:たて",
+    "meaning": {
+      "en": "the vertical; front-to-back; north-to-south"
+    },
+    "script": "hiragana",
+    "text": "たて"
+  },
+  {
+    "id": "w:hiragana:たてもの",
+    "meaning": {
+      "en": "building"
+    },
+    "script": "hiragana",
+    "text": "たてもの"
+  },
+  {
+    "id": "w:hiragana:たのしい",
+    "meaning": {
+      "en": "enjoyable"
+    },
+    "script": "hiragana",
+    "text": "たのしい"
+  },
+  {
+    "id": "w:hiragana:たのむ",
+    "meaning": {
+      "en": "to request; to call; to entrust to"
+    },
+    "script": "hiragana",
+    "text": "たのむ"
+  },
+  {
+    "id": "w:hiragana:たばこ",
+    "meaning": {
+      "en": "tobacco; tobacco plant (Nicotiana tabacum)"
+    },
+    "script": "hiragana",
+    "text": "たばこ"
+  },
+  {
+    "id": "w:hiragana:たぶん",
+    "meaning": {
+      "en": "probably; a lot of"
+    },
+    "script": "hiragana",
+    "text": "たぶん"
+  },
+  {
+    "id": "w:hiragana:たべもの",
+    "meaning": {
+      "en": "food"
+    },
+    "script": "hiragana",
+    "text": "たべもの"
+  },
+  {
+    "id": "w:hiragana:たべる",
+    "meaning": {
+      "en": "to eat; to live on (e.g. a salary)"
+    },
+    "script": "hiragana",
+    "text": "たべる"
+  },
+  {
+    "id": "w:hiragana:たまご",
+    "meaning": {
+      "en": "eggs; (hen's) egg; a ... in the making"
+    },
+    "script": "hiragana",
+    "text": "たまご"
+  },
+  {
+    "id": "w:hiragana:だれ",
+    "meaning": {
+      "en": "who"
+    },
+    "script": "hiragana",
+    "text": "だれ"
+  },
+  {
+    "id": "w:hiragana:だれか",
+    "meaning": {
+      "en": "someone"
+    },
+    "script": "hiragana",
+    "text": "だれか"
+  },
+  {
+    "id": "w:hiragana:たんじょうび",
+    "meaning": {
+      "en": "birthday"
+    },
+    "script": "hiragana",
+    "text": "たんじょうび"
+  },
+  {
+    "id": "w:hiragana:だんだん",
+    "meaning": {
+      "en": "thank you"
+    },
+    "script": "hiragana",
+    "text": "だんだん"
+  },
+  {
+    "id": "w:hiragana:ちいさい",
+    "meaning": {
+      "en": "small; slight; low (e.g. sound)"
+    },
+    "script": "hiragana",
+    "text": "ちいさい"
+  },
+  {
+    "id": "w:hiragana:ちいさな",
+    "meaning": {
+      "en": "small"
+    },
+    "script": "hiragana",
+    "text": "ちいさな"
+  },
+  {
+    "id": "w:hiragana:ちかい",
+    "meaning": {
+      "en": "near; close (in time); close (relationship)"
+    },
+    "script": "hiragana",
+    "text": "ちかい"
+  },
+  {
+    "id": "w:hiragana:ちがう",
+    "meaning": {
+      "en": "to differ (from); to be wrong; to become abnormal"
+    },
+    "script": "hiragana",
+    "text": "ちがう"
+  },
+  {
+    "id": "w:hiragana:ちかく",
+    "meaning": {
+      "en": "near; nearly (e.g. \"it took nearly one year\"); shortly"
+    },
+    "script": "hiragana",
+    "text": "ちかく"
+  },
+  {
+    "id": "w:hiragana:ちかてつ",
+    "meaning": {
+      "en": "subway"
+    },
+    "script": "hiragana",
+    "text": "ちかてつ"
+  },
+  {
+    "id": "w:hiragana:ちず",
+    "meaning": {
+      "en": "map"
+    },
+    "script": "hiragana",
+    "text": "ちず"
+  },
+  {
+    "id": "w:hiragana:ちゃいろ",
+    "meaning": {
+      "en": "brown"
+    },
+    "script": "hiragana",
+    "text": "ちゃいろ"
+  },
+  {
+    "id": "w:hiragana:ちゃわん",
+    "meaning": {
+      "en": "rice bowl"
+    },
+    "script": "hiragana",
+    "text": "ちゃわん"
+  },
+  {
+    "id": "w:hiragana:ちょうど",
+    "meaning": {
+      "en": "exactly; just (like)"
+    },
+    "script": "hiragana",
+    "text": "ちょうど"
+  },
+  {
+    "id": "w:hiragana:ちょっと",
+    "meaning": {
+      "en": "a little; just a minute; somewhat"
+    },
+    "script": "hiragana",
+    "text": "ちょっと"
+  },
+  {
+    "id": "w:hiragana:ついたち",
+    "meaning": {
+      "en": "first day of the month"
+    },
+    "script": "hiragana",
+    "text": "ついたち"
+  },
+  {
+    "id": "w:hiragana:つかう",
+    "meaning": {
+      "en": "to use (a tool, method, etc.)"
+    },
+    "script": "hiragana",
+    "text": "つかう"
+  },
+  {
+    "id": "w:hiragana:つかれる",
+    "meaning": {
+      "en": "to get tired; to become worn out (of a well-used object)"
+    },
+    "script": "hiragana",
+    "text": "つかれる"
+  },
+  {
+    "id": "w:hiragana:つぎ",
+    "meaning": {
+      "en": "next; stage"
+    },
+    "script": "hiragana",
+    "text": "つぎ"
+  },
+  {
+    "id": "w:hiragana:つく",
+    "meaning": {
+      "en": "to arrive at; to be attached"
+    },
+    "script": "hiragana",
+    "text": "つく"
+  },
+  {
+    "id": "w:hiragana:つくえ",
+    "meaning": {
+      "en": "desk"
+    },
+    "script": "hiragana",
+    "text": "つくえ"
+  },
+  {
+    "id": "w:hiragana:つくる",
+    "meaning": {
+      "en": "to make; to prepare (food); to raise"
+    },
+    "script": "hiragana",
+    "text": "つくる"
+  },
+  {
+    "id": "w:hiragana:つける",
+    "meaning": {
+      "en": "to attach; to soak (in)"
+    },
+    "script": "hiragana",
+    "text": "つける"
+  },
+  {
+    "id": "w:hiragana:つとめる",
+    "meaning": {
+      "en": "to work (for); to serve (as); to conduct a religious service"
+    },
+    "script": "hiragana",
+    "text": "つとめる"
+  },
+  {
+    "id": "w:hiragana:つまらない",
+    "meaning": {
+      "en": "dull; insignificant; absurd"
+    },
+    "script": "hiragana",
+    "text": "つまらない"
+  },
+  {
+    "id": "w:hiragana:つめたい",
+    "meaning": {
+      "en": "cold (to the touch); (emotionally) cold"
+    },
+    "script": "hiragana",
+    "text": "つめたい"
+  },
+  {
+    "id": "w:hiragana:つよい",
+    "meaning": {
+      "en": "strong; strong; good (at)"
+    },
+    "script": "hiragana",
+    "text": "つよい"
+  },
+  {
+    "id": "w:hiragana:て",
+    "meaning": {
+      "en": "hand; forepaw; handle"
+    },
+    "script": "hiragana",
+    "text": "て"
+  },
+  {
+    "id": "w:hiragana:でかける",
+    "meaning": {
+      "en": "to go out (e.g. on an excursion or outing)"
+    },
+    "script": "hiragana",
+    "text": "でかける"
+  },
+  {
+    "id": "w:hiragana:てがみ",
+    "meaning": {
+      "en": "letter"
+    },
+    "script": "hiragana",
+    "text": "てがみ"
+  },
+  {
+    "id": "w:hiragana:できる",
+    "meaning": {
+      "en": "to be able to do; to be good at; to come into existence"
+    },
+    "script": "hiragana",
+    "text": "できる"
+  },
+  {
+    "id": "w:hiragana:でぐち",
+    "meaning": {
+      "en": "exit; outlet"
+    },
+    "script": "hiragana",
+    "text": "でぐち"
+  },
+  {
+    "id": "w:hiragana:では",
+    "meaning": {
+      "en": "then; bye then; at"
+    },
+    "script": "hiragana",
+    "text": "では"
+  },
+  {
+    "id": "w:hiragana:でも",
+    "meaning": {
+      "en": "but; even; however"
+    },
+    "script": "hiragana",
+    "text": "でも"
+  },
+  {
+    "id": "w:hiragana:でる",
+    "meaning": {
+      "en": "to leave; to leave (on a journey); to move forward"
+    },
+    "script": "hiragana",
+    "text": "でる"
+  },
+  {
+    "id": "w:hiragana:てんき",
+    "meaning": {
+      "en": "weather; fair weather"
+    },
+    "script": "hiragana",
+    "text": "てんき"
+  },
+  {
+    "id": "w:hiragana:でんき",
+    "meaning": {
+      "en": "electricity; (electric) light"
+    },
+    "script": "hiragana",
+    "text": "でんき"
+  },
+  {
+    "id": "w:hiragana:でんしゃ",
+    "meaning": {
+      "en": "train"
+    },
+    "script": "hiragana",
+    "text": "でんしゃ"
+  },
+  {
+    "id": "w:hiragana:でんわ",
+    "meaning": {
+      "en": "telephone call; telephone (device)"
+    },
+    "script": "hiragana",
+    "text": "でんわ"
+  },
+  {
+    "id": "w:hiragana:と",
+    "meaning": {
+      "en": "door (esp. Japanese-style); Metropolis (of Tokyo)"
+    },
+    "script": "hiragana",
+    "text": "と"
+  },
+  {
+    "id": "w:hiragana:どう",
+    "meaning": {
+      "en": "how"
+    },
+    "script": "hiragana",
+    "text": "どう"
+  },
+  {
+    "id": "w:hiragana:どうして",
+    "meaning": {
+      "en": "how; why; cannot possibly"
+    },
+    "script": "hiragana",
+    "text": "どうして"
+  },
+  {
+    "id": "w:hiragana:どうぞ",
+    "meaning": {
+      "en": "please; by all means; here you are"
+    },
+    "script": "hiragana",
+    "text": "どうぞ"
+  },
+  {
+    "id": "w:hiragana:どうぶつ",
+    "meaning": {
+      "en": "animal"
+    },
+    "script": "hiragana",
+    "text": "どうぶつ"
+  },
+  {
+    "id": "w:hiragana:どうも",
+    "meaning": {
+      "en": "thank you; much (thanks); quite"
+    },
+    "script": "hiragana",
+    "text": "どうも"
+  },
+  {
+    "id": "w:hiragana:とおい",
+    "meaning": {
+      "en": "far; distant (past); distant (relationship or kinship)"
+    },
+    "script": "hiragana",
+    "text": "とおい"
+  },
+  {
+    "id": "w:hiragana:とおか",
+    "meaning": {
+      "en": "10th day of the month; ten days"
+    },
+    "script": "hiragana",
+    "text": "とおか"
+  },
+  {
+    "id": "w:hiragana:ときどき",
+    "meaning": {
+      "en": "sometimes; seasonal"
+    },
+    "script": "hiragana",
+    "text": "ときどき"
+  },
+  {
+    "id": "w:hiragana:とけい",
+    "meaning": {
+      "en": "clock"
+    },
+    "script": "hiragana",
+    "text": "とけい"
+  },
+  {
+    "id": "w:hiragana:どこ",
+    "meaning": {
+      "en": "where; how much (long, far)"
+    },
+    "script": "hiragana",
+    "text": "どこ"
+  },
+  {
+    "id": "w:hiragana:ところ",
+    "meaning": {
+      "en": "place; address; district"
+    },
+    "script": "hiragana",
+    "text": "ところ"
+  },
+  {
+    "id": "w:hiragana:とし",
+    "meaning": {
+      "en": "year; age; past one's prime"
+    },
+    "script": "hiragana",
+    "text": "とし"
+  },
+  {
+    "id": "w:hiragana:としょかん",
+    "meaning": {
+      "en": "library"
+    },
+    "script": "hiragana",
+    "text": "としょかん"
+  },
+  {
+    "id": "w:hiragana:どちら",
+    "meaning": {
+      "en": "which way; which one (esp. of two alternatives); who"
+    },
+    "script": "hiragana",
+    "text": "どちら"
+  },
+  {
+    "id": "w:hiragana:どっち",
+    "meaning": {
+      "en": "which way; which one (esp. of two alternatives); who"
+    },
+    "script": "hiragana",
+    "text": "どっち"
+  },
+  {
+    "id": "w:hiragana:とても",
+    "meaning": {
+      "en": "very; (not) at all"
+    },
+    "script": "hiragana",
+    "text": "とても"
+  },
+  {
+    "id": "w:hiragana:どなた",
+    "meaning": {
+      "en": "who"
+    },
+    "script": "hiragana",
+    "text": "どなた"
+  },
+  {
+    "id": "w:hiragana:となり",
+    "meaning": {
+      "en": "next (to); house next door"
+    },
+    "script": "hiragana",
+    "text": "となり"
+  },
+  {
+    "id": "w:hiragana:どの",
+    "meaning": {
+      "en": "which"
+    },
+    "script": "hiragana",
+    "text": "どの"
+  },
+  {
+    "id": "w:hiragana:とぶ",
+    "meaning": {
+      "en": "to fly; to jump; to spatter"
+    },
+    "script": "hiragana",
+    "text": "とぶ"
+  },
+  {
+    "id": "w:hiragana:とまる",
+    "meaning": {
+      "en": "to stop (moving); to stay at (e.g. hotel)"
+    },
+    "script": "hiragana",
+    "text": "とまる"
+  },
+  {
+    "id": "w:hiragana:ともだち",
+    "meaning": {
+      "en": "friend"
+    },
+    "script": "hiragana",
+    "text": "ともだち"
+  },
+  {
+    "id": "w:hiragana:どようび",
+    "meaning": {
+      "en": "Saturday"
+    },
+    "script": "hiragana",
+    "text": "どようび"
+  },
+  {
+    "id": "w:hiragana:とり",
+    "meaning": {
+      "en": "bird; bird meat (esp. chicken meat)"
+    },
+    "script": "hiragana",
+    "text": "とり"
+  },
+  {
+    "id": "w:hiragana:とりにく",
+    "meaning": {
+      "en": "chicken meat; fowl"
+    },
+    "script": "hiragana",
+    "text": "とりにく"
+  },
+  {
+    "id": "w:hiragana:とる",
+    "meaning": {
+      "en": "to take; to take (a photograph)"
+    },
+    "script": "hiragana",
+    "text": "とる"
+  },
+  {
+    "id": "w:hiragana:どれ",
+    "meaning": {
+      "en": "which (of three or more); well"
+    },
+    "script": "hiragana",
+    "text": "どれ"
+  },
+  {
+    "id": "w:hiragana:なか",
+    "meaning": {
+      "en": "inside; among; middle"
+    },
+    "script": "hiragana",
+    "text": "なか"
+  },
+  {
+    "id": "w:hiragana:ながい",
+    "meaning": {
+      "en": "long (distance, length); long (time)"
+    },
+    "script": "hiragana",
+    "text": "ながい"
+  },
+  {
+    "id": "w:hiragana:なく",
+    "meaning": {
+      "en": "to make sound (of an animal); to cry"
+    },
+    "script": "hiragana",
+    "text": "なく"
+  },
+  {
+    "id": "w:hiragana:なくす",
+    "meaning": {
+      "en": "to lose (something); to get rid of"
+    },
+    "script": "hiragana",
+    "text": "なくす"
+  },
+  {
+    "id": "w:hiragana:なぜ",
+    "meaning": {
+      "en": "why"
+    },
+    "script": "hiragana",
+    "text": "なぜ"
+  },
+  {
+    "id": "w:hiragana:なつ",
+    "meaning": {
+      "en": "summer"
+    },
+    "script": "hiragana",
+    "text": "なつ"
+  },
+  {
+    "id": "w:hiragana:なつやすみ",
+    "meaning": {
+      "en": "summer vacation"
+    },
+    "script": "hiragana",
+    "text": "なつやすみ"
+  },
+  {
+    "id": "w:hiragana:など",
+    "meaning": {
+      "en": "et cetera; or something; the likes of"
+    },
+    "script": "hiragana",
+    "text": "など"
+  },
+  {
+    "id": "w:hiragana:ななつ",
+    "meaning": {
+      "en": "seven; seven years of age; four o'clock (old time system)"
+    },
+    "script": "hiragana",
+    "text": "ななつ"
+  },
+  {
+    "id": "w:hiragana:なのか",
+    "meaning": {
+      "en": "7th day of the month; seven days"
+    },
+    "script": "hiragana",
+    "text": "なのか"
+  },
+  {
+    "id": "w:hiragana:なまえ",
+    "meaning": {
+      "en": "name; given name"
+    },
+    "script": "hiragana",
+    "text": "なまえ"
+  },
+  {
+    "id": "w:hiragana:ならう",
+    "meaning": {
+      "en": "to take lessons in"
+    },
+    "script": "hiragana",
+    "text": "ならう"
+  },
+  {
+    "id": "w:hiragana:ならぶ",
+    "meaning": {
+      "en": "to line up; to rival"
+    },
+    "script": "hiragana",
+    "text": "ならぶ"
+  },
+  {
+    "id": "w:hiragana:ならべる",
+    "meaning": {
+      "en": "to line up; to enumerate; to be equal (to)"
+    },
+    "script": "hiragana",
+    "text": "ならべる"
+  },
+  {
+    "id": "w:hiragana:なる",
+    "meaning": {
+      "en": "to become; to sound"
+    },
+    "script": "hiragana",
+    "text": "なる"
+  },
+  {
+    "id": "w:hiragana:なん",
+    "meaning": {
+      "en": "what; how many; many"
+    },
+    "script": "hiragana",
+    "text": "なん"
+  },
+  {
+    "id": "w:hiragana:なに",
+    "meaning": {
+      "en": "what; you-know-what; whatsit"
+    },
+    "script": "hiragana",
+    "text": "なに"
+  },
+  {
+    "id": "w:hiragana:に",
+    "meaning": {
+      "en": "two"
+    },
+    "script": "hiragana",
+    "text": "に"
+  },
+  {
+    "id": "w:hiragana:にぎやか",
+    "meaning": {
+      "en": "bustling; lively (party, voices, etc.)"
+    },
+    "script": "hiragana",
+    "text": "にぎやか"
+  },
+  {
+    "id": "w:hiragana:にく",
+    "meaning": {
+      "en": "flesh; meat; flesh (of a fruit)"
+    },
+    "script": "hiragana",
+    "text": "にく"
+  },
+  {
+    "id": "w:hiragana:にし",
+    "meaning": {
+      "en": "west"
+    },
+    "script": "hiragana",
+    "text": "にし"
+  },
+  {
+    "id": "w:hiragana:にちようび",
+    "meaning": {
+      "en": "Sunday"
+    },
+    "script": "hiragana",
+    "text": "にちようび"
+  },
+  {
+    "id": "w:hiragana:にもつ",
+    "meaning": {
+      "en": "luggage; burden; payload (of a packet, cell, etc.)"
+    },
+    "script": "hiragana",
+    "text": "にもつ"
+  },
+  {
+    "id": "w:hiragana:にわ",
+    "meaning": {
+      "en": "garden; field (of action)"
+    },
+    "script": "hiragana",
+    "text": "にわ"
+  },
+  {
+    "id": "w:hiragana:ぬぐ",
+    "meaning": {
+      "en": "to take off (clothes, shoes, etc.)"
+    },
+    "script": "hiragana",
+    "text": "ぬぐ"
+  },
+  {
+    "id": "w:hiragana:ぬるい",
+    "meaning": {
+      "en": "lukewarm; lenient"
+    },
+    "script": "hiragana",
+    "text": "ぬるい"
+  },
+  {
+    "id": "w:hiragana:ねこ",
+    "meaning": {
+      "en": "cat (esp. the domestic cat, Felis catus); shamisen; geisha"
+    },
+    "script": "hiragana",
+    "text": "ねこ"
+  },
+  {
+    "id": "w:hiragana:ねる",
+    "meaning": {
+      "en": "to sleep (lying down); to go to bed; to lie down"
+    },
+    "script": "hiragana",
+    "text": "ねる"
+  },
+  {
+    "id": "w:hiragana:のぼる",
+    "meaning": {
+      "en": "to ascend; to ascend (as a natural process, e.g. the Sun)"
+    },
+    "script": "hiragana",
+    "text": "のぼる"
+  },
+  {
+    "id": "w:hiragana:のみもの",
+    "meaning": {
+      "en": "drink"
+    },
+    "script": "hiragana",
+    "text": "のみもの"
+  },
+  {
+    "id": "w:hiragana:のむ",
+    "meaning": {
+      "en": "to drink; to smoke (tobacco); to swallow up"
+    },
+    "script": "hiragana",
+    "text": "のむ"
+  },
+  {
+    "id": "w:hiragana:のる",
+    "meaning": {
+      "en": "to get on (train, plane, bus, ship, etc.)"
+    },
+    "script": "hiragana",
+    "text": "のる"
+  },
+  {
+    "id": "w:hiragana:は",
+    "meaning": {
+      "en": "tooth; leaf"
+    },
+    "script": "hiragana",
+    "text": "は"
+  },
+  {
+    "id": "w:hiragana:はい",
+    "meaning": {
+      "en": "yes; understood; present"
+    },
+    "script": "hiragana",
+    "text": "はい"
+  },
+  {
+    "id": "w:hiragana:はいざら",
+    "meaning": {
+      "en": "ashtray"
+    },
+    "script": "hiragana",
+    "text": "はいざら"
+  },
+  {
+    "id": "w:hiragana:はいる",
+    "meaning": {
+      "en": "to enter; to join (a club, company, etc.)"
+    },
+    "script": "hiragana",
+    "text": "はいる"
+  },
+  {
+    "id": "w:hiragana:はがき",
+    "meaning": {
+      "en": "postcard; memo"
+    },
+    "script": "hiragana",
+    "text": "はがき"
+  },
+  {
+    "id": "w:hiragana:はく",
+    "meaning": {
+      "en": "to put on (lower-body clothing, e.g. pants, skirt, footwear)"
+    },
+    "script": "hiragana",
+    "text": "はく"
+  },
+  {
+    "id": "w:hiragana:はこ",
+    "meaning": {
+      "en": "box; car (of a train, etc.); shamisen case"
+    },
+    "script": "hiragana",
+    "text": "はこ"
+  },
+  {
+    "id": "w:hiragana:はし",
+    "meaning": {
+      "en": "bridge; chopsticks"
+    },
+    "script": "hiragana",
+    "text": "はし"
+  },
+  {
+    "id": "w:hiragana:はじまる",
+    "meaning": {
+      "en": "to begin; to happen (again); to date (from)"
+    },
+    "script": "hiragana",
+    "text": "はじまる"
+  },
+  {
+    "id": "w:hiragana:はじめ",
+    "meaning": {
+      "en": "beginning; first (in line, etc.); origin"
+    },
+    "script": "hiragana",
+    "text": "はじめ"
+  },
+  {
+    "id": "w:hiragana:はじめて",
+    "meaning": {
+      "en": "for the first time; only after ... is it ...; first time"
+    },
+    "script": "hiragana",
+    "text": "はじめて"
+  },
+  {
+    "id": "w:hiragana:はしる",
+    "meaning": {
+      "en": "to run; to run (of a vehicle); to rush (to)"
+    },
+    "script": "hiragana",
+    "text": "はしる"
+  },
+  {
+    "id": "w:hiragana:はたち",
+    "meaning": {
+      "en": "20 years old; twenty"
+    },
+    "script": "hiragana",
+    "text": "はたち"
+  },
+  {
+    "id": "w:hiragana:はたらく",
+    "meaning": {
+      "en": "to work; to function; to commit (e.g. a crime)"
+    },
+    "script": "hiragana",
+    "text": "はたらく"
+  },
+  {
+    "id": "w:hiragana:はち",
+    "meaning": {
+      "en": "eight"
+    },
+    "script": "hiragana",
+    "text": "はち"
+  },
+  {
+    "id": "w:hiragana:はつか",
+    "meaning": {
+      "en": "20th day of the month; 20 days"
+    },
+    "script": "hiragana",
+    "text": "はつか"
+  },
+  {
+    "id": "w:hiragana:はな",
+    "meaning": {
+      "en": "flower; nose"
+    },
+    "script": "hiragana",
+    "text": "はな"
+  },
+  {
+    "id": "w:hiragana:はなし",
+    "meaning": {
+      "en": "talk; topic; discussions"
+    },
+    "script": "hiragana",
+    "text": "はなし"
+  },
+  {
+    "id": "w:hiragana:はなす",
+    "meaning": {
+      "en": "to talk; to tell; to speak (a language)"
+    },
+    "script": "hiragana",
+    "text": "はなす"
+  },
+  {
+    "id": "w:hiragana:はやい",
+    "meaning": {
+      "en": "fast; early; premature"
+    },
+    "script": "hiragana",
+    "text": "はやい"
+  },
+  {
+    "id": "w:hiragana:はる",
+    "meaning": {
+      "en": "spring; to stick"
+    },
+    "script": "hiragana",
+    "text": "はる"
+  },
+  {
+    "id": "w:hiragana:はれ",
+    "meaning": {
+      "en": "clear weather; formal; cleared of suspicion"
+    },
+    "script": "hiragana",
+    "text": "はれ"
+  },
+  {
+    "id": "w:hiragana:はれる",
+    "meaning": {
+      "en": "to clear up; to refresh (e.g. spirits)"
+    },
+    "script": "hiragana",
+    "text": "はれる"
+  },
+  {
+    "id": "w:hiragana:はん",
+    "meaning": {
+      "en": "half; half-past; odd number"
+    },
+    "script": "hiragana",
+    "text": "はん"
+  },
+  {
+    "id": "w:hiragana:ばん",
+    "meaning": {
+      "en": "evening; dinner; counter for nights"
+    },
+    "script": "hiragana",
+    "text": "ばん"
+  },
+  {
+    "id": "w:hiragana:ばんごう",
+    "meaning": {
+      "en": "number"
+    },
+    "script": "hiragana",
+    "text": "ばんごう"
+  },
+  {
+    "id": "w:hiragana:ばんごはん",
+    "meaning": {
+      "en": "dinner"
+    },
+    "script": "hiragana",
+    "text": "ばんごはん"
+  },
+  {
+    "id": "w:hiragana:はんぶん",
+    "meaning": {
+      "en": "half"
+    },
+    "script": "hiragana",
+    "text": "はんぶん"
+  },
+  {
+    "id": "w:hiragana:ひがし",
+    "meaning": {
+      "en": "east"
+    },
+    "script": "hiragana",
+    "text": "ひがし"
+  },
+  {
+    "id": "w:hiragana:ひく",
+    "meaning": {
+      "en": "to pull; to play (a stringed or keyboard instrument)"
+    },
+    "script": "hiragana",
+    "text": "ひく"
+  },
+  {
+    "id": "w:hiragana:ひくい",
+    "meaning": {
+      "en": "low (rank, degree, value, content, quality, etc.)"
+    },
+    "script": "hiragana",
+    "text": "ひくい"
+  },
+  {
+    "id": "w:hiragana:ひこうき",
+    "meaning": {
+      "en": "airplane"
+    },
+    "script": "hiragana",
+    "text": "ひこうき"
+  },
+  {
+    "id": "w:hiragana:ひだり",
+    "meaning": {
+      "en": "left; left hand; the left (wing)"
+    },
+    "script": "hiragana",
+    "text": "ひだり"
+  },
+  {
+    "id": "w:hiragana:ひと",
+    "meaning": {
+      "en": "person; human beings; human (Homo sapiens)"
+    },
+    "script": "hiragana",
+    "text": "ひと"
+  },
+  {
+    "id": "w:hiragana:ひとつ",
+    "meaning": {
+      "en": "one; for one thing; only"
+    },
+    "script": "hiragana",
+    "text": "ひとつ"
+  },
+  {
+    "id": "w:hiragana:ひとつき",
+    "meaning": {
+      "en": "one month"
+    },
+    "script": "hiragana",
+    "text": "ひとつき"
+  },
+  {
+    "id": "w:hiragana:ひとり",
+    "meaning": {
+      "en": "one person; being alone; being single"
+    },
+    "script": "hiragana",
+    "text": "ひとり"
+  },
+  {
+    "id": "w:hiragana:ひま",
+    "meaning": {
+      "en": "spare time; time (it takes to do something); time off"
+    },
+    "script": "hiragana",
+    "text": "ひま"
+  },
+  {
+    "id": "w:hiragana:ひゃく",
+    "meaning": {
+      "en": "hundred"
+    },
+    "script": "hiragana",
+    "text": "ひゃく"
+  },
+  {
+    "id": "w:hiragana:びょういん",
+    "meaning": {
+      "en": "hospital"
+    },
+    "script": "hiragana",
+    "text": "びょういん"
+  },
+  {
+    "id": "w:hiragana:びょうき",
+    "meaning": {
+      "en": "illness (usu. excluding minor ailments, e.g. common cold)"
+    },
+    "script": "hiragana",
+    "text": "びょうき"
+  },
+  {
+    "id": "w:hiragana:ひる",
+    "meaning": {
+      "en": "noon; daytime; lunch"
+    },
+    "script": "hiragana",
+    "text": "ひる"
+  },
+  {
+    "id": "w:hiragana:ひるごはん",
+    "meaning": {
+      "en": "lunch"
+    },
+    "script": "hiragana",
+    "text": "ひるごはん"
+  },
+  {
+    "id": "w:hiragana:ひろい",
+    "meaning": {
+      "en": "spacious"
+    },
+    "script": "hiragana",
+    "text": "ひろい"
+  },
+  {
+    "id": "w:hiragana:ふうとう",
+    "meaning": {
+      "en": "envelope"
+    },
+    "script": "hiragana",
+    "text": "ふうとう"
+  },
+  {
+    "id": "w:hiragana:ふく",
+    "meaning": {
+      "en": "to blow (of the wind); clothes (esp. Western clothes)"
+    },
+    "script": "hiragana",
+    "text": "ふく"
+  },
+  {
+    "id": "w:hiragana:ふたつ",
+    "meaning": {
+      "en": "two"
+    },
+    "script": "hiragana",
+    "text": "ふたつ"
+  },
+  {
+    "id": "w:hiragana:ぶたにく",
+    "meaning": {
+      "en": "pork"
+    },
+    "script": "hiragana",
+    "text": "ぶたにく"
+  },
+  {
+    "id": "w:hiragana:ふたり",
+    "meaning": {
+      "en": "two persons"
+    },
+    "script": "hiragana",
+    "text": "ふたり"
+  },
+  {
+    "id": "w:hiragana:ふつか",
+    "meaning": {
+      "en": "2nd day of the month; two days"
+    },
+    "script": "hiragana",
+    "text": "ふつか"
+  },
+  {
+    "id": "w:hiragana:ふとい",
+    "meaning": {
+      "en": "fat; deep (of a voice); daring"
+    },
+    "script": "hiragana",
+    "text": "ふとい"
+  },
+  {
+    "id": "w:hiragana:ふゆ",
+    "meaning": {
+      "en": "winter"
+    },
+    "script": "hiragana",
+    "text": "ふゆ"
+  },
+  {
+    "id": "w:hiragana:ふる",
+    "meaning": {
+      "en": "to fall (of rain, snow, ash, etc.); to form (of frost)"
+    },
+    "script": "hiragana",
+    "text": "ふる"
+  },
+  {
+    "id": "w:hiragana:ふるい",
+    "meaning": {
+      "en": "old; long; of the distant past"
+    },
+    "script": "hiragana",
+    "text": "ふるい"
+  },
+  {
+    "id": "w:hiragana:ふろ",
+    "meaning": {
+      "en": "bath; bathhouse; room for drying lacquerware"
+    },
+    "script": "hiragana",
+    "text": "ふろ"
+  },
+  {
+    "id": "w:hiragana:ぶんしょう",
+    "meaning": {
+      "en": "writing; sentence"
+    },
+    "script": "hiragana",
+    "text": "ぶんしょう"
+  },
+  {
+    "id": "w:hiragana:へた",
+    "meaning": {
+      "en": "unskillful; imprudent"
+    },
+    "script": "hiragana",
+    "text": "へた"
+  },
+  {
+    "id": "w:hiragana:へや",
+    "meaning": {
+      "en": "room; apartment; stable"
+    },
+    "script": "hiragana",
+    "text": "へや"
+  },
+  {
+    "id": "w:hiragana:へん",
+    "meaning": {
+      "en": "area; strange"
+    },
+    "script": "hiragana",
+    "text": "へん"
+  },
+  {
+    "id": "w:hiragana:べんきょう",
+    "meaning": {
+      "en": "study; diligence; experience"
+    },
+    "script": "hiragana",
+    "text": "べんきょう"
+  },
+  {
+    "id": "w:hiragana:べんり",
+    "meaning": {
+      "en": "convenient"
+    },
+    "script": "hiragana",
+    "text": "べんり"
+  },
+  {
+    "id": "w:hiragana:ぼうし",
+    "meaning": {
+      "en": "hat; cap (move)"
+    },
+    "script": "hiragana",
+    "text": "ぼうし"
+  },
+  {
+    "id": "w:hiragana:ほか",
+    "meaning": {
+      "en": "another place; another (person or thing)"
+    },
+    "script": "hiragana",
+    "text": "ほか"
+  },
+  {
+    "id": "w:hiragana:ほしい",
+    "meaning": {
+      "en": "wanting (to have); I want (you, them, etc.) to (do)"
+    },
+    "script": "hiragana",
+    "text": "ほしい"
+  },
+  {
+    "id": "w:hiragana:ほそい",
+    "meaning": {
+      "en": "thin; unlucky"
+    },
+    "script": "hiragana",
+    "text": "ほそい"
+  },
+  {
+    "id": "w:hiragana:ほん",
+    "meaning": {
+      "en": "book; this; main"
+    },
+    "script": "hiragana",
+    "text": "ほん"
+  },
+  {
+    "id": "w:hiragana:ほんだな",
+    "meaning": {
+      "en": "bookshelves"
+    },
+    "script": "hiragana",
+    "text": "ほんだな"
+  },
+  {
+    "id": "w:hiragana:ほんとう",
+    "meaning": {
+      "en": "truth; proper; genuine"
+    },
+    "script": "hiragana",
+    "text": "ほんとう"
+  },
+  {
+    "id": "w:hiragana:まいあさ",
+    "meaning": {
+      "en": "every morning"
+    },
+    "script": "hiragana",
+    "text": "まいあさ"
+  },
+  {
+    "id": "w:hiragana:まいげつ",
+    "meaning": {
+      "en": "every month"
+    },
+    "script": "hiragana",
+    "text": "まいげつ"
+  },
+  {
+    "id": "w:hiragana:まいつき",
+    "meaning": {
+      "en": "every month"
+    },
+    "script": "hiragana",
+    "text": "まいつき"
+  },
+  {
+    "id": "w:hiragana:まいしゅう",
+    "meaning": {
+      "en": "every week"
+    },
+    "script": "hiragana",
+    "text": "まいしゅう"
+  },
+  {
+    "id": "w:hiragana:まいにち",
+    "meaning": {
+      "en": "every day"
+    },
+    "script": "hiragana",
+    "text": "まいにち"
+  },
+  {
+    "id": "w:hiragana:まいねん",
+    "meaning": {
+      "en": "every year"
+    },
+    "script": "hiragana",
+    "text": "まいねん"
+  },
+  {
+    "id": "w:hiragana:まいとし",
+    "meaning": {
+      "en": "every year"
+    },
+    "script": "hiragana",
+    "text": "まいとし"
+  },
+  {
+    "id": "w:hiragana:まいばん",
+    "meaning": {
+      "en": "every night"
+    },
+    "script": "hiragana",
+    "text": "まいばん"
+  },
+  {
+    "id": "w:hiragana:まえ",
+    "meaning": {
+      "en": "in front (of); before; (the) front"
+    },
+    "script": "hiragana",
+    "text": "まえ"
+  },
+  {
+    "id": "w:hiragana:まがる",
+    "meaning": {
+      "en": "to bend; to turn; to be awry"
+    },
+    "script": "hiragana",
+    "text": "まがる"
+  },
+  {
+    "id": "w:hiragana:まずい",
+    "meaning": {
+      "en": "bad(-tasting); poor; ugly"
+    },
+    "script": "hiragana",
+    "text": "まずい"
+  },
+  {
+    "id": "w:hiragana:また",
+    "meaning": {
+      "en": "again; also; on the other hand"
+    },
+    "script": "hiragana",
+    "text": "また"
+  },
+  {
+    "id": "w:hiragana:まだ",
+    "meaning": {
+      "en": "still; (not) yet; more"
+    },
+    "script": "hiragana",
+    "text": "まだ"
+  },
+  {
+    "id": "w:hiragana:まち",
+    "meaning": {
+      "en": "town; downtown; street"
+    },
+    "script": "hiragana",
+    "text": "まち"
+  },
+  {
+    "id": "w:hiragana:まつ",
+    "meaning": {
+      "en": "to wait; to await; to depend on"
+    },
+    "script": "hiragana",
+    "text": "まつ"
+  },
+  {
+    "id": "w:hiragana:まっすぐ",
+    "meaning": {
+      "en": "straight (ahead); straightforward"
+    },
+    "script": "hiragana",
+    "text": "まっすぐ"
+  },
+  {
+    "id": "w:hiragana:まど",
+    "meaning": {
+      "en": "window"
+    },
+    "script": "hiragana",
+    "text": "まど"
+  },
+  {
+    "id": "w:hiragana:まるい",
+    "meaning": {
+      "en": "round; curved; harmonious"
+    },
+    "script": "hiragana",
+    "text": "まるい"
+  },
+  {
+    "id": "w:hiragana:まん",
+    "meaning": {
+      "en": "10,000; myriad"
+    },
+    "script": "hiragana",
+    "text": "まん"
+  },
+  {
+    "id": "w:hiragana:まんねんひつ",
+    "meaning": {
+      "en": "fountain pen"
+    },
+    "script": "hiragana",
+    "text": "まんねんひつ"
+  },
+  {
+    "id": "w:hiragana:みがく",
+    "meaning": {
+      "en": "to polish; to refine (a skill, etc.)"
+    },
+    "script": "hiragana",
+    "text": "みがく"
+  },
+  {
+    "id": "w:hiragana:みぎ",
+    "meaning": {
+      "en": "right; right hand"
+    },
+    "script": "hiragana",
+    "text": "みぎ"
+  },
+  {
+    "id": "w:hiragana:みじかい",
+    "meaning": {
+      "en": "short; brief"
+    },
+    "script": "hiragana",
+    "text": "みじかい"
+  },
+  {
+    "id": "w:hiragana:みず",
+    "meaning": {
+      "en": "water (esp. cool or cold); fluid (esp. in an animal tissue)"
+    },
+    "script": "hiragana",
+    "text": "みず"
+  },
+  {
+    "id": "w:hiragana:みせ",
+    "meaning": {
+      "en": "store"
+    },
+    "script": "hiragana",
+    "text": "みせ"
+  },
+  {
+    "id": "w:hiragana:みせる",
+    "meaning": {
+      "en": "to show; to make (something or someone) look ..."
+    },
+    "script": "hiragana",
+    "text": "みせる"
+  },
+  {
+    "id": "w:hiragana:みち",
+    "meaning": {
+      "en": "road; route; distance"
+    },
+    "script": "hiragana",
+    "text": "みち"
+  },
+  {
+    "id": "w:hiragana:みっか",
+    "meaning": {
+      "en": "3rd day of the month; three days"
+    },
+    "script": "hiragana",
+    "text": "みっか"
+  },
+  {
+    "id": "w:hiragana:みっつ",
+    "meaning": {
+      "en": "three; three years of age"
+    },
+    "script": "hiragana",
+    "text": "みっつ"
+  },
+  {
+    "id": "w:hiragana:みどり",
+    "meaning": {
+      "en": "green; greenery"
+    },
+    "script": "hiragana",
+    "text": "みどり"
+  },
+  {
+    "id": "w:hiragana:みなさん",
+    "meaning": {
+      "en": "all"
+    },
+    "script": "hiragana",
+    "text": "みなさん"
+  },
+  {
+    "id": "w:hiragana:みなみ",
+    "meaning": {
+      "en": "south"
+    },
+    "script": "hiragana",
+    "text": "みなみ"
+  },
+  {
+    "id": "w:hiragana:みみ",
+    "meaning": {
+      "en": "ear; hearing; ear (for music, etc.)"
+    },
+    "script": "hiragana",
+    "text": "みみ"
+  },
+  {
+    "id": "w:hiragana:みる",
+    "meaning": {
+      "en": "to see; to examine; to look after"
+    },
+    "script": "hiragana",
+    "text": "みる"
+  },
+  {
+    "id": "w:hiragana:みんな",
+    "meaning": {
+      "en": "everyone; everything"
+    },
+    "script": "hiragana",
+    "text": "みんな"
+  },
+  {
+    "id": "w:hiragana:むいか",
+    "meaning": {
+      "en": "6th day of the month; six days"
+    },
+    "script": "hiragana",
+    "text": "むいか"
+  },
+  {
+    "id": "w:hiragana:むこう",
+    "meaning": {
+      "en": "opposite side; over there; destination"
+    },
+    "script": "hiragana",
+    "text": "むこう"
+  },
+  {
+    "id": "w:hiragana:むずかしい",
+    "meaning": {
+      "en": "difficult; impossible; fussy"
+    },
+    "script": "hiragana",
+    "text": "むずかしい"
+  },
+  {
+    "id": "w:hiragana:むっつ",
+    "meaning": {
+      "en": "six; six years of age; six o'clock (old time system)"
+    },
+    "script": "hiragana",
+    "text": "むっつ"
+  },
+  {
+    "id": "w:hiragana:むら",
+    "meaning": {
+      "en": "village"
+    },
+    "script": "hiragana",
+    "text": "むら"
+  },
+  {
+    "id": "w:hiragana:め",
+    "meaning": {
+      "en": "eye; eyesight; look"
+    },
+    "script": "hiragana",
+    "text": "め"
+  },
+  {
+    "id": "w:hiragana:めがね",
+    "meaning": {
+      "en": "glasses; judgment; four-eyes"
+    },
+    "script": "hiragana",
+    "text": "めがね"
+  },
+  {
+    "id": "w:hiragana:もう",
+    "meaning": {
+      "en": "already; soon; further"
+    },
+    "script": "hiragana",
+    "text": "もう"
+  },
+  {
+    "id": "w:hiragana:もういちど",
+    "meaning": {
+      "en": "once more"
+    },
+    "script": "hiragana",
+    "text": "もういちど"
+  },
+  {
+    "id": "w:hiragana:もくようび",
+    "meaning": {
+      "en": "Thursday"
+    },
+    "script": "hiragana",
+    "text": "もくようび"
+  },
+  {
+    "id": "w:hiragana:もつ",
+    "meaning": {
+      "en": "to hold (in one's hand); to possess; to maintain"
+    },
+    "script": "hiragana",
+    "text": "もつ"
+  },
+  {
+    "id": "w:hiragana:もっと",
+    "meaning": {
+      "en": "(some) more"
+    },
+    "script": "hiragana",
+    "text": "もっと"
+  },
+  {
+    "id": "w:hiragana:もの",
+    "meaning": {
+      "en": "thing; one's things; things"
+    },
+    "script": "hiragana",
+    "text": "もの"
+  },
+  {
+    "id": "w:hiragana:もん",
+    "meaning": {
+      "en": "gate"
+    },
+    "script": "hiragana",
+    "text": "もん"
+  },
+  {
+    "id": "w:hiragana:もんだい",
+    "meaning": {
+      "en": "question (e.g. on a test)"
+    },
+    "script": "hiragana",
+    "text": "もんだい"
+  },
+  {
+    "id": "w:hiragana:やおや",
+    "meaning": {
+      "en": "greengrocer; jack of all trades"
+    },
+    "script": "hiragana",
+    "text": "やおや"
+  },
+  {
+    "id": "w:hiragana:やさい",
+    "meaning": {
+      "en": "vegetable; marijuana"
+    },
+    "script": "hiragana",
+    "text": "やさい"
+  },
+  {
+    "id": "w:hiragana:やさしい",
+    "meaning": {
+      "en": "easy; tender"
+    },
+    "script": "hiragana",
+    "text": "やさしい"
+  },
+  {
+    "id": "w:hiragana:やすい",
+    "meaning": {
+      "en": "cheap; calm"
+    },
+    "script": "hiragana",
+    "text": "やすい"
+  },
+  {
+    "id": "w:hiragana:やすみ",
+    "meaning": {
+      "en": "rest; vacation; dormancy (of a silkworm prior to moulting)"
+    },
+    "script": "hiragana",
+    "text": "やすみ"
+  },
+  {
+    "id": "w:hiragana:やすむ",
+    "meaning": {
+      "en": "to be absent; to rest; to go to bed"
+    },
+    "script": "hiragana",
+    "text": "やすむ"
+  },
+  {
+    "id": "w:hiragana:やっつ",
+    "meaning": {
+      "en": "eight; eight years of age; two o'clock (old time system)"
+    },
+    "script": "hiragana",
+    "text": "やっつ"
+  },
+  {
+    "id": "w:hiragana:やま",
+    "meaning": {
+      "en": "mountain; mine; (mountain) forest"
+    },
+    "script": "hiragana",
+    "text": "やま"
+  },
+  {
+    "id": "w:hiragana:やる",
+    "meaning": {
+      "en": "to do; to send; to put"
+    },
+    "script": "hiragana",
+    "text": "やる"
+  },
+  {
+    "id": "w:hiragana:ゆうがた",
+    "meaning": {
+      "en": "early evening (usu. from 3pm to 6pm)"
+    },
+    "script": "hiragana",
+    "text": "ゆうがた"
+  },
+  {
+    "id": "w:hiragana:ゆうはん",
+    "meaning": {
+      "en": "evening meal"
+    },
+    "script": "hiragana",
+    "text": "ゆうはん"
+  },
+  {
+    "id": "w:hiragana:ゆうびんきょく",
+    "meaning": {
+      "en": "post office"
+    },
+    "script": "hiragana",
+    "text": "ゆうびんきょく"
+  },
+  {
+    "id": "w:hiragana:ゆうべ",
+    "meaning": {
+      "en": "last night"
+    },
+    "script": "hiragana",
+    "text": "ゆうべ"
+  },
+  {
+    "id": "w:hiragana:ゆうめい",
+    "meaning": {
+      "en": "famous"
+    },
+    "script": "hiragana",
+    "text": "ゆうめい"
+  },
+  {
+    "id": "w:hiragana:ゆき",
+    "meaning": {
+      "en": "snow"
+    },
+    "script": "hiragana",
+    "text": "ゆき"
+  },
+  {
+    "id": "w:hiragana:ゆく",
+    "meaning": {
+      "en": "to go; to move through; to go (well, badly, etc.)"
+    },
+    "script": "hiragana",
+    "text": "ゆく"
+  },
+  {
+    "id": "w:hiragana:ゆっくり",
+    "meaning": {
+      "en": "slowly; easily (e.g. in time); well (e.g. sleep)"
+    },
+    "script": "hiragana",
+    "text": "ゆっくり"
+  },
+  {
+    "id": "w:hiragana:ようか",
+    "meaning": {
+      "en": "8th day of the month; eight days"
+    },
+    "script": "hiragana",
+    "text": "ようか"
+  },
+  {
+    "id": "w:hiragana:ようふく",
+    "meaning": {
+      "en": "Western-style clothes (cf. traditional Japanese clothes)"
+    },
+    "script": "hiragana",
+    "text": "ようふく"
+  },
+  {
+    "id": "w:hiragana:よく",
+    "meaning": {
+      "en": "nicely; frequently; I'm glad that you ..."
+    },
+    "script": "hiragana",
+    "text": "よく"
+  },
+  {
+    "id": "w:hiragana:よこ",
+    "meaning": {
+      "en": "horizontal (as opposed to vertical)"
+    },
+    "script": "hiragana",
+    "text": "よこ"
+  },
+  {
+    "id": "w:hiragana:よっか",
+    "meaning": {
+      "en": "4th day of the month; four days"
+    },
+    "script": "hiragana",
+    "text": "よっか"
+  },
+  {
+    "id": "w:hiragana:よっつ",
+    "meaning": {
+      "en": "four; four years of age"
+    },
+    "script": "hiragana",
+    "text": "よっつ"
+  },
+  {
+    "id": "w:hiragana:よぶ",
+    "meaning": {
+      "en": "to call out (to); to summon (a doctor, etc.); to invite"
+    },
+    "script": "hiragana",
+    "text": "よぶ"
+  },
+  {
+    "id": "w:hiragana:よむ",
+    "meaning": {
+      "en": "to read; to recite (e.g. a sutra); to predict"
+    },
+    "script": "hiragana",
+    "text": "よむ"
+  },
+  {
+    "id": "w:hiragana:よる",
+    "meaning": {
+      "en": "night; to approach"
+    },
+    "script": "hiragana",
+    "text": "よる"
+  },
+  {
+    "id": "w:hiragana:よわい",
+    "meaning": {
+      "en": "weak"
+    },
+    "script": "hiragana",
+    "text": "よわい"
+  },
+  {
+    "id": "w:hiragana:らいげつ",
+    "meaning": {
+      "en": "next month"
+    },
+    "script": "hiragana",
+    "text": "らいげつ"
+  },
+  {
+    "id": "w:hiragana:らいしゅう",
+    "meaning": {
+      "en": "next week"
+    },
+    "script": "hiragana",
+    "text": "らいしゅう"
+  },
+  {
+    "id": "w:hiragana:らいねん",
+    "meaning": {
+      "en": "next year"
+    },
+    "script": "hiragana",
+    "text": "らいねん"
+  },
+  {
+    "id": "w:hiragana:りっぱ",
+    "meaning": {
+      "en": "splendid; praiseworthy; legal"
+    },
+    "script": "hiragana",
+    "text": "りっぱ"
+  },
+  {
+    "id": "w:hiragana:りゅうがくせい",
+    "meaning": {
+      "en": "overseas student"
+    },
+    "script": "hiragana",
+    "text": "りゅうがくせい"
+  },
+  {
+    "id": "w:hiragana:りょうしん",
+    "meaning": {
+      "en": "parents"
+    },
+    "script": "hiragana",
+    "text": "りょうしん"
+  },
+  {
+    "id": "w:hiragana:りょうり",
+    "meaning": {
+      "en": "cooking; dealing with (skillfully)"
+    },
+    "script": "hiragana",
+    "text": "りょうり"
+  },
+  {
+    "id": "w:hiragana:りょこう",
+    "meaning": {
+      "en": "travel"
+    },
+    "script": "hiragana",
+    "text": "りょこう"
+  },
+  {
+    "id": "w:hiragana:れい",
+    "meaning": {
+      "en": "zero"
+    },
+    "script": "hiragana",
+    "text": "れい"
+  },
+  {
+    "id": "w:hiragana:れいぞうこ",
+    "meaning": {
+      "en": "refrigerator"
+    },
+    "script": "hiragana",
+    "text": "れいぞうこ"
+  },
+  {
+    "id": "w:hiragana:れんしゅう",
+    "meaning": {
+      "en": "practice"
+    },
+    "script": "hiragana",
+    "text": "れんしゅう"
+  },
+  {
+    "id": "w:hiragana:ろうか",
+    "meaning": {
+      "en": "corridor"
+    },
+    "script": "hiragana",
+    "text": "ろうか"
+  },
+  {
+    "id": "w:hiragana:ろく",
+    "meaning": {
+      "en": "six"
+    },
+    "script": "hiragana",
+    "text": "ろく"
+  },
+  {
+    "id": "w:hiragana:わかい",
+    "meaning": {
+      "en": "young; immature; low (number)"
+    },
+    "script": "hiragana",
+    "text": "わかい"
+  },
+  {
+    "id": "w:hiragana:わかる",
+    "meaning": {
+      "en": "to understand; to become clear; I know!"
+    },
+    "script": "hiragana",
+    "text": "わかる"
+  },
+  {
+    "id": "w:hiragana:わすれる",
+    "meaning": {
+      "en": "to forget"
+    },
+    "script": "hiragana",
+    "text": "わすれる"
+  },
+  {
+    "id": "w:hiragana:わたくし",
+    "meaning": {
+      "en": "I; personal (affairs, etc.); selfishness"
+    },
+    "script": "hiragana",
+    "text": "わたくし"
+  },
+  {
+    "id": "w:hiragana:わたし",
+    "meaning": {
+      "en": "I"
+    },
+    "script": "hiragana",
+    "text": "わたし"
+  },
+  {
+    "id": "w:hiragana:わたす",
+    "meaning": {
+      "en": "to ferry across (e.g. a river); to lay across; to hand over"
+    },
+    "script": "hiragana",
+    "text": "わたす"
+  },
+  {
+    "id": "w:hiragana:わたる",
+    "meaning": {
+      "en": "to cross over; to extend"
+    },
+    "script": "hiragana",
+    "text": "わたる"
+  },
+  {
+    "id": "w:hiragana:わるい",
+    "meaning": {
+      "en": "bad; poor (quality); evil"
+    },
+    "script": "hiragana",
+    "text": "わるい"
+  },
+  {
+    "id": "w:hiragana:より",
+    "meaning": {
+      "en": "than; rather than; from"
+    },
+    "script": "hiragana",
+    "text": "より"
+  },
+  {
+    "id": "w:hiragana:ほう",
+    "meaning": {
+      "en": "direction; side (of an argument, etc.); type"
+    },
+    "script": "hiragana",
+    "text": "ほう"
+  },
+  {
+    "id": "w:hiragana:あ",
+    "meaning": {
+      "en": "ah; hey!"
+    },
+    "script": "hiragana",
+    "text": "あ"
+  },
+  {
+    "id": "w:hiragana:ああ",
+    "meaning": {
+      "en": "like that"
+    },
+    "script": "hiragana",
+    "text": "ああ"
+  },
+  {
+    "id": "w:hiragana:あいさつ",
+    "meaning": {
+      "en": "greeting; speech (congratulatory or appreciative); reply"
+    },
+    "script": "hiragana",
+    "text": "あいさつ"
+  },
+  {
+    "id": "w:hiragana:あいだ",
+    "meaning": {
+      "en": "space (between); period of time (during, while)"
+    },
+    "script": "hiragana",
+    "text": "あいだ"
+  },
+  {
+    "id": "w:hiragana:あかちゃん",
+    "meaning": {
+      "en": "baby"
+    },
+    "script": "hiragana",
+    "text": "あかちゃん"
+  },
+  {
+    "id": "w:hiragana:あがる",
+    "meaning": {
+      "en": "to rise; to enter (esp. from outdoors); to enter (a school)"
+    },
+    "script": "hiragana",
+    "text": "あがる"
+  },
+  {
+    "id": "w:hiragana:あかんぼう",
+    "meaning": {
+      "en": "baby"
+    },
+    "script": "hiragana",
+    "text": "あかんぼう"
+  },
+  {
+    "id": "w:hiragana:あさい",
+    "meaning": {
+      "en": "shallow; slight (wound); short (time)"
+    },
+    "script": "hiragana",
+    "text": "あさい"
+  },
+  {
+    "id": "w:hiragana:あじ",
+    "meaning": {
+      "en": "flavor; charm; experience"
+    },
+    "script": "hiragana",
+    "text": "あじ"
+  },
+  {
+    "id": "w:hiragana:あす",
+    "meaning": {
+      "en": "tomorrow; near future"
+    },
+    "script": "hiragana",
+    "text": "あす"
+  },
+  {
+    "id": "w:hiragana:あそび",
+    "meaning": {
+      "en": "play; pleasure; play (in a mechanism, e.g. a steering wheel)"
+    },
+    "script": "hiragana",
+    "text": "あそび"
+  },
+  {
+    "id": "w:hiragana:あつまる",
+    "meaning": {
+      "en": "to gather"
+    },
+    "script": "hiragana",
+    "text": "あつまる"
+  },
+  {
+    "id": "w:hiragana:あつめる",
+    "meaning": {
+      "en": "to collect"
+    },
+    "script": "hiragana",
+    "text": "あつめる"
+  },
+  {
+    "id": "w:hiragana:あやまる",
+    "meaning": {
+      "en": "to apologize (apologise); to refuse; to be unable to bear"
+    },
+    "script": "hiragana",
+    "text": "あやまる"
+  },
+  {
+    "id": "w:hiragana:あんしん",
+    "meaning": {
+      "en": "peace of mind"
+    },
+    "script": "hiragana",
+    "text": "あんしん"
+  },
+  {
+    "id": "w:hiragana:あんぜん",
+    "meaning": {
+      "en": "safety"
+    },
+    "script": "hiragana",
+    "text": "あんぜん"
+  },
+  {
+    "id": "w:hiragana:あんな",
+    "meaning": {
+      "en": "that sort of"
+    },
+    "script": "hiragana",
+    "text": "あんな"
+  },
+  {
+    "id": "w:hiragana:あんない",
+    "meaning": {
+      "en": "guidance; information; announcement (of a visitor's arrival)"
+    },
+    "script": "hiragana",
+    "text": "あんない"
+  },
+  {
+    "id": "w:hiragana:いか",
+    "meaning": {
+      "en": "not exceeding ...; below (a standard, level, etc.)"
+    },
+    "script": "hiragana",
+    "text": "いか"
+  },
+  {
+    "id": "w:hiragana:いがい",
+    "meaning": {
+      "en": "excluding; outside (a boundary, scope, etc.)"
+    },
+    "script": "hiragana",
+    "text": "いがい"
+  },
+  {
+    "id": "w:hiragana:いがく",
+    "meaning": {
+      "en": "medicine"
+    },
+    "script": "hiragana",
+    "text": "いがく"
+  },
+  {
+    "id": "w:hiragana:いきる",
+    "meaning": {
+      "en": "to live; to make a living; to be in effect"
+    },
+    "script": "hiragana",
+    "text": "いきる"
+  },
+  {
+    "id": "w:hiragana:いけん",
+    "meaning": {
+      "en": "opinion; scolding"
+    },
+    "script": "hiragana",
+    "text": "いけん"
+  },
+  {
+    "id": "w:hiragana:いし",
+    "meaning": {
+      "en": "stone; jewel; flint (in a lighter)"
+    },
+    "script": "hiragana",
+    "text": "いし"
+  },
+  {
+    "id": "w:hiragana:いじめる",
+    "meaning": {
+      "en": "to ill-treat; to be tough on (e.g. one's body)"
+    },
+    "script": "hiragana",
+    "text": "いじめる"
+  },
+  {
+    "id": "w:hiragana:いじょう",
+    "meaning": {
+      "en": "not less than ...; beyond (e.g. one's expectations)"
+    },
+    "script": "hiragana",
+    "text": "いじょう"
+  },
+  {
+    "id": "w:hiragana:いそぐ",
+    "meaning": {
+      "en": "to hurry"
+    },
+    "script": "hiragana",
+    "text": "いそぐ"
+  },
+  {
+    "id": "w:hiragana:いたす",
+    "meaning": {
+      "en": "to do"
+    },
+    "script": "hiragana",
+    "text": "いたす"
+  },
+  {
+    "id": "w:hiragana:いただく",
+    "meaning": {
+      "en": "to receive; to eat; to be crowned with"
+    },
+    "script": "hiragana",
+    "text": "いただく"
+  },
+  {
+    "id": "w:hiragana:いちど",
+    "meaning": {
+      "en": "once; one degree"
+    },
+    "script": "hiragana",
+    "text": "いちど"
+  },
+  {
+    "id": "w:hiragana:いっしょうけんめい",
+    "meaning": {
+      "en": "very hard"
+    },
+    "script": "hiragana",
+    "text": "いっしょうけんめい"
+  },
+  {
+    "id": "w:hiragana:いっぱい",
+    "meaning": {
+      "en": "one cup (of); one drink (of alcohol); full"
+    },
+    "script": "hiragana",
+    "text": "いっぱい"
+  },
+  {
+    "id": "w:hiragana:いと",
+    "meaning": {
+      "en": "thread"
+    },
+    "script": "hiragana",
+    "text": "いと"
+  },
+  {
+    "id": "w:hiragana:いない",
+    "meaning": {
+      "en": "within"
+    },
+    "script": "hiragana",
+    "text": "いない"
+  },
+  {
+    "id": "w:hiragana:いなか",
+    "meaning": {
+      "en": "rural area; hometown"
+    },
+    "script": "hiragana",
+    "text": "いなか"
+  },
+  {
+    "id": "w:hiragana:いのる",
+    "meaning": {
+      "en": "to pray; to wish"
+    },
+    "script": "hiragana",
+    "text": "いのる"
+  },
+  {
+    "id": "w:hiragana:いらっしゃる",
+    "meaning": {
+      "en": "to come; to be (doing)"
+    },
+    "script": "hiragana",
+    "text": "いらっしゃる"
+  },
+  {
+    "id": "w:hiragana:うえる",
+    "meaning": {
+      "en": "to plant; to insert; to inoculate (e.g. an infectious agent)"
+    },
+    "script": "hiragana",
+    "text": "うえる"
+  },
+  {
+    "id": "w:hiragana:うかがう",
+    "meaning": {
+      "en": "to call on someone; to ask; to hear"
+    },
+    "script": "hiragana",
+    "text": "うかがう"
+  },
+  {
+    "id": "w:hiragana:うけつけ",
+    "meaning": {
+      "en": "reception (desk); receipt"
+    },
+    "script": "hiragana",
+    "text": "うけつけ"
+  },
+  {
+    "id": "w:hiragana:うける",
+    "meaning": {
+      "en": "to receive; to catch (e.g. a ball)"
+    },
+    "script": "hiragana",
+    "text": "うける"
+  },
+  {
+    "id": "w:hiragana:うごく",
+    "meaning": {
+      "en": "to move; to operate; to make a move"
+    },
+    "script": "hiragana",
+    "text": "うごく"
+  },
+  {
+    "id": "w:hiragana:うそ",
+    "meaning": {
+      "en": "lie; mistake; unwise move"
+    },
+    "script": "hiragana",
+    "text": "うそ"
+  },
+  {
+    "id": "w:hiragana:うち",
+    "meaning": {
+      "en": "inside; while (e.g. one is young); among"
+    },
+    "script": "hiragana",
+    "text": "うち"
+  },
+  {
+    "id": "w:hiragana:うつ",
+    "meaning": {
+      "en": "to hit; to strike (noon, etc.)"
+    },
+    "script": "hiragana",
+    "text": "うつ"
+  },
+  {
+    "id": "w:hiragana:うつくしい",
+    "meaning": {
+      "en": "beautiful"
+    },
+    "script": "hiragana",
+    "text": "うつくしい"
+  },
+  {
+    "id": "w:hiragana:うつす",
+    "meaning": {
+      "en": "to copy; to describe; to imitate"
+    },
+    "script": "hiragana",
+    "text": "うつす"
+  },
+  {
+    "id": "w:hiragana:うつる",
+    "meaning": {
+      "en": "to move (to another place or state)"
+    },
+    "script": "hiragana",
+    "text": "うつる"
+  },
+  {
+    "id": "w:hiragana:うで",
+    "meaning": {
+      "en": "arm; ability; (physical) strength"
+    },
+    "script": "hiragana",
+    "text": "うで"
+  },
+  {
+    "id": "w:hiragana:うまい",
+    "meaning": {
+      "en": "skillful; delicious; good (deal, idea, etc.)"
+    },
+    "script": "hiragana",
+    "text": "うまい"
+  },
+  {
+    "id": "w:hiragana:うら",
+    "meaning": {
+      "en": "opposite side; rear; lining"
+    },
+    "script": "hiragana",
+    "text": "うら"
+  },
+  {
+    "id": "w:hiragana:うりば",
+    "meaning": {
+      "en": "selling area; favorable time to sell"
+    },
+    "script": "hiragana",
+    "text": "うりば"
+  },
+  {
+    "id": "w:hiragana:うれしい",
+    "meaning": {
+      "en": "happy; joyful"
+    },
+    "script": "hiragana",
+    "text": "うれしい"
+  },
+  {
+    "id": "w:hiragana:うん",
+    "meaning": {
+      "en": "yes; hum; oof"
+    },
+    "script": "hiragana",
+    "text": "うん"
+  },
+  {
+    "id": "w:hiragana:うんてん",
+    "meaning": {
+      "en": "operation (of a machine); driving (a vehicle)"
+    },
+    "script": "hiragana",
+    "text": "うんてん"
+  },
+  {
+    "id": "w:hiragana:うんてんしゅ",
+    "meaning": {
+      "en": "driver"
+    },
+    "script": "hiragana",
+    "text": "うんてんしゅ"
+  },
+  {
+    "id": "w:hiragana:うんどう",
+    "meaning": {
+      "en": "exercise; appeal; motion"
+    },
+    "script": "hiragana",
+    "text": "うんどう"
+  },
+  {
+    "id": "w:hiragana:えだ",
+    "meaning": {
+      "en": "branch"
+    },
+    "script": "hiragana",
+    "text": "えだ"
+  },
+  {
+    "id": "w:hiragana:えらぶ",
+    "meaning": {
+      "en": "to choose"
+    },
+    "script": "hiragana",
+    "text": "えらぶ"
+  },
+  {
+    "id": "w:hiragana:えんりょ",
+    "meaning": {
+      "en": "reserve; declining; forethought"
+    },
+    "script": "hiragana",
+    "text": "えんりょ"
+  },
+  {
+    "id": "w:hiragana:おいでになる",
+    "meaning": {
+      "en": "to be; to come; to go"
+    },
+    "script": "hiragana",
+    "text": "おいでになる"
+  },
+  {
+    "id": "w:hiragana:おいわい",
+    "meaning": {
+      "en": "congratulation; congratulatory gift"
+    },
+    "script": "hiragana",
+    "text": "おいわい"
+  },
+  {
+    "id": "w:hiragana:おかげ",
+    "meaning": {
+      "en": "grace (of God); assistance; effects"
+    },
+    "script": "hiragana",
+    "text": "おかげ"
+  },
+  {
+    "id": "w:hiragana:おかしい",
+    "meaning": {
+      "en": "funny; strange; wrong"
+    },
+    "script": "hiragana",
+    "text": "おかしい"
+  },
+  {
+    "id": "w:hiragana:おくじょう",
+    "meaning": {
+      "en": "rooftop"
+    },
+    "script": "hiragana",
+    "text": "おくじょう"
+  },
+  {
+    "id": "w:hiragana:おくりもの",
+    "meaning": {
+      "en": "present"
+    },
+    "script": "hiragana",
+    "text": "おくりもの"
+  },
+  {
+    "id": "w:hiragana:おくる",
+    "meaning": {
+      "en": "to send; to see (someone) off"
+    },
+    "script": "hiragana",
+    "text": "おくる"
+  },
+  {
+    "id": "w:hiragana:おくれる",
+    "meaning": {
+      "en": "to be late; to fall behind (in a race, one's studies, etc.)"
+    },
+    "script": "hiragana",
+    "text": "おくれる"
+  },
+  {
+    "id": "w:hiragana:おこす",
+    "meaning": {
+      "en": "to raise; to wake; to cause"
+    },
+    "script": "hiragana",
+    "text": "おこす"
+  },
+  {
+    "id": "w:hiragana:おこなう",
+    "meaning": {
+      "en": "to perform"
+    },
+    "script": "hiragana",
+    "text": "おこなう"
+  },
+  {
+    "id": "w:hiragana:おこる",
+    "meaning": {
+      "en": "to get angry; to scold"
+    },
+    "script": "hiragana",
+    "text": "おこる"
+  },
+  {
+    "id": "w:hiragana:おしいれ",
+    "meaning": {
+      "en": "closet (built into the wall, usu. with sliding doors)"
+    },
+    "script": "hiragana",
+    "text": "おしいれ"
+  },
+  {
+    "id": "w:hiragana:おじょうさん",
+    "meaning": {
+      "en": "(another's) daughter; young lady"
+    },
+    "script": "hiragana",
+    "text": "おじょうさん"
+  },
+  {
+    "id": "w:hiragana:おたく",
+    "meaning": {
+      "en": "your house; your husband; your organization"
+    },
+    "script": "hiragana",
+    "text": "おたく"
+  },
+  {
+    "id": "w:hiragana:おちる",
+    "meaning": {
+      "en": "to fall; to set (of the sun or moon)"
+    },
+    "script": "hiragana",
+    "text": "おちる"
+  },
+  {
+    "id": "w:hiragana:おっしゃる",
+    "meaning": {
+      "en": "to say; to be called"
+    },
+    "script": "hiragana",
+    "text": "おっしゃる"
+  },
+  {
+    "id": "w:hiragana:おっと",
+    "meaning": {
+      "en": "husband"
+    },
+    "script": "hiragana",
+    "text": "おっと"
+  },
+  {
+    "id": "w:hiragana:おつり",
+    "meaning": {
+      "en": "change (for a purchase); toilet splashback"
+    },
+    "script": "hiragana",
+    "text": "おつり"
+  },
+  {
+    "id": "w:hiragana:おと",
+    "meaning": {
+      "en": "sound; (musical) note; fame"
+    },
+    "script": "hiragana",
+    "text": "おと"
+  },
+  {
+    "id": "w:hiragana:おとす",
+    "meaning": {
+      "en": "to drop; to clean off (dirt, makeup, paint, etc.)"
+    },
+    "script": "hiragana",
+    "text": "おとす"
+  },
+  {
+    "id": "w:hiragana:おどり",
+    "meaning": {
+      "en": "dance"
+    },
+    "script": "hiragana",
+    "text": "おどり"
+  },
+  {
+    "id": "w:hiragana:おどる",
+    "meaning": {
+      "en": "to dance (orig. a hopping dance); to be manipulated"
+    },
+    "script": "hiragana",
+    "text": "おどる"
+  },
+  {
+    "id": "w:hiragana:おどろく",
+    "meaning": {
+      "en": "to be surprised; to be frightened"
+    },
+    "script": "hiragana",
+    "text": "おどろく"
+  },
+  {
+    "id": "w:hiragana:おまつり",
+    "meaning": {
+      "en": "festival"
+    },
+    "script": "hiragana",
+    "text": "おまつり"
+  },
+  {
+    "id": "w:hiragana:おみまい",
+    "meaning": {
+      "en": "visit (to someone affected by illness or misfortune)"
+    },
+    "script": "hiragana",
+    "text": "おみまい"
+  },
+  {
+    "id": "w:hiragana:おみやげ",
+    "meaning": {
+      "en": "local specialty or souvenir bought as a gift while traveling (travelling)"
+    },
+    "script": "hiragana",
+    "text": "おみやげ"
+  },
+  {
+    "id": "w:hiragana:おもいだす",
+    "meaning": {
+      "en": "to recall"
+    },
+    "script": "hiragana",
+    "text": "おもいだす"
+  },
+  {
+    "id": "w:hiragana:おもう",
+    "meaning": {
+      "en": "to think; to think (of doing); to judge"
+    },
+    "script": "hiragana",
+    "text": "おもう"
+  },
+  {
+    "id": "w:hiragana:おもちゃ",
+    "meaning": {
+      "en": "toy; (person or thing treated as a) plaything"
+    },
+    "script": "hiragana",
+    "text": "おもちゃ"
+  },
+  {
+    "id": "w:hiragana:おもて",
+    "meaning": {
+      "en": "surface; face (i.e. the visible side of an object)"
+    },
+    "script": "hiragana",
+    "text": "おもて"
+  },
+  {
+    "id": "w:hiragana:おや",
+    "meaning": {
+      "en": "parent; dealer; founder"
+    },
+    "script": "hiragana",
+    "text": "おや"
+  },
+  {
+    "id": "w:hiragana:おる",
+    "meaning": {
+      "en": "to break; to fold; to make (origami)"
+    },
+    "script": "hiragana",
+    "text": "おる"
+  },
+  {
+    "id": "w:hiragana:おれい",
+    "meaning": {
+      "en": "thanks; manners; bow"
+    },
+    "script": "hiragana",
+    "text": "おれい"
+  },
+  {
+    "id": "w:hiragana:おれる",
+    "meaning": {
+      "en": "to break; to be folded; to give in"
+    },
+    "script": "hiragana",
+    "text": "おれる"
+  },
+  {
+    "id": "w:hiragana:おわり",
+    "meaning": {
+      "en": "end; end of (one's) life"
+    },
+    "script": "hiragana",
+    "text": "おわり"
+  },
+  {
+    "id": "w:hiragana:かいがん",
+    "meaning": {
+      "en": "seashore"
+    },
+    "script": "hiragana",
+    "text": "かいがん"
+  },
+  {
+    "id": "w:hiragana:かいぎ",
+    "meaning": {
+      "en": "meeting"
+    },
+    "script": "hiragana",
+    "text": "かいぎ"
+  },
+  {
+    "id": "w:hiragana:かいぎしつ",
+    "meaning": {
+      "en": "conference room"
+    },
+    "script": "hiragana",
+    "text": "かいぎしつ"
+  },
+  {
+    "id": "w:hiragana:かいじょう",
+    "meaning": {
+      "en": "assembly hall"
+    },
+    "script": "hiragana",
+    "text": "かいじょう"
+  },
+  {
+    "id": "w:hiragana:かいわ",
+    "meaning": {
+      "en": "conversation"
+    },
+    "script": "hiragana",
+    "text": "かいわ"
+  },
+  {
+    "id": "w:hiragana:かえり",
+    "meaning": {
+      "en": "return"
+    },
+    "script": "hiragana",
+    "text": "かえり"
+  },
+  {
+    "id": "w:hiragana:かがく",
+    "meaning": {
+      "en": "science; to think about scientifically"
+    },
+    "script": "hiragana",
+    "text": "かがく"
+  },
+  {
+    "id": "w:hiragana:かがみ",
+    "meaning": {
+      "en": "mirror; barrel head"
+    },
+    "script": "hiragana",
+    "text": "かがみ"
+  },
+  {
+    "id": "w:hiragana:かざる",
+    "meaning": {
+      "en": "to decorate; to display"
+    },
+    "script": "hiragana",
+    "text": "かざる"
+  },
+  {
+    "id": "w:hiragana:かじ",
+    "meaning": {
+      "en": "fire"
+    },
+    "script": "hiragana",
+    "text": "かじ"
+  },
+  {
+    "id": "w:hiragana:かたい",
+    "meaning": {
+      "en": "hard; stiff; strong"
+    },
+    "script": "hiragana",
+    "text": "かたい"
+  },
+  {
+    "id": "w:hiragana:かたち",
+    "meaning": {
+      "en": "(physical) form; visage; form (as opposed to substance)"
+    },
+    "script": "hiragana",
+    "text": "かたち"
+  },
+  {
+    "id": "w:hiragana:かたづける",
+    "meaning": {
+      "en": "to put in order; to settle (a matter); to finish"
+    },
+    "script": "hiragana",
+    "text": "かたづける"
+  },
+  {
+    "id": "w:hiragana:かちょう",
+    "meaning": {
+      "en": "section manager"
+    },
+    "script": "hiragana",
+    "text": "かちょう"
+  },
+  {
+    "id": "w:hiragana:かつ",
+    "meaning": {
+      "en": "to win"
+    },
+    "script": "hiragana",
+    "text": "かつ"
+  },
+  {
+    "id": "w:hiragana:かっこう",
+    "meaning": {
+      "en": "shape; appearance; state"
+    },
+    "script": "hiragana",
+    "text": "かっこう"
+  },
+  {
+    "id": "w:hiragana:かない",
+    "meaning": {
+      "en": "(my) wife; inside the home"
+    },
+    "script": "hiragana",
+    "text": "かない"
+  },
+  {
+    "id": "w:hiragana:かなしい",
+    "meaning": {
+      "en": "sad; sad"
+    },
+    "script": "hiragana",
+    "text": "かなしい"
+  },
+  {
+    "id": "w:hiragana:かならず",
+    "meaning": {
+      "en": "always"
+    },
+    "script": "hiragana",
+    "text": "かならず"
+  },
+  {
+    "id": "w:hiragana:おかねもち",
+    "meaning": {
+      "en": "rich person"
+    },
+    "script": "hiragana",
+    "text": "おかねもち"
+  },
+  {
+    "id": "w:hiragana:かねもち",
+    "meaning": {
+      "en": "rich person"
+    },
+    "script": "hiragana",
+    "text": "かねもち"
+  },
+  {
+    "id": "w:hiragana:かのじょ",
+    "meaning": {
+      "en": "she; girlfriend"
+    },
+    "script": "hiragana",
+    "text": "かのじょ"
+  },
+  {
+    "id": "w:hiragana:かべ",
+    "meaning": {
+      "en": "wall; barrier; wall (of stones)"
+    },
+    "script": "hiragana",
+    "text": "かべ"
+  },
+  {
+    "id": "w:hiragana:かまう",
+    "meaning": {
+      "en": "to mind; to be an issue; to keep company"
+    },
+    "script": "hiragana",
+    "text": "かまう"
+  },
+  {
+    "id": "w:hiragana:かむ",
+    "meaning": {
+      "en": "to bite; to chew"
+    },
+    "script": "hiragana",
+    "text": "かむ"
+  },
+  {
+    "id": "w:hiragana:かよう",
+    "meaning": {
+      "en": "to go to and from (a place); to go to (school, work, etc.)"
+    },
+    "script": "hiragana",
+    "text": "かよう"
+  },
+  {
+    "id": "w:hiragana:かれ",
+    "meaning": {
+      "en": "he; boyfriend"
+    },
+    "script": "hiragana",
+    "text": "かれ"
+  },
+  {
+    "id": "w:hiragana:かれら",
+    "meaning": {
+      "en": "they"
+    },
+    "script": "hiragana",
+    "text": "かれら"
+  },
+  {
+    "id": "w:hiragana:かわく",
+    "meaning": {
+      "en": "to get dry"
+    },
+    "script": "hiragana",
+    "text": "かわく"
+  },
+  {
+    "id": "w:hiragana:かわり",
+    "meaning": {
+      "en": "substitute; stand-in; compensation"
+    },
+    "script": "hiragana",
+    "text": "かわり"
+  },
+  {
+    "id": "w:hiragana:かわる",
+    "meaning": {
+      "en": "to change; to move to; to be different"
+    },
+    "script": "hiragana",
+    "text": "かわる"
+  },
+  {
+    "id": "w:hiragana:かんがえる",
+    "meaning": {
+      "en": "to think (about, of); to consider; to think (that)"
+    },
+    "script": "hiragana",
+    "text": "かんがえる"
+  },
+  {
+    "id": "w:hiragana:かんけい",
+    "meaning": {
+      "en": "relation; participation; influence"
+    },
+    "script": "hiragana",
+    "text": "かんけい"
+  },
+  {
+    "id": "w:hiragana:かんごふ",
+    "meaning": {
+      "en": "(female) nurse"
+    },
+    "script": "hiragana",
+    "text": "かんごふ"
+  },
+  {
+    "id": "w:hiragana:かんたん",
+    "meaning": {
+      "en": "simple; brief"
+    },
+    "script": "hiragana",
+    "text": "かんたん"
+  },
+  {
+    "id": "w:hiragana:きかい",
+    "meaning": {
+      "en": "chance"
+    },
+    "script": "hiragana",
+    "text": "きかい"
+  },
+  {
+    "id": "w:hiragana:きけん",
+    "meaning": {
+      "en": "danger; risk"
+    },
+    "script": "hiragana",
+    "text": "きけん"
+  },
+  {
+    "id": "w:hiragana:きこえる",
+    "meaning": {
+      "en": "to be heard; to sound (like); to be well known"
+    },
+    "script": "hiragana",
+    "text": "きこえる"
+  },
+  {
+    "id": "w:hiragana:きしゃ",
+    "meaning": {
+      "en": "steam locomotive; (long-distance) train; non-electric train"
+    },
+    "script": "hiragana",
+    "text": "きしゃ"
+  },
+  {
+    "id": "w:hiragana:ぎじゅつ",
+    "meaning": {
+      "en": "technology; technique; art"
+    },
+    "script": "hiragana",
+    "text": "ぎじゅつ"
+  },
+  {
+    "id": "w:hiragana:きせつ",
+    "meaning": {
+      "en": "season"
+    },
+    "script": "hiragana",
+    "text": "きせつ"
+  },
+  {
+    "id": "w:hiragana:きそく",
+    "meaning": {
+      "en": "rule"
+    },
+    "script": "hiragana",
+    "text": "きそく"
+  },
+  {
+    "id": "w:hiragana:きっと",
+    "meaning": {
+      "en": "surely; sternly; having no slack"
+    },
+    "script": "hiragana",
+    "text": "きっと"
+  },
+  {
+    "id": "w:hiragana:きぬ",
+    "meaning": {
+      "en": "silk"
+    },
+    "script": "hiragana",
+    "text": "きぬ"
+  },
+  {
+    "id": "w:hiragana:きびしい",
+    "meaning": {
+      "en": "severe; hard (to do); intense (e.g. cold)"
+    },
+    "script": "hiragana",
+    "text": "きびしい"
+  },
+  {
+    "id": "w:hiragana:きぶん",
+    "meaning": {
+      "en": "feeling"
+    },
+    "script": "hiragana",
+    "text": "きぶん"
+  },
+  {
+    "id": "w:hiragana:きまる",
+    "meaning": {
+      "en": "to be decided; to be unchanging; to be a fixed rule"
+    },
+    "script": "hiragana",
+    "text": "きまる"
+  },
+  {
+    "id": "w:hiragana:きみ",
+    "meaning": {
+      "en": "you; monarch; he"
+    },
+    "script": "hiragana",
+    "text": "きみ"
+  },
+  {
+    "id": "w:hiragana:きめる",
+    "meaning": {
+      "en": "to decide; to clinch (a victory); to persist in doing"
+    },
+    "script": "hiragana",
+    "text": "きめる"
+  },
+  {
+    "id": "w:hiragana:きもち",
+    "meaning": {
+      "en": "feeling; preparedness; thought"
+    },
+    "script": "hiragana",
+    "text": "きもち"
+  },
+  {
+    "id": "w:hiragana:きもの",
+    "meaning": {
+      "en": "kimono; clothing"
+    },
+    "script": "hiragana",
+    "text": "きもの"
+  },
+  {
+    "id": "w:hiragana:きゃく",
+    "meaning": {
+      "en": "guest; customer"
+    },
+    "script": "hiragana",
+    "text": "きゃく"
+  },
+  {
+    "id": "w:hiragana:きゅうこう",
+    "meaning": {
+      "en": "hurrying (to somewhere); express (train)"
+    },
+    "script": "hiragana",
+    "text": "きゅうこう"
+  },
+  {
+    "id": "w:hiragana:きょういく",
+    "meaning": {
+      "en": "education; culture"
+    },
+    "script": "hiragana",
+    "text": "きょういく"
+  },
+  {
+    "id": "w:hiragana:きょうかい",
+    "meaning": {
+      "en": "church"
+    },
+    "script": "hiragana",
+    "text": "きょうかい"
+  },
+  {
+    "id": "w:hiragana:きょうそう",
+    "meaning": {
+      "en": "competition; competition (between organisms or species)"
+    },
+    "script": "hiragana",
+    "text": "きょうそう"
+  },
+  {
+    "id": "w:hiragana:きょうみ",
+    "meaning": {
+      "en": "interest (in something)"
+    },
+    "script": "hiragana",
+    "text": "きょうみ"
+  },
+  {
+    "id": "w:hiragana:きんじょ",
+    "meaning": {
+      "en": "neighbourhood"
+    },
+    "script": "hiragana",
+    "text": "きんじょ"
+  },
+  {
+    "id": "w:hiragana:ぐあい",
+    "meaning": {
+      "en": "condition; health; way"
+    },
+    "script": "hiragana",
+    "text": "ぐあい"
+  },
+  {
+    "id": "w:hiragana:くうき",
+    "meaning": {
+      "en": "air; mood; someone with no presence"
+    },
+    "script": "hiragana",
+    "text": "くうき"
+  },
+  {
+    "id": "w:hiragana:くうこう",
+    "meaning": {
+      "en": "airport"
+    },
+    "script": "hiragana",
+    "text": "くうこう"
+  },
+  {
+    "id": "w:hiragana:くさ",
+    "meaning": {
+      "en": "grass; ninja; marijuana"
+    },
+    "script": "hiragana",
+    "text": "くさ"
+  },
+  {
+    "id": "w:hiragana:くださる",
+    "meaning": {
+      "en": "to give; to kindly do for one"
+    },
+    "script": "hiragana",
+    "text": "くださる"
+  },
+  {
+    "id": "w:hiragana:くび",
+    "meaning": {
+      "en": "neck; head; dismissal (from a job)"
+    },
+    "script": "hiragana",
+    "text": "くび"
+  },
+  {
+    "id": "w:hiragana:くも",
+    "meaning": {
+      "en": "cloud"
+    },
+    "script": "hiragana",
+    "text": "くも"
+  },
+  {
+    "id": "w:hiragana:くらべる",
+    "meaning": {
+      "en": "to compare; to compete (on)"
+    },
+    "script": "hiragana",
+    "text": "くらべる"
+  },
+  {
+    "id": "w:hiragana:くれる",
+    "meaning": {
+      "en": "to give; to get dark"
+    },
+    "script": "hiragana",
+    "text": "くれる"
+  },
+  {
+    "id": "w:hiragana:くん",
+    "meaning": {
+      "en": "Mr; Ms; sir"
+    },
+    "script": "hiragana",
+    "text": "くん"
+  },
+  {
+    "id": "w:hiragana:け",
+    "meaning": {
+      "en": "hair; fur; down"
+    },
+    "script": "hiragana",
+    "text": "け"
+  },
+  {
+    "id": "w:hiragana:けいかく",
+    "meaning": {
+      "en": "plan"
+    },
+    "script": "hiragana",
+    "text": "けいかく"
+  },
+  {
+    "id": "w:hiragana:けいけん",
+    "meaning": {
+      "en": "experience"
+    },
+    "script": "hiragana",
+    "text": "けいけん"
+  },
+  {
+    "id": "w:hiragana:けいざい",
+    "meaning": {
+      "en": "economy; finance; being economical"
+    },
+    "script": "hiragana",
+    "text": "けいざい"
+  },
+  {
+    "id": "w:hiragana:けいさつ",
+    "meaning": {
+      "en": "police; police officer; police station"
+    },
+    "script": "hiragana",
+    "text": "けいさつ"
+  },
+  {
+    "id": "w:hiragana:けが",
+    "meaning": {
+      "en": "injury; mistake"
+    },
+    "script": "hiragana",
+    "text": "けが"
+  },
+  {
+    "id": "w:hiragana:けしき",
+    "meaning": {
+      "en": "scenery"
+    },
+    "script": "hiragana",
+    "text": "けしき"
+  },
+  {
+    "id": "w:hiragana:げしゅく",
+    "meaning": {
+      "en": "boarding; boarding house"
+    },
+    "script": "hiragana",
+    "text": "げしゅく"
+  },
+  {
+    "id": "w:hiragana:けっして",
+    "meaning": {
+      "en": "(not) ever"
+    },
+    "script": "hiragana",
+    "text": "けっして"
+  },
+  {
+    "id": "w:hiragana:けれど",
+    "meaning": {
+      "en": "but"
+    },
+    "script": "hiragana",
+    "text": "けれど"
+  },
+  {
+    "id": "w:hiragana:けれども",
+    "meaning": {
+      "en": "but"
+    },
+    "script": "hiragana",
+    "text": "けれども"
+  },
+  {
+    "id": "w:hiragana:げんいん",
+    "meaning": {
+      "en": "cause"
+    },
+    "script": "hiragana",
+    "text": "げんいん"
+  },
+  {
+    "id": "w:hiragana:けんか",
+    "meaning": {
+      "en": "quarrel"
+    },
+    "script": "hiragana",
+    "text": "けんか"
+  },
+  {
+    "id": "w:hiragana:けんきゅう",
+    "meaning": {
+      "en": "research"
+    },
+    "script": "hiragana",
+    "text": "けんきゅう"
+  },
+  {
+    "id": "w:hiragana:けんきゅうしつ",
+    "meaning": {
+      "en": "laboratory; seminar room; professor's office"
+    },
+    "script": "hiragana",
+    "text": "けんきゅうしつ"
+  },
+  {
+    "id": "w:hiragana:けんぶつ",
+    "meaning": {
+      "en": "sightseeing; sightseer"
+    },
+    "script": "hiragana",
+    "text": "けんぶつ"
+  },
+  {
+    "id": "w:hiragana:こ",
+    "meaning": {
+      "en": "child; (one's) child; young woman"
+    },
+    "script": "hiragana",
+    "text": "こ"
+  },
+  {
+    "id": "w:hiragana:こう",
+    "meaning": {
+      "en": "in this way; this (much); uh"
+    },
+    "script": "hiragana",
+    "text": "こう"
+  },
+  {
+    "id": "w:hiragana:こうがい",
+    "meaning": {
+      "en": "suburb"
+    },
+    "script": "hiragana",
+    "text": "こうがい"
+  },
+  {
+    "id": "w:hiragana:こうぎ",
+    "meaning": {
+      "en": "lecture"
+    },
+    "script": "hiragana",
+    "text": "こうぎ"
+  },
+  {
+    "id": "w:hiragana:こうぎょう",
+    "meaning": {
+      "en": "(manufacturing) industry"
+    },
+    "script": "hiragana",
+    "text": "こうぎょう"
+  },
+  {
+    "id": "w:hiragana:こうこう",
+    "meaning": {
+      "en": "senior high school"
+    },
+    "script": "hiragana",
+    "text": "こうこう"
+  },
+  {
+    "id": "w:hiragana:こうこうせい",
+    "meaning": {
+      "en": "senior high school student"
+    },
+    "script": "hiragana",
+    "text": "こうこうせい"
+  },
+  {
+    "id": "w:hiragana:こうじょう",
+    "meaning": {
+      "en": "factory"
+    },
+    "script": "hiragana",
+    "text": "こうじょう"
+  },
+  {
+    "id": "w:hiragana:こうちょう",
+    "meaning": {
+      "en": "principal"
+    },
+    "script": "hiragana",
+    "text": "こうちょう"
+  },
+  {
+    "id": "w:hiragana:こうつう",
+    "meaning": {
+      "en": "traffic; communication; intercourse"
+    },
+    "script": "hiragana",
+    "text": "こうつう"
+  },
+  {
+    "id": "w:hiragana:こうどう",
+    "meaning": {
+      "en": "auditorium"
+    },
+    "script": "hiragana",
+    "text": "こうどう"
+  },
+  {
+    "id": "w:hiragana:こうとうがっこう",
+    "meaning": {
+      "en": "senior high school"
+    },
+    "script": "hiragana",
+    "text": "こうとうがっこう"
+  },
+  {
+    "id": "w:hiragana:こうむいん",
+    "meaning": {
+      "en": "public employee"
+    },
+    "script": "hiragana",
+    "text": "こうむいん"
+  },
+  {
+    "id": "w:hiragana:こくさい",
+    "meaning": {
+      "en": "international; diplomatic intercourse"
+    },
+    "script": "hiragana",
+    "text": "こくさい"
+  },
+  {
+    "id": "w:hiragana:こころ",
+    "meaning": {
+      "en": "mind; the meaning of a phrase (riddle, etc.)"
+    },
+    "script": "hiragana",
+    "text": "こころ"
+  },
+  {
+    "id": "w:hiragana:ごしゅじん",
+    "meaning": {
+      "en": "your husband"
+    },
+    "script": "hiragana",
+    "text": "ごしゅじん"
+  },
+  {
+    "id": "w:hiragana:こしょう",
+    "meaning": {
+      "en": "fault; damage (to a part of the body); problem"
+    },
+    "script": "hiragana",
+    "text": "こしょう"
+  },
+  {
+    "id": "w:hiragana:ごぞんじ",
+    "meaning": {
+      "en": "knowing; (an) acquaintance"
+    },
+    "script": "hiragana",
+    "text": "ごぞんじ"
+  },
+  {
+    "id": "w:hiragana:こたえ",
+    "meaning": {
+      "en": "answer; answer"
+    },
+    "script": "hiragana",
+    "text": "こたえ"
+  },
+  {
+    "id": "w:hiragana:ごちそう",
+    "meaning": {
+      "en": "treat (esp. food and drink); gorgeous dinner"
+    },
+    "script": "hiragana",
+    "text": "ごちそう"
+  },
+  {
+    "id": "w:hiragana:こと",
+    "meaning": {
+      "en": "particle indicating a command"
+    },
+    "script": "hiragana",
+    "text": "こと"
+  },
+  {
+    "id": "w:hiragana:ことり",
+    "meaning": {
+      "en": "small bird"
+    },
+    "script": "hiragana",
+    "text": "ことり"
+  },
+  {
+    "id": "w:hiragana:このあいだ",
+    "meaning": {
+      "en": "the other day"
+    },
+    "script": "hiragana",
+    "text": "このあいだ"
+  },
+  {
+    "id": "w:hiragana:このごろ",
+    "meaning": {
+      "en": "these days"
+    },
+    "script": "hiragana",
+    "text": "このごろ"
+  },
+  {
+    "id": "w:hiragana:こまかい",
+    "meaning": {
+      "en": "small; fine; minor"
+    },
+    "script": "hiragana",
+    "text": "こまかい"
+  },
+  {
+    "id": "w:hiragana:ごみ",
+    "meaning": {
+      "en": "rubbish"
+    },
+    "script": "hiragana",
+    "text": "ごみ"
+  },
+  {
+    "id": "w:hiragana:こむ",
+    "meaning": {
+      "en": "to be crowded; to be complex; to go into"
+    },
+    "script": "hiragana",
+    "text": "こむ"
+  },
+  {
+    "id": "w:hiragana:こめ",
+    "meaning": {
+      "en": "(husked grains of) rice; staple (product, etc.)"
+    },
+    "script": "hiragana",
+    "text": "こめ"
+  },
+  {
+    "id": "w:hiragana:ごらんになる",
+    "meaning": {
+      "en": "to see; to try to ..."
+    },
+    "script": "hiragana",
+    "text": "ごらんになる"
+  },
+  {
+    "id": "w:hiragana:これから",
+    "meaning": {
+      "en": "from now on; from here"
+    },
+    "script": "hiragana",
+    "text": "これから"
+  },
+  {
+    "id": "w:hiragana:こわい",
+    "meaning": {
+      "en": "scary"
+    },
+    "script": "hiragana",
+    "text": "こわい"
+  },
+  {
+    "id": "w:hiragana:こわす",
+    "meaning": {
+      "en": "to break; to wreck; to break (a bill, etc.)"
+    },
+    "script": "hiragana",
+    "text": "こわす"
+  },
+  {
+    "id": "w:hiragana:こわれる",
+    "meaning": {
+      "en": "to be broken; to break (down)"
+    },
+    "script": "hiragana",
+    "text": "こわれる"
+  },
+  {
+    "id": "w:hiragana:こんど",
+    "meaning": {
+      "en": "this time; next time; recently"
+    },
+    "script": "hiragana",
+    "text": "こんど"
+  },
+  {
+    "id": "w:hiragana:こんや",
+    "meaning": {
+      "en": "this evening"
+    },
+    "script": "hiragana",
+    "text": "こんや"
+  },
+  {
+    "id": "w:hiragana:さいきん",
+    "meaning": {
+      "en": "recently; nearest"
+    },
+    "script": "hiragana",
+    "text": "さいきん"
+  },
+  {
+    "id": "w:hiragana:さいご",
+    "meaning": {
+      "en": "end; last; no sooner than"
+    },
+    "script": "hiragana",
+    "text": "さいご"
+  },
+  {
+    "id": "w:hiragana:さいしょ",
+    "meaning": {
+      "en": "beginning"
+    },
+    "script": "hiragana",
+    "text": "さいしょ"
+  },
+  {
+    "id": "w:hiragana:さか",
+    "meaning": {
+      "en": "slope; milestone"
+    },
+    "script": "hiragana",
+    "text": "さか"
+  },
+  {
+    "id": "w:hiragana:さがす",
+    "meaning": {
+      "en": "to search for; to search (a house, pocket, etc.)"
+    },
+    "script": "hiragana",
+    "text": "さがす"
+  },
+  {
+    "id": "w:hiragana:さがる",
+    "meaning": {
+      "en": "to come down; to hang; to move back"
+    },
+    "script": "hiragana",
+    "text": "さがる"
+  },
+  {
+    "id": "w:hiragana:さかん",
+    "meaning": {
+      "en": "prosperous; popular; active"
+    },
+    "script": "hiragana",
+    "text": "さかん"
+  },
+  {
+    "id": "w:hiragana:さげる",
+    "meaning": {
+      "en": "to hang; to lower; to demote"
+    },
+    "script": "hiragana",
+    "text": "さげる"
+  },
+  {
+    "id": "w:hiragana:さしあげる",
+    "meaning": {
+      "en": "to lift up; to give; to do (for someone)"
+    },
+    "script": "hiragana",
+    "text": "さしあげる"
+  },
+  {
+    "id": "w:hiragana:さっき",
+    "meaning": {
+      "en": "a short while ago"
+    },
+    "script": "hiragana",
+    "text": "さっき"
+  },
+  {
+    "id": "w:hiragana:さびしい",
+    "meaning": {
+      "en": "lonely"
+    },
+    "script": "hiragana",
+    "text": "さびしい"
+  },
+  {
+    "id": "w:hiragana:さらいげつ",
+    "meaning": {
+      "en": "month after next"
+    },
+    "script": "hiragana",
+    "text": "さらいげつ"
+  },
+  {
+    "id": "w:hiragana:さらいしゅう",
+    "meaning": {
+      "en": "week after next"
+    },
+    "script": "hiragana",
+    "text": "さらいしゅう"
+  },
+  {
+    "id": "w:hiragana:さわぐ",
+    "meaning": {
+      "en": "to make noise; to rustle; to make merry"
+    },
+    "script": "hiragana",
+    "text": "さわぐ"
+  },
+  {
+    "id": "w:hiragana:さわる",
+    "meaning": {
+      "en": "to touch; to get involved (with); to be harmful to"
+    },
+    "script": "hiragana",
+    "text": "さわる"
+  },
+  {
+    "id": "w:hiragana:さんぎょう",
+    "meaning": {
+      "en": "industry; livelihood"
+    },
+    "script": "hiragana",
+    "text": "さんぎょう"
+  },
+  {
+    "id": "w:hiragana:ざんねん",
+    "meaning": {
+      "en": "regrettable"
+    },
+    "script": "hiragana",
+    "text": "ざんねん"
+  },
+  {
+    "id": "w:hiragana:じ",
+    "meaning": {
+      "en": "character (esp. kanji); handwriting"
+    },
+    "script": "hiragana",
+    "text": "じ"
+  },
+  {
+    "id": "w:hiragana:しあい",
+    "meaning": {
+      "en": "match"
+    },
+    "script": "hiragana",
+    "text": "しあい"
+  },
+  {
+    "id": "w:hiragana:しかた",
+    "meaning": {
+      "en": "way"
+    },
+    "script": "hiragana",
+    "text": "しかた"
+  },
+  {
+    "id": "w:hiragana:しかる",
+    "meaning": {
+      "en": "that kind of"
+    },
+    "script": "hiragana",
+    "text": "しかる"
+  },
+  {
+    "id": "w:hiragana:しけん",
+    "meaning": {
+      "en": "examination; trial"
+    },
+    "script": "hiragana",
+    "text": "しけん"
+  },
+  {
+    "id": "w:hiragana:じこ",
+    "meaning": {
+      "en": "accident; circumstances"
+    },
+    "script": "hiragana",
+    "text": "じこ"
+  },
+  {
+    "id": "w:hiragana:じしん",
+    "meaning": {
+      "en": "earthquake"
+    },
+    "script": "hiragana",
+    "text": "じしん"
+  },
+  {
+    "id": "w:hiragana:じだい",
+    "meaning": {
+      "en": "period; the times; oldness"
+    },
+    "script": "hiragana",
+    "text": "じだい"
+  },
+  {
+    "id": "w:hiragana:したぎ",
+    "meaning": {
+      "en": "underwear"
+    },
+    "script": "hiragana",
+    "text": "したぎ"
+  },
+  {
+    "id": "w:hiragana:したく",
+    "meaning": {
+      "en": "preparation"
+    },
+    "script": "hiragana",
+    "text": "したく"
+  },
+  {
+    "id": "w:hiragana:しっかり",
+    "meaning": {
+      "en": "tightly (holding on); strongly (built); properly"
+    },
+    "script": "hiragana",
+    "text": "しっかり"
+  },
+  {
+    "id": "w:hiragana:しっぱい",
+    "meaning": {
+      "en": "failure"
+    },
+    "script": "hiragana",
+    "text": "しっぱい"
+  },
+  {
+    "id": "w:hiragana:じてん",
+    "meaning": {
+      "en": "dictionary"
+    },
+    "script": "hiragana",
+    "text": "じてん"
+  },
+  {
+    "id": "w:hiragana:しなもの",
+    "meaning": {
+      "en": "article"
+    },
+    "script": "hiragana",
+    "text": "しなもの"
+  },
+  {
+    "id": "w:hiragana:しばらく",
+    "meaning": {
+      "en": "for a moment; for a while; for the time being"
+    },
+    "script": "hiragana",
+    "text": "しばらく"
+  },
+  {
+    "id": "w:hiragana:しま",
+    "meaning": {
+      "en": "island"
+    },
+    "script": "hiragana",
+    "text": "しま"
+  },
+  {
+    "id": "w:hiragana:しみん",
+    "meaning": {
+      "en": "citizen (of a country); citizen (of a city); bourgeoisie"
+    },
+    "script": "hiragana",
+    "text": "しみん"
+  },
+  {
+    "id": "w:hiragana:じむしょ",
+    "meaning": {
+      "en": "office"
+    },
+    "script": "hiragana",
+    "text": "じむしょ"
+  },
+  {
+    "id": "w:hiragana:しゃかい",
+    "meaning": {
+      "en": "society; social studies"
+    },
+    "script": "hiragana",
+    "text": "しゃかい"
+  },
+  {
+    "id": "w:hiragana:しゃちょう",
+    "meaning": {
+      "en": "company president"
+    },
+    "script": "hiragana",
+    "text": "しゃちょう"
+  },
+  {
+    "id": "w:hiragana:じゃま",
+    "meaning": {
+      "en": "hindrance; to visit (someone's home)"
+    },
+    "script": "hiragana",
+    "text": "じゃま"
+  },
+  {
+    "id": "w:hiragana:じゆう",
+    "meaning": {
+      "en": "freedom"
+    },
+    "script": "hiragana",
+    "text": "じゆう"
+  },
+  {
+    "id": "w:hiragana:しゅうかん",
+    "meaning": {
+      "en": "habit; (social) custom"
+    },
+    "script": "hiragana",
+    "text": "しゅうかん"
+  },
+  {
+    "id": "w:hiragana:じゅうしょ",
+    "meaning": {
+      "en": "address (of a home, business, etc.)"
+    },
+    "script": "hiragana",
+    "text": "じゅうしょ"
+  },
+  {
+    "id": "w:hiragana:じゅうどう",
+    "meaning": {
+      "en": "judo"
+    },
+    "script": "hiragana",
+    "text": "じゅうどう"
+  },
+  {
+    "id": "w:hiragana:じゅうぶん",
+    "meaning": {
+      "en": "enough; sufficiently; division into ten"
+    },
+    "script": "hiragana",
+    "text": "じゅうぶん"
+  },
+  {
+    "id": "w:hiragana:しゅっせき",
+    "meaning": {
+      "en": "attendance"
+    },
+    "script": "hiragana",
+    "text": "しゅっせき"
+  },
+  {
+    "id": "w:hiragana:しゅっぱつ",
+    "meaning": {
+      "en": "departure"
+    },
+    "script": "hiragana",
+    "text": "しゅっぱつ"
+  },
+  {
+    "id": "w:hiragana:しゅみ",
+    "meaning": {
+      "en": "hobby; tastes"
+    },
+    "script": "hiragana",
+    "text": "しゅみ"
+  },
+  {
+    "id": "w:hiragana:じゅんび",
+    "meaning": {
+      "en": "preparation"
+    },
+    "script": "hiragana",
+    "text": "じゅんび"
+  },
+  {
+    "id": "w:hiragana:しょうかい",
+    "meaning": {
+      "en": "introduction"
+    },
+    "script": "hiragana",
+    "text": "しょうかい"
+  },
+  {
+    "id": "w:hiragana:しょうがっこう",
+    "meaning": {
+      "en": "primary school"
+    },
+    "script": "hiragana",
+    "text": "しょうがっこう"
+  },
+  {
+    "id": "w:hiragana:しょうせつ",
+    "meaning": {
+      "en": "novel"
+    },
+    "script": "hiragana",
+    "text": "しょうせつ"
+  },
+  {
+    "id": "w:hiragana:しょうたい",
+    "meaning": {
+      "en": "invitation"
+    },
+    "script": "hiragana",
+    "text": "しょうたい"
+  },
+  {
+    "id": "w:hiragana:しょうち",
+    "meaning": {
+      "en": "knowledge; acceptance; forgiving"
+    },
+    "script": "hiragana",
+    "text": "しょうち"
+  },
+  {
+    "id": "w:hiragana:しょうらい",
+    "meaning": {
+      "en": "future; bringing (from abroad, another region, etc.)"
+    },
+    "script": "hiragana",
+    "text": "しょうらい"
+  },
+  {
+    "id": "w:hiragana:しょくじ",
+    "meaning": {
+      "en": "meal (e.g. lunch, dinner); diet"
+    },
+    "script": "hiragana",
+    "text": "しょくじ"
+  },
+  {
+    "id": "w:hiragana:しょくりょうひん",
+    "meaning": {
+      "en": "foodstuff"
+    },
+    "script": "hiragana",
+    "text": "しょくりょうひん"
+  },
+  {
+    "id": "w:hiragana:じょせい",
+    "meaning": {
+      "en": "woman; feminine gender"
+    },
+    "script": "hiragana",
+    "text": "じょせい"
+  },
+  {
+    "id": "w:hiragana:しらせる",
+    "meaning": {
+      "en": "to notify"
+    },
+    "script": "hiragana",
+    "text": "しらせる"
+  },
+  {
+    "id": "w:hiragana:しらべる",
+    "meaning": {
+      "en": "to examine"
+    },
+    "script": "hiragana",
+    "text": "しらべる"
+  },
+  {
+    "id": "w:hiragana:じんこう",
+    "meaning": {
+      "en": "population; common talk"
+    },
+    "script": "hiragana",
+    "text": "じんこう"
+  },
+  {
+    "id": "w:hiragana:じんじゃ",
+    "meaning": {
+      "en": "Shinto shrine"
+    },
+    "script": "hiragana",
+    "text": "じんじゃ"
+  },
+  {
+    "id": "w:hiragana:しんせつ",
+    "meaning": {
+      "en": "kind"
+    },
+    "script": "hiragana",
+    "text": "しんせつ"
+  },
+  {
+    "id": "w:hiragana:しんぱい",
+    "meaning": {
+      "en": "worry; care"
+    },
+    "script": "hiragana",
+    "text": "しんぱい"
+  },
+  {
+    "id": "w:hiragana:しんぶんしゃ",
+    "meaning": {
+      "en": "newspaper company"
+    },
+    "script": "hiragana",
+    "text": "しんぶんしゃ"
+  },
+  {
+    "id": "w:hiragana:すいえい",
+    "meaning": {
+      "en": "swimming"
+    },
+    "script": "hiragana",
+    "text": "すいえい"
+  },
+  {
+    "id": "w:hiragana:すいどう",
+    "meaning": {
+      "en": "water supply; channel; water course"
+    },
+    "script": "hiragana",
+    "text": "すいどう"
+  },
+  {
+    "id": "w:hiragana:ずいぶん",
+    "meaning": {
+      "en": "very; terrible; remarkable"
+    },
+    "script": "hiragana",
+    "text": "ずいぶん"
+  },
+  {
+    "id": "w:hiragana:すうがく",
+    "meaning": {
+      "en": "mathematics"
+    },
+    "script": "hiragana",
+    "text": "すうがく"
+  },
+  {
+    "id": "w:hiragana:すぎる",
+    "meaning": {
+      "en": "to pass through; to pass (of time); to have expired"
+    },
+    "script": "hiragana",
+    "text": "すぎる"
+  },
+  {
+    "id": "w:hiragana:すく",
+    "meaning": {
+      "en": "to become less crowded; to be hungry"
+    },
+    "script": "hiragana",
+    "text": "すく"
+  },
+  {
+    "id": "w:hiragana:すごい",
+    "meaning": {
+      "en": "terrible; amazing (e.g. of strength); to a great extent"
+    },
+    "script": "hiragana",
+    "text": "すごい"
+  },
+  {
+    "id": "w:hiragana:すすむ",
+    "meaning": {
+      "en": "to advance; to precede; to make progress"
+    },
+    "script": "hiragana",
+    "text": "すすむ"
+  },
+  {
+    "id": "w:hiragana:すっかり",
+    "meaning": {
+      "en": "all"
+    },
+    "script": "hiragana",
+    "text": "すっかり"
+  },
+  {
+    "id": "w:hiragana:すっと",
+    "meaning": {
+      "en": "straight; quietly; to feel refreshed"
+    },
+    "script": "hiragana",
+    "text": "すっと"
+  },
+  {
+    "id": "w:hiragana:すてる",
+    "meaning": {
+      "en": "to throw away; to abandon; to give up"
+    },
+    "script": "hiragana",
+    "text": "すてる"
+  },
+  {
+    "id": "w:hiragana:すな",
+    "meaning": {
+      "en": "sand"
+    },
+    "script": "hiragana",
+    "text": "すな"
+  },
+  {
+    "id": "w:hiragana:すばらしい",
+    "meaning": {
+      "en": "wonderful; exceeding"
+    },
+    "script": "hiragana",
+    "text": "すばらしい"
+  },
+  {
+    "id": "w:hiragana:すべる",
+    "meaning": {
+      "en": "to slide; to slip; to be slippery"
+    },
+    "script": "hiragana",
+    "text": "すべる"
+  },
+  {
+    "id": "w:hiragana:すみ",
+    "meaning": {
+      "en": "corner; downstage right (on a noh stage)"
+    },
+    "script": "hiragana",
+    "text": "すみ"
+  },
+  {
+    "id": "w:hiragana:すり",
+    "meaning": {
+      "en": "pickpocket"
+    },
+    "script": "hiragana",
+    "text": "すり"
+  },
+  {
+    "id": "w:hiragana:すると",
+    "meaning": {
+      "en": "(and) then; in that case"
+    },
+    "script": "hiragana",
+    "text": "すると"
+  },
+  {
+    "id": "w:hiragana:せいかつ",
+    "meaning": {
+      "en": "life; livelihood"
+    },
+    "script": "hiragana",
+    "text": "せいかつ"
+  },
+  {
+    "id": "w:hiragana:せいさん",
+    "meaning": {
+      "en": "production"
+    },
+    "script": "hiragana",
+    "text": "せいさん"
+  },
+  {
+    "id": "w:hiragana:せいじ",
+    "meaning": {
+      "en": "politics"
+    },
+    "script": "hiragana",
+    "text": "せいじ"
+  },
+  {
+    "id": "w:hiragana:せいよう",
+    "meaning": {
+      "en": "the West"
+    },
+    "script": "hiragana",
+    "text": "せいよう"
+  },
+  {
+    "id": "w:hiragana:せかい",
+    "meaning": {
+      "en": "the world; sphere; world-renowned"
+    },
+    "script": "hiragana",
+    "text": "せかい"
+  },
+  {
+    "id": "w:hiragana:せき",
+    "meaning": {
+      "en": "seat; location (of a gathering, etc.); position"
+    },
+    "script": "hiragana",
+    "text": "せき"
+  },
+  {
+    "id": "w:hiragana:せつめい",
+    "meaning": {
+      "en": "explanation"
+    },
+    "script": "hiragana",
+    "text": "せつめい"
+  },
+  {
+    "id": "w:hiragana:せなか",
+    "meaning": {
+      "en": "back (of the body)"
+    },
+    "script": "hiragana",
+    "text": "せなか"
+  },
+  {
+    "id": "w:hiragana:ぜひ",
+    "meaning": {
+      "en": "certainly; right and wrong"
+    },
+    "script": "hiragana",
+    "text": "ぜひ"
+  },
+  {
+    "id": "w:hiragana:せわ",
+    "meaning": {
+      "en": "care; trouble; good offices"
+    },
+    "script": "hiragana",
+    "text": "せわ"
+  },
+  {
+    "id": "w:hiragana:ぜんぜん",
+    "meaning": {
+      "en": "(not) at all; wholly; extremely"
+    },
+    "script": "hiragana",
+    "text": "ぜんぜん"
+  },
+  {
+    "id": "w:hiragana:せんそう",
+    "meaning": {
+      "en": "war; fighting"
+    },
+    "script": "hiragana",
+    "text": "せんそう"
+  },
+  {
+    "id": "w:hiragana:せんぱい",
+    "meaning": {
+      "en": "senior (at school, work, etc.)"
+    },
+    "script": "hiragana",
+    "text": "せんぱい"
+  },
+  {
+    "id": "w:hiragana:そう",
+    "meaning": {
+      "en": "appearing that"
+    },
+    "script": "hiragana",
+    "text": "そう"
+  },
+  {
+    "id": "w:hiragana:そうだん",
+    "meaning": {
+      "en": "consultation"
+    },
+    "script": "hiragana",
+    "text": "そうだん"
+  },
+  {
+    "id": "w:hiragana:そだてる",
+    "meaning": {
+      "en": "to raise; to train; to promote the growth of"
+    },
+    "script": "hiragana",
+    "text": "そだてる"
+  },
+  {
+    "id": "w:hiragana:そつぎょう",
+    "meaning": {
+      "en": "graduation; moving on (from)"
+    },
+    "script": "hiragana",
+    "text": "そつぎょう"
+  },
+  {
+    "id": "w:hiragana:そふ",
+    "meaning": {
+      "en": "grandfather"
+    },
+    "script": "hiragana",
+    "text": "そふ"
+  },
+  {
+    "id": "w:hiragana:そぼ",
+    "meaning": {
+      "en": "grandmother"
+    },
+    "script": "hiragana",
+    "text": "そぼ"
+  },
+  {
+    "id": "w:hiragana:それで",
+    "meaning": {
+      "en": "so"
+    },
+    "script": "hiragana",
+    "text": "それで"
+  },
+  {
+    "id": "w:hiragana:それに",
+    "meaning": {
+      "en": "besides"
+    },
+    "script": "hiragana",
+    "text": "それに"
+  },
+  {
+    "id": "w:hiragana:それほど",
+    "meaning": {
+      "en": "to that degree"
+    },
+    "script": "hiragana",
+    "text": "それほど"
+  },
+  {
+    "id": "w:hiragana:そろそろ",
+    "meaning": {
+      "en": "soon; slowly; already"
+    },
+    "script": "hiragana",
+    "text": "そろそろ"
+  },
+  {
+    "id": "w:hiragana:そんな",
+    "meaning": {
+      "en": "such; no way!"
+    },
+    "script": "hiragana",
+    "text": "そんな"
+  },
+  {
+    "id": "w:hiragana:そんなに",
+    "meaning": {
+      "en": "so much"
+    },
+    "script": "hiragana",
+    "text": "そんなに"
+  },
+  {
+    "id": "w:hiragana:たいいん",
+    "meaning": {
+      "en": "leaving hospital"
+    },
+    "script": "hiragana",
+    "text": "たいいん"
+  },
+  {
+    "id": "w:hiragana:だいがくせい",
+    "meaning": {
+      "en": "university student"
+    },
+    "script": "hiragana",
+    "text": "だいがくせい"
+  },
+  {
+    "id": "w:hiragana:だいじ",
+    "meaning": {
+      "en": "important; valuable; serious matter"
+    },
+    "script": "hiragana",
+    "text": "だいじ"
+  },
+  {
+    "id": "w:hiragana:だいたい",
+    "meaning": {
+      "en": "generally; general; outline"
+    },
+    "script": "hiragana",
+    "text": "だいたい"
+  },
+  {
+    "id": "w:hiragana:たいてい",
+    "meaning": {
+      "en": "mostly; probably; most"
+    },
+    "script": "hiragana",
+    "text": "たいてい"
+  },
+  {
+    "id": "w:hiragana:だいぶ",
+    "meaning": {
+      "en": "considerably"
+    },
+    "script": "hiragana",
+    "text": "だいぶ"
+  },
+  {
+    "id": "w:hiragana:たいふう",
+    "meaning": {
+      "en": "typhoon"
+    },
+    "script": "hiragana",
+    "text": "たいふう"
+  },
+  {
+    "id": "w:hiragana:たおれる",
+    "meaning": {
+      "en": "to fall (over, down); to be destroyed (in a collapse)"
+    },
+    "script": "hiragana",
+    "text": "たおれる"
+  },
+  {
+    "id": "w:hiragana:だから",
+    "meaning": {
+      "en": "so; like I said"
+    },
+    "script": "hiragana",
+    "text": "だから"
+  },
+  {
+    "id": "w:hiragana:たしか",
+    "meaning": {
+      "en": "sure; reliable; If I'm not mistaken"
+    },
+    "script": "hiragana",
+    "text": "たしか"
+  },
+  {
+    "id": "w:hiragana:たす",
+    "meaning": {
+      "en": "to add (numbers); to add (something)"
+    },
+    "script": "hiragana",
+    "text": "たす"
+  },
+  {
+    "id": "w:hiragana:たずねる",
+    "meaning": {
+      "en": "to visit; to ask"
+    },
+    "script": "hiragana",
+    "text": "たずねる"
+  },
+  {
+    "id": "w:hiragana:ただしい",
+    "meaning": {
+      "en": "right; proper"
+    },
+    "script": "hiragana",
+    "text": "ただしい"
+  },
+  {
+    "id": "w:hiragana:たたみ",
+    "meaning": {
+      "en": "tatami mat"
+    },
+    "script": "hiragana",
+    "text": "たたみ"
+  },
+  {
+    "id": "w:hiragana:たてる",
+    "meaning": {
+      "en": "to stand up; to build"
+    },
+    "script": "hiragana",
+    "text": "たてる"
+  },
+  {
+    "id": "w:hiragana:たとえば",
+    "meaning": {
+      "en": "for example"
+    },
+    "script": "hiragana",
+    "text": "たとえば"
+  },
+  {
+    "id": "w:hiragana:たな",
+    "meaning": {
+      "en": "shelf; trellis"
+    },
+    "script": "hiragana",
+    "text": "たな"
+  },
+  {
+    "id": "w:hiragana:たのしみ",
+    "meaning": {
+      "en": "enjoyment; anticipation"
+    },
+    "script": "hiragana",
+    "text": "たのしみ"
+  },
+  {
+    "id": "w:hiragana:たのしむ",
+    "meaning": {
+      "en": "to enjoy; to look forward to"
+    },
+    "script": "hiragana",
+    "text": "たのしむ"
+  },
+  {
+    "id": "w:hiragana:たまに",
+    "meaning": {
+      "en": "occasionally"
+    },
+    "script": "hiragana",
+    "text": "たまに"
+  },
+  {
+    "id": "w:hiragana:ため",
+    "meaning": {
+      "en": "good; sake; consequence"
+    },
+    "script": "hiragana",
+    "text": "ため"
+  },
+  {
+    "id": "w:hiragana:だめ",
+    "meaning": {
+      "en": "no good; hopeless; cannot"
+    },
+    "script": "hiragana",
+    "text": "だめ"
+  },
+  {
+    "id": "w:hiragana:たりる",
+    "meaning": {
+      "en": "to be sufficient; to be worth doing; to do (the job)"
+    },
+    "script": "hiragana",
+    "text": "たりる"
+  },
+  {
+    "id": "w:hiragana:だんせい",
+    "meaning": {
+      "en": "man; masculine gender"
+    },
+    "script": "hiragana",
+    "text": "だんせい"
+  },
+  {
+    "id": "w:hiragana:だんぼう",
+    "meaning": {
+      "en": "(indoor) heating"
+    },
+    "script": "hiragana",
+    "text": "だんぼう"
+  },
+  {
+    "id": "w:hiragana:ち",
+    "meaning": {
+      "en": "blood; blood; (the) blood"
+    },
+    "script": "hiragana",
+    "text": "ち"
+  },
+  {
+    "id": "w:hiragana:ちから",
+    "meaning": {
+      "en": "force; capability; efficacy"
+    },
+    "script": "hiragana",
+    "text": "ちから"
+  },
+  {
+    "id": "w:hiragana:ちっとも",
+    "meaning": {
+      "en": "(not) at all"
+    },
+    "script": "hiragana",
+    "text": "ちっとも"
+  },
+  {
+    "id": "w:hiragana:ちゃん",
+    "meaning": {
+      "en": "suffix for familiar person"
+    },
+    "script": "hiragana",
+    "text": "ちゃん"
+  },
+  {
+    "id": "w:hiragana:ちゅうい",
+    "meaning": {
+      "en": "attention; care; advice"
+    },
+    "script": "hiragana",
+    "text": "ちゅうい"
+  },
+  {
+    "id": "w:hiragana:ちゅうがっこう",
+    "meaning": {
+      "en": "junior high school"
+    },
+    "script": "hiragana",
+    "text": "ちゅうがっこう"
+  },
+  {
+    "id": "w:hiragana:ちゅうしゃ",
+    "meaning": {
+      "en": "injection"
+    },
+    "script": "hiragana",
+    "text": "ちゅうしゃ"
+  },
+  {
+    "id": "w:hiragana:ちゅうしゃじょう",
+    "meaning": {
+      "en": "parking lot"
+    },
+    "script": "hiragana",
+    "text": "ちゅうしゃじょう"
+  },
+  {
+    "id": "w:hiragana:ちり",
+    "meaning": {
+      "en": "geography"
+    },
+    "script": "hiragana",
+    "text": "ちり"
+  },
+  {
+    "id": "w:hiragana:つかまえる",
+    "meaning": {
+      "en": "to catch; to grab; to catch hold of (someone)"
+    },
+    "script": "hiragana",
+    "text": "つかまえる"
+  },
+  {
+    "id": "w:hiragana:つき",
+    "meaning": {
+      "en": "Moon; month; moonlight"
+    },
+    "script": "hiragana",
+    "text": "つき"
+  },
+  {
+    "id": "w:hiragana:つごう",
+    "meaning": {
+      "en": "circumstances; arranging; lending money"
+    },
+    "script": "hiragana",
+    "text": "つごう"
+  },
+  {
+    "id": "w:hiragana:つたえる",
+    "meaning": {
+      "en": "to convey"
+    },
+    "script": "hiragana",
+    "text": "つたえる"
+  },
+  {
+    "id": "w:hiragana:つづく",
+    "meaning": {
+      "en": "to continue; to continue (without a break)"
+    },
+    "script": "hiragana",
+    "text": "つづく"
+  },
+  {
+    "id": "w:hiragana:つづける",
+    "meaning": {
+      "en": "to continue; to continue ..."
+    },
+    "script": "hiragana",
+    "text": "つづける"
+  },
+  {
+    "id": "w:hiragana:つつむ",
+    "meaning": {
+      "en": "to wrap up; to cover; to conceal (a feeling)"
+    },
+    "script": "hiragana",
+    "text": "つつむ"
+  },
+  {
+    "id": "w:hiragana:つま",
+    "meaning": {
+      "en": "wife; garnish (esp. one served with sashimi); accompaniment"
+    },
+    "script": "hiragana",
+    "text": "つま"
+  },
+  {
+    "id": "w:hiragana:つもり",
+    "meaning": {
+      "en": "intention; belief; estimate"
+    },
+    "script": "hiragana",
+    "text": "つもり"
+  },
+  {
+    "id": "w:hiragana:つる",
+    "meaning": {
+      "en": "to fish; to lure in"
+    },
+    "script": "hiragana",
+    "text": "つる"
+  },
+  {
+    "id": "w:hiragana:つれる",
+    "meaning": {
+      "en": "to take (someone) with one"
+    },
+    "script": "hiragana",
+    "text": "つれる"
+  },
+  {
+    "id": "w:hiragana:ていねい",
+    "meaning": {
+      "en": "polite; careful"
+    },
+    "script": "hiragana",
+    "text": "ていねい"
+  },
+  {
+    "id": "w:hiragana:てきとう",
+    "meaning": {
+      "en": "suitable; perfunctory"
+    },
+    "script": "hiragana",
+    "text": "てきとう"
+  },
+  {
+    "id": "w:hiragana:できるだけ",
+    "meaning": {
+      "en": "as much as one can"
+    },
+    "script": "hiragana",
+    "text": "できるだけ"
+  },
+  {
+    "id": "w:hiragana:てつだう",
+    "meaning": {
+      "en": "to help; to contribute to"
+    },
+    "script": "hiragana",
+    "text": "てつだう"
+  },
+  {
+    "id": "w:hiragana:てぶくろ",
+    "meaning": {
+      "en": "glove"
+    },
+    "script": "hiragana",
+    "text": "てぶくろ"
+  },
+  {
+    "id": "w:hiragana:てら",
+    "meaning": {
+      "en": "temple (Buddhist)"
+    },
+    "script": "hiragana",
+    "text": "てら"
+  },
+  {
+    "id": "w:hiragana:てん",
+    "meaning": {
+      "en": "dot; mark (in an exam, etc.); point (in a game)"
+    },
+    "script": "hiragana",
+    "text": "てん"
+  },
+  {
+    "id": "w:hiragana:てんいん",
+    "meaning": {
+      "en": "employee (of a store)"
+    },
+    "script": "hiragana",
+    "text": "てんいん"
+  },
+  {
+    "id": "w:hiragana:てんきよほう",
+    "meaning": {
+      "en": "weather forecast"
+    },
+    "script": "hiragana",
+    "text": "てんきよほう"
+  },
+  {
+    "id": "w:hiragana:でんとう",
+    "meaning": {
+      "en": "electric light"
+    },
+    "script": "hiragana",
+    "text": "でんとう"
+  },
+  {
+    "id": "w:hiragana:でんぽう",
+    "meaning": {
+      "en": "telegram"
+    },
+    "script": "hiragana",
+    "text": "でんぽう"
+  },
+  {
+    "id": "w:hiragana:てんらんかい",
+    "meaning": {
+      "en": "exhibition"
+    },
+    "script": "hiragana",
+    "text": "てんらんかい"
+  },
+  {
+    "id": "w:hiragana:どうぐ",
+    "meaning": {
+      "en": "tool; means; furniture"
+    },
+    "script": "hiragana",
+    "text": "どうぐ"
+  },
+  {
+    "id": "w:hiragana:とうとう",
+    "meaning": {
+      "en": "finally"
+    },
+    "script": "hiragana",
+    "text": "とうとう"
+  },
+  {
+    "id": "w:hiragana:どうぶつえん",
+    "meaning": {
+      "en": "zoo"
+    },
+    "script": "hiragana",
+    "text": "どうぶつえん"
+  },
+  {
+    "id": "w:hiragana:とおく",
+    "meaning": {
+      "en": "far away; long ago; by far"
+    },
+    "script": "hiragana",
+    "text": "とおく"
+  },
+  {
+    "id": "w:hiragana:とおる",
+    "meaning": {
+      "en": "to go by"
+    },
+    "script": "hiragana",
+    "text": "とおる"
+  },
+  {
+    "id": "w:hiragana:とくに",
+    "meaning": {
+      "en": "particularly"
+    },
+    "script": "hiragana",
+    "text": "とくに"
+  },
+  {
+    "id": "w:hiragana:とくべつ",
+    "meaning": {
+      "en": "special"
+    },
+    "script": "hiragana",
+    "text": "とくべつ"
+  },
+  {
+    "id": "w:hiragana:とこや",
+    "meaning": {
+      "en": "barbershop"
+    },
+    "script": "hiragana",
+    "text": "とこや"
+  },
+  {
+    "id": "w:hiragana:とちゅう",
+    "meaning": {
+      "en": "on the way; in the middle of"
+    },
+    "script": "hiragana",
+    "text": "とちゅう"
+  },
+  {
+    "id": "w:hiragana:とっきゅう",
+    "meaning": {
+      "en": "limited express (train for which a limited-express ticket is required)"
+    },
+    "script": "hiragana",
+    "text": "とっきゅう"
+  },
+  {
+    "id": "w:hiragana:とどける",
+    "meaning": {
+      "en": "to deliver; to report"
+    },
+    "script": "hiragana",
+    "text": "とどける"
+  },
+  {
+    "id": "w:hiragana:とめる",
+    "meaning": {
+      "en": "to stop; to park; to prevent"
+    },
+    "script": "hiragana",
+    "text": "とめる"
+  },
+  {
+    "id": "w:hiragana:とりかえる",
+    "meaning": {
+      "en": "to exchange; to replace"
+    },
+    "script": "hiragana",
+    "text": "とりかえる"
+  },
+  {
+    "id": "w:hiragana:どろぼう",
+    "meaning": {
+      "en": "thief; theft"
+    },
+    "script": "hiragana",
+    "text": "どろぼう"
+  },
+  {
+    "id": "w:hiragana:どんどん",
+    "meaning": {
+      "en": "drumming (noise); rapidly; continuously"
+    },
+    "script": "hiragana",
+    "text": "どんどん"
+  },
+  {
+    "id": "w:hiragana:なおす",
+    "meaning": {
+      "en": "to repair; to change; to put back"
+    },
+    "script": "hiragana",
+    "text": "なおす"
+  },
+  {
+    "id": "w:hiragana:なおる",
+    "meaning": {
+      "en": "to get mended; to get better"
+    },
+    "script": "hiragana",
+    "text": "なおる"
+  },
+  {
+    "id": "w:hiragana:なかなか",
+    "meaning": {
+      "en": "very; by no means; middle"
+    },
+    "script": "hiragana",
+    "text": "なかなか"
+  },
+  {
+    "id": "w:hiragana:なくなる",
+    "meaning": {
+      "en": "to be lost (e.g. luggage); to die"
+    },
+    "script": "hiragana",
+    "text": "なくなる"
+  },
+  {
+    "id": "w:hiragana:なげる",
+    "meaning": {
+      "en": "to throw; to give up"
+    },
+    "script": "hiragana",
+    "text": "なげる"
+  },
+  {
+    "id": "w:hiragana:なさる",
+    "meaning": {
+      "en": "to do"
+    },
+    "script": "hiragana",
+    "text": "なさる"
+  },
+  {
+    "id": "w:hiragana:なるべく",
+    "meaning": {
+      "en": "as (much) as possible"
+    },
+    "script": "hiragana",
+    "text": "なるべく"
+  },
+  {
+    "id": "w:hiragana:なるほど",
+    "meaning": {
+      "en": "I see"
+    },
+    "script": "hiragana",
+    "text": "なるほど"
+  },
+  {
+    "id": "w:hiragana:なれる",
+    "meaning": {
+      "en": "to get used to; to become skilled in; to become tame"
+    },
+    "script": "hiragana",
+    "text": "なれる"
+  },
+  {
+    "id": "w:hiragana:におい",
+    "meaning": {
+      "en": "smell; aura"
+    },
+    "script": "hiragana",
+    "text": "におい"
+  },
+  {
+    "id": "w:hiragana:にがい",
+    "meaning": {
+      "en": "bitter"
+    },
+    "script": "hiragana",
+    "text": "にがい"
+  },
+  {
+    "id": "w:hiragana:にかいだて",
+    "meaning": {
+      "en": "two-storied building"
+    },
+    "script": "hiragana",
+    "text": "にかいだて"
+  },
+  {
+    "id": "w:hiragana:にげる",
+    "meaning": {
+      "en": "to run away; to avoid (a question, responsibility, etc.)"
+    },
+    "script": "hiragana",
+    "text": "にげる"
+  },
+  {
+    "id": "w:hiragana:にっき",
+    "meaning": {
+      "en": "diary"
+    },
+    "script": "hiragana",
+    "text": "にっき"
+  },
+  {
+    "id": "w:hiragana:にゅういん",
+    "meaning": {
+      "en": "hospitalization"
+    },
+    "script": "hiragana",
+    "text": "にゅういん"
+  },
+  {
+    "id": "w:hiragana:にゅうがく",
+    "meaning": {
+      "en": "admission (to a school or university)"
+    },
+    "script": "hiragana",
+    "text": "にゅうがく"
+  },
+  {
+    "id": "w:hiragana:にる",
+    "meaning": {
+      "en": "to resemble"
+    },
+    "script": "hiragana",
+    "text": "にる"
+  },
+  {
+    "id": "w:hiragana:にんぎょう",
+    "meaning": {
+      "en": "doll; puppet (person under the control of another)"
+    },
+    "script": "hiragana",
+    "text": "にんぎょう"
+  },
+  {
+    "id": "w:hiragana:ぬすむ",
+    "meaning": {
+      "en": "to steal; to plagiarize; to do stealthily"
+    },
+    "script": "hiragana",
+    "text": "ぬすむ"
+  },
+  {
+    "id": "w:hiragana:ぬる",
+    "meaning": {
+      "en": "to paint"
+    },
+    "script": "hiragana",
+    "text": "ぬる"
+  },
+  {
+    "id": "w:hiragana:ぬれる",
+    "meaning": {
+      "en": "to get wet"
+    },
+    "script": "hiragana",
+    "text": "ぬれる"
+  },
+  {
+    "id": "w:hiragana:ねだん",
+    "meaning": {
+      "en": "price"
+    },
+    "script": "hiragana",
+    "text": "ねだん"
+  },
+  {
+    "id": "w:hiragana:ねつ",
+    "meaning": {
+      "en": "heat; fever; zeal"
+    },
+    "script": "hiragana",
+    "text": "ねつ"
+  },
+  {
+    "id": "w:hiragana:ねっしん",
+    "meaning": {
+      "en": "zealous"
+    },
+    "script": "hiragana",
+    "text": "ねっしん"
+  },
+  {
+    "id": "w:hiragana:ねぼう",
+    "meaning": {
+      "en": "sleeping in late; late riser"
+    },
+    "script": "hiragana",
+    "text": "ねぼう"
+  },
+  {
+    "id": "w:hiragana:ねむい",
+    "meaning": {
+      "en": "sleepy"
+    },
+    "script": "hiragana",
+    "text": "ねむい"
+  },
+  {
+    "id": "w:hiragana:ねむる",
+    "meaning": {
+      "en": "to sleep; to die; to lie idle (e.g. of resources)"
+    },
+    "script": "hiragana",
+    "text": "ねむる"
+  },
+  {
+    "id": "w:hiragana:のこる",
+    "meaning": {
+      "en": "to remain"
+    },
+    "script": "hiragana",
+    "text": "のこる"
+  },
+  {
+    "id": "w:hiragana:のど",
+    "meaning": {
+      "en": "throat; singing voice; gutter (inner margins of a book)"
+    },
+    "script": "hiragana",
+    "text": "のど"
+  },
+  {
+    "id": "w:hiragana:のりかえる",
+    "meaning": {
+      "en": "to transfer (trains)"
+    },
+    "script": "hiragana",
+    "text": "のりかえる"
+  },
+  {
+    "id": "w:hiragana:のりもの",
+    "meaning": {
+      "en": "vehicle; ride (at a fair, amusement park, etc.)"
+    },
+    "script": "hiragana",
+    "text": "のりもの"
+  },
+  {
+    "id": "w:hiragana:ばあい",
+    "meaning": {
+      "en": "case"
+    },
+    "script": "hiragana",
+    "text": "ばあい"
+  },
+  {
+    "id": "w:hiragana:ばい",
+    "meaning": {
+      "en": "double; times (as much); 1-nth"
+    },
+    "script": "hiragana",
+    "text": "ばい"
+  },
+  {
+    "id": "w:hiragana:はいけん",
+    "meaning": {
+      "en": "seeing"
+    },
+    "script": "hiragana",
+    "text": "はいけん"
+  },
+  {
+    "id": "w:hiragana:はいしゃ",
+    "meaning": {
+      "en": "dentist"
+    },
+    "script": "hiragana",
+    "text": "はいしゃ"
+  },
+  {
+    "id": "w:hiragana:はこぶ",
+    "meaning": {
+      "en": "to carry; to come; to use (a brush, chopsticks, etc.)"
+    },
+    "script": "hiragana",
+    "text": "はこぶ"
+  },
+  {
+    "id": "w:hiragana:はじめる",
+    "meaning": {
+      "en": "to start; to start up (a business, society, etc.)"
+    },
+    "script": "hiragana",
+    "text": "はじめる"
+  },
+  {
+    "id": "w:hiragana:ばしょ",
+    "meaning": {
+      "en": "place; room; sumo tournament"
+    },
+    "script": "hiragana",
+    "text": "ばしょ"
+  },
+  {
+    "id": "w:hiragana:はず",
+    "meaning": {
+      "en": "should (be); nock (of a bow); nock (of an arrow)"
+    },
+    "script": "hiragana",
+    "text": "はず"
+  },
+  {
+    "id": "w:hiragana:はずかしい",
+    "meaning": {
+      "en": "embarrassing; disgraceful"
+    },
+    "script": "hiragana",
+    "text": "はずかしい"
+  },
+  {
+    "id": "w:hiragana:はつおん",
+    "meaning": {
+      "en": "pronunciation; production of sound"
+    },
+    "script": "hiragana",
+    "text": "はつおん"
+  },
+  {
+    "id": "w:hiragana:はっきり",
+    "meaning": {
+      "en": "clearly; to be clear"
+    },
+    "script": "hiragana",
+    "text": "はっきり"
+  },
+  {
+    "id": "w:hiragana:はなみ",
+    "meaning": {
+      "en": "cherry blossom viewing"
+    },
+    "script": "hiragana",
+    "text": "はなみ"
+  },
+  {
+    "id": "w:hiragana:はやし",
+    "meaning": {
+      "en": "wood; bunch (of something)"
+    },
+    "script": "hiragana",
+    "text": "はやし"
+  },
+  {
+    "id": "w:hiragana:はらう",
+    "meaning": {
+      "en": "to pay (e.g. money, bill); to brush off"
+    },
+    "script": "hiragana",
+    "text": "はらう"
+  },
+  {
+    "id": "w:hiragana:ばんぐみ",
+    "meaning": {
+      "en": "program (e.g. TV)"
+    },
+    "script": "hiragana",
+    "text": "ばんぐみ"
+  },
+  {
+    "id": "w:hiragana:はんたい",
+    "meaning": {
+      "en": "opposition; reverse"
+    },
+    "script": "hiragana",
+    "text": "はんたい"
+  },
+  {
+    "id": "w:hiragana:ひ",
+    "meaning": {
+      "en": "day; fire"
+    },
+    "script": "hiragana",
+    "text": "ひ"
+  },
+  {
+    "id": "w:hiragana:ひえる",
+    "meaning": {
+      "en": "to grow cold"
+    },
+    "script": "hiragana",
+    "text": "ひえる"
+  },
+  {
+    "id": "w:hiragana:ひかり",
+    "meaning": {
+      "en": "light; illumination; happiness"
+    },
+    "script": "hiragana",
+    "text": "ひかり"
+  },
+  {
+    "id": "w:hiragana:ひかる",
+    "meaning": {
+      "en": "to shine"
+    },
+    "script": "hiragana",
+    "text": "ひかる"
+  },
+  {
+    "id": "w:hiragana:ひきだし",
+    "meaning": {
+      "en": "drawer; withdrawal (of money from an account)"
+    },
+    "script": "hiragana",
+    "text": "ひきだし"
+  },
+  {
+    "id": "w:hiragana:ひきだす",
+    "meaning": {
+      "en": "to pull out; to lead out (e.g. a horse from a stable)"
+    },
+    "script": "hiragana",
+    "text": "ひきだす"
+  },
+  {
+    "id": "w:hiragana:ひげ",
+    "meaning": {
+      "en": "moustache; whiskers (on a cat, etc.)"
+    },
+    "script": "hiragana",
+    "text": "ひげ"
+  },
+  {
+    "id": "w:hiragana:ひこうじょう",
+    "meaning": {
+      "en": "airfield"
+    },
+    "script": "hiragana",
+    "text": "ひこうじょう"
+  },
+  {
+    "id": "w:hiragana:ひさしぶり",
+    "meaning": {
+      "en": "a long time (since the last time); it's been a long time"
+    },
+    "script": "hiragana",
+    "text": "ひさしぶり"
+  },
+  {
+    "id": "w:hiragana:びじゅつかん",
+    "meaning": {
+      "en": "art museum"
+    },
+    "script": "hiragana",
+    "text": "びじゅつかん"
+  },
+  {
+    "id": "w:hiragana:ひじょうに",
+    "meaning": {
+      "en": "very"
+    },
+    "script": "hiragana",
+    "text": "ひじょうに"
+  },
+  {
+    "id": "w:hiragana:びっくり",
+    "meaning": {
+      "en": "to be surprised; surprise (e.g. surprise party)"
+    },
+    "script": "hiragana",
+    "text": "びっくり"
+  },
+  {
+    "id": "w:hiragana:ひっこす",
+    "meaning": {
+      "en": "to move (house)"
+    },
+    "script": "hiragana",
+    "text": "ひっこす"
+  },
+  {
+    "id": "w:hiragana:ひつよう",
+    "meaning": {
+      "en": "necessary; necessity"
+    },
+    "script": "hiragana",
+    "text": "ひつよう"
+  },
+  {
+    "id": "w:hiragana:ひどい",
+    "meaning": {
+      "en": "cruel; violent; very bad"
+    },
+    "script": "hiragana",
+    "text": "ひどい"
+  },
+  {
+    "id": "w:hiragana:ひらく",
+    "meaning": {
+      "en": "to open; to bloom"
+    },
+    "script": "hiragana",
+    "text": "ひらく"
+  },
+  {
+    "id": "w:hiragana:ひるま",
+    "meaning": {
+      "en": "daytime"
+    },
+    "script": "hiragana",
+    "text": "ひるま"
+  },
+  {
+    "id": "w:hiragana:ひるやすみ",
+    "meaning": {
+      "en": "lunch break"
+    },
+    "script": "hiragana",
+    "text": "ひるやすみ"
+  },
+  {
+    "id": "w:hiragana:ひろう",
+    "meaning": {
+      "en": "to pick up"
+    },
+    "script": "hiragana",
+    "text": "ひろう"
+  },
+  {
+    "id": "w:hiragana:ふえる",
+    "meaning": {
+      "en": "to increase"
+    },
+    "script": "hiragana",
+    "text": "ふえる"
+  },
+  {
+    "id": "w:hiragana:ふかい",
+    "meaning": {
+      "en": "deep; profound; dense"
+    },
+    "script": "hiragana",
+    "text": "ふかい"
+  },
+  {
+    "id": "w:hiragana:ふくざつ",
+    "meaning": {
+      "en": "complex"
+    },
+    "script": "hiragana",
+    "text": "ふくざつ"
+  },
+  {
+    "id": "w:hiragana:ふくしゅう",
+    "meaning": {
+      "en": "review (of learned material)"
+    },
+    "script": "hiragana",
+    "text": "ふくしゅう"
+  },
+  {
+    "id": "w:hiragana:ぶちょう",
+    "meaning": {
+      "en": "head (chief, director) of a section or department"
+    },
+    "script": "hiragana",
+    "text": "ぶちょう"
+  },
+  {
+    "id": "w:hiragana:ふつう",
+    "meaning": {
+      "en": "normal; normally; local train"
+    },
+    "script": "hiragana",
+    "text": "ふつう"
+  },
+  {
+    "id": "w:hiragana:ぶどう",
+    "meaning": {
+      "en": "grape"
+    },
+    "script": "hiragana",
+    "text": "ぶどう"
+  },
+  {
+    "id": "w:hiragana:ふとる",
+    "meaning": {
+      "en": "to put on weight"
+    },
+    "script": "hiragana",
+    "text": "ふとる"
+  },
+  {
+    "id": "w:hiragana:ふとん",
+    "meaning": {
+      "en": "futon"
+    },
+    "script": "hiragana",
+    "text": "ふとん"
+  },
+  {
+    "id": "w:hiragana:ふね",
+    "meaning": {
+      "en": "ship; tank"
+    },
+    "script": "hiragana",
+    "text": "ふね"
+  },
+  {
+    "id": "w:hiragana:ふべん",
+    "meaning": {
+      "en": "inconvenience"
+    },
+    "script": "hiragana",
+    "text": "ふべん"
+  },
+  {
+    "id": "w:hiragana:ふむ",
+    "meaning": {
+      "en": "to step on; to set foot on (e.g. foreign soil)"
+    },
+    "script": "hiragana",
+    "text": "ふむ"
+  },
+  {
+    "id": "w:hiragana:ふりだす",
+    "meaning": {
+      "en": "to begin to rain"
+    },
+    "script": "hiragana",
+    "text": "ふりだす"
+  },
+  {
+    "id": "w:hiragana:ぶんか",
+    "meaning": {
+      "en": "culture; Bunka era (1804.2.11-1818.4.22)"
+    },
+    "script": "hiragana",
+    "text": "ぶんか"
+  },
+  {
+    "id": "w:hiragana:ぶんがく",
+    "meaning": {
+      "en": "literature"
+    },
+    "script": "hiragana",
+    "text": "ぶんがく"
+  },
+  {
+    "id": "w:hiragana:ぶんぽう",
+    "meaning": {
+      "en": "grammar"
+    },
+    "script": "hiragana",
+    "text": "ぶんぽう"
+  },
+  {
+    "id": "w:hiragana:べつ",
+    "meaning": {
+      "en": "distinction; separate; exception"
+    },
+    "script": "hiragana",
+    "text": "べつ"
+  },
+  {
+    "id": "w:hiragana:へんじ",
+    "meaning": {
+      "en": "reply"
+    },
+    "script": "hiragana",
+    "text": "へんじ"
+  },
+  {
+    "id": "w:hiragana:ぼうえき",
+    "meaning": {
+      "en": "(foreign) trade"
+    },
+    "script": "hiragana",
+    "text": "ぼうえき"
+  },
+  {
+    "id": "w:hiragana:ほうそう",
+    "meaning": {
+      "en": "broadcasting"
+    },
+    "script": "hiragana",
+    "text": "ほうそう"
+  },
+  {
+    "id": "w:hiragana:ほうりつ",
+    "meaning": {
+      "en": "law"
+    },
+    "script": "hiragana",
+    "text": "ほうりつ"
+  },
+  {
+    "id": "w:hiragana:ぼく",
+    "meaning": {
+      "en": "I; you; manservant"
+    },
+    "script": "hiragana",
+    "text": "ぼく"
+  },
+  {
+    "id": "w:hiragana:ほし",
+    "meaning": {
+      "en": "star (usu. excluding the Sun); star (glyph, symbol, shape)"
+    },
+    "script": "hiragana",
+    "text": "ほし"
+  },
+  {
+    "id": "w:hiragana:ほど",
+    "meaning": {
+      "en": "extent; limit; (span of) time"
+    },
+    "script": "hiragana",
+    "text": "ほど"
+  },
+  {
+    "id": "w:hiragana:ほとんど",
+    "meaning": {
+      "en": "almost; hardly; large majority"
+    },
+    "script": "hiragana",
+    "text": "ほとんど"
+  },
+  {
+    "id": "w:hiragana:ほめる",
+    "meaning": {
+      "en": "to praise"
+    },
+    "script": "hiragana",
+    "text": "ほめる"
+  },
+  {
+    "id": "w:hiragana:ほんやく",
+    "meaning": {
+      "en": "translation; deciphering; translation"
+    },
+    "script": "hiragana",
+    "text": "ほんやく"
+  },
+  {
+    "id": "w:hiragana:まいる",
+    "meaning": {
+      "en": "to go; to be defeated; to be annoyed"
+    },
+    "script": "hiragana",
+    "text": "まいる"
+  },
+  {
+    "id": "w:hiragana:まける",
+    "meaning": {
+      "en": "to lose; to give in (to); to be inferior (to)"
+    },
+    "script": "hiragana",
+    "text": "まける"
+  },
+  {
+    "id": "w:hiragana:まじめ",
+    "meaning": {
+      "en": "serious; honest"
+    },
+    "script": "hiragana",
+    "text": "まじめ"
+  },
+  {
+    "id": "w:hiragana:まず",
+    "meaning": {
+      "en": "first (of all); probably; more or less (satisfactory)"
+    },
+    "script": "hiragana",
+    "text": "まず"
+  },
+  {
+    "id": "w:hiragana:または",
+    "meaning": {
+      "en": "or"
+    },
+    "script": "hiragana",
+    "text": "または"
+  },
+  {
+    "id": "w:hiragana:まちがえる",
+    "meaning": {
+      "en": "to make a mistake (in); to mistake (one thing for another)"
+    },
+    "script": "hiragana",
+    "text": "まちがえる"
+  },
+  {
+    "id": "w:hiragana:まにあう",
+    "meaning": {
+      "en": "to be in time (for); to serve (suit, meet) the purpose"
+    },
+    "script": "hiragana",
+    "text": "まにあう"
+  },
+  {
+    "id": "w:hiragana:まわり",
+    "meaning": {
+      "en": "circumference; surroundings; people surrounding oneself"
+    },
+    "script": "hiragana",
+    "text": "まわり"
+  },
+  {
+    "id": "w:hiragana:まわる",
+    "meaning": {
+      "en": "to turn; to go around; to make the rounds (of)"
+    },
+    "script": "hiragana",
+    "text": "まわる"
+  },
+  {
+    "id": "w:hiragana:まんが",
+    "meaning": {
+      "en": "cartoon"
+    },
+    "script": "hiragana",
+    "text": "まんが"
+  },
+  {
+    "id": "w:hiragana:まんなか",
+    "meaning": {
+      "en": "middle"
+    },
+    "script": "hiragana",
+    "text": "まんなか"
+  },
+  {
+    "id": "w:hiragana:みえる",
+    "meaning": {
+      "en": "to be seen; to look; to come"
+    },
+    "script": "hiragana",
+    "text": "みえる"
+  },
+  {
+    "id": "w:hiragana:みずうみ",
+    "meaning": {
+      "en": "lake"
+    },
+    "script": "hiragana",
+    "text": "みずうみ"
+  },
+  {
+    "id": "w:hiragana:みそ",
+    "meaning": {
+      "en": "miso; innards (from crabs, shrimps, etc.) resembling miso"
+    },
+    "script": "hiragana",
+    "text": "みそ"
+  },
+  {
+    "id": "w:hiragana:みつかる",
+    "meaning": {
+      "en": "to be found"
+    },
+    "script": "hiragana",
+    "text": "みつかる"
+  },
+  {
+    "id": "w:hiragana:みつける",
+    "meaning": {
+      "en": "to find; to be used to seeing"
+    },
+    "script": "hiragana",
+    "text": "みつける"
+  },
+  {
+    "id": "w:hiragana:みな",
+    "meaning": {
+      "en": "everyone; everything"
+    },
+    "script": "hiragana",
+    "text": "みな"
+  },
+  {
+    "id": "w:hiragana:みなと",
+    "meaning": {
+      "en": "harbour"
+    },
+    "script": "hiragana",
+    "text": "みなと"
+  },
+  {
+    "id": "w:hiragana:むかう",
+    "meaning": {
+      "en": "to face; to go towards"
+    },
+    "script": "hiragana",
+    "text": "むかう"
+  },
+  {
+    "id": "w:hiragana:むかえる",
+    "meaning": {
+      "en": "to go out to meet; to call for"
+    },
+    "script": "hiragana",
+    "text": "むかえる"
+  },
+  {
+    "id": "w:hiragana:むかし",
+    "meaning": {
+      "en": "the old days; the past ten years"
+    },
+    "script": "hiragana",
+    "text": "むかし"
+  },
+  {
+    "id": "w:hiragana:むし",
+    "meaning": {
+      "en": "insect; worm"
+    },
+    "script": "hiragana",
+    "text": "むし"
+  },
+  {
+    "id": "w:hiragana:むすこ",
+    "meaning": {
+      "en": "son; penis"
+    },
+    "script": "hiragana",
+    "text": "むすこ"
+  },
+  {
+    "id": "w:hiragana:むすめ",
+    "meaning": {
+      "en": "daughter; girl (i.e. a young, unmarried woman)"
+    },
+    "script": "hiragana",
+    "text": "むすめ"
+  },
+  {
+    "id": "w:hiragana:むり",
+    "meaning": {
+      "en": "unreasonable; impossible; forcible"
+    },
+    "script": "hiragana",
+    "text": "むり"
+  },
+  {
+    "id": "w:hiragana:めしあがる",
+    "meaning": {
+      "en": "to eat"
+    },
+    "script": "hiragana",
+    "text": "めしあがる"
+  },
+  {
+    "id": "w:hiragana:めずらしい",
+    "meaning": {
+      "en": "rare; new; fine"
+    },
+    "script": "hiragana",
+    "text": "めずらしい"
+  },
+  {
+    "id": "w:hiragana:もうしあげる",
+    "meaning": {
+      "en": "to say; to do"
+    },
+    "script": "hiragana",
+    "text": "もうしあげる"
+  },
+  {
+    "id": "w:hiragana:もうす",
+    "meaning": {
+      "en": "to say; to do"
+    },
+    "script": "hiragana",
+    "text": "もうす"
+  },
+  {
+    "id": "w:hiragana:もうすぐ",
+    "meaning": {
+      "en": "soon"
+    },
+    "script": "hiragana",
+    "text": "もうすぐ"
+  },
+  {
+    "id": "w:hiragana:もし",
+    "meaning": {
+      "en": "excuse me! (when calling out to someone)"
+    },
+    "script": "hiragana",
+    "text": "もし"
+  },
+  {
+    "id": "w:hiragana:もちろん",
+    "meaning": {
+      "en": "of course"
+    },
+    "script": "hiragana",
+    "text": "もちろん"
+  },
+  {
+    "id": "w:hiragana:もっとも",
+    "meaning": {
+      "en": "most"
+    },
+    "script": "hiragana",
+    "text": "もっとも"
+  },
+  {
+    "id": "w:hiragana:もどる",
+    "meaning": {
+      "en": "to turn back (e.g. half-way); to return"
+    },
+    "script": "hiragana",
+    "text": "もどる"
+  },
+  {
+    "id": "w:hiragana:もめん",
+    "meaning": {
+      "en": "cotton (material)"
+    },
+    "script": "hiragana",
+    "text": "もめん"
+  },
+  {
+    "id": "w:hiragana:もらう",
+    "meaning": {
+      "en": "to receive; to get someone to do something"
+    },
+    "script": "hiragana",
+    "text": "もらう"
+  },
+  {
+    "id": "w:hiragana:もり",
+    "meaning": {
+      "en": "forest; shrine grove"
+    },
+    "script": "hiragana",
+    "text": "もり"
+  },
+  {
+    "id": "w:hiragana:やく",
+    "meaning": {
+      "en": "to burn; to roast; to heat"
+    },
+    "script": "hiragana",
+    "text": "やく"
+  },
+  {
+    "id": "w:hiragana:やくそく",
+    "meaning": {
+      "en": "promise; appointment; convention"
+    },
+    "script": "hiragana",
+    "text": "やくそく"
+  },
+  {
+    "id": "w:hiragana:やくにたつ",
+    "meaning": {
+      "en": "to be helpful"
+    },
+    "script": "hiragana",
+    "text": "やくにたつ"
+  },
+  {
+    "id": "w:hiragana:やける",
+    "meaning": {
+      "en": "to burn; to be roasted; to be sunburnt"
+    },
+    "script": "hiragana",
+    "text": "やける"
+  },
+  {
+    "id": "w:hiragana:やせる",
+    "meaning": {
+      "en": "to become thin; to become impoverished (of soil)"
+    },
+    "script": "hiragana",
+    "text": "やせる"
+  },
+  {
+    "id": "w:hiragana:やっと",
+    "meaning": {
+      "en": "at last; barely"
+    },
+    "script": "hiragana",
+    "text": "やっと"
+  },
+  {
+    "id": "w:hiragana:やはり",
+    "meaning": {
+      "en": "as expected; after all (is said and done); too"
+    },
+    "script": "hiragana",
+    "text": "やはり"
+  },
+  {
+    "id": "w:hiragana:やっぱり",
+    "meaning": {
+      "en": "as expected; after all (is said and done); too"
+    },
+    "script": "hiragana",
+    "text": "やっぱり"
+  },
+  {
+    "id": "w:hiragana:やむ",
+    "meaning": {
+      "en": "to cease"
+    },
+    "script": "hiragana",
+    "text": "やむ"
+  },
+  {
+    "id": "w:hiragana:やめる",
+    "meaning": {
+      "en": "to stop (an activity); to cancel"
+    },
+    "script": "hiragana",
+    "text": "やめる"
+  },
+  {
+    "id": "w:hiragana:やわらかい",
+    "meaning": {
+      "en": "soft; gentle; light (topic, book, etc.)"
+    },
+    "script": "hiragana",
+    "text": "やわらかい"
+  },
+  {
+    "id": "w:hiragana:ゆ",
+    "meaning": {
+      "en": "hot water; hot bath; molten iron"
+    },
+    "script": "hiragana",
+    "text": "ゆ"
+  },
+  {
+    "id": "w:hiragana:ゆしゅつ",
+    "meaning": {
+      "en": "export; efferent"
+    },
+    "script": "hiragana",
+    "text": "ゆしゅつ"
+  },
+  {
+    "id": "w:hiragana:ゆにゅう",
+    "meaning": {
+      "en": "import; afferent"
+    },
+    "script": "hiragana",
+    "text": "ゆにゅう"
+  },
+  {
+    "id": "w:hiragana:ゆび",
+    "meaning": {
+      "en": "finger"
+    },
+    "script": "hiragana",
+    "text": "ゆび"
+  },
+  {
+    "id": "w:hiragana:ゆびわ",
+    "meaning": {
+      "en": "(finger) ring"
+    },
+    "script": "hiragana",
+    "text": "ゆびわ"
+  },
+  {
+    "id": "w:hiragana:ゆめ",
+    "meaning": {
+      "en": "dream; dream; unrealistic aspiration"
+    },
+    "script": "hiragana",
+    "text": "ゆめ"
+  },
+  {
+    "id": "w:hiragana:ゆれる",
+    "meaning": {
+      "en": "to shake; to become unstable"
+    },
+    "script": "hiragana",
+    "text": "ゆれる"
+  },
+  {
+    "id": "w:hiragana:よう",
+    "meaning": {
+      "en": "business; use; for the use of ..."
+    },
+    "script": "hiragana",
+    "text": "よう"
+  },
+  {
+    "id": "w:hiragana:ようい",
+    "meaning": {
+      "en": "preparation"
+    },
+    "script": "hiragana",
+    "text": "ようい"
+  },
+  {
+    "id": "w:hiragana:ようじ",
+    "meaning": {
+      "en": "business"
+    },
+    "script": "hiragana",
+    "text": "ようじ"
+  },
+  {
+    "id": "w:hiragana:よごれる",
+    "meaning": {
+      "en": "to get dirty; to become sullied"
+    },
+    "script": "hiragana",
+    "text": "よごれる"
+  },
+  {
+    "id": "w:hiragana:よしゅう",
+    "meaning": {
+      "en": "preparation for a lesson"
+    },
+    "script": "hiragana",
+    "text": "よしゅう"
+  },
+  {
+    "id": "w:hiragana:よてい",
+    "meaning": {
+      "en": "plans"
+    },
+    "script": "hiragana",
+    "text": "よてい"
+  },
+  {
+    "id": "w:hiragana:よやく",
+    "meaning": {
+      "en": "reservation; contract; programming (e.g. a device)"
+    },
+    "script": "hiragana",
+    "text": "よやく"
+  },
+  {
+    "id": "w:hiragana:よろこぶ",
+    "meaning": {
+      "en": "to be delighted; to congratulate"
+    },
+    "script": "hiragana",
+    "text": "よろこぶ"
+  },
+  {
+    "id": "w:hiragana:よろしい",
+    "meaning": {
+      "en": "good"
+    },
+    "script": "hiragana",
+    "text": "よろしい"
+  },
+  {
+    "id": "w:hiragana:りゆう",
+    "meaning": {
+      "en": "reason"
+    },
+    "script": "hiragana",
+    "text": "りゆう"
+  },
+  {
+    "id": "w:hiragana:りよう",
+    "meaning": {
+      "en": "use"
+    },
+    "script": "hiragana",
+    "text": "りよう"
+  },
+  {
+    "id": "w:hiragana:りょうほう",
+    "meaning": {
+      "en": "both"
+    },
+    "script": "hiragana",
+    "text": "りょうほう"
+  },
+  {
+    "id": "w:hiragana:りょかん",
+    "meaning": {
+      "en": "ryokan"
+    },
+    "script": "hiragana",
+    "text": "りょかん"
+  },
+  {
+    "id": "w:hiragana:るす",
+    "meaning": {
+      "en": "absence; house-sitting; neglecting (e.g. one's studies)"
+    },
+    "script": "hiragana",
+    "text": "るす"
+  },
+  {
+    "id": "w:hiragana:れいぼう",
+    "meaning": {
+      "en": "air conditioning"
+    },
+    "script": "hiragana",
+    "text": "れいぼう"
+  },
+  {
+    "id": "w:hiragana:れきし",
+    "meaning": {
+      "en": "history"
+    },
+    "script": "hiragana",
+    "text": "れきし"
+  },
+  {
+    "id": "w:hiragana:れんらく",
+    "meaning": {
+      "en": "contacting; connection (with a train, bus, etc.)"
+    },
+    "script": "hiragana",
+    "text": "れんらく"
+  },
+  {
+    "id": "w:hiragana:わかす",
+    "meaning": {
+      "en": "to boil; to excite"
+    },
+    "script": "hiragana",
+    "text": "わかす"
+  },
+  {
+    "id": "w:hiragana:わかれる",
+    "meaning": {
+      "en": "to part (usu. of people); to separate (of a couple)"
+    },
+    "script": "hiragana",
+    "text": "わかれる"
+  },
+  {
+    "id": "w:hiragana:わく",
+    "meaning": {
+      "en": "to grow hot (e.g. water); to get excited (at); to ferment"
+    },
+    "script": "hiragana",
+    "text": "わく"
+  },
+  {
+    "id": "w:hiragana:わけ",
+    "meaning": {
+      "en": "reason; meaning; (good) sense"
+    },
+    "script": "hiragana",
+    "text": "わけ"
+  },
+  {
+    "id": "w:hiragana:わすれもの",
+    "meaning": {
+      "en": "lost article; leaving something behind"
+    },
+    "script": "hiragana",
+    "text": "わすれもの"
+  },
+  {
+    "id": "w:hiragana:わらう",
+    "meaning": {
+      "en": "to laugh; to smile; to sneer"
+    },
+    "script": "hiragana",
+    "text": "わらう"
+  },
+  {
+    "id": "w:hiragana:わりあい",
+    "meaning": {
+      "en": "rate; comparatively; contrary to expectations"
+    },
+    "script": "hiragana",
+    "text": "わりあい"
+  },
+  {
+    "id": "w:hiragana:われる",
+    "meaning": {
+      "en": "to break; to split; to be divided (opinion, vote, etc.)"
+    },
+    "script": "hiragana",
+    "text": "われる"
+  },
+  {
+    "id": "w:hiragana:およぎかた",
+    "meaning": {
+      "en": "way of swimming"
+    },
+    "script": "hiragana",
+    "text": "およぎかた"
+  }
+]

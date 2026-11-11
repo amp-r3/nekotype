@@ -95,3 +95,4 @@ Append-only log of architectural decisions, one file per decision.
 | [068](068-content-sources-mirrored-as-release-assets.md)                             | Content Sources Mirrored as Release Assets                                                   | In force               |
 | [069](069-word-readings-and-meanings.md)                                             | Word Readings and Meanings                                                                   | In force               |
 | [070](070-phrase-selection.md)                                                       | Phrase Selection                                                                             | In force               |
+| [071](071-glyph-set-from-generated-content.md)                                       | Glyph Set from Generated Content                                                             | In force               |
