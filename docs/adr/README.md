@@ -92,3 +92,4 @@ Append-only log of architectural decisions, one file per decision.
 | [065](065-cleaner-cat-and-logo-drawings.md)                                          | Cleaner Cat and Logo Drawings, a Smiling `content` Cat and a Reserved `grumpy` Cat           | In force               |
 | [066](066-about-page-design.md)                                                      | The `/about` Page: Sources, Terms and Paged Phrase Credits                                   | In force               |
 | [067](067-initial-chunk-before-p4.md)                                                | One Initial Chunk, Per-Screen Dictionary Parts and a Compact Kana Table                      | In force               |
+| [068](068-content-sources-mirrored-as-release-assets.md)                             | Content Sources Mirrored as Release Assets                                                   | In force               |

@@ -32,6 +32,10 @@ Not covered by the AGPL. Each font keeps the copyright of its authors and is lic
 | JetBrains Mono | `apps/web/src/assets/fonts/JetBrainsMono-*.woff2`, `apps/web/scripts/font-src/JetBrainsMono[wght].ttf` | [OFL-JetBrainsMono.txt](apps/web/src/assets/fonts/OFL-JetBrainsMono.txt) |
 | Noto Sans JP   | `apps/web/src/assets/fonts/NotoSansJP-*.woff2`, `apps/web/scripts/font-src/NotoSansJP[wght].ttf`       | [OFL-NotoSansJP.txt](apps/web/src/assets/fonts/OFL-NotoSansJP.txt)       |
 
+## Mirrored content sources
+
+The release assets that mirror the content pipeline's input files (`content-sources-*` releases, see [ADR 068](docs/adr/068-content-sources-mirrored-as-release-assets.md)) are copies of third-party files and keep their own licences: JMdict (CC BY-SA 4.0, EDRDG), Tatoeba (CC BY 2.0 FR, its contributors), Jonathan Waller's JLPT lists (CC BY) and the stephenmk/yomitan-jlpt-vocab mapping (CC BY-SA 4.0). They are not covered by the AGPL. Each release's notes list the files, their origin and the attribution.
+
 ## Source code: AGPL-3.0-only
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, version 3 of the License only.

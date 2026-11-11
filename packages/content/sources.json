@@ -1,0 +1,88 @@
+{
+  "jlptCommit": "b062d4e38c4bdd0950ae1d4ec55f04b176182e03",
+  "release": "content-sources-2026-11-11",
+  "sources": [
+    {
+      "id": "jmdict",
+      "file": "JMdict.gz",
+      "upstream": "http://ftp.edrdg.org/pub/Nihongo/JMdict.gz",
+      "mirror": "https://github.com/amp-r3/nekotype/releases/download/content-sources-2026-11-11/JMdict.gz",
+      "sha256": "b0853b16804cd0d9a01917079a4cfdfa1da4834680f444e9c52be24f57ebc293",
+      "bytes": 22080457,
+      "retrieved": "2026-11-11",
+      "licence": "CC BY-SA 4.0 (EDRDG)",
+      "note": "ftp.edrdg.org did not answer on 2026-11-11. The file is the Wayback Machine capture of 2026-07-05 (https://web.archive.org/web/20260705053913id_/http://ftp.edrdg.org/pub/Nihongo/JMdict.gz), JMdict created 2026-07-05."
+    },
+    {
+      "id": "jlpt-n5",
+      "file": "n5.csv",
+      "upstream": "https://raw.githubusercontent.com/stephenmk/yomitan-jlpt-vocab/b062d4e38c4bdd0950ae1d4ec55f04b176182e03/original_data/n5.csv",
+      "mirror": "https://github.com/amp-r3/nekotype/releases/download/content-sources-2026-11-11/n5.csv",
+      "sha256": "07dc6f197b51cc076c65c3c9f23218d10c2b67f76545f5c1c4d9e3750495533a",
+      "bytes": 24010,
+      "retrieved": "2026-11-11",
+      "licence": "CC BY, version not stated (Jonathan Waller); mapping CC BY-SA 4.0"
+    },
+    {
+      "id": "jlpt-n4",
+      "file": "n4.csv",
+      "upstream": "https://raw.githubusercontent.com/stephenmk/yomitan-jlpt-vocab/b062d4e38c4bdd0950ae1d4ec55f04b176182e03/original_data/n4.csv",
+      "mirror": "https://github.com/amp-r3/nekotype/releases/download/content-sources-2026-11-11/n4.csv",
+      "sha256": "a14dcc7fdc02259b22331a486c6ff66df74c16472c8aeb5a0ebe7e5fa8ee8eb4",
+      "bytes": 24772,
+      "retrieved": "2026-11-11",
+      "licence": "CC BY, version not stated (Jonathan Waller); mapping CC BY-SA 4.0"
+    },
+    {
+      "id": "tatoeba-jpn",
+      "file": "jpn_sentences_detailed.tsv.bz2",
+      "upstream": "https://downloads.tatoeba.org/exports/per_language/jpn/jpn_sentences_detailed.tsv.bz2",
+      "mirror": "https://github.com/amp-r3/nekotype/releases/download/content-sources-2026-11-11/jpn_sentences_detailed.tsv.bz2",
+      "sha256": "14e7b047fca3721291bc16c4e9a3b5f967ebdb9b34f704aff9a8b50d0d1d1501",
+      "bytes": 4462852,
+      "retrieved": "2026-11-11",
+      "licence": "CC BY 2.0 FR (Tatoeba contributors)"
+    },
+    {
+      "id": "tatoeba-eng",
+      "file": "eng_sentences_detailed.tsv.bz2",
+      "upstream": "https://downloads.tatoeba.org/exports/per_language/eng/eng_sentences_detailed.tsv.bz2",
+      "mirror": "https://github.com/amp-r3/nekotype/releases/download/content-sources-2026-11-11/eng_sentences_detailed.tsv.bz2",
+      "sha256": "afec98e4c44a72f8fc709ce4d672fd3ab7f9ca731402f5d35e384b0b21b207c5",
+      "bytes": 34983679,
+      "retrieved": "2026-11-11",
+      "licence": "CC BY 2.0 FR (Tatoeba contributors)"
+    },
+    {
+      "id": "tatoeba-links",
+      "file": "jpn-eng_links.tsv.bz2",
+      "upstream": "https://downloads.tatoeba.org/exports/per_language/jpn/jpn-eng_links.tsv.bz2",
+      "mirror": "https://github.com/amp-r3/nekotype/releases/download/content-sources-2026-11-11/jpn-eng_links.tsv.bz2",
+      "sha256": "383e72a90aa9415b7e84844227878171500bf4b570c03f8288624166f52cd6e8",
+      "bytes": 1455385,
+      "retrieved": "2026-11-11",
+      "licence": "CC BY 2.0 FR (Tatoeba contributors)"
+    },
+    {
+      "id": "tatoeba-transcriptions",
+      "file": "jpn_transcriptions.tsv.bz2",
+      "upstream": "https://downloads.tatoeba.org/exports/per_language/jpn/jpn_transcriptions.tsv.bz2",
+      "mirror": "https://github.com/amp-r3/nekotype/releases/download/content-sources-2026-11-11/jpn_transcriptions.tsv.bz2",
+      "sha256": "c1076cd2f1bd7ef90e6ca71c179a76458816cab89d906bec5fa06b5a61791544",
+      "bytes": 4282177,
+      "retrieved": "2026-11-11",
+      "licence": "CC BY 2.0 FR (Tatoeba contributors)"
+    },
+    {
+      "id": "tatoeba-ratings",
+      "file": "users_sentences.csv.gz",
+      "upstream": "https://downloads.tatoeba.org/exports/users_sentences.csv",
+      "mirror": "https://github.com/amp-r3/nekotype/releases/download/content-sources-2026-11-11/users_sentences.csv.gz",
+      "sha256": "fd2bd1b74f7bf727f4848cb38398ca15bd7e1470a8a3ef6bee3f4646c62be910",
+      "bytes": 13529084,
+      "retrieved": "2026-11-11",
+      "licence": "CC BY 2.0 FR (Tatoeba contributors)",
+      "note": "Mirrored gzip-compressed by us; upstream is the plain tab-separated file."
+    }
+  ]
+}

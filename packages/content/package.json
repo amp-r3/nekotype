@@ -1,0 +1,28 @@
+{
+  "name": "@nekotype/content",
+  "version": "1.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "fetch": "tsx src/fetch.ts"
+  },
+  "dependencies": {
+    "@nekotype/engine": "workspace:*",
+    "@nekotype/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/sax": "^1.2.7",
+    "eslint": "^10.13.0",
+    "sax": "^1.4.1",
+    "tsx": "^4.20.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.0.5"
+  }
+}
