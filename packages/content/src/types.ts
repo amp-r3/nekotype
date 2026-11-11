@@ -20,3 +20,12 @@ export interface SelectionReport {
   excluded: Record<string, number>;
   compileFailed: { id: string; text: string }[];
 }
+
+/** The credit of a phrase (docs/spec/content.md, "Output"). */
+export interface PhraseCredit {
+  id: string;
+  sentence: { id: number; author: string };
+  translation: { id: number; author: string };
+  /** `null`: machine-generated, verified by kuromoji. */
+  transcriptionAuthor: string | null;
+}
