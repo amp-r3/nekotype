@@ -2,56 +2,57 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { allKanaRows } from './data';
-import { wordsData } from './data/words';
-import { phrasesData } from './data/phrases';
+import { chunksFor, loadContent } from '../api/content-loader';
 import { compile, canonical } from '../lib/engine';
 import type { PromptItem } from './types';
 
-describe('data integrity: content items', () => {
+const words = await loadContent('words', 'both');
+const phrases = await loadContent('phrases', 'both');
+
+describe('data integrity: generated content', () => {
   it('content ids unique', () => {
-    const allContent = [...wordsData, ...phrasesData];
     const idSet = new Set<string>();
-    for (const item of allContent) {
+    for (const item of [...words, ...phrases]) {
       expect(idSet.has(item.id)).toBe(false);
       idSet.add(item.id);
     }
   });
 
-  it('every content item has non-empty en and ru', () => {
-    const allContent = [...wordsData, ...phrasesData];
-    for (const item of allContent) {
+  it('every content item has a non-empty English meaning', () => {
+    for (const item of [...words, ...phrases]) {
       expect(item.meaning.en.trim().length).toBeGreaterThan(0);
-      expect(item.meaning.ru.trim().length).toBeGreaterThan(0);
     }
   });
 
-  it('content pools per script x kind: every pool has >= 3 items', () => {
-    const hiraganaWords = wordsData.filter((w) => w.script === 'hiragana');
-    const katakanaWords = wordsData.filter((w) => w.script === 'katakana');
-    const hiraganaPhrases = phrasesData.filter((p) => p.script === 'hiragana');
-    const katakanaPhrases = phrasesData.filter((p) => p.script === 'katakana');
+  it('every phrase links to its Tatoeba sentence; words do not', () => {
+    for (const item of phrases) expect(item.id).toBe(`p:${item.tatoebaId}`);
+    for (const item of words) expect(item.tatoebaId).toBeUndefined();
+  });
 
-    expect(hiraganaWords.length).toBeGreaterThanOrEqual(3);
-    expect(katakanaWords.length).toBeGreaterThanOrEqual(3);
-    expect(hiraganaPhrases.length).toBeGreaterThanOrEqual(3);
-    expect(katakanaPhrases.length).toBeGreaterThanOrEqual(3);
+  it('chunks hold the script of their name; mixed is for phrases only', () => {
+    expect(words.some((w) => w.script === 'mixed')).toBe(false);
+    expect(phrases.some((p) => p.script === 'mixed')).toBe(true);
+    expect(chunksFor('words', 'both')).not.toContain('phrases-mixed');
+  });
+
+  it('content pools per script: words >= 3, phrases offered for hiragana and with both', () => {
+    expect(words.filter((w) => w.script === 'hiragana').length).toBeGreaterThanOrEqual(3);
+    expect(words.filter((w) => w.script === 'katakana').length).toBeGreaterThanOrEqual(3);
+    expect(phrases.filter((p) => p.script === 'hiragana').length).toBeGreaterThanOrEqual(3);
   });
 
   it('all words/phrases compile in both strictness modes', () => {
-    const allContent = [...wordsData, ...phrasesData];
-    for (const item of allContent) {
+    for (const item of [...words, ...phrases]) {
       const prompt: PromptItem = {
         key: item.id,
         text: item.text,
         ...(item.readingHints ? { readingHints: item.readingHints } : {}),
       };
-      const compiledLearner = compile([prompt], 'learner');
-      expect(compiledLearner.tokens.length).toBeGreaterThan(0);
-      expect(canonical(compiledLearner, 0).length).toBeGreaterThan(0);
-
-      const compiledIme = compile([prompt], 'ime');
-      expect(compiledIme.tokens.length).toBeGreaterThan(0);
-      expect(canonical(compiledIme, 0).length).toBeGreaterThan(0);
+      for (const mode of ['learner', 'ime'] as const) {
+        const compiled = compile([prompt], mode);
+        expect(compiled.tokens.length).toBeGreaterThan(0);
+        expect(canonical(compiled, 0).length).toBeGreaterThan(0);
+      }
     }
   });
 });
@@ -75,7 +76,7 @@ describe('data integrity: font glyphs sync', () => {
       }
     }
 
-    // C12: the generated chunks, not the hand-written data the typing screen still reads until PR 5.
+    // C12: the generated chunks, not the typing screen reads them.
     const contentDir = join(process.cwd(), 'src/entities/prompt/content');
     const chunkFiles = readdirSync(contentDir).filter((f) => /^(words|phrases)-.*\.json$/.test(f));
     expect(chunkFiles).toHaveLength(5);

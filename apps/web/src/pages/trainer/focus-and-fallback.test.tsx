@@ -70,10 +70,10 @@ describe('trainer UI: focus redirection and content loader error fallback', () =
     expect(controller.isAssisted.value).toBe(false);
   });
 
-  it('loadContent failure keeps the setting and shows an i18n message with Retry', async () => {
-    // Spy on loadContent and make it reject (simulating failed dynamic import chunk)
-    const loadContentSpy = vi
-      .spyOn(kanaModule, 'loadContent')
+  it('content chunk failure keeps the setting and shows an i18n message with Retry', async () => {
+    // Spy on loadChunk and make it reject (simulating failed dynamic import chunk)
+    const loadChunkSpy = vi
+      .spyOn(kanaModule, 'loadChunk')
       .mockRejectedValue(new Error('Failed to fetch dynamically imported module'));
 
     const prompt: PromptItem = { key: 'basic:a', text: 'あ' };
@@ -87,7 +87,7 @@ describe('trainer UI: focus redirection and content loader error fallback', () =
     // Wait for the promise rejection and fallback to resolve
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    expect(loadContentSpy).toHaveBeenCalledWith('words');
+    expect(loadChunkSpy).toHaveBeenCalledWith(expect.stringMatching(/^words-/));
     // The setting is kept (frontend.md, "Loading"); kana are practised until Retry.
     expect(contentSetting.value).toBe('words');
 

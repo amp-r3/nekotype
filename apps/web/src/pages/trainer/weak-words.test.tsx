@@ -30,7 +30,7 @@ describe('D20: weak kana steer which word the trainer picks', () => {
   });
 
   it('the first word shown is the one the kana weights select, not the one a flat pool would', async () => {
-    const words = await loadContent('words');
+    const words = await loadContent('words', 'both');
     setContent('words');
     const pool = buildPool(getPracticeSettings(), words);
     const weakWord = pool[0];

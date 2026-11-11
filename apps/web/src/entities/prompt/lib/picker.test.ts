@@ -15,19 +15,32 @@ class SeededRng implements Rng {
 }
 
 describe('picker: pool building', () => {
+  it('offers mixed phrases only for both scripts and passes the Tatoeba id on', () => {
+    const phrases: readonly ContentItem[] = [
+      { id: 'p:1', text: 'ねこです。', script: 'hiragana', meaning: { en: 'a' }, tatoebaId: 1 },
+      { id: 'p:2', text: 'トムです。', script: 'mixed', meaning: { en: 'b' }, tatoebaId: 2 },
+    ];
+    const keys = (script: PoolSettings['script']): (string | undefined)[] =>
+      buildPool({ script, content: 'phrases' }, phrases).map((p) => p.key);
+    expect(keys('hiragana')).toEqual(['p:1']);
+    expect(keys('katakana')).toEqual([]);
+    expect(keys('both')).toEqual(['p:1', 'p:2']);
+    expect(buildPool({ script: 'both', content: 'phrases' }, phrases)[1]?.tatoebaId).toBe(2);
+  });
+
   it('filters content by script in words mode', () => {
     const sampleWords: readonly ContentItem[] = [
       {
         id: 'word:neko',
         text: 'ねこ',
         script: 'hiragana',
-        meaning: { en: 'Cat', ru: 'Кот' },
+        meaning: { en: 'Cat' },
       },
       {
         id: 'word:pan',
         text: 'パン',
         script: 'katakana',
-        meaning: { en: 'Bread', ru: 'Хлеб' },
+        meaning: { en: 'Bread' },
       },
     ];
 
@@ -57,7 +70,7 @@ describe('picker: pool building', () => {
         id: 'word:pan',
         text: 'パン',
         script: 'katakana',
-        meaning: { en: 'Bread', ru: 'Хлеб' },
+        meaning: { en: 'Bread' },
       },
     ];
     expect(buildPool(settings, katakanaOnlyWords)).toEqual([]);

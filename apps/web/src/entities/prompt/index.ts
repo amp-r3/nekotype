@@ -52,4 +52,5 @@ export { canonicalFor } from './lib/canonical';
 
 export { buildPool, pickPrompt } from './lib/picker';
 
-export { loadContent } from './api/content-loader';
+export { loadContent, loadChunk, chunksFor } from './api/content-loader';
+export type { ContentChunk } from './api/content-loader';

@@ -14,9 +14,9 @@ export const BUDGETS = {
   lazyContentGzipKb: 40,
 };
 
-// A lazy chunk is a content chunk when its source is a words/phrases module or lives under
-// a `content` directory; every other lazy chunk is a route chunk.
-const CONTENT_SOURCE = /(^|\/)(words|phrases)\.[cm]?[jt]s$|(^|\/)content\//;
+// A lazy chunk is a content chunk when its source lives under a `content` directory (the generated
+// JSON of `entities/prompt/content/`); every other lazy chunk is a route chunk.
+const CONTENT_SOURCE = /(^|\/)content\//;
 
 // The global the probe publishes; it appears in no other place of the application.
 export const PROBE_MARKER = '__nekotypeProbe';
