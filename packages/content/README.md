@@ -21,10 +21,12 @@ Refreshing the mirror: `fetch --upstream` downloads every file from its upstream
 ## Generate
 
 ```bash
-pnpm --filter @nekotype/content run generate   # word step on .cache/; prints the counts
+pnpm --filter @nekotype/content run generate   # word and phrase steps on .cache/; prints the counts
 ```
 
-The current `generate` runs the word step only: it reads the JLPT lists and JMdict from `.cache/` (run `fetch` first) and writes `words-report.json`, `ru-coverage.json` and `words.json` into `.cache/build/`. It fails when compile failures exceed 5% of the selected words. The phrase step, the chunks and the manifest are added in the following PRs.
+The current `generate` runs the word and phrase steps: it reads the pinned files from `.cache/` (run `fetch` first) and writes `words-report.json`, `ru-coverage.json`, `words.json`, `phrases-report.json`, `phrases.json` and `credits.json` into `.cache/build/`, and `audit-sample.md` into the package folder (commit it: the maintainer checks it in review). It fails when compile failures exceed 5% of the selected words, or of the phrases that passed the filters, and when fewer than 300 phrases qualify. The phrase step takes about 40 s and about 1 GB of memory (kuromoji, ratings). The chunks and the manifest are added in the following PRs.
+
+The phrase step reads the sentences with kuromoji (IPADIC, shipped in the package) and filters them as [content.md](../../docs/spec/content.md) "Phrases" says (`src/phrases.ts`); `src/tatoeba/load.ts` streams the exports into indexes.
 
 It is not named `build` on purpose: the root `pnpm run build` runs every package's `build`, and CI has no `.cache/`.
 
