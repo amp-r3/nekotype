@@ -131,6 +131,7 @@ describe('buildPhrases', () => {
     });
     expect(phrases[0]?.credit).toEqual({
       id: 'p:1',
+      text: 'わたしはねこです。',
       sentence: { id: 1, author: 'ann' },
       translation: { id: 1_000_001, author: 'ann' },
       transcriptionAuthor: 'ann',

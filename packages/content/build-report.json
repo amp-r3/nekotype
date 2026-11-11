@@ -1,0 +1,65 @@
+{
+  "contentVersion": "098be8bfd536",
+  "counts": {
+    "credits": 500,
+    "phrases-hiragana": 389,
+    "phrases-katakana": 0,
+    "phrases-mixed": 111,
+    "words-hiragana": 1167,
+    "words-katakana": 108
+  },
+  "phrases": {
+    "compileFailed": [],
+    "excluded": {
+      "compileFailed": 0,
+      "negativeRating": 697,
+      "noAuthor": 100111,
+      "noTranscription": 0,
+      "noTranslation": 22333,
+      "outsideVocabulary": 30270,
+      "readingMismatch": 2287,
+      "tooLong": 67471,
+      "transcriptionUnreadable": 3149,
+      "unsupportedCharacter": 84
+    },
+    "passedFilters": 22568,
+    "qualifying": 22568,
+    "selected": 500,
+    "sentences": 248970
+  },
+  "sizes": {
+    "credits.json": {
+      "gzip": 17447,
+      "raw": 133075
+    },
+    "phrases-hiragana.json": {
+      "gzip": 14996,
+      "raw": 90145
+    },
+    "phrases-katakana.json": {
+      "gzip": 23,
+      "raw": 3
+    },
+    "phrases-mixed.json": {
+      "gzip": 5008,
+      "raw": 27494
+    },
+    "words-hiragana.json": {
+      "gzip": 25266,
+      "raw": 183774
+    },
+    "words-katakana.json": {
+      "gzip": 2455,
+      "raw": 16660
+    }
+  },
+  "words": {
+    "compileFailed": [],
+    "excluded": {
+      "duplicate": 10,
+      "mixedScript": 1
+    },
+    "selected": 1275,
+    "source": "jlpt"
+  }
+}

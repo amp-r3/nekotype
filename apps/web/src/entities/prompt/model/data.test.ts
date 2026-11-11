@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { allKanaRows } from './data';
 import { wordsData } from './data/words';
@@ -63,7 +63,7 @@ describe('data integrity: font glyphs sync', () => {
     const committedGlyphs = readFileSync(glyphsPath, 'utf-8');
 
     const expectedSet = new Set<string>();
-    const mandatoryChars = 'ーっッゃゅょャュョァィゥェォ、。・０１２３４５６７８９';
+    const mandatoryChars = 'ーっッゃゅょャュョァィゥェォ、。';
     for (const ch of mandatoryChars) expectedSet.add(ch);
 
     for (const row of allKanaRows) {
@@ -75,12 +75,25 @@ describe('data integrity: font glyphs sync', () => {
       }
     }
 
-    for (const w of wordsData) {
-      for (const ch of w.text) expectedSet.add(ch);
-    }
-
-    for (const p of phrasesData) {
-      for (const ch of p.text) expectedSet.add(ch);
+    // C12: the generated chunks, not the hand-written data the typing screen still reads until PR 5.
+    const contentDir = join(process.cwd(), 'src/entities/prompt/content');
+    const chunkFiles = readdirSync(contentDir).filter((f) => /^(words|phrases)-.*\.json$/.test(f));
+    expect(chunkFiles).toHaveLength(5);
+    for (const file of chunkFiles) {
+      const parsed: unknown = JSON.parse(readFileSync(join(contentDir, file), 'utf-8'));
+      if (!Array.isArray(parsed)) throw new Error(`${file} is not an array`);
+      const items: unknown[] = parsed;
+      for (const item of items) {
+        if (
+          typeof item !== 'object' ||
+          item === null ||
+          !('text' in item) ||
+          typeof item.text !== 'string'
+        ) {
+          throw new Error(`${file}: bad item`);
+        }
+        for (const ch of item.text) expectedSet.add(ch);
+      }
     }
 
     const expectedSorted = Array.from(expectedSet).sort().join('');

@@ -1,15 +1,14 @@
 import { createHash } from 'node:crypto';
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
+import { writeFileSync, readFileSync, readdirSync, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import subsetFont from 'subset-font';
 
 import { allKanaRows } from '@nekotype/engine';
-import { wordsData } from '../src/entities/prompt/model/data/words.ts';
-import { phrasesData } from '../src/entities/prompt/model/data/phrases.ts';
 
-// Kana, words and phrases are the Noto subset (glyphs.txt); the other sets are fixed here.
+// The Noto subset (glyphs.txt) is the kana table, the generated content chunks and the characters
+// below (C12, ADR 071); the other sets are fixed here.
 // data.test.ts keeps the mandatory list below in sync with this script.
-const mandatoryChars = 'ーっッゃゅょャュョァィゥェォ、。・０１２３４５６７８９';
+const mandatoryChars = 'ーっッゃゅょャュョァィゥェォ、。';
 
 const range = (from, to) =>
   Array.from({ length: to - from + 1 }, (_, i) => String.fromCodePoint(from + i)).join('');
@@ -44,8 +43,12 @@ for (const row of allKanaRows) {
     for (const ch of entry.katakana) for (const c of ch) chars.add(c);
   }
 }
-for (const w of wordsData) for (const ch of w.text) chars.add(ch);
-for (const p of phrasesData) for (const ch of p.text) chars.add(ch);
+const contentDir = join(process.cwd(), 'src/entities/prompt/content');
+for (const file of readdirSync(contentDir).filter((f) => /^(words|phrases)-.*\.json$/.test(f))) {
+  for (const item of JSON.parse(readFileSync(join(contentDir, file), 'utf-8'))) {
+    for (const ch of item.text) chars.add(ch);
+  }
+}
 
 const sortedGlyphs = Array.from(chars).sort().join('');
 writeFileSync(join(process.cwd(), 'glyphs.txt'), sortedGlyphs, 'utf-8');

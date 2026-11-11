@@ -1,0 +1,4451 @@
+[
+  {
+    "id": "p:226734",
+    "meaning": {
+      "en": "When will Father be back?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 226734,
+    "text": "おとうさんはいつかえってくるの？"
+  },
+  {
+    "id": "p:762116",
+    "meaning": {
+      "en": "These shoes are too small."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 4
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 762116,
+    "text": "このくつはちいさすぎる。"
+  },
+  {
+    "id": "p:10680313",
+    "meaning": {
+      "en": "I have a child."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10680313,
+    "text": "こどもがひとりいます。"
+  },
+  {
+    "id": "p:10162895",
+    "meaning": {
+      "en": "Take your time."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10162895,
+    "text": "ゆっくりでいいよ。"
+  },
+  {
+    "id": "p:200428",
+    "meaning": {
+      "en": "How long will it take to get well?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 200428,
+    "text": "どのくらいでなおりますか。"
+  },
+  {
+    "id": "p:11724515",
+    "meaning": {
+      "en": "\"Wake up!\" \"I am awake!\""
+    },
+    "script": "hiragana",
+    "tatoebaId": 11724515,
+    "text": "「おきろ！」「おきてるって！」"
+  },
+  {
+    "id": "p:8714284",
+    "meaning": {
+      "en": "I don't want to work tomorrow."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8714284,
+    "text": "あしたはたらきたくないな。"
+  },
+  {
+    "id": "p:10798119",
+    "meaning": {
+      "en": "If you keep eating like that, you're going to get fat."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10798119,
+    "text": "そんなにたべてたら、ふとるよ。"
+  },
+  {
+    "id": "p:4562241",
+    "meaning": {
+      "en": "You're pretty good."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 4562241,
+    "text": "あなたはなかなかやるね。"
+  },
+  {
+    "id": "p:8744819",
+    "meaning": {
+      "en": "Were you waiting for me?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8744819,
+    "text": "わたしをまっていたの？"
+  },
+  {
+    "id": "p:10483472",
+    "meaning": {
+      "en": "I didn't do that."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10483472,
+    "text": "そんなことしてません。"
+  },
+  {
+    "id": "p:5748800",
+    "meaning": {
+      "en": "Please speak English."
+    },
+    "script": "hiragana",
+    "tatoebaId": 5748800,
+    "text": "えいごではなしてください。"
+  },
+  {
+    "id": "p:10530029",
+    "meaning": {
+      "en": "I know that."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10530029,
+    "text": "それはわかってる。"
+  },
+  {
+    "id": "p:11848338",
+    "meaning": {
+      "en": "Your English is better than mine."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11848338,
+    "text": "えいご、わたしよりじょうずね。"
+  },
+  {
+    "id": "p:1151894",
+    "meaning": {
+      "en": "I won't go there anymore."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 6
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 1151894,
+    "text": "もうあそこにはいかないよ。"
+  },
+  {
+    "id": "p:4913828",
+    "meaning": {
+      "en": "Stop!"
+    },
+    "script": "hiragana",
+    "tatoebaId": 4913828,
+    "text": "やめて！"
+  },
+  {
+    "id": "p:8647670",
+    "meaning": {
+      "en": "When did it stop snowing?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 8647670,
+    "text": "ゆきはいつやんだの？"
+  },
+  {
+    "id": "p:8980663",
+    "meaning": {
+      "en": "I had a dream about her."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8980663,
+    "text": "かのじょのゆめをみたよ。"
+  },
+  {
+    "id": "p:124710",
+    "meaning": {
+      "en": "Answer the phone."
+    },
+    "script": "hiragana",
+    "tatoebaId": 124710,
+    "text": "でんわにでなさい。"
+  },
+  {
+    "id": "p:77409",
+    "meaning": {
+      "en": "Please keep in touch."
+    },
+    "script": "hiragana",
+    "tatoebaId": 77409,
+    "text": "れんらくしてください。"
+  },
+  {
+    "id": "p:191073",
+    "meaning": {
+      "en": "You don't say."
+    },
+    "script": "hiragana",
+    "tatoebaId": 191073,
+    "text": "いがいだねー。"
+  },
+  {
+    "id": "p:8056964",
+    "meaning": {
+      "en": "I am not too tired."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 8056964,
+    "text": "ぼくはあまりつかれてない。"
+  },
+  {
+    "id": "p:10000276",
+    "meaning": {
+      "en": "That is a good colour."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10000276,
+    "text": "そのいろいいね。"
+  },
+  {
+    "id": "p:3662454",
+    "meaning": {
+      "en": "Are you sleepy?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 3662454,
+    "text": "ねむいんですか？"
+  },
+  {
+    "id": "p:10097826",
+    "meaning": {
+      "en": "I don't like these shoes either."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10097826,
+    "text": "このくつもいやだな。"
+  },
+  {
+    "id": "p:10987978",
+    "meaning": {
+      "en": "I'm sorry about that time."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 4
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10987978,
+    "text": "あのときは、すまなかったな。"
+  },
+  {
+    "id": "p:11527149",
+    "meaning": {
+      "en": "I wonder whose bicycle this is."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11527149,
+    "text": "このじてんしゃ、だれのだろう？"
+  },
+  {
+    "id": "p:10901819",
+    "meaning": {
+      "en": "This candy is delicious."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10901819,
+    "text": "このおかしはおいしいです。"
+  },
+  {
+    "id": "p:11047958",
+    "meaning": {
+      "en": "Do you understand what you're saying?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 11047958,
+    "text": "なにいってるか、わかってるのか？"
+  },
+  {
+    "id": "p:1260477",
+    "meaning": {
+      "en": "He stuck the book in his bag."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 1260477,
+    "text": "かれはほんをかばんにいれた。"
+  },
+  {
+    "id": "p:13193965",
+    "meaning": {
+      "en": "I'm scared."
+    },
+    "script": "hiragana",
+    "tatoebaId": 13193965,
+    "text": "こわいです。"
+  },
+  {
+    "id": "p:8591983",
+    "meaning": {
+      "en": "I wasn't scared at all."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8591983,
+    "text": "ぜんぜんこわくなかったよ。"
+  },
+  {
+    "id": "p:10953700",
+    "meaning": {
+      "en": "What is the date of the newspaper?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10953700,
+    "text": "それはいつのしんぶんですか？"
+  },
+  {
+    "id": "p:3850402",
+    "meaning": {
+      "en": "Who said that to you?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 3850402,
+    "text": "それだれにいわれたの？"
+  },
+  {
+    "id": "p:202734",
+    "meaning": {
+      "en": "Now just hold on a minute."
+    },
+    "script": "hiragana",
+    "tatoebaId": 202734,
+    "text": "ちょっとまってよ。"
+  },
+  {
+    "id": "p:9792941",
+    "meaning": {
+      "en": "You're kind to say so."
+    },
+    "script": "hiragana",
+    "tatoebaId": 9792941,
+    "text": "そういってもらえるとうれしいよ。"
+  },
+  {
+    "id": "p:220969",
+    "meaning": {
+      "en": "This water has a bad smell."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 4
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 220969,
+    "text": "このみずはいやなにおいがする。"
+  },
+  {
+    "id": "p:8752832",
+    "meaning": {
+      "en": "Do you know why the sky is blue?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8752832,
+    "text": "そらがなぜあおいかしってる？"
+  },
+  {
+    "id": "p:1642069",
+    "meaning": {
+      "en": "You promised me."
+    },
+    "script": "hiragana",
+    "tatoebaId": 1642069,
+    "text": "あなたやくそくしたじゃない。"
+  },
+  {
+    "id": "p:1087637",
+    "meaning": {
+      "en": "Where do they live?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 1087637,
+    "text": "かれらはどこにすんでいますか。"
+  },
+  {
+    "id": "p:8075148",
+    "meaning": {
+      "en": "I wanted to sit down."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8075148,
+    "text": "すわりたかった。"
+  },
+  {
+    "id": "p:2860773",
+    "meaning": {
+      "en": "The window is shut."
+    },
+    "script": "hiragana",
+    "tatoebaId": 2860773,
+    "text": "まどがしまっている。"
+  },
+  {
+    "id": "p:148653",
+    "meaning": {
+      "en": "I couldn't get it."
+    },
+    "script": "hiragana",
+    "tatoebaId": 148653,
+    "text": "てにはいらなかった。"
+  },
+  {
+    "id": "p:11795463",
+    "meaning": {
+      "en": "My turn, right?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 11795463,
+    "text": "わたしのばんよね？"
+  },
+  {
+    "id": "p:4057850",
+    "meaning": {
+      "en": "They were asleep."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 4057850,
+    "text": "かのじょたちはねむっていた。"
+  },
+  {
+    "id": "p:1627213",
+    "meaning": {
+      "en": "There are a lot of red flowers in the garden."
+    },
+    "script": "hiragana",
+    "tatoebaId": 1627213,
+    "text": "あかいはながにわにたくさんある。"
+  },
+  {
+    "id": "p:3491578",
+    "meaning": {
+      "en": "You're bad."
+    },
+    "script": "hiragana",
+    "tatoebaId": 3491578,
+    "text": "いけないひと！"
+  },
+  {
+    "id": "p:12295212",
+    "meaning": {
+      "en": "Would you mind if I sleep here tonight?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 12295212,
+    "text": "こんや、ここでねてもいい？"
+  },
+  {
+    "id": "p:12895593",
+    "meaning": {
+      "en": "I have a new book."
+    },
+    "script": "hiragana",
+    "tatoebaId": 12895593,
+    "text": "あたらしいほんがあります。"
+  },
+  {
+    "id": "p:5762768",
+    "meaning": {
+      "en": "Let me explain."
+    },
+    "script": "hiragana",
+    "tatoebaId": 5762768,
+    "text": "せつめいさせて。"
+  },
+  {
+    "id": "p:11029688",
+    "meaning": {
+      "en": "I think that's better."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11029688,
+    "text": "そのほうがいいとおもうけど。"
+  },
+  {
+    "id": "p:886090",
+    "meaning": {
+      "en": "What are you doing?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 886090,
+    "text": "なにやってんだか。"
+  },
+  {
+    "id": "p:1063562",
+    "meaning": {
+      "en": "Do you have any plans for tomorrow?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 1063562,
+    "text": "あしたはなにかよていある？"
+  },
+  {
+    "id": "p:8580466",
+    "meaning": {
+      "en": "Who are they?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 6
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 8580466,
+    "text": "あのひとたちはだれ？"
+  },
+  {
+    "id": "p:145681",
+    "meaning": {
+      "en": "Let sleeping dogs lie."
+    },
+    "script": "hiragana",
+    "tatoebaId": 145681,
+    "text": "ねたこをおこすなよ。"
+  },
+  {
+    "id": "p:3567540",
+    "meaning": {
+      "en": "I should have come here by bicycle."
+    },
+    "script": "hiragana",
+    "tatoebaId": 3567540,
+    "text": "じてんしゃでくればよかったなあ。"
+  },
+  {
+    "id": "p:9329588",
+    "meaning": {
+      "en": "My hobby is collecting stamps."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 9329588,
+    "text": "しゅみはきってあつめです。"
+  },
+  {
+    "id": "p:11294768",
+    "meaning": {
+      "en": "I'll give you a call when I get home."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11294768,
+    "text": "いえについたらでんわします。"
+  },
+  {
+    "id": "p:99041",
+    "meaning": {
+      "en": "He tried to stand up."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 99041,
+    "text": "かれはたとうとしました。"
+  },
+  {
+    "id": "p:8571396",
+    "meaning": {
+      "en": "I forgot what I forgot."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8571396,
+    "text": "なにをわすれたのかわすれました。"
+  },
+  {
+    "id": "p:194421",
+    "meaning": {
+      "en": "Day will break soon."
+    },
+    "script": "hiragana",
+    "tatoebaId": 194421,
+    "text": "もうすぐよるがあけるよ。"
+  },
+  {
+    "id": "p:91892",
+    "meaning": {
+      "en": "What is she like?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 91892,
+    "text": "かのじょはどのようなひとですか。"
+  },
+  {
+    "id": "p:10876054",
+    "meaning": {
+      "en": "That was an excellent game."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10876054,
+    "text": "すばらしいしあいだったよ。"
+  },
+  {
+    "id": "p:8964964",
+    "meaning": {
+      "en": "This annoys me."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8964964,
+    "text": "これ、きになる。"
+  },
+  {
+    "id": "p:3496709",
+    "meaning": {
+      "en": "Is this yours?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 3496709,
+    "text": "これ、あなたのですか？"
+  },
+  {
+    "id": "p:179476",
+    "meaning": {
+      "en": "Do you have any vacancies?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 4
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 179476,
+    "text": "あきへやはありますか。"
+  },
+  {
+    "id": "p:10850770",
+    "meaning": {
+      "en": "I was born in a small town."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10850770,
+    "text": "ちいさなまちでうまれました。"
+  },
+  {
+    "id": "p:1269013",
+    "meaning": {
+      "en": "Do you want to see it?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 1269013,
+    "text": "あなたはそれをみたいですか。"
+  },
+  {
+    "id": "p:2304911",
+    "meaning": {
+      "en": "I'll be fine."
+    },
+    "script": "hiragana",
+    "tatoebaId": 2304911,
+    "text": "だいじょうぶです。"
+  },
+  {
+    "id": "p:3677754",
+    "meaning": {
+      "en": "Do you come here often?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 3677754,
+    "text": "ここよくくるの？"
+  },
+  {
+    "id": "p:11890678",
+    "meaning": {
+      "en": "This film is very interesting."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11890678,
+    "text": "このえいがすごくおもしろいよ。"
+  },
+  {
+    "id": "p:9695788",
+    "meaning": {
+      "en": "I really enjoyed yesterday."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 9695788,
+    "text": "きのうはすごくたのしかったわ。"
+  },
+  {
+    "id": "p:228664",
+    "meaning": {
+      "en": "When shall we go?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 228664,
+    "text": "いついこうか。"
+  },
+  {
+    "id": "p:10191415",
+    "meaning": {
+      "en": "It's hot outside."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10191415,
+    "text": "そとはあついです。"
+  },
+  {
+    "id": "p:10736108",
+    "meaning": {
+      "en": "I can't promise you."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 4
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10736108,
+    "text": "やくそくはできないよ。"
+  },
+  {
+    "id": "p:10837095",
+    "meaning": {
+      "en": "Are you a high school student?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 10837095,
+    "text": "こうこうせいなの？"
+  },
+  {
+    "id": "p:2445675",
+    "meaning": {
+      "en": "I like snow."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 2445675,
+    "text": "わたしはゆきがすきです。"
+  },
+  {
+    "id": "p:114318",
+    "meaning": {
+      "en": "He is above telling lies."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 114318,
+    "text": "かれはうそをつけないひとだ。"
+  },
+  {
+    "id": "p:11582870",
+    "meaning": {
+      "en": "Did she write them?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 11582870,
+    "text": "かのじょがかいたの？"
+  },
+  {
+    "id": "p:7546019",
+    "meaning": {
+      "en": "I don't want to eat this."
+    },
+    "script": "hiragana",
+    "tatoebaId": 7546019,
+    "text": "これをたべたくありません。"
+  },
+  {
+    "id": "p:3957550",
+    "meaning": {
+      "en": "I think I can do it."
+    },
+    "script": "hiragana",
+    "tatoebaId": 3957550,
+    "text": "できるとおもいます。"
+  },
+  {
+    "id": "p:10832929",
+    "meaning": {
+      "en": "Please help me."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10832929,
+    "text": "てつだってください。"
+  },
+  {
+    "id": "p:13224689",
+    "meaning": {
+      "en": "I called my girlfriend."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 13224689,
+    "text": "わたしはかのじょにでんわした。"
+  },
+  {
+    "id": "p:189243",
+    "meaning": {
+      "en": "I like English best."
+    },
+    "script": "hiragana",
+    "tatoebaId": 189243,
+    "text": "えいごがいちばんすきです。"
+  },
+  {
+    "id": "p:11768095",
+    "meaning": {
+      "en": "Did you read it all?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 11768095,
+    "text": "ぜんぶよんだの？"
+  },
+  {
+    "id": "p:10901987",
+    "meaning": {
+      "en": "Our dog is really cute."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10901987,
+    "text": "うちのいぬ、めちゃかわいいんだ。"
+  },
+  {
+    "id": "p:9930583",
+    "meaning": {
+      "en": "Please give me a call."
+    },
+    "script": "hiragana",
+    "tatoebaId": 9930583,
+    "text": "でんわくださいね。"
+  },
+  {
+    "id": "p:11054018",
+    "meaning": {
+      "en": "That sounds like a fun job."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11054018,
+    "text": "たのしそうなしごとですね。"
+  },
+  {
+    "id": "p:12662537",
+    "meaning": {
+      "en": "I ran over a cat."
+    },
+    "script": "hiragana",
+    "tatoebaId": 12662537,
+    "text": "ねこをひいてしまった。"
+  },
+  {
+    "id": "p:2445827",
+    "meaning": {
+      "en": "Wait a moment."
+    },
+    "script": "hiragana",
+    "tatoebaId": 2445827,
+    "text": "ちょっとまて。"
+  },
+  {
+    "id": "p:11995717",
+    "meaning": {
+      "en": "I don't like spiders."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 11995717,
+    "text": "くもはきらいだな。"
+  },
+  {
+    "id": "p:228518",
+    "meaning": {
+      "en": "I'm coming."
+    },
+    "script": "hiragana",
+    "tatoebaId": 228518,
+    "text": "いまいくよ。"
+  },
+  {
+    "id": "p:10914881",
+    "meaning": {
+      "en": "How do you use this?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 10914881,
+    "text": "これ、どうつかうの？"
+  },
+  {
+    "id": "p:417007",
+    "meaning": {
+      "en": "Long time, no see."
+    },
+    "script": "hiragana",
+    "tatoebaId": 417007,
+    "text": "ひさしぶり。"
+  },
+  {
+    "id": "p:5018854",
+    "meaning": {
+      "en": "I'm tired and I want to go home."
+    },
+    "script": "hiragana",
+    "tatoebaId": 5018854,
+    "text": "つかれたのでいえにかえりたい。"
+  },
+  {
+    "id": "p:979750",
+    "meaning": {
+      "en": "Where did you go?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 979750,
+    "text": "どこいってきたの？"
+  },
+  {
+    "id": "p:11561465",
+    "meaning": {
+      "en": "I thought that was your job."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11561465,
+    "text": "あなたのしごとだとおもってた。"
+  },
+  {
+    "id": "p:3363879",
+    "meaning": {
+      "en": "It's a difficult question."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 3363879,
+    "text": "これはむずかしいしつもんです。"
+  },
+  {
+    "id": "p:202918",
+    "meaning": {
+      "en": "I'm busy at the moment."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 202918,
+    "text": "ちょうどいまはいそがしい。"
+  },
+  {
+    "id": "p:9207540",
+    "meaning": {
+      "en": "I lost my keys somewhere yesterday."
+    },
+    "script": "hiragana",
+    "tatoebaId": 9207540,
+    "text": "きのうどこかでかぎをなくした。"
+  },
+  {
+    "id": "p:77910",
+    "meaning": {
+      "en": "It has cooled off."
+    },
+    "script": "hiragana",
+    "tatoebaId": 77910,
+    "text": "すずしくなりました。"
+  },
+  {
+    "id": "p:11795454",
+    "meaning": {
+      "en": "Where did I put the newspaper?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 11795454,
+    "text": "しんぶんどこおいたっけ？"
+  },
+  {
+    "id": "p:8777733",
+    "meaning": {
+      "en": "Are you using that?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8777733,
+    "text": "それつかってるの？"
+  },
+  {
+    "id": "p:216879",
+    "meaning": {
+      "en": "It's now my turn."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 216879,
+    "text": "さあこんどはぼくのばんだ。"
+  },
+  {
+    "id": "p:8513366",
+    "meaning": {
+      "en": "I no longer want to offend anyone."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8513366,
+    "text": "もうだれもおこらせたくない。"
+  },
+  {
+    "id": "p:8734065",
+    "meaning": {
+      "en": "Are you free tomorrow afternoon?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8734065,
+    "text": "あしたのごごってあいてる？"
+  },
+  {
+    "id": "p:8670848",
+    "meaning": {
+      "en": "You're a real friend."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 8670848,
+    "text": "きみはほんとうのともだちだよ。"
+  },
+  {
+    "id": "p:90290",
+    "meaning": {
+      "en": "She isn't married."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 90290,
+    "text": "かのじょはけっこんしていません。"
+  },
+  {
+    "id": "p:11294717",
+    "meaning": {
+      "en": "How did that happen?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 11294717,
+    "text": "どうしてそんなことになったの？"
+  },
+  {
+    "id": "p:179237",
+    "meaning": {
+      "en": "Put on your shoes."
+    },
+    "script": "hiragana",
+    "tatoebaId": 179237,
+    "text": "くつをはいて。"
+  },
+  {
+    "id": "p:10880149",
+    "meaning": {
+      "en": "I kept speaking."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10880149,
+    "text": "わたしははなしつづけました。"
+  },
+  {
+    "id": "p:10774838",
+    "meaning": {
+      "en": "How many stars are there in the sky?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10774838,
+    "text": "そらにほしはいくつあるのかな？"
+  },
+  {
+    "id": "p:9665590",
+    "meaning": {
+      "en": "I plan to be a doctor."
+    },
+    "script": "hiragana",
+    "tatoebaId": 9665590,
+    "text": "いしゃになるつもりです。"
+  },
+  {
+    "id": "p:11459584",
+    "meaning": {
+      "en": "You've told me that a hundred times."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11459584,
+    "text": "なんびゃっかいときいてるよ。"
+  },
+  {
+    "id": "p:8634780",
+    "meaning": {
+      "en": "The moon is beautiful."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8634780,
+    "text": "つきがきれいよ。"
+  },
+  {
+    "id": "p:219295",
+    "meaning": {
+      "en": "This medicine tastes bitter."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 219295,
+    "text": "このくすりはにがいあじがする。"
+  },
+  {
+    "id": "p:13894347",
+    "meaning": {
+      "en": "They didn't choose me."
+    },
+    "script": "hiragana",
+    "tatoebaId": 13894347,
+    "text": "えらばれませんでした。"
+  },
+  {
+    "id": "p:2075046",
+    "meaning": {
+      "en": "I saw him."
+    },
+    "script": "hiragana",
+    "tatoebaId": 2075046,
+    "text": "かれをみた。"
+  },
+  {
+    "id": "p:12979207",
+    "meaning": {
+      "en": "Everyone wants money."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 8
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 12979207,
+    "text": "だれだって、おかねはほしいさ。"
+  },
+  {
+    "id": "p:4793378",
+    "meaning": {
+      "en": "I wonder if I should tell him … ?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 4793378,
+    "text": "かれにはなすのかな。"
+  },
+  {
+    "id": "p:627983",
+    "meaning": {
+      "en": "I have a lot of dreams."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 627983,
+    "text": "ぼくにはゆめがたくさんある。"
+  },
+  {
+    "id": "p:171130",
+    "meaning": {
+      "en": "It will rain tonight."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 171130,
+    "text": "こんやはあめがふるだろう。"
+  },
+  {
+    "id": "p:161847",
+    "meaning": {
+      "en": "I think you can get it."
+    },
+    "script": "hiragana",
+    "tatoebaId": 161847,
+    "text": "てにいれられるとおもいますよ。"
+  },
+  {
+    "id": "p:11571856",
+    "meaning": {
+      "en": "It's in the past."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11571856,
+    "text": "もうすんだことです。"
+  },
+  {
+    "id": "p:142638",
+    "meaning": {
+      "en": "Read it aloud."
+    },
+    "script": "hiragana",
+    "tatoebaId": 142638,
+    "text": "こえをだしてよみなさい。"
+  },
+  {
+    "id": "p:203449",
+    "meaning": {
+      "en": "That's what I thought."
+    },
+    "script": "hiragana",
+    "tatoebaId": 203449,
+    "text": "だとおもった。"
+  },
+  {
+    "id": "p:3488361",
+    "meaning": {
+      "en": "I liked it."
+    },
+    "script": "hiragana",
+    "tatoebaId": 3488361,
+    "text": "それ、いいね。"
+  },
+  {
+    "id": "p:1200175",
+    "meaning": {
+      "en": "I don't want to go alone."
+    },
+    "script": "hiragana",
+    "tatoebaId": 1200175,
+    "text": "ひとりでいきたくない。"
+  },
+  {
+    "id": "p:175155",
+    "meaning": {
+      "en": "You'll understand when you see."
+    },
+    "script": "hiragana",
+    "tatoebaId": 175155,
+    "text": "みればわかるよ。"
+  },
+  {
+    "id": "p:2175147",
+    "meaning": {
+      "en": "Don't worry. It's easy."
+    },
+    "script": "hiragana",
+    "tatoebaId": 2175147,
+    "text": "しんぱいしないで。かんたんだよ。"
+  },
+  {
+    "id": "p:10654934",
+    "meaning": {
+      "en": "I got a C in English."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10654934,
+    "text": "えいごがね、しーだったのよ。"
+  },
+  {
+    "id": "p:10883898",
+    "meaning": {
+      "en": "Which do you like better, this or that?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 10883898,
+    "text": "これとあれ、どっちのほうがすき？"
+  },
+  {
+    "id": "p:6393258",
+    "meaning": {
+      "en": "Why are you apologizing?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 6393258,
+    "text": "なぜあやまっているの？"
+  },
+  {
+    "id": "p:204652",
+    "meaning": {
+      "en": "Leave it there."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "e"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 204652,
+    "text": "それをそこへおいてくれ。"
+  },
+  {
+    "id": "p:235115",
+    "meaning": {
+      "en": "Give me five days."
+    },
+    "script": "hiragana",
+    "tatoebaId": 235115,
+    "text": "いつかまってくれ。"
+  },
+  {
+    "id": "p:10668523",
+    "meaning": {
+      "en": "You'll understand when the time comes."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10668523,
+    "text": "そのときになればわかるよ。"
+  },
+  {
+    "id": "p:11340617",
+    "meaning": {
+      "en": "When do you start on your trip?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 11340617,
+    "text": "いつからりょこうにいくの？"
+  },
+  {
+    "id": "p:3480355",
+    "meaning": {
+      "en": "Hang on."
+    },
+    "script": "hiragana",
+    "tatoebaId": 3480355,
+    "text": "きらないで。"
+  },
+  {
+    "id": "p:152144",
+    "meaning": {
+      "en": "Please look at me."
+    },
+    "script": "hiragana",
+    "tatoebaId": 152144,
+    "text": "わたしをみてください。"
+  },
+  {
+    "id": "p:189331",
+    "meaning": {
+      "en": "You're going to a movie?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 189331,
+    "text": "えいがにいくの？"
+  },
+  {
+    "id": "p:9700576",
+    "meaning": {
+      "en": "I opened a window."
+    },
+    "script": "hiragana",
+    "tatoebaId": 9700576,
+    "text": "まどをあけたよ。"
+  },
+  {
+    "id": "p:9458327",
+    "meaning": {
+      "en": "Why do you want to work here?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 9458327,
+    "text": "どうしてここではたらきたいの？"
+  },
+  {
+    "id": "p:8875104",
+    "meaning": {
+      "en": "How about some tea?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 8875104,
+    "text": "こうちゃはいかが？"
+  },
+  {
+    "id": "p:228629",
+    "meaning": {
+      "en": "War may break out at any moment."
+    },
+    "script": "hiragana",
+    "tatoebaId": 228629,
+    "text": "いつせんそうになるかわからない。"
+  },
+  {
+    "id": "p:8533917",
+    "meaning": {
+      "en": "Great!"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8533917,
+    "text": "すんごい！"
+  },
+  {
+    "id": "p:4971651",
+    "meaning": {
+      "en": "How can I turn off this light?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 4971651,
+    "text": "ここのでんきどうやってけすの？"
+  },
+  {
+    "id": "p:8880951",
+    "meaning": {
+      "en": "Where did you put your key?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8880951,
+    "text": "どこにかぎをおいたの？"
+  },
+  {
+    "id": "p:1184185",
+    "meaning": {
+      "en": "How many pencils do you have?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 1184185,
+    "text": "えんぴつなんぼんもってるの？"
+  },
+  {
+    "id": "p:8582304",
+    "meaning": {
+      "en": "I kept running."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8582304,
+    "text": "はしりつづけた。"
+  },
+  {
+    "id": "p:200639",
+    "meaning": {
+      "en": "It was really cheap."
+    },
+    "script": "hiragana",
+    "tatoebaId": 200639,
+    "text": "とてもやすかったのよ。"
+  },
+  {
+    "id": "p:9167384",
+    "meaning": {
+      "en": "I found it."
+    },
+    "script": "hiragana",
+    "tatoebaId": 9167384,
+    "text": "みつけた。"
+  },
+  {
+    "id": "p:9007233",
+    "meaning": {
+      "en": "Of course, I'll come back."
+    },
+    "script": "hiragana",
+    "tatoebaId": 9007233,
+    "text": "もちろん、もどってくるよ。"
+  },
+  {
+    "id": "p:7486197",
+    "meaning": {
+      "en": "I hate Mondays."
+    },
+    "script": "hiragana",
+    "tatoebaId": 7486197,
+    "text": "げつようびがきらい。"
+  },
+  {
+    "id": "p:4213293",
+    "meaning": {
+      "en": "If you come, I'll also go!"
+    },
+    "script": "hiragana",
+    "tatoebaId": 4213293,
+    "text": "きみがくるならぼくもいくよ。"
+  },
+  {
+    "id": "p:11269244",
+    "meaning": {
+      "en": "I'll bring you something to drink."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11269244,
+    "text": "なにかのむものもってくるね。"
+  },
+  {
+    "id": "p:170604",
+    "meaning": {
+      "en": "He died recently."
+    },
+    "script": "hiragana",
+    "tatoebaId": 170604,
+    "text": "さいきんかれがなくなった。"
+  },
+  {
+    "id": "p:2304852",
+    "meaning": {
+      "en": "Do I look OK?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 2304852,
+    "text": "おかしくない？"
+  },
+  {
+    "id": "p:88598",
+    "meaning": {
+      "en": "She had gone to bed."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 88598,
+    "text": "かのじょはねてしまった。"
+  },
+  {
+    "id": "p:10901613",
+    "meaning": {
+      "en": "Please don't think in that way."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10901613,
+    "text": "そうおもわないでください。"
+  },
+  {
+    "id": "p:12397673",
+    "meaning": {
+      "en": "No, I don't think so."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 6
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 12397673,
+    "text": "いいや、そうはおもわないね。"
+  },
+  {
+    "id": "p:114470",
+    "meaning": {
+      "en": "He always speaks well of her."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 114470,
+    "text": "かれはいつもかのじょをほめる。"
+  },
+  {
+    "id": "p:198885",
+    "meaning": {
+      "en": "I don't know what to say."
+    },
+    "script": "hiragana",
+    "tatoebaId": 198885,
+    "text": "なんてあやまったらいいかなあ。"
+  },
+  {
+    "id": "p:80426",
+    "meaning": {
+      "en": "Will it be fine weather tomorrow?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 80426,
+    "text": "あしたははれだろうか。"
+  },
+  {
+    "id": "p:8701352",
+    "meaning": {
+      "en": "Are you afraid?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8701352,
+    "text": "こわいの？"
+  },
+  {
+    "id": "p:9125167",
+    "meaning": {
+      "en": "Look out for bees."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 9125167,
+    "text": "はちにはきをつけてよ。"
+  },
+  {
+    "id": "p:9930183",
+    "meaning": {
+      "en": "Pick a color."
+    },
+    "script": "hiragana",
+    "tatoebaId": 9930183,
+    "text": "いろをえらんで。"
+  },
+  {
+    "id": "p:8637349",
+    "meaning": {
+      "en": "The flowers will soon blossom."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 8637349,
+    "text": "はなはもうすぐさくよ。"
+  },
+  {
+    "id": "p:80604",
+    "meaning": {
+      "en": "I'll bring it to you tomorrow."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "e"
+        ],
+        "tokenIndex": 6
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 80604,
+    "text": "あしたそちらへもってまいります。"
+  },
+  {
+    "id": "p:5324",
+    "meaning": {
+      "en": "I don't know him."
+    },
+    "script": "hiragana",
+    "tatoebaId": 5324,
+    "text": "かれのことをしらない。"
+  },
+  {
+    "id": "p:12148293",
+    "meaning": {
+      "en": "\"Do something!\" \"Like what?\""
+    },
+    "script": "hiragana",
+    "tatoebaId": 12148293,
+    "text": "「なにかしろよ！」「たとえば？」"
+  },
+  {
+    "id": "p:8868524",
+    "meaning": {
+      "en": "Were you working last night?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 6
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 8868524,
+    "text": "きのうのよるはしごとしてたの？"
+  },
+  {
+    "id": "p:80453",
+    "meaning": {
+      "en": "Will it rain tomorrow?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 80453,
+    "text": "あしたはあめがふるでしょうか。"
+  },
+  {
+    "id": "p:3551972",
+    "meaning": {
+      "en": "I must go back."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 6
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 3551972,
+    "text": "もどらなくては。"
+  },
+  {
+    "id": "p:12022238",
+    "meaning": {
+      "en": "Is there anything wrong about it?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 12022238,
+    "text": "なにかもんだいでもあるの？"
+  },
+  {
+    "id": "p:11286250",
+    "meaning": {
+      "en": "That doesn't exist."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 11286250,
+    "text": "そんなものはない。"
+  },
+  {
+    "id": "p:472792",
+    "meaning": {
+      "en": "Snow is falling."
+    },
+    "script": "hiragana",
+    "tatoebaId": 472792,
+    "text": "ゆきがふっている。"
+  },
+  {
+    "id": "p:9343990",
+    "meaning": {
+      "en": "The more the merrier."
+    },
+    "script": "hiragana",
+    "tatoebaId": 9343990,
+    "text": "おおぜいのほうがたのしいよ。"
+  },
+  {
+    "id": "p:8689601",
+    "meaning": {
+      "en": "Were you crying?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8689601,
+    "text": "ないてたの？"
+  },
+  {
+    "id": "p:10029392",
+    "meaning": {
+      "en": "I wonder whether it'll snow."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10029392,
+    "text": "ゆきになるのかしら？"
+  },
+  {
+    "id": "p:106968",
+    "meaning": {
+      "en": "He has taken to drinking recently."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 106968,
+    "text": "かれはさいきんのみすぎだ。"
+  },
+  {
+    "id": "p:11029579",
+    "meaning": {
+      "en": "The dog is playing with the cat."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11029579,
+    "text": "いぬがねことあそんでるわよ。"
+  },
+  {
+    "id": "p:3583337",
+    "meaning": {
+      "en": "I'll phone you."
+    },
+    "script": "hiragana",
+    "tatoebaId": 3583337,
+    "text": "でんわするよ。"
+  },
+  {
+    "id": "p:10643681",
+    "meaning": {
+      "en": "I'm aware of that."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10643681,
+    "text": "それはしょうちのうえです。"
+  },
+  {
+    "id": "p:11132536",
+    "meaning": {
+      "en": "I want to wash my hands."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11132536,
+    "text": "てがあらいたい。"
+  },
+  {
+    "id": "p:2758979",
+    "meaning": {
+      "en": "What do your friends call you?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 2758979,
+    "text": "ともだちにはなんてよばれてるの？"
+  },
+  {
+    "id": "p:11314712",
+    "meaning": {
+      "en": "I'll study tomorrow."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11314712,
+    "text": "あしたべんきょうするよ。"
+  },
+  {
+    "id": "p:4751190",
+    "meaning": {
+      "en": "How was your trip?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 4751190,
+    "text": "りょこうどうだった？"
+  },
+  {
+    "id": "p:1213083",
+    "meaning": {
+      "en": "Please sing."
+    },
+    "script": "hiragana",
+    "tatoebaId": 1213083,
+    "text": "うたってください。"
+  },
+  {
+    "id": "p:10094319",
+    "meaning": {
+      "en": "Are there any express trains?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 4
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10094319,
+    "text": "きゅうこうはありますか？"
+  },
+  {
+    "id": "p:8828098",
+    "meaning": {
+      "en": "Are you reading something interesting?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8828098,
+    "text": "なにかおもしろいものよんでるの？"
+  },
+  {
+    "id": "p:195462",
+    "meaning": {
+      "en": "See you again."
+    },
+    "script": "hiragana",
+    "tatoebaId": 195462,
+    "text": "またあいましょう。"
+  },
+  {
+    "id": "p:12132568",
+    "meaning": {
+      "en": "I ran away."
+    },
+    "script": "hiragana",
+    "tatoebaId": 12132568,
+    "text": "にげたさ。"
+  },
+  {
+    "id": "p:187898",
+    "meaning": {
+      "en": "What do you need?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 187898,
+    "text": "なにがひつようですか。"
+  },
+  {
+    "id": "p:12735924",
+    "meaning": {
+      "en": "It's already late, so I'll go to bed."
+    },
+    "script": "hiragana",
+    "tatoebaId": 12735924,
+    "text": "もうおそいからねるね。"
+  },
+  {
+    "id": "p:2976032",
+    "meaning": {
+      "en": "Won't you please stay a little bit longer?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 2976032,
+    "text": "もうちょっとだけいてくれない？"
+  },
+  {
+    "id": "p:8714272",
+    "meaning": {
+      "en": "Is it already open?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8714272,
+    "text": "もうあいてる？"
+  },
+  {
+    "id": "p:190531",
+    "meaning": {
+      "en": "I would like to go with you."
+    },
+    "script": "hiragana",
+    "tatoebaId": 190531,
+    "text": "いっしょにいきたいのですが。"
+  },
+  {
+    "id": "p:77233",
+    "meaning": {
+      "en": "I have a reservation for six-thirty."
+    },
+    "script": "hiragana",
+    "tatoebaId": 77233,
+    "text": "ろくじはんによやくしています。"
+  },
+  {
+    "id": "p:9986912",
+    "meaning": {
+      "en": "Do you want to watch this program?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 9986912,
+    "text": "このばんぐみみたい？"
+  },
+  {
+    "id": "p:3480316",
+    "meaning": {
+      "en": "I won!"
+    },
+    "script": "hiragana",
+    "tatoebaId": 3480316,
+    "text": "かったぞ！"
+  },
+  {
+    "id": "p:11669317",
+    "meaning": {
+      "en": "It snowed heavier and heavier."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11669317,
+    "text": "ゆきがどんどんふってきた。"
+  },
+  {
+    "id": "p:8056968",
+    "meaning": {
+      "en": "Aren't you sad?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8056968,
+    "text": "かなしくないの？"
+  },
+  {
+    "id": "p:11625219",
+    "meaning": {
+      "en": "It's stopped raining. Let's go for a walk."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11625219,
+    "text": "あめがやんだよ。さんぽいこう。"
+  },
+  {
+    "id": "p:437962",
+    "meaning": {
+      "en": "I'm a starved spider."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 437962,
+    "text": "わたしはうえたくもです。"
+  },
+  {
+    "id": "p:1483516",
+    "meaning": {
+      "en": "It's already nine o'clock."
+    },
+    "script": "hiragana",
+    "tatoebaId": 1483516,
+    "text": "もうくじです。"
+  },
+  {
+    "id": "p:12586449",
+    "meaning": {
+      "en": "Did you go someplace?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "e"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 12586449,
+    "text": "どこへいったの？"
+  },
+  {
+    "id": "p:232905",
+    "meaning": {
+      "en": "Do you like to study?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 232905,
+    "text": "あなたは、べんきょうがすきですか。"
+  },
+  {
+    "id": "p:9231705",
+    "meaning": {
+      "en": "I'll come home by six o'clock."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 6
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 9231705,
+    "text": "ろくじまでにはかえるよ。"
+  },
+  {
+    "id": "p:184712",
+    "meaning": {
+      "en": "Do you have a cough?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 184712,
+    "text": "せきがでますか。"
+  },
+  {
+    "id": "p:205062",
+    "meaning": {
+      "en": "It's new."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 205062,
+    "text": "それはあたらしいです。"
+  },
+  {
+    "id": "p:182264",
+    "meaning": {
+      "en": "Do you drink milk?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 182264,
+    "text": "ぎゅうにゅうをのみますか。"
+  },
+  {
+    "id": "p:226693",
+    "meaning": {
+      "en": "My stomach is full."
+    },
+    "script": "hiragana",
+    "tatoebaId": 226693,
+    "text": "おなかがいっぱいです。"
+  },
+  {
+    "id": "p:12324517",
+    "meaning": {
+      "en": "I met him on my way home from school."
+    },
+    "script": "hiragana",
+    "tatoebaId": 12324517,
+    "text": "がっこうがえりにあったんだ。"
+  },
+  {
+    "id": "p:4819329",
+    "meaning": {
+      "en": "Don't look at me."
+    },
+    "script": "hiragana",
+    "tatoebaId": 4819329,
+    "text": "こっちみないでください。"
+  },
+  {
+    "id": "p:9127570",
+    "meaning": {
+      "en": "I'll get in touch with you as soon as possible."
+    },
+    "script": "hiragana",
+    "tatoebaId": 9127570,
+    "text": "なるべくはやくれんらくしますね。"
+  },
+  {
+    "id": "p:1114340",
+    "meaning": {
+      "en": "He is my father."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 4
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 1114340,
+    "text": "このひとはおとうさんです。"
+  },
+  {
+    "id": "p:11940205",
+    "meaning": {
+      "en": "I decided to stay home."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11940205,
+    "text": "いえにいることにした。"
+  },
+  {
+    "id": "p:2929493",
+    "meaning": {
+      "en": "What? What did you say?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 2929493,
+    "text": "え？ なんていった？"
+  },
+  {
+    "id": "p:142115",
+    "meaning": {
+      "en": "Don't hang up!"
+    },
+    "script": "hiragana",
+    "tatoebaId": 142115,
+    "text": "きらないでよ！"
+  },
+  {
+    "id": "p:2204551",
+    "meaning": {
+      "en": "You looked like you were enjoying yourself."
+    },
+    "script": "hiragana",
+    "tatoebaId": 2204551,
+    "text": "たのしそうにしてましたね。"
+  },
+  {
+    "id": "p:8918851",
+    "meaning": {
+      "en": "She seems tired."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8918851,
+    "text": "かのじょつかれてそうね。"
+  },
+  {
+    "id": "p:233246",
+    "meaning": {
+      "en": "What time is it by your watch?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 8
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 233246,
+    "text": "あなたのとけいではなんじですか。"
+  },
+  {
+    "id": "p:1066293",
+    "meaning": {
+      "en": "May I ask a couple of questions?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 1066293,
+    "text": "ふたつしつもんしてもいいですか。"
+  },
+  {
+    "id": "p:126163",
+    "meaning": {
+      "en": "Get up early in the morning."
+    },
+    "script": "hiragana",
+    "tatoebaId": 126163,
+    "text": "あさはやくおきなさいよ。"
+  },
+  {
+    "id": "p:76057",
+    "meaning": {
+      "en": "Even I was defeated."
+    },
+    "script": "hiragana",
+    "tatoebaId": 76057,
+    "text": "じぶんでもまけた。"
+  },
+  {
+    "id": "p:10706353",
+    "meaning": {
+      "en": "I'm waiting for him."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10706353,
+    "text": "かれのことまってるんだ。"
+  },
+  {
+    "id": "p:10012775",
+    "meaning": {
+      "en": "I hope not."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10012775,
+    "text": "そうでなきゃいいけど。"
+  },
+  {
+    "id": "p:11571981",
+    "meaning": {
+      "en": "You can't do that, right?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 11571981,
+    "text": "それ、できないんでしょ？"
+  },
+  {
+    "id": "p:12288793",
+    "meaning": {
+      "en": "I feel very sad tonight."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 12288793,
+    "text": "こんやはとてもかなしい。"
+  },
+  {
+    "id": "p:162726",
+    "meaning": {
+      "en": "My room faces east."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 6
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 162726,
+    "text": "わたしのへやはひがしむきです。"
+  },
+  {
+    "id": "p:148620",
+    "meaning": {
+      "en": "Please give me a hand."
+    },
+    "script": "hiragana",
+    "tatoebaId": 148620,
+    "text": "てをかしてください。"
+  },
+  {
+    "id": "p:171535",
+    "meaning": {
+      "en": "It seems that the store is closed today."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      },
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 171535,
+    "text": "きょうはみせはやすみのようだ。"
+  },
+  {
+    "id": "p:154658",
+    "meaning": {
+      "en": "I let the cat into my room."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 154658,
+    "text": "わたしはねこをへやにいれた。"
+  },
+  {
+    "id": "p:2318276",
+    "meaning": {
+      "en": "I like music."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 2318276,
+    "text": "わたしはおんがくがすきです。"
+  },
+  {
+    "id": "p:2197719",
+    "meaning": {
+      "en": "Why are you angry?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 2197719,
+    "text": "なぜおこっているのですか。"
+  },
+  {
+    "id": "p:8537252",
+    "meaning": {
+      "en": "Stop showing off already."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8537252,
+    "text": "もうかっこうつけんな。"
+  },
+  {
+    "id": "p:8576120",
+    "meaning": {
+      "en": "Tea, please."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8576120,
+    "text": "こうちゃをください。"
+  },
+  {
+    "id": "p:84106",
+    "meaning": {
+      "en": "Clean up the room."
+    },
+    "script": "hiragana",
+    "tatoebaId": 84106,
+    "text": "へやをそうじしなさい。"
+  },
+  {
+    "id": "p:10225112",
+    "meaning": {
+      "en": "I'm not pretty."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10225112,
+    "text": "わたし、かわいくないし。"
+  },
+  {
+    "id": "p:119662",
+    "meaning": {
+      "en": "I don't know who he is."
+    },
+    "script": "hiragana",
+    "tatoebaId": 119662,
+    "text": "かれがだれだかしりません。"
+  },
+  {
+    "id": "p:13228483",
+    "meaning": {
+      "en": "This is my friend."
+    },
+    "script": "hiragana",
+    "tatoebaId": 13228483,
+    "text": "これ、ぼくのともだちだ。"
+  },
+  {
+    "id": "p:8715614",
+    "meaning": {
+      "en": "Were you both here yesterday?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8715614,
+    "text": "ふたりとも、きのうここにいたの？"
+  },
+  {
+    "id": "p:10134087",
+    "meaning": {
+      "en": "I must help her."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10134087,
+    "text": "かのじょをてつだわなくっちゃ。"
+  },
+  {
+    "id": "p:2043889",
+    "meaning": {
+      "en": "Where do you want to eat?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 2043889,
+    "text": "どこでたべたい？"
+  },
+  {
+    "id": "p:1000112",
+    "meaning": {
+      "en": "That is my book."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 1000112,
+    "text": "それはぼくのほんです。"
+  },
+  {
+    "id": "p:11795481",
+    "meaning": {
+      "en": "He'll think about it."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11795481,
+    "text": "かんがえてくれるさ。"
+  },
+  {
+    "id": "p:1196572",
+    "meaning": {
+      "en": "I remember what he said."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 7
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 1196572,
+    "text": "かれがいったことはおぼえてるよ。"
+  },
+  {
+    "id": "p:1483604",
+    "meaning": {
+      "en": "Tell me about this girl."
+    },
+    "script": "hiragana",
+    "tatoebaId": 1483604,
+    "text": "このこのことおしえて。"
+  },
+  {
+    "id": "p:3662503",
+    "meaning": {
+      "en": "You look sleepy."
+    },
+    "script": "hiragana",
+    "tatoebaId": 3662503,
+    "text": "ねむそうだね。"
+  },
+  {
+    "id": "p:10175902",
+    "meaning": {
+      "en": "Have a cup of tea, won't you?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 10175902,
+    "text": "おちゃをのんでくださいね。"
+  },
+  {
+    "id": "p:205759",
+    "meaning": {
+      "en": "That will put you in danger."
+    },
+    "script": "hiragana",
+    "tatoebaId": 205759,
+    "text": "それではきみがきけんになる。"
+  },
+  {
+    "id": "p:8725514",
+    "meaning": {
+      "en": "Is this place secure?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 4
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 8725514,
+    "text": "このばしょはあんぜんですか？"
+  },
+  {
+    "id": "p:204848",
+    "meaning": {
+      "en": "Can it be true?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 204848,
+    "text": "それはほんとうなのだろうか。"
+  },
+  {
+    "id": "p:192742",
+    "meaning": {
+      "en": "I'll lend you one if you like."
+    },
+    "script": "hiragana",
+    "tatoebaId": 192742,
+    "text": "よければ、ひとつかしてあげる。"
+  },
+  {
+    "id": "p:10883885",
+    "meaning": {
+      "en": "I am fond of reading."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10883885,
+    "text": "ほんをよむのがすきです。"
+  },
+  {
+    "id": "p:184470",
+    "meaning": {
+      "en": "You are not going to make it in time for school."
+    },
+    "script": "hiragana",
+    "tatoebaId": 184470,
+    "text": "がっこうにまにあわないよ。"
+  },
+  {
+    "id": "p:1578988",
+    "meaning": {
+      "en": "Where are you?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 1578988,
+    "text": "あなたはどこですか。"
+  },
+  {
+    "id": "p:232368",
+    "meaning": {
+      "en": "It is high time you were in bed."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 232368,
+    "text": "あなたはもうねるじかんでしょ。"
+  },
+  {
+    "id": "p:189309",
+    "meaning": {
+      "en": "When does the movie start?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 189309,
+    "text": "えいがはなんじからですか。"
+  },
+  {
+    "id": "p:8748262",
+    "meaning": {
+      "en": "Is it nearby?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8748262,
+    "text": "それって、ここのちかく？"
+  },
+  {
+    "id": "p:11825855",
+    "meaning": {
+      "en": "The medicine is bitter."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 11825855,
+    "text": "くすりはにがい。"
+  },
+  {
+    "id": "p:204797",
+    "meaning": {
+      "en": "It looks like an egg."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 204797,
+    "text": "それはたまごのようにみえる。"
+  },
+  {
+    "id": "p:10578194",
+    "meaning": {
+      "en": "I'd be willing to help."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10578194,
+    "text": "てつだってあげてもいいよ。"
+  },
+  {
+    "id": "p:222702",
+    "meaning": {
+      "en": "I can't carry all that baggage."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 8
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 222702,
+    "text": "そのにもつぜんぶはもちきれない。"
+  },
+  {
+    "id": "p:8615810",
+    "meaning": {
+      "en": "I'd like to help you."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8615810,
+    "text": "あなたのやくにたちたい。"
+  },
+  {
+    "id": "p:1388285",
+    "meaning": {
+      "en": "That's what she said."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 1388285,
+    "text": "それはかのじょのいったことだ。"
+  },
+  {
+    "id": "p:9618446",
+    "meaning": {
+      "en": "I need to call the cops."
+    },
+    "script": "hiragana",
+    "tatoebaId": 9618446,
+    "text": "けいさつをよばなきゃ。"
+  },
+  {
+    "id": "p:79775",
+    "meaning": {
+      "en": "It is very hot at night."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 79775,
+    "text": "よるはとてもあつい。"
+  },
+  {
+    "id": "p:9677232",
+    "meaning": {
+      "en": "Now stop!"
+    },
+    "script": "hiragana",
+    "tatoebaId": 9677232,
+    "text": "もうやめて！"
+  },
+  {
+    "id": "p:229338",
+    "meaning": {
+      "en": "You found yourself a nice guy."
+    },
+    "script": "hiragana",
+    "tatoebaId": 229338,
+    "text": "いいおとこみつけたね。"
+  },
+  {
+    "id": "p:187569",
+    "meaning": {
+      "en": "What do you mean?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 187569,
+    "text": "なにをいいたいのですか。"
+  },
+  {
+    "id": "p:1522698",
+    "meaning": {
+      "en": "Why are you studying?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 1522698,
+    "text": "どうしてべんきょうしているの？"
+  },
+  {
+    "id": "p:9474919",
+    "meaning": {
+      "en": "It looks like rain."
+    },
+    "script": "hiragana",
+    "tatoebaId": 9474919,
+    "text": "あめになりそうだよ。"
+  },
+  {
+    "id": "p:348511",
+    "meaning": {
+      "en": "I'm lucky today."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 348511,
+    "text": "きょうはうんがついている。"
+  },
+  {
+    "id": "p:4852",
+    "meaning": {
+      "en": "I don't like you anymore."
+    },
+    "script": "hiragana",
+    "tatoebaId": 4852,
+    "text": "もうすきじゃない。"
+  },
+  {
+    "id": "p:9314772",
+    "meaning": {
+      "en": "Isn't that your dictionary?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 9314772,
+    "text": "あのじしょ、きみんじゃない？"
+  },
+  {
+    "id": "p:123868",
+    "meaning": {
+      "en": "I have a headache."
+    },
+    "script": "hiragana",
+    "tatoebaId": 123868,
+    "text": "あたまがいたいな。"
+  },
+  {
+    "id": "p:8667821",
+    "meaning": {
+      "en": "You are tired, aren't you?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8667821,
+    "text": "つかれてるんでしょ。"
+  },
+  {
+    "id": "p:12142837",
+    "meaning": {
+      "en": "Why are you so angry with me?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 12142837,
+    "text": "なんでそんなにおこってるの？"
+  },
+  {
+    "id": "p:10740779",
+    "meaning": {
+      "en": "He has a blue car."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10740779,
+    "text": "あおいくるまをもっている。"
+  },
+  {
+    "id": "p:11700175",
+    "meaning": {
+      "en": "Today is hotter than yesterday."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 11700175,
+    "text": "きょうはきのうよりあついな。"
+  },
+  {
+    "id": "p:591675",
+    "meaning": {
+      "en": "I don't need it."
+    },
+    "script": "hiragana",
+    "tatoebaId": 591675,
+    "text": "ひつようありません。"
+  },
+  {
+    "id": "p:9328935",
+    "meaning": {
+      "en": "No problem at all!"
+    },
+    "script": "hiragana",
+    "tatoebaId": 9328935,
+    "text": "ぜんぜんもんだいないよ！"
+  },
+  {
+    "id": "p:155238",
+    "meaning": {
+      "en": "I don't mind waiting."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 155238,
+    "text": "まつのはかまわないよ。"
+  },
+  {
+    "id": "p:188613",
+    "meaning": {
+      "en": "Is there any salt left?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 188613,
+    "text": "しおがのこっていますか。"
+  },
+  {
+    "id": "p:77922",
+    "meaning": {
+      "en": "Please help me cook."
+    },
+    "script": "hiragana",
+    "tatoebaId": 77922,
+    "text": "りょうりをするのてつだってよ。"
+  },
+  {
+    "id": "p:2195334",
+    "meaning": {
+      "en": "She has gone out."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 2195334,
+    "text": "かのじょはでていってしまった。"
+  },
+  {
+    "id": "p:197521",
+    "meaning": {
+      "en": "You'll have a hard time."
+    },
+    "script": "hiragana",
+    "tatoebaId": 197521,
+    "text": "ひどいめにあいますよ。"
+  },
+  {
+    "id": "p:194478",
+    "meaning": {
+      "en": "There's no other way than this now."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 10
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 194478,
+    "text": "もうこれよりほかにてはない。"
+  },
+  {
+    "id": "p:146382",
+    "meaning": {
+      "en": "It's baking hot."
+    },
+    "script": "hiragana",
+    "tatoebaId": 146382,
+    "text": "やけつくようにあついね。"
+  },
+  {
+    "id": "p:11092014",
+    "meaning": {
+      "en": "I want to go home and sleep."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11092014,
+    "text": "いえにかえってねたい。"
+  },
+  {
+    "id": "p:216873",
+    "meaning": {
+      "en": "Now let's begin the game."
+    },
+    "script": "hiragana",
+    "tatoebaId": 216873,
+    "text": "さあしあいをはじめましょう。"
+  },
+  {
+    "id": "p:170848",
+    "meaning": {
+      "en": "Sit down, please."
+    },
+    "script": "hiragana",
+    "tatoebaId": 170848,
+    "text": "すわってください。"
+  },
+  {
+    "id": "p:158209",
+    "meaning": {
+      "en": "I like music very much."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 158209,
+    "text": "わたしはおんがくがとてもすきだ。"
+  },
+  {
+    "id": "p:10741336",
+    "meaning": {
+      "en": "I prefer spring to summer."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10741336,
+    "text": "なつよりはるのほうがすき。"
+  },
+  {
+    "id": "p:433478",
+    "meaning": {
+      "en": "I'll do it."
+    },
+    "script": "hiragana",
+    "tatoebaId": 433478,
+    "text": "わたしがやります。"
+  },
+  {
+    "id": "p:10099860",
+    "meaning": {
+      "en": "The train is leaving! Hurry up!"
+    },
+    "script": "hiragana",
+    "tatoebaId": 10099860,
+    "text": "でんしゃがでちゃうよ！いそいで！"
+  },
+  {
+    "id": "p:10194964",
+    "meaning": {
+      "en": "Who wrote you this letter?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 10194964,
+    "text": "このてがみをかいたのって、だれ？"
+  },
+  {
+    "id": "p:193069",
+    "meaning": {
+      "en": "Thank God it's Friday!"
+    },
+    "script": "hiragana",
+    "tatoebaId": 193069,
+    "text": "やっときんようびだ。"
+  },
+  {
+    "id": "p:2666754",
+    "meaning": {
+      "en": "Aren't you scared?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 2666754,
+    "text": "こわくないの？"
+  },
+  {
+    "id": "p:3454063",
+    "meaning": {
+      "en": "Since when?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 3454063,
+    "text": "いつから？"
+  },
+  {
+    "id": "p:8591144",
+    "meaning": {
+      "en": "That's not very nice."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 8591144,
+    "text": "それはあまりよくない。"
+  },
+  {
+    "id": "p:197982",
+    "meaning": {
+      "en": "Give it to me straight."
+    },
+    "script": "hiragana",
+    "tatoebaId": 197982,
+    "text": "はっきりいってください。"
+  },
+  {
+    "id": "p:348125",
+    "meaning": {
+      "en": "It seemed to be cheap."
+    },
+    "script": "hiragana",
+    "tatoebaId": 348125,
+    "text": "やすいようでした。"
+  },
+  {
+    "id": "p:11044528",
+    "meaning": {
+      "en": "It's not easy to use, but once I got used to it, it was fine."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11044528,
+    "text": "つかいにくいけどなれたらいけた。"
+  },
+  {
+    "id": "p:93052",
+    "meaning": {
+      "en": "She came down with a cold."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 93052,
+    "text": "かのじょはかぜをひいた。"
+  },
+  {
+    "id": "p:235936",
+    "meaning": {
+      "en": "It was 15 minutes too long."
+    },
+    "script": "hiragana",
+    "tatoebaId": 235936,
+    "text": "じゅうごふんすぎた。"
+  },
+  {
+    "id": "p:2459216",
+    "meaning": {
+      "en": "I'm sleepy, so I am leaving now."
+    },
+    "script": "hiragana",
+    "tatoebaId": 2459216,
+    "text": "ねむいのでそろそろかえります。"
+  },
+  {
+    "id": "p:10987748",
+    "meaning": {
+      "en": "Because my teeth hurt, I couldn't open my mouth."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10987748,
+    "text": "はがいたくて、くちがあけれないの。"
+  },
+  {
+    "id": "p:85473",
+    "meaning": {
+      "en": "Please be sure to come on time."
+    },
+    "script": "hiragana",
+    "tatoebaId": 85473,
+    "text": "かならずじかんどおりにきなさい。"
+  },
+  {
+    "id": "p:11062069",
+    "meaning": {
+      "en": "The newspaper costs less than the book."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 4
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 11062069,
+    "text": "しんぶんはほんよりやすい。"
+  },
+  {
+    "id": "p:10612365",
+    "meaning": {
+      "en": "Ten years is a long time."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10612365,
+    "text": "じゅうねんって、ながいなぁ。"
+  },
+  {
+    "id": "p:174014",
+    "meaning": {
+      "en": "Let's take a walk in the park."
+    },
+    "script": "hiragana",
+    "tatoebaId": 174014,
+    "text": "こうえんをさんぽしましょう。"
+  },
+  {
+    "id": "p:774809",
+    "meaning": {
+      "en": "Are you coming with me?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 774809,
+    "text": "いっしょにくるの？"
+  },
+  {
+    "id": "p:187020",
+    "meaning": {
+      "en": "We are not cold in the house."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 187020,
+    "text": "いえのなかはさむくありません。"
+  },
+  {
+    "id": "p:104321",
+    "meaning": {
+      "en": "He laid down the gun."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 104321,
+    "text": "かれはじゅうをしたにおいた。"
+  },
+  {
+    "id": "p:10624299",
+    "meaning": {
+      "en": "Let's stay here."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10624299,
+    "text": "ここにいようよ。"
+  },
+  {
+    "id": "p:11029308",
+    "meaning": {
+      "en": "Say no more."
+    },
+    "script": "hiragana",
+    "tatoebaId": 11029308,
+    "text": "みなまでいうな。"
+  },
+  {
+    "id": "p:8574105",
+    "meaning": {
+      "en": "I hope it doesn't rain today."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 8574105,
+    "text": "きょうはあめがふらないといいな。"
+  },
+  {
+    "id": "p:12370968",
+    "meaning": {
+      "en": "How much does this car cost?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 12370968,
+    "text": "このくるまはいくらですか？"
+  },
+  {
+    "id": "p:11580288",
+    "meaning": {
+      "en": "How do I explain this?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 11580288,
+    "text": "これ、どうやってせつめいしよう。"
+  },
+  {
+    "id": "p:10741344",
+    "meaning": {
+      "en": "It will be spring soon."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10741344,
+    "text": "もうすぐはるだよ。"
+  },
+  {
+    "id": "p:142357",
+    "meaning": {
+      "en": "Wash your hands with soap."
+    },
+    "script": "hiragana",
+    "tatoebaId": 142357,
+    "text": "せっけんでてをあらいなさい。"
+  },
+  {
+    "id": "p:100140",
+    "meaning": {
+      "en": "He had a strange dream."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 100140,
+    "text": "かれはへんなゆめをみた。"
+  },
+  {
+    "id": "p:4216062",
+    "meaning": {
+      "en": "Can you explain it to me?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 4216062,
+    "text": "せつめいしてくれる？"
+  },
+  {
+    "id": "p:10993922",
+    "meaning": {
+      "en": "There is no compromise on it."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 6
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10993922,
+    "text": "それにわかいはありません。"
+  },
+  {
+    "id": "p:4765",
+    "meaning": {
+      "en": "So what?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 4765,
+    "text": "だからなに？"
+  },
+  {
+    "id": "p:204923",
+    "meaning": {
+      "en": "That is no business of his."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      },
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 11
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 204923,
+    "text": "それはかれのしったことではない。"
+  },
+  {
+    "id": "p:215910",
+    "meaning": {
+      "en": "See you then."
+    },
+    "script": "hiragana",
+    "tatoebaId": 215910,
+    "text": "じゃあそのときに。"
+  },
+  {
+    "id": "p:3507481",
+    "meaning": {
+      "en": "Pray for me."
+    },
+    "script": "hiragana",
+    "tatoebaId": 3507481,
+    "text": "わたしのためにいのってて。"
+  },
+  {
+    "id": "p:8920182",
+    "meaning": {
+      "en": "I'll stay here with you."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8920182,
+    "text": "きみといっしょにここにのこるよ。"
+  },
+  {
+    "id": "p:108986",
+    "meaning": {
+      "en": "He has an eye for art."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 108986,
+    "text": "かれはえをみるめがある。"
+  },
+  {
+    "id": "p:4214949",
+    "meaning": {
+      "en": "Tell me what you saw."
+    },
+    "script": "hiragana",
+    "tatoebaId": 4214949,
+    "text": "なにをみたのかきかせてくれよ。"
+  },
+  {
+    "id": "p:12286980",
+    "meaning": {
+      "en": "I've lost my watch and I can't find it."
+    },
+    "script": "hiragana",
+    "tatoebaId": 12286980,
+    "text": "なくしたとけいがみつからない。"
+  },
+  {
+    "id": "p:124907",
+    "meaning": {
+      "en": "I live in the country."
+    },
+    "script": "hiragana",
+    "tatoebaId": 124907,
+    "text": "いなかにすんでいます。"
+  },
+  {
+    "id": "p:10129180",
+    "meaning": {
+      "en": "I'll introduce you to my brother."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10129180,
+    "text": "あにをしょうかいします。"
+  },
+  {
+    "id": "p:108992",
+    "meaning": {
+      "en": "He is known to everybody."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 108992,
+    "text": "かれはみなにしられている。"
+  },
+  {
+    "id": "p:5020254",
+    "meaning": {
+      "en": "What are you afraid of?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 5020254,
+    "text": "なにがこわいの？"
+  },
+  {
+    "id": "p:229647",
+    "meaning": {
+      "en": "Those books are mine."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 229647,
+    "text": "あっちのほんはわたしのです。"
+  },
+  {
+    "id": "p:222116",
+    "meaning": {
+      "en": "This building is made of stone."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 6
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 222116,
+    "text": "このたてものはいしでできている。"
+  },
+  {
+    "id": "p:8877702",
+    "meaning": {
+      "en": "Does this make you feel better?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8877702,
+    "text": "これできぶんがよくなりそう？"
+  },
+  {
+    "id": "p:4212001",
+    "meaning": {
+      "en": "I'm not guilty of anything."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 4212001,
+    "text": "わたしはなにもわるくない。"
+  },
+  {
+    "id": "p:8616085",
+    "meaning": {
+      "en": "Stop talking about that."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 8616085,
+    "text": "そのはなしはやめろ。"
+  },
+  {
+    "id": "p:171065",
+    "meaning": {
+      "en": "I'll ring you up at seven this evening."
+    },
+    "script": "hiragana",
+    "tatoebaId": 171065,
+    "text": "こんやななじに、でんわするよ。"
+  },
+  {
+    "id": "p:8906569",
+    "meaning": {
+      "en": "That's difficult to explain."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8906569,
+    "text": "せつめいするのむずかしいなあ。"
+  },
+  {
+    "id": "p:10212629",
+    "meaning": {
+      "en": "I've already tried it."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10212629,
+    "text": "もう、やってみたよ。"
+  },
+  {
+    "id": "p:12655044",
+    "meaning": {
+      "en": "Alright, that's good to hear!"
+    },
+    "script": "hiragana",
+    "tatoebaId": 12655044,
+    "text": "そうですか、よかったです！"
+  },
+  {
+    "id": "p:1987655",
+    "meaning": {
+      "en": "I still hate you."
+    },
+    "script": "hiragana",
+    "tatoebaId": 1987655,
+    "text": "まだあなたのことがきらいだ。"
+  },
+  {
+    "id": "p:10588038",
+    "meaning": {
+      "en": "Listen to me."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10588038,
+    "text": "いうことをききなさい。"
+  },
+  {
+    "id": "p:10770306",
+    "meaning": {
+      "en": "I'll help you, of course."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10770306,
+    "text": "もちろんてつだいますよ。"
+  },
+  {
+    "id": "p:182093",
+    "meaning": {
+      "en": "They sell fish and meat."
+    },
+    "script": "hiragana",
+    "tatoebaId": 182093,
+    "text": "さかなやにくをうっているんだよ。"
+  },
+  {
+    "id": "p:8609336",
+    "meaning": {
+      "en": "Six divided by two is three."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8609336,
+    "text": "ろくをにでわるとさんになります。"
+  },
+  {
+    "id": "p:10201385",
+    "meaning": {
+      "en": "You're in the way."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10201385,
+    "text": "あなたじゃまよ。"
+  },
+  {
+    "id": "p:12146674",
+    "meaning": {
+      "en": "Let's not talk about money, OK?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 7
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 12146674,
+    "text": "おかねのはなしはやめよう。いい？"
+  },
+  {
+    "id": "p:1483552",
+    "meaning": {
+      "en": "Get enough sleep."
+    },
+    "script": "hiragana",
+    "tatoebaId": 1483552,
+    "text": "じゅうぶんねなさい。"
+  },
+  {
+    "id": "p:12957354",
+    "meaning": {
+      "en": "I felt ill at ease."
+    },
+    "script": "hiragana",
+    "tatoebaId": 12957354,
+    "text": "きがきじゃなかった。"
+  },
+  {
+    "id": "p:177598",
+    "meaning": {
+      "en": "Why can't you come?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 177598,
+    "text": "きみはなぜこられないのですか。"
+  },
+  {
+    "id": "p:207710",
+    "meaning": {
+      "en": "The garden was filled with flowers."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 4
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 207710,
+    "text": "そのにわははなでいっぱいだった。"
+  },
+  {
+    "id": "p:2465467",
+    "meaning": {
+      "en": "I'll be late."
+    },
+    "script": "hiragana",
+    "tatoebaId": 2465467,
+    "text": "おくれます。"
+  },
+  {
+    "id": "p:1160603",
+    "meaning": {
+      "en": "Do I have to study?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 1160603,
+    "text": "べんきょうしないといけませんか？"
+  },
+  {
+    "id": "p:224380",
+    "meaning": {
+      "en": "How long have you been here?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 224380,
+    "text": "ここにきてどのくらい？"
+  },
+  {
+    "id": "p:1836391",
+    "meaning": {
+      "en": "I have caught a cold."
+    },
+    "script": "hiragana",
+    "tatoebaId": 1836391,
+    "text": "かぜひいた。"
+  },
+  {
+    "id": "p:164019",
+    "meaning": {
+      "en": "Please come to my house."
+    },
+    "script": "hiragana",
+    "tatoebaId": 164019,
+    "text": "わたしのいえにきてください。"
+  },
+  {
+    "id": "p:8760878",
+    "meaning": {
+      "en": "Were you talking about me?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8760878,
+    "text": "わたしのことはなしてたの？"
+  },
+  {
+    "id": "p:138240",
+    "meaning": {
+      "en": "He probably won't come."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 138240,
+    "text": "たぶんかれはこないでしょうね。"
+  },
+  {
+    "id": "p:4870376",
+    "meaning": {
+      "en": "Where are you going to?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "e"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 4870376,
+    "text": "どこへいくの？"
+  },
+  {
+    "id": "p:105556",
+    "meaning": {
+      "en": "He made me go."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 105556,
+    "text": "かれはわたしをいかせた。"
+  },
+  {
+    "id": "p:193313",
+    "meaning": {
+      "en": "Do you have anything cheaper?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 6
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 193313,
+    "text": "もっとやすいのはありませんか。"
+  },
+  {
+    "id": "p:10982415",
+    "meaning": {
+      "en": "This story is true."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10982415,
+    "text": "このはなしはほんとうです。"
+  },
+  {
+    "id": "p:140787",
+    "meaning": {
+      "en": "I have no idea."
+    },
+    "script": "hiragana",
+    "tatoebaId": 140787,
+    "text": "ぜんぜんわかりません。"
+  },
+  {
+    "id": "p:177863",
+    "meaning": {
+      "en": "You can study here."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 177863,
+    "text": "きみはここでべんきょうできる。"
+  },
+  {
+    "id": "p:1059956",
+    "meaning": {
+      "en": "You look busy."
+    },
+    "script": "hiragana",
+    "tatoebaId": 1059956,
+    "text": "いそがしそうですね。"
+  },
+  {
+    "id": "p:876848",
+    "meaning": {
+      "en": "Are you free tomorrow evening?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 6
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 876848,
+    "text": "あしたのばんは、ひま？"
+  },
+  {
+    "id": "p:10156127",
+    "meaning": {
+      "en": "I slept until noon today."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 10156127,
+    "text": "きょうはひるまでねてました。"
+  },
+  {
+    "id": "p:3496777",
+    "meaning": {
+      "en": "It's not true."
+    },
+    "script": "hiragana",
+    "tatoebaId": 3496777,
+    "text": "それうそだよ。"
+  },
+  {
+    "id": "p:3054371",
+    "meaning": {
+      "en": "Enough!"
+    },
+    "script": "hiragana",
+    "tatoebaId": 3054371,
+    "text": "もうじゅうぶんよ！"
+  },
+  {
+    "id": "p:5253033",
+    "meaning": {
+      "en": "I forgot."
+    },
+    "script": "hiragana",
+    "tatoebaId": 5253033,
+    "text": "わすれた。"
+  },
+  {
+    "id": "p:8607613",
+    "meaning": {
+      "en": "Which boy did that?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 8607613,
+    "text": "どっちのおとこのこがやったの？"
+  },
+  {
+    "id": "p:10648846",
+    "meaning": {
+      "en": "I want to eat something wholesome."
+    },
+    "script": "hiragana",
+    "tatoebaId": 10648846,
+    "text": "からだにいいものがたべたいな。"
+  },
+  {
+    "id": "p:187892",
+    "meaning": {
+      "en": "What's new?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 187892,
+    "text": "なんかかわったことある？"
+  },
+  {
+    "id": "p:3491493",
+    "meaning": {
+      "en": "This'll do."
+    },
+    "script": "hiragana",
+    "tatoebaId": 3491493,
+    "text": "これでもいいや。"
+  },
+  {
+    "id": "p:7704441",
+    "meaning": {
+      "en": "What's your favorite color?"
+    },
+    "script": "hiragana",
+    "tatoebaId": 7704441,
+    "text": "なにいろがすきですか？"
+  },
+  {
+    "id": "p:193036",
+    "meaning": {
+      "en": "Stop, I say."
+    },
+    "script": "hiragana",
+    "tatoebaId": 193036,
+    "text": "やめなさいっていってるでしょ。"
+  },
+  {
+    "id": "p:12988504",
+    "meaning": {
+      "en": "I hope I don't become that kind of person."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 7
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 12988504,
+    "text": "ああいうひとにはなりたくないな。"
+  },
+  {
+    "id": "p:109599",
+    "meaning": {
+      "en": "He arrived at the station."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 109599,
+    "text": "かれはえきについた。"
+  },
+  {
+    "id": "p:109091",
+    "meaning": {
+      "en": "He was present at the meeting."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 109091,
+    "text": "かれはかいぎにしゅっせきした。"
+  },
+  {
+    "id": "p:183276",
+    "meaning": {
+      "en": "Don't worry about it!"
+    },
+    "script": "hiragana",
+    "tatoebaId": 183276,
+    "text": "きにしないで。"
+  },
+  {
+    "id": "p:8858173",
+    "meaning": {
+      "en": "Speak."
+    },
+    "script": "hiragana",
+    "tatoebaId": 8858173,
+    "text": "はなす。"
+  },
+  {
+    "id": "p:1483688",
+    "meaning": {
+      "en": "This way, please."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "e"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "hiragana",
+    "tatoebaId": 1483688,
+    "text": "こちらへどうぞ。"
+  }
+]

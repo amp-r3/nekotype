@@ -24,6 +24,8 @@ export interface SelectionReport {
 /** The credit of a phrase (docs/spec/content.md, "Output"). */
 export interface PhraseCredit {
   id: string;
+  /** The kana of the phrase, so `/about` loads this one chunk (A2). */
+  text: string;
   sentence: { id: number; author: string };
   translation: { id: number; author: string };
   /** `null`: machine-generated, verified by kuromoji. */

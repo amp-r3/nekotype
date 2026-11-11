@@ -306,6 +306,7 @@ export function buildPhrases(
       transcription: transcription.text,
       credit: {
         id: item.id,
+        text: reading,
         sentence: { id, author: sentence.author },
         translation: { id: translation.id, author: translation.sentence.author },
         transcriptionAuthor: transcription.author,

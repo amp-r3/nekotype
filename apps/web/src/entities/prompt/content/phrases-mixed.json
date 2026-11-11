@@ -1,0 +1,1377 @@
+[
+  {
+    "id": "p:8980749",
+    "meaning": {
+      "en": "Tom was shot by a policeman."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 8980749,
+    "text": "トムはけいかんにうたれたんだ。"
+  },
+  {
+    "id": "p:163818",
+    "meaning": {
+      "en": "My brother is now in Australia."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 163818,
+    "text": "あにはオーストラリアにいます。"
+  },
+  {
+    "id": "p:8594449",
+    "meaning": {
+      "en": "I wonder how Tom got away."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 8594449,
+    "text": "トムはどうやってにげたんだろう。"
+  },
+  {
+    "id": "p:12324612",
+    "meaning": {
+      "en": "Who'd like another piece of cake?"
+    },
+    "script": "mixed",
+    "tatoebaId": 12324612,
+    "text": "ケーキがもうひとついるひと！"
+  },
+  {
+    "id": "p:8693657",
+    "meaning": {
+      "en": "Is Tom Canadian?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 8693657,
+    "text": "トムはカナダじんなの？"
+  },
+  {
+    "id": "p:3459173",
+    "meaning": {
+      "en": "I want to go to Boston."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 3459173,
+    "text": "わたしはボストンにいきたい。"
+  },
+  {
+    "id": "p:2478381",
+    "meaning": {
+      "en": "Tom isn't afraid of anything."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 2478381,
+    "text": "トムはこわいものしらずだ。"
+  },
+  {
+    "id": "p:2628983",
+    "meaning": {
+      "en": "Tom is reading a book."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 2628983,
+    "text": "トムはほんをよんでいる。"
+  },
+  {
+    "id": "p:11859313",
+    "meaning": {
+      "en": "I'm going to the pool with my friends."
+    },
+    "script": "mixed",
+    "tatoebaId": 11859313,
+    "text": "ともだちとプールにいってくるね。"
+  },
+  {
+    "id": "p:8623589",
+    "meaning": {
+      "en": "Do you know Tom's girlfriend's name?"
+    },
+    "script": "mixed",
+    "tatoebaId": 8623589,
+    "text": "トムのかのじょのなまえしってる？"
+  },
+  {
+    "id": "p:2129399",
+    "meaning": {
+      "en": "Tom is looking at me."
+    },
+    "script": "mixed",
+    "tatoebaId": 2129399,
+    "text": "トムがわたしをみている。"
+  },
+  {
+    "id": "p:2694292",
+    "meaning": {
+      "en": "Tom has a piercing voice."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 2694292,
+    "text": "トムのこえはよくとおる。"
+  },
+  {
+    "id": "p:7530364",
+    "meaning": {
+      "en": "Tom probably died."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 7530364,
+    "text": "トムはたぶんしんだ。"
+  },
+  {
+    "id": "p:185461",
+    "meaning": {
+      "en": "It is Tom whom I want to see."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 185461,
+    "text": "あいたいのはトムです。"
+  },
+  {
+    "id": "p:4900464",
+    "meaning": {
+      "en": "I don't think Tom is available."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 4900464,
+    "text": "トムはてがあいてないとおもうよ。"
+  },
+  {
+    "id": "p:11795603",
+    "meaning": {
+      "en": "Hurry! The bus is coming!"
+    },
+    "script": "mixed",
+    "tatoebaId": 11795603,
+    "text": "はやく！バスがきちゃう！"
+  },
+  {
+    "id": "p:11344832",
+    "meaning": {
+      "en": "Tom might get fired."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 11344832,
+    "text": "トムはクビになるかもね。"
+  },
+  {
+    "id": "p:10032875",
+    "meaning": {
+      "en": "I heard that Tom is in the hospital."
+    },
+    "script": "mixed",
+    "tatoebaId": 10032875,
+    "text": "トムって、にゅういんしてるそうよ。"
+  },
+  {
+    "id": "p:13569365",
+    "meaning": {
+      "en": "May I borrow your computer?"
+    },
+    "script": "mixed",
+    "tatoebaId": 13569365,
+    "text": "パソコンかりてもいい？"
+  },
+  {
+    "id": "p:3561977",
+    "meaning": {
+      "en": "Have you ever seen Tom's mother?"
+    },
+    "script": "mixed",
+    "tatoebaId": 3561977,
+    "text": "トムのおかあさんみたことある？"
+  },
+  {
+    "id": "p:11563535",
+    "meaning": {
+      "en": "You need to wake up early tomorrow."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 11563535,
+    "text": "あしたははやくおきないとダメよ。"
+  },
+  {
+    "id": "p:11156778",
+    "meaning": {
+      "en": "Did you bake a cake?"
+    },
+    "script": "mixed",
+    "tatoebaId": 11156778,
+    "text": "ケーキつくったの？"
+  },
+  {
+    "id": "p:8735755",
+    "meaning": {
+      "en": "Is that the guitar you bought from Tom?"
+    },
+    "script": "mixed",
+    "tatoebaId": 8735755,
+    "text": "それがトムからかったギターなの？"
+  },
+  {
+    "id": "p:4561796",
+    "meaning": {
+      "en": "Would you like some coffee?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 4
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 4561796,
+    "text": "コーヒーはいかがですか。"
+  },
+  {
+    "id": "p:10225064",
+    "meaning": {
+      "en": "Tom isn't cute."
+    },
+    "script": "mixed",
+    "tatoebaId": 10225064,
+    "text": "トム、かわいくない。"
+  },
+  {
+    "id": "p:3597407",
+    "meaning": {
+      "en": "Has anybody spoken to Tom?"
+    },
+    "script": "mixed",
+    "tatoebaId": 3597407,
+    "text": "だれかトムとはなした？"
+  },
+  {
+    "id": "p:9074916",
+    "meaning": {
+      "en": "Algiers is amazing."
+    },
+    "script": "mixed",
+    "tatoebaId": 9074916,
+    "text": "アルジェってね、すごいんだよ。"
+  },
+  {
+    "id": "p:11604099",
+    "meaning": {
+      "en": "No thanks, I don't need a bag."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 11604099,
+    "text": "カバンはけっこうです。"
+  },
+  {
+    "id": "p:12142629",
+    "meaning": {
+      "en": "Tom has decided to go to college."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 12142629,
+    "text": "トムはだいがくにいくことにした。"
+  },
+  {
+    "id": "p:197832",
+    "meaning": {
+      "en": "Have you ever been to Paris?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "e"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 197832,
+    "text": "パリへいったことがありますか。"
+  },
+  {
+    "id": "p:224848",
+    "meaning": {
+      "en": "Give me a cup of coffee."
+    },
+    "script": "mixed",
+    "tatoebaId": 224848,
+    "text": "コーヒーいっぱいください。"
+  },
+  {
+    "id": "p:200534",
+    "meaning": {
+      "en": "Where's Tony?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 200534,
+    "text": "トニーはどこだ。"
+  },
+  {
+    "id": "p:1810657",
+    "meaning": {
+      "en": "I've drunk way too much coffee today."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 1810657,
+    "text": "きょうはコーヒーをのみすぎた。"
+  },
+  {
+    "id": "p:13940381",
+    "meaning": {
+      "en": "Is that Russian?"
+    },
+    "script": "mixed",
+    "tatoebaId": 13940381,
+    "text": "それって、ロシアご？"
+  },
+  {
+    "id": "p:2638097",
+    "meaning": {
+      "en": "Tom didn't want anything."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 2638097,
+    "text": "トムはなにもほしくなかった。"
+  },
+  {
+    "id": "p:3070047",
+    "meaning": {
+      "en": "The television is broken."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 3070047,
+    "text": "テレビはこわれています。"
+  },
+  {
+    "id": "p:11254397",
+    "meaning": {
+      "en": "Tom danced with Mary."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 11254397,
+    "text": "トムはメアリーとおどった。"
+  },
+  {
+    "id": "p:3591737",
+    "meaning": {
+      "en": "I think Tom is self-centered."
+    },
+    "script": "mixed",
+    "tatoebaId": 3591737,
+    "text": "トムってじこちゅうだとおもう。"
+  },
+  {
+    "id": "p:8764474",
+    "meaning": {
+      "en": "Mary is smart, isn't she?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 4
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 8764474,
+    "text": "メアリーはあたまがいいでしょ。"
+  },
+  {
+    "id": "p:13771984",
+    "meaning": {
+      "en": "Is that Tintin?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 13771984,
+    "text": "それはタンタンですか？"
+  },
+  {
+    "id": "p:230402",
+    "meaning": {
+      "en": "Did you rent an apartment?"
+    },
+    "script": "mixed",
+    "tatoebaId": 230402,
+    "text": "アパートをかりたかい。"
+  },
+  {
+    "id": "p:10899754",
+    "meaning": {
+      "en": "I only ate bread."
+    },
+    "script": "mixed",
+    "tatoebaId": 10899754,
+    "text": "パンだけたべました。"
+  },
+  {
+    "id": "p:3597462",
+    "meaning": {
+      "en": "I need to speak to Tom."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 9
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 3597462,
+    "text": "トムとはなさなくては。"
+  },
+  {
+    "id": "p:11007625",
+    "meaning": {
+      "en": "I saw the news on TV this morning."
+    },
+    "script": "mixed",
+    "tatoebaId": 11007625,
+    "text": "けさテレビでニュースをみました。"
+  },
+  {
+    "id": "p:11851875",
+    "meaning": {
+      "en": "Tom bought that."
+    },
+    "script": "mixed",
+    "tatoebaId": 11851875,
+    "text": "トムがかったんだよ。"
+  },
+  {
+    "id": "p:9725501",
+    "meaning": {
+      "en": "Tom doesn't have a smartphone."
+    },
+    "script": "mixed",
+    "tatoebaId": 9725501,
+    "text": "トムね、スマホもってないんだよ。"
+  },
+  {
+    "id": "p:216464",
+    "meaning": {
+      "en": "Jane looks happy."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 216464,
+    "text": "ジェーンはたのしそうだ。"
+  },
+  {
+    "id": "p:12301980",
+    "meaning": {
+      "en": "Did you eat cake?"
+    },
+    "script": "mixed",
+    "tatoebaId": 12301980,
+    "text": "ケーキをたべたの？"
+  },
+  {
+    "id": "p:9958515",
+    "meaning": {
+      "en": "Tom is busy."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 9958515,
+    "text": "トムはいそがしいんだ。"
+  },
+  {
+    "id": "p:8754876",
+    "meaning": {
+      "en": "Are you still a smoker?"
+    },
+    "script": "mixed",
+    "tatoebaId": 8754876,
+    "text": "まだタバコすってるの？"
+  },
+  {
+    "id": "p:8694906",
+    "meaning": {
+      "en": "Is Tom there?"
+    },
+    "script": "mixed",
+    "tatoebaId": 8694906,
+    "text": "トムいる？"
+  },
+  {
+    "id": "p:10733638",
+    "meaning": {
+      "en": "Press the button."
+    },
+    "script": "mixed",
+    "tatoebaId": 10733638,
+    "text": "ボタンをおします。"
+  },
+  {
+    "id": "p:2733794",
+    "meaning": {
+      "en": "Why don't you call Tom up?"
+    },
+    "script": "mixed",
+    "tatoebaId": 2733794,
+    "text": "トムにでんわしてみたら？"
+  },
+  {
+    "id": "p:215746",
+    "meaning": {
+      "en": "I'll take a shower."
+    },
+    "script": "mixed",
+    "tatoebaId": 215746,
+    "text": "シャワーにするわ。"
+  },
+  {
+    "id": "p:8748263",
+    "meaning": {
+      "en": "Is this pen yours?"
+    },
+    "script": "mixed",
+    "tatoebaId": 8748263,
+    "text": "このペン、あなたの？"
+  },
+  {
+    "id": "p:12146406",
+    "meaning": {
+      "en": "Tom and I are both high school students."
+    },
+    "script": "mixed",
+    "tatoebaId": 12146406,
+    "text": "トムもわたしもこうこうせいです。"
+  },
+  {
+    "id": "p:10983833",
+    "meaning": {
+      "en": "I'm planning to stay at the hotel."
+    },
+    "script": "mixed",
+    "tatoebaId": 10983833,
+    "text": "ホテルにとまるつもりです。"
+  },
+  {
+    "id": "p:161094",
+    "meaning": {
+      "en": "I saw Bob this morning."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 3
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 161094,
+    "text": "わたしはけさボブにあった。"
+  },
+  {
+    "id": "p:10079863",
+    "meaning": {
+      "en": "If possible, I'd like to see Tom."
+    },
+    "script": "mixed",
+    "tatoebaId": 10079863,
+    "text": "できれば、トムにあいたいな。"
+  },
+  {
+    "id": "p:9614873",
+    "meaning": {
+      "en": "Tom! Your mom is gonna be angry!"
+    },
+    "script": "mixed",
+    "tatoebaId": 9614873,
+    "text": "トム！おかあさんおこるよ！"
+  },
+  {
+    "id": "p:9768467",
+    "meaning": {
+      "en": "Tom is coming back tonight."
+    },
+    "script": "mixed",
+    "tatoebaId": 9768467,
+    "text": "トムならこんやもどってくるよ。"
+  },
+  {
+    "id": "p:997250",
+    "meaning": {
+      "en": "You cannot climb!"
+    },
+    "script": "mixed",
+    "tatoebaId": 997250,
+    "text": "のぼっちゃダメ！"
+  },
+  {
+    "id": "p:9540493",
+    "meaning": {
+      "en": "Does Tom go out often?"
+    },
+    "script": "mixed",
+    "tatoebaId": 9540493,
+    "text": "トムってよくでかけるの？"
+  },
+  {
+    "id": "p:11675243",
+    "meaning": {
+      "en": "Tom came to visit me recently."
+    },
+    "script": "mixed",
+    "tatoebaId": 11675243,
+    "text": "さいきんトムがたずねてきたんだ。"
+  },
+  {
+    "id": "p:10605108",
+    "meaning": {
+      "en": "Tom, you've written it incorrectly here."
+    },
+    "script": "mixed",
+    "tatoebaId": 10605108,
+    "text": "トム、ここかきまちがえてるよ。"
+  },
+  {
+    "id": "p:164115",
+    "meaning": {
+      "en": "Don't use my pen."
+    },
+    "script": "mixed",
+    "tatoebaId": 164115,
+    "text": "わたしのペンをつかうな。"
+  },
+  {
+    "id": "p:10627243",
+    "meaning": {
+      "en": "This hat is Tom's."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 10627243,
+    "text": "このぼうしは、トムのよ。"
+  },
+  {
+    "id": "p:9381373",
+    "meaning": {
+      "en": "Tom moved to Boston."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 9381373,
+    "text": "トムはボストンにひっこしたんだ。"
+  },
+  {
+    "id": "p:10610186",
+    "meaning": {
+      "en": "Tom is smiling again."
+    },
+    "script": "mixed",
+    "tatoebaId": 10610186,
+    "text": "トム、またわらってるよ。"
+  },
+  {
+    "id": "p:3395376",
+    "meaning": {
+      "en": "Did Tom respond?"
+    },
+    "script": "mixed",
+    "tatoebaId": 3395376,
+    "text": "トムからへんじきた？"
+  },
+  {
+    "id": "p:9507180",
+    "meaning": {
+      "en": "I'll wait for Tom here."
+    },
+    "script": "mixed",
+    "tatoebaId": 9507180,
+    "text": "ここでトムをまつわ。"
+  },
+  {
+    "id": "p:8056965",
+    "meaning": {
+      "en": "Tom will be able to do that, too."
+    },
+    "script": "mixed",
+    "tatoebaId": 8056965,
+    "text": "トムもそれをできるだろう。"
+  },
+  {
+    "id": "p:8762167",
+    "meaning": {
+      "en": "Tom can't draw as well as I can."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 8762167,
+    "text": "トムはわたしほどえがうまくない。"
+  },
+  {
+    "id": "p:13197994",
+    "meaning": {
+      "en": "She's playing the piano."
+    },
+    "script": "mixed",
+    "tatoebaId": 13197994,
+    "text": "ピアノをひいてます。"
+  },
+  {
+    "id": "p:7577154",
+    "meaning": {
+      "en": "Tom is a special child."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 7577154,
+    "text": "トムはとくべつなこです。"
+  },
+  {
+    "id": "p:12202888",
+    "meaning": {
+      "en": "Did you hear Tom singing?"
+    },
+    "script": "mixed",
+    "tatoebaId": 12202888,
+    "text": "トムがうたってるのきいた？"
+  },
+  {
+    "id": "p:9343753",
+    "meaning": {
+      "en": "Does Tom play Animal Crossing?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 9343753,
+    "text": "トムは「あつもり」をしてるの？"
+  },
+  {
+    "id": "p:11621846",
+    "meaning": {
+      "en": "I'd never lie to Tom."
+    },
+    "script": "mixed",
+    "tatoebaId": 11621846,
+    "text": "トムにうそをついたりしないよ。"
+  },
+  {
+    "id": "p:11016539",
+    "meaning": {
+      "en": "Tom, do you like cats or dogs?"
+    },
+    "script": "mixed",
+    "tatoebaId": 11016539,
+    "text": "トム、ねこといぬどっちがすき？"
+  },
+  {
+    "id": "p:8591000",
+    "meaning": {
+      "en": "Don't end up like Tom."
+    },
+    "script": "mixed",
+    "tatoebaId": 8591000,
+    "text": "トムのようになっちゃだめよ。"
+  },
+  {
+    "id": "p:2871642",
+    "meaning": {
+      "en": "I'll go and look for Tom."
+    },
+    "script": "mixed",
+    "tatoebaId": 2871642,
+    "text": "トムをさがしてきます。"
+  },
+  {
+    "id": "p:10298725",
+    "meaning": {
+      "en": "Let's go to the Jacksons'."
+    },
+    "script": "mixed",
+    "tatoebaId": 10298725,
+    "text": "ジャクソンけにいこう。"
+  },
+  {
+    "id": "p:2946902",
+    "meaning": {
+      "en": "Tom has a low-pitched voice."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 2946902,
+    "text": "トムはこえがひくい。"
+  },
+  {
+    "id": "p:11821542",
+    "meaning": {
+      "en": "There's a piano in the room."
+    },
+    "script": "mixed",
+    "tatoebaId": 11821542,
+    "text": "へやにピアノがおいてあります。"
+  },
+  {
+    "id": "p:9165384",
+    "meaning": {
+      "en": "Why did Tom need it?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 9165384,
+    "text": "トムはどうしてそれがいったの？"
+  },
+  {
+    "id": "p:8728681",
+    "meaning": {
+      "en": "Are Tom and Mary friends?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 7
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 8728681,
+    "text": "トムとメアリーはともだちなの？"
+  },
+  {
+    "id": "p:11960562",
+    "meaning": {
+      "en": "Where do you think Tom is now?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 11960562,
+    "text": "トムはいまどこにいるとおもう？"
+  },
+  {
+    "id": "p:9594110",
+    "meaning": {
+      "en": "Tom is a translator."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 9594110,
+    "text": "トムはほんやくしゃです。"
+  },
+  {
+    "id": "p:11795635",
+    "meaning": {
+      "en": "Do you live in Russia?"
+    },
+    "script": "mixed",
+    "tatoebaId": 11795635,
+    "text": "ロシアにすんでるの？"
+  },
+  {
+    "id": "p:2620522",
+    "meaning": {
+      "en": "Tom is good at driving."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 2620522,
+    "text": "トムはうんてんがうまい。"
+  },
+  {
+    "id": "p:162754",
+    "meaning": {
+      "en": "There is a television in my room."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 7
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 162754,
+    "text": "わたしのへやにはテレビがある。"
+  },
+  {
+    "id": "p:12072952",
+    "meaning": {
+      "en": "Tom laughed at me."
+    },
+    "script": "mixed",
+    "tatoebaId": 12072952,
+    "text": "トムにわらわれた。"
+  },
+  {
+    "id": "p:10367742",
+    "meaning": {
+      "en": "Are you in Boston now?"
+    },
+    "script": "mixed",
+    "tatoebaId": 10367742,
+    "text": "いま、ボストンなの？"
+  },
+  {
+    "id": "p:11527190",
+    "meaning": {
+      "en": "What were you telling Tom?"
+    },
+    "script": "mixed",
+    "tatoebaId": 11527190,
+    "text": "トムになにをいってたの？"
+  },
+  {
+    "id": "p:13180077",
+    "meaning": {
+      "en": "I am Egyptian."
+    },
+    "script": "mixed",
+    "tatoebaId": 13180077,
+    "text": "エジプトじんです。"
+  },
+  {
+    "id": "p:3450293",
+    "meaning": {
+      "en": "Is Bob right?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 3450293,
+    "text": "ボブはただしいんだろうか？"
+  },
+  {
+    "id": "p:8663695",
+    "meaning": {
+      "en": "The pocket edition is cheaper."
+    },
+    "script": "mixed",
+    "tatoebaId": 8663695,
+    "text": "ポケットばんのほうがやすい。"
+  },
+  {
+    "id": "p:3553339",
+    "meaning": {
+      "en": "This is the bathroom."
+    },
+    "script": "mixed",
+    "tatoebaId": 3553339,
+    "text": "ここがトイレです。"
+  },
+  {
+    "id": "p:114121",
+    "meaning": {
+      "en": "He came back from Canada."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 114121,
+    "text": "かれはカナダからかえってきた。"
+  },
+  {
+    "id": "p:10107049",
+    "meaning": {
+      "en": "I call him Tom."
+    },
+    "script": "mixed",
+    "tatoebaId": 10107049,
+    "text": "かれのことトムってよんでるわよ。"
+  },
+  {
+    "id": "p:12515162",
+    "meaning": {
+      "en": "Tom was wearing a coat."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 12515162,
+    "text": "トムはコートをきていた。"
+  },
+  {
+    "id": "p:9921925",
+    "meaning": {
+      "en": "I'm listening to the radio."
+    },
+    "script": "mixed",
+    "tatoebaId": 9921925,
+    "text": "ラジオをきいてるんだよ。"
+  },
+  {
+    "id": "p:2734207",
+    "meaning": {
+      "en": "Tom likes Italian food."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 2734207,
+    "text": "トムはイタリアりょうりがすきだ。"
+  },
+  {
+    "id": "p:2422244",
+    "meaning": {
+      "en": "Tom did it, didn't he?"
+    },
+    "script": "mixed",
+    "tatoebaId": 2422244,
+    "text": "トムがやったんですよね？"
+  },
+  {
+    "id": "p:2098583",
+    "meaning": {
+      "en": "Tom turned off the water."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 2098583,
+    "text": "トムはすいどうをとめた。"
+  },
+  {
+    "id": "p:2740695",
+    "meaning": {
+      "en": "Did you say something, Tom?"
+    },
+    "script": "mixed",
+    "tatoebaId": 2740695,
+    "text": "なにかいった、トム？"
+  },
+  {
+    "id": "p:10858054",
+    "meaning": {
+      "en": "Let's go to Tom's house right now."
+    },
+    "script": "mixed",
+    "tatoebaId": 10858054,
+    "text": "いまからトムのいえにいこうよ。"
+  },
+  {
+    "id": "p:11845624",
+    "meaning": {
+      "en": "Have you ever heard of the Loch Ness monster?"
+    },
+    "script": "mixed",
+    "tatoebaId": 11845624,
+    "text": "ネッシーって、しってる？"
+  },
+  {
+    "id": "p:1226868",
+    "meaning": {
+      "en": "Meg's shoes are a little loose."
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 5
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 1226868,
+    "text": "メグのくつはすこしおおきい。"
+  },
+  {
+    "id": "p:3756046",
+    "meaning": {
+      "en": "Are you American?"
+    },
+    "readingHints": [
+      {
+        "learner": [
+          "wa"
+        ],
+        "tokenIndex": 2
+      }
+    ],
+    "script": "mixed",
+    "tatoebaId": 3756046,
+    "text": "きみはアメリカじんかい？"
+  },
+  {
+    "id": "p:3459171",
+    "meaning": {
+      "en": "I want to speak to Tom."
+    },
+    "script": "mixed",
+    "tatoebaId": 3459171,
+    "text": "トムとはなしがしたいんですが。"
+  }
+]
