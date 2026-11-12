@@ -193,13 +193,18 @@ test(`keystroke latency of recall stays within the budgets at ${THROTTLE}x CPU t
   await client.send('Emulation.setCPUThrottlingRate', { rate: THROTTLE });
 
   await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
+  await page.getByRole('button', { name: 'continue' }).click();
+  // The input source, and the probe with it, loads with the session chunk (ADR 067).
+  await expect(page.getByTestId('task-session')).toHaveText(
+    `learning · 1 of ${String(SESSION_TASKS)}`,
+  );
+  await page.waitForFunction(() => Reflect.get(window, '__nekotypeProbe') !== undefined);
   await page.evaluate(() => {
     const probe: unknown = Reflect.get(window, '__nekotypeProbe');
     if (probe === null || typeof probe !== 'object') throw new Error('no probe');
     const reset: unknown = Reflect.get(probe, 'reset');
     if (typeof reset === 'function') Reflect.apply(reset, probe, []);
   });
-  await page.getByRole('button', { name: 'continue' }).click();
 
   for (let session = 1; session <= SESSIONS; session++) {
     for (let n = 1; n <= SESSION_TASKS; n++) {
