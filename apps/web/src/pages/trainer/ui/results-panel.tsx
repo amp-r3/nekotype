@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
 import { useRef, useLayoutEffect } from 'preact/hooks';
 import { t } from '@/shared/i18n';
-import { Button } from '@/shared/ui';
+import { Button, Notice } from '@/shared/ui';
 import type { Session } from '@/features/training';
 import { weakestKana, useEnterForNext } from '@/features/training';
 import { SpeedChart } from './speed-chart';
@@ -36,6 +36,13 @@ export function ResultsPanel({ session, onNextTest }: ResultsPanelProps): JSX.El
     );
   }
 
+  const endReason = session.endReason.value;
+  const endNotice =
+    endReason === 'idle'
+      ? 'results.endedIdle'
+      : endReason === 'hidden'
+        ? 'results.endedHidden'
+        : null;
   const topWeakest = weakestKana(results);
   const elapsedSec = (m.elapsedMs / 1000).toFixed(1);
 
@@ -53,6 +60,8 @@ export function ResultsPanel({ session, onNextTest }: ResultsPanelProps): JSX.El
           mistakes: m.mistakes,
         })}
       </div>
+
+      {endNotice !== null && <Notice>{t(endNotice)}</Notice>}
 
       {/* Header with primary WPM and Accuracy */}
       <div className="border-line flex flex-wrap items-baseline justify-between gap-4 border-b pb-4">

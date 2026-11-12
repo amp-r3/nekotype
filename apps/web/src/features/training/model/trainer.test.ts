@@ -1,3 +1,4 @@
+// @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createTrainer } from './trainer';
 import * as promptModule from '@/entities/prompt';
@@ -453,6 +454,48 @@ describe('trainer: saving the finished test (ADR 073)', () => {
     });
     expect(trainer.lastSaved.value).toMatchObject({ average: 80, previousBest: 90 });
     stop();
+  });
+
+  it('a hidden tab saves the running test at once, ended at the last keystroke', async () => {
+    const { saveTest, clock, trainer } = setup();
+    const stop = trainer.start();
+    await flush();
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    clock.now.mockReturnValue(4000);
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    clock.now.mockReturnValue(20000);
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    document.dispatchEvent(new Event('visibilitychange'));
+    await flush();
+    visibility.mockRestore();
+
+    expect(saveTest).toHaveBeenCalledTimes(1);
+    expect(saveTest.mock.calls[0]?.[0].result).toMatchObject({
+      endReason: 'hidden',
+      endedAt: 4000,
+      durationMs: 3000,
+    });
+    stop();
+  });
+
+  it('a hidden tab before any keystroke does nothing, and stop() removes the listener', async () => {
+    const { saveTest, recordDiscarded, clock, trainer } = setup();
+    const stop = trainer.start();
+    await flush();
+    const hide = (): void => {
+      const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+      document.dispatchEvent(new Event('visibilitychange'));
+      visibility.mockRestore();
+    };
+    hide();
+    expect(trainer.session.phase.value).toBe('idle');
+
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    stop();
+    clock.now.mockReturnValue(9000);
+    hide();
+    expect(saveTest).not.toHaveBeenCalled();
+    expect(recordDiscarded).toHaveBeenCalledTimes(1);
   });
 
   it('a test with no time has KPM 0', async () => {

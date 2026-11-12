@@ -1340,8 +1340,14 @@ describe('session: the report of an ended test (metrics.md, T4)', () => {
     typeAt(session, 'n', 1000);
     typeAt(session, 'e', 1100);
     typeAt(session, 'k', 1200);
+    // Rejected keys keep the test from ending for lack of input while the time runs out.
+    scheduler.advance(200);
+    for (const at of [4200, 7200, 10200, 13200]) {
+      scheduler.advance(at - clock.currentTime);
+      typeAt(session, 'x', at);
+    }
     clock.currentTime = 16000;
-    scheduler.advance(15000);
+    scheduler.advance(2800);
 
     expect(reports).toHaveLength(1);
     expect(reports[0]).toMatchObject({
@@ -1349,11 +1355,12 @@ describe('session: the report of an ended test (metrics.md, T4)', () => {
       startedAt: 1000,
       endedAt: 16000,
       durationMs: 15000,
-      // ね is committed; こ is not finished.
+      // ね is committed; こ is not finished, and its wrong keys are charged to it.
       tokens: 1,
       erroredTokens: 0,
       items: 0,
-      keystrokes: 3,
+      keystrokes: 7,
+      rejectedKeystrokes: 4,
       kanaDelta: { 'hiragana:ね': { attempts: 1, erroredAttempts: 0 } },
     });
   });
@@ -1398,5 +1405,180 @@ describe('session: the report of an ended test (metrics.md, T4)', () => {
       tokens: 100,
       erroredTokens: 100,
     });
+  });
+});
+
+describe('session: idle end and hidden-tab end (metrics.md, D24)', () => {
+  let clock: FakeClock;
+  let scheduler: FakeScheduler;
+  let reports: EndedTest[];
+  let discards: number;
+
+  const a: PromptItem = { key: 'basic:a', text: 'あ' };
+
+  const make = (config: TestConfig): Session =>
+    createSession({
+      nextPrompt: () => a,
+      config: () => config,
+      clock,
+      scheduler,
+      onEnd: (ended) => reports.push(ended),
+      onDiscard: () => {
+        discards += 1;
+      },
+    });
+
+  const type = (session: Session, char: string): void => {
+    session.handleIntent({ kind: 'char', char });
+  };
+
+  // Time passes for the clock and the scheduler alike.
+  const wait = (ms: number): void => {
+    clock.advance(ms);
+    scheduler.advance(ms);
+  };
+
+  beforeEach(() => {
+    clock = new FakeClock();
+    scheduler = new FakeScheduler();
+    reports = [];
+    discards = 0;
+  });
+
+  it.each<[string, TestConfig]>([
+    ['time', { kind: 'time', seconds: 60 }],
+    ['count', { kind: 'count', prompts: 10 }],
+  ])('5 s without input ends a %s test at the last keystroke', (_name, config) => {
+    const session = make(config);
+    session.loadPrompt(a, 'learner');
+    type(session, 'a');
+    wait(100);
+    type(session, 'a');
+    wait(100);
+    type(session, 'a');
+    const lastKeyAt = clock.now();
+    wait(4999);
+    expect(session.phase.value).toBe('running');
+    wait(1);
+
+    expect(session.phase.value).toBe('finished');
+    expect(session.endReason.value).toBe('idle');
+    expect(reports).toHaveLength(1);
+    expect(reports[0]?.endReason).toBe('idle');
+    expect(reports[0]?.endedAt).toBe(lastKeyAt);
+    expect(reports[0]?.durationMs).toBe(200);
+  });
+
+  it('a zen test never ends for lack of input', () => {
+    const session = make({ kind: 'zen' });
+    session.loadPrompt(a, 'learner');
+    type(session, 'a');
+    wait(60 * 60 * 1000);
+    expect(session.phase.value).toBe('running');
+    expect(reports).toHaveLength(0);
+  });
+
+  it('a rejected key and Esc restart the wait; the timer re-arms for the rest', () => {
+    const session = make({ kind: 'count', prompts: 10 });
+    session.loadPrompt(a, 'learner');
+    type(session, 'a');
+    wait(4000);
+    type(session, 'x');
+    wait(4000);
+    session.handleIntent({ kind: 'reveal' });
+    wait(4999);
+    expect(session.phase.value).toBe('running');
+    wait(1);
+    expect(session.phase.value).not.toBe('running');
+    expect(reports[0]?.endReason).toBe('idle');
+  });
+
+  it('an ignored key does not count', () => {
+    const session = make({ kind: 'count', prompts: 10 });
+    session.loadPrompt(a, 'learner');
+    type(session, 'a');
+    wait(100);
+    type(session, 'a');
+    wait(3000);
+    session.handleIntent({ kind: 'ignore' });
+    wait(2000);
+    expect(reports[0]?.endReason).toBe('idle');
+  });
+
+  it('a test that has not started never ends', () => {
+    const session = make({ kind: 'count', prompts: 10 });
+    session.loadPrompt(a, 'learner');
+    wait(60 * 1000);
+    session.endHidden();
+    expect(session.phase.value).toBe('idle');
+    expect(reports).toHaveLength(0);
+    expect(discards).toBe(0);
+  });
+
+  it('the idle wait does not lower the time, and the end reason is gone after a reset', () => {
+    const session = make({ kind: 'count', prompts: 10 });
+    session.loadPrompt(a, 'learner');
+    type(session, 'a');
+    wait(100);
+    type(session, 'a');
+    wait(5000);
+    expect(session.metrics.value?.elapsedMs).toBe(100);
+    session.reset();
+    expect(session.endReason.value).toBeNull();
+  });
+
+  it('a hidden tab ends a running test at once, at the last keystroke', () => {
+    const session = make({ kind: 'time', seconds: 60 });
+    session.loadPrompt(a, 'learner');
+    type(session, 'a');
+    wait(300);
+    type(session, 'a');
+    const lastKeyAt = clock.now();
+    wait(2000);
+    session.endHidden();
+
+    expect(session.endReason.value).toBe('hidden');
+    expect(reports[0]).toMatchObject({ endReason: 'hidden', endedAt: lastKeyAt, durationMs: 300 });
+    // No timer is left to end it a second time.
+    wait(60 * 1000);
+    expect(reports).toHaveLength(1);
+  });
+
+  it('a hidden tab ends a zen test too', () => {
+    const session = make({ kind: 'zen' });
+    session.loadPrompt(a, 'learner');
+    type(session, 'a');
+    wait(100);
+    type(session, 'a');
+    session.endHidden();
+    expect(reports[0]?.endReason).toBe('hidden');
+  });
+
+  it('is discarded without a result when no prompt is completed or no time has passed', () => {
+    const text: PromptItem = { key: 'word:neko', text: 'ねこ' };
+    const long = createSession({
+      nextPrompt: () => text,
+      config: () => ({ kind: 'count', prompts: 10 }),
+      clock,
+      scheduler,
+      onEnd: (ended) => reports.push(ended),
+      onDiscard: () => {
+        discards += 1;
+      },
+    });
+    long.loadPrompt(text, 'learner');
+    // One key of a two-kana prompt: nothing completed.
+    type(long, 'n');
+    wait(5000);
+    expect(reports).toHaveLength(0);
+    expect(discards).toBe(1);
+
+    // A completed prompt on the only keystroke: no time has passed.
+    const quick = make({ kind: 'count', prompts: 10 });
+    quick.loadPrompt(a, 'learner');
+    type(quick, 'a');
+    quick.endHidden();
+    expect(reports).toHaveLength(0);
+    expect(discards).toBe(2);
   });
 });

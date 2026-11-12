@@ -53,6 +53,8 @@ export const typeRu = {
   'results.streak': 'Лучшая серия',
   'results.weakest': 'Слабые кана за этот тест',
   'results.nextTest': 'Следующий тест',
+  'results.endedIdle': 'тест завершён: 5 секунд без ввода',
+  'results.endedHidden': 'тест завершён: вкладка была скрыта',
   'results.summary':
     'Тест завершён. Скорость: {wpm} WPM, точность: {accuracy} процентов. Выполнено заданий: {prompts}, ошибок: {mistakes}.',
   'results.chartTitle': 'Скорость по времени (WPM)',
