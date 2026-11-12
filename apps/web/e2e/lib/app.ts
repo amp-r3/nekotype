@@ -7,12 +7,18 @@ export const INPUT_FIELD = 'input[aria-label="Kana input sink"]';
 
 /**
  * Opens the typing screen (`/type`) and waits until it is usable: settings load from IndexedDB, so the screen
- * can render after `load`. A test that acts at once would otherwise race the first render.
+ * can render after `load`, and the words come from a lazy chunk; a key pressed before a prompt is
+ * on screen is ignored by design. A test that acts at once would otherwise race both. A test of the
+ * loading itself passes `{ prompt: false }` and does not wait for the first prompt.
  */
-export async function openTypingScreen(page: Page): Promise<void> {
+export async function openTypingScreen(
+  page: Page,
+  { prompt = true }: { readonly prompt?: boolean } = {},
+): Promise<void> {
   await page.goto('/type');
   await expect(page.getByTestId('prompt-arena')).toBeVisible();
   await expect(page.locator(INPUT_FIELD)).toBeFocused();
+  if (prompt) await expect(page.getByTestId('prompt-text')).toHaveText(/^.+$/);
 }
 
 type StoredSettings = {

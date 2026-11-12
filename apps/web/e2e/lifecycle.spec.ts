@@ -17,7 +17,7 @@ test.describe('trainer: lifecycle and vocabulary loading', () => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       await route.continue();
     });
-    await openTypingScreen(page);
+    await openTypingScreen(page, { prompt: false });
     const before = await arenaTop(page);
 
     await page.getByRole('radio', { name: 'Words' }).click();
@@ -38,7 +38,7 @@ test.describe('trainer: lifecycle and vocabulary loading', () => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       await route.continue();
     });
-    await openTypingScreen(page);
+    await openTypingScreen(page, { prompt: false });
     await page.getByRole('radio', { name: 'Phrases' }).click();
     await expect(page.getByTestId('translation')).not.toHaveText('');
     await page.keyboard.press('KeyA');
@@ -58,7 +58,7 @@ test.describe('trainer: lifecycle and vocabulary loading', () => {
       }
       await route.continue();
     });
-    await openTypingScreen(page);
+    await openTypingScreen(page, { prompt: false });
 
     await expect(page.getByText('Failed to load the vocabulary')).toBeVisible();
     await expect(page.getByRole('radio', { name: 'Words' })).toHaveAttribute(
@@ -101,7 +101,7 @@ test.describe('trainer: lifecycle and vocabulary loading', () => {
     const live = (): Promise<number> =>
       page.evaluate(() => Reflect.get(window, '__liveIntervals') as number);
 
-    await openTypingScreen(page);
+    await openTypingScreen(page, { prompt: false });
     await page.getByRole('radio', { name: 'Zen' }).click();
     const idle = await live();
     await page.keyboard.press('KeyA');

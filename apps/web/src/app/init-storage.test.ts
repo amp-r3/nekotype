@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import 'fake-indexeddb/auto';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { STORAGE_KEYS, databaseMode, getDatabase } from '@/shared/lib';
 import { settingsReady } from '@/entities/settings';
 import { initApp } from './init';
@@ -13,10 +13,12 @@ describe('app/init with IndexedDB available', () => {
 
     await initApp();
     await getDatabase();
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    // The settings load in the background, through fake-indexeddb: wait for them, not for a tick.
+    await vi.waitFor(() => {
+      expect(settingsReady.value).toBe(true);
+    });
 
     expect(databaseMode.value).toBe('indexeddb');
-    expect(settingsReady.value).toBe(true);
     expect(localStorage.getItem(STORAGE_KEYS.SETTINGS)).toBeNull();
     expect(localStorage.getItem('kanaflow:progress:v1')).toBeNull();
     expect(localStorage.getItem(STORAGE_KEYS.LOCALE)).toBe('en');
