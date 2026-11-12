@@ -1,7 +1,8 @@
 /** A promise wrapper over the parts of IndexedDB the application uses. Values are `unknown`: callers narrow them with guards. */
 export type Write =
   | { op: 'put'; store: string; key: string; value: unknown }
-  | { op: 'delete'; store: string; key: string };
+  | { op: 'delete'; store: string; key: string }
+  | { op: 'clear'; store: string };
 
 /** A store with indexes. An index is named after the property of the value it orders by. */
 export interface StoreDef {
@@ -55,8 +56,10 @@ function wrap(raw: IDBDatabase): Db {
         const store = tx.objectStore(w.store);
         if (w.op === 'put') {
           store.put(w.value, w.key);
-        } else {
+        } else if (w.op === 'delete') {
           store.delete(w.key);
+        } else {
+          store.clear();
         }
       }
       tx.oncomplete = () => {
@@ -189,8 +192,14 @@ export function createMemoryDb(): Db {
     },
     write: (writes) => {
       for (const w of writes) {
-        if (w.op === 'put') data.set(id(w.store, w.key), w.value);
-        else data.delete(id(w.store, w.key));
+        if (w.op === 'put') {
+          data.set(id(w.store, w.key), w.value);
+        } else if (w.op === 'delete') {
+          data.delete(id(w.store, w.key));
+        } else {
+          const prefix = id(w.store, '');
+          for (const k of [...data.keys()]) if (k.startsWith(prefix)) data.delete(k);
+        }
       }
       return Promise.resolve();
     },

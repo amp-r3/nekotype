@@ -1,11 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import {
-  MemoryKeyValueStore,
-  LocalStorageStore,
-  createDebouncedSaver,
-  isSettings,
-  isProgress,
-} from './index';
+import { MemoryKeyValueStore, LocalStorageStore, isSettings } from './index';
 
 describe('storage: KeyValueStore implementations and guards', () => {
   it('MemoryKeyValueStore handles get, set, remove', () => {
@@ -88,54 +82,5 @@ describe('storage: KeyValueStore implementations and guards', () => {
     ).toBe(false);
     expect(isSettings('not an object')).toBe(false);
     expect(isSettings(null)).toBe(false);
-  });
-
-  it('guards validate progress payload and reject corrupted stats', () => {
-    const validProgress = {
-      v: 1,
-      stats: {
-        'hiragana:あ': { a: 10, m: 2, t: 450 },
-      },
-    };
-    expect(isProgress(validProgress)).toBe(true);
-
-    // Wrong version
-    expect(isProgress({ ...validProgress, v: 2 })).toBe(false);
-
-    // Corrupted stats
-    expect(
-      isProgress({
-        v: 1,
-        stats: {
-          'hiragana:あ': { a: 'invalid', m: 0, t: 0 },
-        },
-      }),
-    ).toBe(false);
-  });
-
-  it('debounced saver executes after delay and can be flushed synchronously', () => {
-    vi.useFakeTimers();
-    let saveCount = 0;
-    const saver = createDebouncedSaver(() => {
-      saveCount += 1;
-    }, 300);
-
-    saver.trigger();
-    saver.trigger();
-    saver.trigger();
-    expect(saveCount).toBe(0);
-
-    vi.advanceTimersByTime(299);
-    expect(saveCount).toBe(0);
-
-    vi.advanceTimersByTime(1);
-    expect(saveCount).toBe(1);
-
-    // Immediate flush
-    saver.trigger();
-    saver.flush();
-    expect(saveCount).toBe(2);
-
-    vi.useRealTimers();
   });
 });

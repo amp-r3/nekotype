@@ -1,9 +1,9 @@
 export type { Rng, Clock, Scheduler, TimeoutHandle } from '@nekotype/shared/types';
 export { defaultRng } from './rng';
 
-export { defaultClock } from './clock';
+export { defaultClock } from './time/clock';
 
-export { defaultScheduler } from './scheduler';
+export { defaultScheduler } from './time/scheduler';
 
 export { cx } from './cx';
 
@@ -25,7 +25,6 @@ export {
   MemoryKeyValueStore,
   LocalStorageStore,
   STORAGE_KEYS,
-  createDebouncedSaver,
   LEGACY_KEYS,
   removeLegacyKeys,
 } from './storage';
@@ -44,21 +43,12 @@ export {
 } from './idb/database';
 export { SCHEMA_VERSION, PRE_RELEASE, DATABASE_NAME, STORES } from './idb/schema';
 
-export type {
-  ValidTestConfig,
-  ValidSettings,
-  ValidKanaStats,
-  ValidProgress,
-} from '@nekotype/shared/types';
+export type { ValidTestConfig, ValidSettings } from '@nekotype/shared/types';
 
-export {
-  isObject,
-  isTestConfig,
-  isSettings,
-  isKanaStats,
-  isProgress,
-} from '@nekotype/shared/runtime';
+export { isObject, isTestConfig, isSettings } from '@nekotype/shared/runtime';
 
 export type { KeyIntent } from './input/input-adapter';
 export type { InputSource, InputSourceDeps } from './input/input-source';
 export { createInputSource } from './input/input-source';
+
+export { uuidv7 } from './uuid';

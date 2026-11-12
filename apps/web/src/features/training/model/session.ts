@@ -3,7 +3,7 @@ import { batch, computed, signal } from '@preact/signals';
 import type { KeyIntent } from '@/shared/lib';
 import { computeMetrics } from '../lib/metrics';
 import { createKeyTally } from '../lib/key-tally';
-import type { Phase, PromptResult, SessionMetrics } from './types';
+import type { EndedTest, Phase, PromptResult, SessionMetrics } from './types';
 import {
   AHEAD_TOKENS,
   EMPTY_STREAM,
@@ -49,28 +49,13 @@ const COMPACT_EVERY = 20;
 // show a figure that is only noise.
 const MIN_LIVE_MS = 1000;
 
-// Where a session writes what the typed prompts say about the kana. The session holds no store of
-// its own (D17): the trainer passes the real statistics, a session in a mode that must not change
-// them passes nothing.
-export type SessionStats = {
-  readonly record: (outcomes: readonly TokenOutcome[]) => void;
-  readonly flush: () => void;
-};
-
-type TokenOutcome = {
-  readonly kanaKey: string | null;
-  readonly mistakes: number;
-  readonly ms: number;
-};
-
-const NO_STATS: SessionStats = { record: () => undefined, flush: () => undefined };
-
 export type SessionDeps = {
   readonly nextPrompt: () => PromptItem;
   // Read once per prompt loaded (`loadPrompt`), so a settings change takes effect on the next test.
   readonly config: () => TestConfig;
-  // Defaults to nothing: the results of the prompts are not stored.
-  readonly stats?: SessionStats;
+  // Called once when a test ends and is to be kept (`complete` or `manual`). The session holds no
+  // store of its own (D17): the trainer turns the report into a saved result.
+  readonly onEnd?: (ended: EndedTest) => void;
   readonly clock?: Clock;
   readonly scheduler?: Scheduler;
   // While true, keys are ignored: the prompts to type are still loading.
@@ -132,7 +117,7 @@ export function createSession(deps: SessionDeps): Session {
     deps.scheduler ?? defaultScheduler,
     deps.onDiscard,
     deps.inputBlocked,
-    deps.stats ?? NO_STATS,
+    deps.onEnd,
   );
 }
 
@@ -168,6 +153,11 @@ class TrainingSession implements Session {
   private readonly _mistake = signal<Mistake | null>(null);
   private readonly _committedTokens = signal<number>(0);
   private readonly _erroredTokens = signal<number>(0);
+  // Committed tokens per kana, and those of them that were errored (T4); the report's `kanaDelta`.
+  private readonly kanaCounts = new Map<string, { attempts: number; erroredAttempts: number }>();
+  // Hints (Esc) over the whole test; `assisted` forgets prompts that compaction dropped.
+  private hints = 0;
+  private strictness: Strictness = 'learner';
 
   readonly isAssisted: ReadonlySignal<boolean> = this._isAssisted;
   readonly currentPrompt: ReadonlySignal<PromptItem | null> = this._currentPrompt;
@@ -250,7 +240,7 @@ class TrainingSession implements Session {
     private readonly scheduler: Scheduler,
     private readonly onDiscard: (() => void) | undefined,
     private readonly inputBlocked: (() => boolean) | undefined,
-    private readonly stats: SessionStats,
+    private readonly onEnd: ((ended: EndedTest) => void) | undefined,
   ) {
     this.testConfig = config();
   }
@@ -263,11 +253,13 @@ class TrainingSession implements Session {
     this.committedSeen = 0;
     this.committedAt.clear();
     this.assisted.clear();
+    this.hints = 0;
     this.errorLog = createErrorLog();
     this.keyTimes = [];
     this.keyBase = 0;
     this.lastTokenEnd = undefined;
     this.testConfig = this.config();
+    this.strictness = strictness;
     this.committedPtr = 0;
     this.tokenBase = 0;
     this.streamPrompts = [];
@@ -307,6 +299,7 @@ class TrainingSession implements Session {
     if (intent.kind === 'reveal') {
       if (!this.assisted.has(this.displayed)) {
         this.assisted.add(this.displayed);
+        this.hints += 1;
         this._isAssisted.value = true;
         const target = errorTarget(matcher, state);
         this.errorLog.record(target, null, '');
@@ -336,15 +329,39 @@ class TrainingSession implements Session {
     });
   }
 
-  private finishSession(): void {
+  private finishSession(endReason: EndedTest['endReason']): void {
     if (this._phase.value !== 'running') return;
     if (this.matcher !== null && this.matchState !== null) {
       // Every prompt before the one on screen is completed, a final ん of it included (metrics.md).
       this.flushResults(this.displayed);
     }
     this.clearTimers();
-    this.finishTest(this.clock.now());
-    this.stats.flush();
+    const endedAt = this.clock.now();
+    this.finishTest(endedAt);
+    this.report(endReason, endedAt);
+  }
+
+  // The report to the trainer, of the test that just ended (T4).
+  private report(endReason: EndedTest['endReason'], endedAt: number): void {
+    const kanaDelta: Record<string, { attempts: number; erroredAttempts: number }> = {};
+    for (const [key, count] of this.kanaCounts) kanaDelta[key] = { ...count };
+    const startedAt = this._sessionStartedAt.peek();
+    const { correct, rejected } = this.keyTally.snapshot;
+    this.onEnd?.({
+      endReason,
+      config: this.testConfig,
+      strictness: this.strictness,
+      startedAt,
+      endedAt,
+      durationMs: Math.max(0, endedAt - startedAt),
+      tokens: this._committedTokens.peek(),
+      erroredTokens: this._erroredTokens.peek(),
+      items: this.recorded,
+      keystrokes: correct + rejected,
+      rejectedKeystrokes: rejected,
+      assisted: this.hints,
+      kanaDelta,
+    });
   }
 
   canFinish(): boolean {
@@ -367,7 +384,7 @@ class TrainingSession implements Session {
     const completed = this.displayed;
     const elapsed = now - (this.keyTally.snapshot.firstAt ?? now);
     if (completed >= 1 && elapsed > 0) {
-      this.finishSession();
+      this.finishSession('manual');
       return;
     }
     // Nothing worth keeping: back to a new test, without a results screen.
@@ -388,6 +405,7 @@ class TrainingSession implements Session {
     this.keyBase = 0;
     this.committedAt.clear();
     this.assisted.clear();
+    this.hints = 0;
     this._isAssisted.value = false;
     this._canonicalRomaji.value = '';
     this.streamPrompts = [];
@@ -418,7 +436,7 @@ class TrainingSession implements Session {
     const config = this.testConfig;
     if (config.kind === 'time') {
       this.deadlineTimeoutHandle = this.scheduler.setTimeout(() => {
-        this.finishSession();
+        this.finishSession('complete');
       }, config.seconds * 1000);
     }
 
@@ -459,7 +477,9 @@ class TrainingSession implements Session {
     if (this.isFinalStream() && isComplete(matcher, state)) {
       this.flushResults(this.promptBase + this.prompts.length);
       this._completedPrompts.value = this.recorded;
-      this.finishSession();
+      // Every token is committed now, whatever the engine still holds open.
+      this.advanceCommitted(matcher, matcher.tokens.length);
+      this.finishSession('complete');
       return;
     }
 
@@ -482,9 +502,17 @@ class TrainingSession implements Session {
     let committed = 0;
     let errored = 0;
     for (let t = this.committedPtr; t < upTo; t++) {
-      if (matcher.tokens[t]?.kind === 'skip') continue;
+      const token = matcher.tokens[t];
+      if (token?.kind === 'skip') continue;
       committed += 1;
-      if (this.errorLog.errored(t)) errored += 1;
+      const wrong = this.errorLog.errored(t);
+      if (wrong) errored += 1;
+      if (token?.kanaKey) {
+        const count = this.kanaCounts.get(token.kanaKey) ?? { attempts: 0, erroredAttempts: 0 };
+        count.attempts += 1;
+        if (wrong) count.erroredAttempts += 1;
+        this.kanaCounts.set(token.kanaKey, count);
+      }
     }
     this.committedPtr = upTo;
     this._committedTokens.value += committed;
@@ -502,6 +530,7 @@ class TrainingSession implements Session {
     this._correctKeystrokes.value = 0;
     this._committedTokens.value = 0;
     this._erroredTokens.value = 0;
+    this.kanaCounts.clear();
     this.results = [];
     this.resultsMark.value = { list: this.results, count: 0 };
     this._completedPrompts.value = 0;
@@ -652,7 +681,6 @@ class TrainingSession implements Session {
         assisted: this.assisted.has(this.recorded),
         tokenOutcomes,
       });
-      this.stats.record(tokenOutcomes);
       this.recorded += 1;
     }
     this.resultsMark.value = { list: this.results, count: this.results.length };

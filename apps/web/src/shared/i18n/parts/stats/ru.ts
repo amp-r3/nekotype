@@ -19,6 +19,7 @@ export const statsRu = {
   'stats.counters.title': 'Счётчики',
   'stats.counters.started': 'начато',
   'stats.counters.finished': 'закончено',
+  'stats.counters.typing': 'тесты печати',
   'stats.counters.learning': 'сессии обучения',
   'stats.empty.title': 'Статистики пока нет',
   'stats.empty.text':

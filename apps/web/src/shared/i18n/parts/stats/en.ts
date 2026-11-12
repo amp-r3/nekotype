@@ -18,6 +18,7 @@ export const statsEn = {
   'stats.counters.title': 'Counters',
   'stats.counters.started': 'started',
   'stats.counters.finished': 'finished',
+  'stats.counters.typing': 'typing tests',
   'stats.counters.learning': 'learning sessions',
   'stats.empty.title': 'No statistics yet',
   'stats.empty.text':

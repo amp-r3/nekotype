@@ -1,7 +1,23 @@
 import { defineConfig } from 'vite';
 import preact from '@preact/preset-vite';
 import tailwindcss from '@tailwindcss/vite';
+import { execSync } from 'node:child_process';
 import { fileURLToPath, URL } from 'node:url';
+
+// The build the result was made by (spec metrics.md, `appVersion`): the first 12 characters of the
+// commit, from CI or from git, and `dev` when neither is there.
+function appVersion() {
+  const sha = process.env['GITHUB_SHA'];
+  if (sha) return sha.slice(0, 12);
+  try {
+    const out = execSync('git rev-parse --short=12 HEAD', {
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    return out.toString().trim() || 'dev';
+  } catch {
+    return 'dev';
+  }
+}
 
 export default defineConfig({
   base: process.env.VITE_BASE ?? '/',
@@ -9,6 +25,7 @@ export default defineConfig({
   define: {
     // The test build (`pnpm run build:probe`) carries the latency probe; the production build does
     // not: the constant is false, and the probe is dead code the minifier removes.
+    __APP_VERSION__: JSON.stringify(appVersion()),
     __LATENCY_PROBE__: JSON.stringify(process.env['VITE_LATENCY_PROBE'] === 'true'),
   },
   resolve: {

@@ -7,6 +7,7 @@ import { setupSettingsResetWatcher } from './settings-watcher';
 import { setTestConfig, testConfig } from '@/entities/settings';
 import type { TestConfig } from '@/entities/settings';
 import type { PromptItem } from '@/entities/prompt';
+import type { EndedTest } from './types';
 import type { Clock, Scheduler, TimeoutHandle } from '@/shared/lib';
 
 class FakeClock implements Clock {
@@ -759,37 +760,6 @@ describe('session: live indicators and independence (D17)', () => {
     expect(second.romajiBuffer.value).toBe('n');
   });
 
-  it('two sessions write the outcomes of their prompts to their own statistics', () => {
-    const recordedA: number[] = [];
-    const recordedB: number[] = [];
-    let flushedA = 0;
-    let flushedB = 0;
-    const sessionA = createSession({
-      nextPrompt: () => a,
-      config: () => ({ kind: 'time', seconds: 15 }),
-      clock,
-      scheduler,
-      stats: { record: (o) => recordedA.push(o.length), flush: () => (flushedA += 1) },
-    });
-    const sessionB = createSession({
-      nextPrompt: () => neko,
-      config: () => ({ kind: 'time', seconds: 15 }),
-      clock,
-      scheduler,
-      stats: { record: (o) => recordedB.push(o.length), flush: () => (flushedB += 1) },
-    });
-    sessionA.loadPrompt(a, 'learner');
-    sessionB.loadPrompt(neko, 'learner');
-
-    typeAt(sessionA, 'a', 1000);
-    scheduler.advance(15000);
-    expect(sessionA.phase.value).toBe('finished');
-    expect(recordedA).toEqual([1]);
-    expect(flushedA).toBe(1);
-    expect(recordedB).toEqual([]);
-    expect(flushedB).toBe(0);
-  });
-
   it('a change of the test config in the middle of a test does not affect it', () => {
     let config: TestConfig = { kind: 'time', seconds: 15 };
     const session = make(
@@ -1307,5 +1277,126 @@ describe('session: a zen test, and ending it by hand (metrics.md, Test end)', ()
     const at = session.tickerNow.value;
     scheduler.advance(5000);
     expect(session.tickerNow.value).toBe(at);
+  });
+});
+
+describe('session: the report of an ended test (metrics.md, T4)', () => {
+  let clock: FakeClock;
+  let scheduler: FakeScheduler;
+  let reports: EndedTest[];
+
+  const a: PromptItem = { key: 'basic:a', text: 'あ' };
+  const neko: PromptItem = { key: 'word:neko', text: 'ねこ' };
+
+  const make = (config: TestConfig, nextPrompt: () => PromptItem = () => a): Session =>
+    createSession({
+      nextPrompt,
+      config: () => config,
+      clock,
+      scheduler,
+      onEnd: (ended) => reports.push(ended),
+    });
+
+  const typeAt = (session: Session, char: string, at: number): void => {
+    clock.currentTime = at;
+    session.handleIntent({ kind: 'char', char });
+  };
+
+  beforeEach(() => {
+    clock = new FakeClock();
+    scheduler = new FakeScheduler();
+    reports = [];
+  });
+
+  it('reports a count test: tokens, errors, keystrokes, hints and the kana of each', () => {
+    const session = make({ kind: 'count', prompts: 10 });
+    session.loadPrompt(a, 'learner');
+    // The first あ: a rejected key and a hint, one errored token. The other nine are clean.
+    typeAt(session, 'x', 1000);
+    session.handleIntent({ kind: 'reveal' });
+    for (let i = 0; i < 10; i++) typeAt(session, 'a', 1100 + i * 100);
+
+    expect(reports).toHaveLength(1);
+    expect(reports[0]).toEqual({
+      endReason: 'complete',
+      config: { kind: 'count', prompts: 10 },
+      strictness: 'learner',
+      startedAt: 1000,
+      endedAt: 2000,
+      durationMs: 1000,
+      tokens: 10,
+      erroredTokens: 1,
+      items: 10,
+      keystrokes: 11,
+      rejectedKeystrokes: 1,
+      assisted: 1,
+      kanaDelta: { 'hiragana:あ': { attempts: 10, erroredAttempts: 1 } },
+    });
+  });
+
+  it('counts the committed tokens of an unfinished prompt when a time test runs out', () => {
+    const session = make({ kind: 'time', seconds: 15 }, () => neko);
+    session.loadPrompt(neko, 'learner');
+    typeAt(session, 'n', 1000);
+    typeAt(session, 'e', 1100);
+    typeAt(session, 'k', 1200);
+    clock.currentTime = 16000;
+    scheduler.advance(15000);
+
+    expect(reports).toHaveLength(1);
+    expect(reports[0]).toMatchObject({
+      endReason: 'complete',
+      startedAt: 1000,
+      endedAt: 16000,
+      durationMs: 15000,
+      // ね is committed; こ is not finished.
+      tokens: 1,
+      erroredTokens: 0,
+      items: 0,
+      keystrokes: 3,
+      kanaDelta: { 'hiragana:ね': { attempts: 1, erroredAttempts: 0 } },
+    });
+  });
+
+  it('reports a zen test ended by hand as manual, and a dropped one not at all', () => {
+    const session = make({ kind: 'zen' });
+    session.loadPrompt(a, 'learner');
+    typeAt(session, 'a', 1000);
+    typeAt(session, 'a', 1500);
+    clock.currentTime = 2000;
+    session.finish();
+    expect(reports.map((r) => r.endReason)).toEqual(['manual']);
+    expect(reports[0]).toMatchObject({ items: 2, tokens: 2, durationMs: 1000 });
+
+    const dropped = make({ kind: 'zen' });
+    dropped.loadPrompt(a, 'learner');
+    dropped.handleIntent({ kind: 'char', char: 'x' });
+    dropped.finish();
+    dropped.reset();
+    expect(reports).toHaveLength(1);
+  });
+
+  it('reports nothing for a test that is restarted', () => {
+    const session = make({ kind: 'time', seconds: 15 });
+    session.loadPrompt(a, 'learner');
+    typeAt(session, 'a', 1000);
+    session.reset();
+    scheduler.advance(20000);
+    expect(reports).toEqual([]);
+  });
+
+  it('keeps the hints of prompts that compaction dropped', () => {
+    const session = make({ kind: 'count', prompts: 100 });
+    session.loadPrompt(a, 'learner');
+    for (let i = 0; i < 100; i++) {
+      session.handleIntent({ kind: 'reveal' });
+      typeAt(session, 'a', 1000 + i * 10);
+    }
+    expect(reports[0]).toMatchObject({
+      assisted: 100,
+      items: 100,
+      tokens: 100,
+      erroredTokens: 100,
+    });
   });
 });

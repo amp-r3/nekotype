@@ -1,12 +1,4 @@
-export type KanaStats = {
-  readonly a: number;
-  readonly m: number;
-  readonly t: number;
-};
+import type { KanaStat } from '@nekotype/shared/types';
 
-export type ProgressMap = ReadonlyMap<string, KanaStats>;
-
-export type PersistedProgress = {
-  readonly v: 1;
-  readonly stats: Record<string, KanaStats>;
-};
+/** Statistics per kana, by the kana's key in the engine's table. */
+export type KanaStatMap = Readonly<Record<string, KanaStat>>;

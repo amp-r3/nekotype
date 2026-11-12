@@ -50,17 +50,6 @@ export type ValidSettings = {
   readonly updatedAt: number;
 };
 
-export type ValidKanaStats = {
-  readonly a: number;
-  readonly m: number;
-  readonly t: number;
-};
-
-export type ValidProgress = {
-  readonly v: 1;
-  readonly stats: Record<string, ValidKanaStats>;
-};
-
 // Learning (spec metrics.md, "Data model")
 
 export type Mode = 'typing' | 'learn';

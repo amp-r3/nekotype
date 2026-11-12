@@ -1,23 +1,21 @@
-import type { KanaStats, ProgressMap } from '../model/types';
+import type { KanaStat } from '@nekotype/shared/types';
+import type { KanaStatMap } from '../model/types';
 
-export function computeWeakness(stats?: KanaStats): number {
-  const a = stats ? stats.a : 0;
-  const m = stats ? stats.m : 0;
-  return (m + 1) / (a + 2);
+/** How often the kana was typed wrong, smoothed so that an unseen kana weighs 0.5. */
+export function computeWeakness(stat?: KanaStat): number {
+  const attempts = stat ? stat.attempts : 0;
+  const errored = stat ? stat.erroredAttempts : 0;
+  return (errored + 1) / (attempts + 2);
 }
 
-export function computeWeight(stats?: KanaStats): number {
-  return 1 + 4 * computeWeakness(stats);
+export function computeWeight(stat?: KanaStat): number {
+  return 1 + 4 * computeWeakness(stat);
 }
 
-export function computeWeights(
-  statsMap: ProgressMap,
-  keys: readonly string[],
-): Map<string, number> {
+export function computeWeights(stats: KanaStatMap, keys: readonly string[]): Map<string, number> {
   const weights = new Map<string, number>();
   for (const k of keys) {
-    const stats = statsMap.get(k);
-    weights.set(k, computeWeight(stats));
+    weights.set(k, computeWeight(stats[k]));
   }
   return weights;
 }
@@ -32,34 +30,4 @@ export function computeItemWeight(
     sum += weights.get(k) ?? 3; // default unseen = 3
   }
   return sum / tokenKeys.length;
-}
-
-export function decayStats(stats: KanaStats): KanaStats {
-  if (stats.a > 50) {
-    return {
-      a: Math.floor(stats.a / 2),
-      m: Math.floor(stats.m / 2),
-      t: stats.t,
-    };
-  }
-  return stats;
-}
-
-export function updateKanaStats(
-  prev: KanaStats | undefined,
-  mistakes: number,
-  ms: number,
-): KanaStats {
-  const a = (prev ? prev.a : 0) + 1;
-  const m = (prev ? prev.m : 0) + mistakes;
-  // ms = 0 means no measurement (the first token of a test): the stored time stays.
-  let t = ms > 0 ? ms : (prev?.t ?? 0);
-
-  if (prev && prev.t > 0 && ms > 0) {
-    // EMA with alpha = 0.3
-    t = Math.round(0.7 * prev.t + 0.3 * ms);
-  }
-
-  const updated: KanaStats = { a, m, t };
-  return decayStats(updated);
 }
