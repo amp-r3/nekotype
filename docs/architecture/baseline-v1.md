@@ -1,6 +1,6 @@
-> **Scope.** Describes the code as it stands after phase P3 (learning): the application in `apps/web/src/` and the two packages it uses, `packages/engine` and `packages/shared`. Where it disagrees with the [MVP specification](../spec/README.md), the specification applies; this document is rewritten as the MVP phases land (spec item D21). The name `baseline-v1` is historical.
+> **Scope.** Describes the code as it stands after phase P4 (words and phrases): the application in `apps/web/src/`, the two packages it uses, `packages/engine` and `packages/shared`, and the content pipeline `packages/content`, whose generated files the application reads. Where it disagrees with the [MVP specification](../spec/README.md), the specification applies; this document is rewritten as the MVP phases land (spec item D21). The name `baseline-v1` is historical.
 
-> **Direction.** [ADR 058](../adr/058-learning-first.md) made learning the core of the MVP. Since P3, `/` is the learning screen and the typing trainer (words and phrases) lives on `/type`; single kana and the row selection were removed. The typing screen reads the generated words and phrases (P4); sync comes in P5.
+> **Direction.** [ADR 058](../adr/058-learning-first.md) made learning the core of the MVP. Since P3, `/` is the learning screen and the typing trainer (words and phrases) lives on `/type`; single kana and the row selection were removed. Since P4 the typing screen reads the generated words and phrases and saves its results, records and statistics in IndexedDB; sync comes in P5.
 
 # Nekotype Architecture Documentation
 
@@ -21,7 +21,7 @@ packages/shared/   @nekotype/shared: /types (Clock, Rng, Scheduler, Valid* types
 Packages are consumed as TypeScript source (no build step). Each package has its own `tsconfig.json`, ESLint config, scripts and tests; the root holds Prettier, `tsconfig.base.json`, `eslint.base.js` (`createBaseConfig`) and scripts that run `pnpm -r`. Enforced by lint:
 
 - `packages/engine/src` may use only relative imports and no browser globals (`window`, `document`, `localStorage`, …), so it runs in the browser and in a Worker.
-- `apps/web` must not import `@nekotype/shared/schemas`, `@nekotype/content` or `@nekotype/api`; `shared/runtime` must not import schemas or valibot. These targets do not exist yet; the rules are in place for P3 onwards.
+- `apps/web` must not import `@nekotype/shared/schemas`, `@nekotype/content` or `@nekotype/api`; `shared/runtime` must not import schemas or valibot. Of these only `@nekotype/content` exists (a build tool: the application reads the files it generates and never imports it); the rules for the others are in place for P5.
 
 ### Application layers (FSD)
 
