@@ -1,4 +1,40 @@
 // The strings of the about screen (`/about`): a chunk of their own, loaded with the screen.
+// Licence names, usernames, URLs and `kuromoji` are data and stay out of the dictionary.
 export const aboutEn = {
-  'page.stub': 'This screen is not built yet.',
+  'about.sources.title': 'Sources and licences',
+  'about.sources.jmdict.use': '· words',
+  'about.sources.jmdict.holder': 'Electronic Dictionary Research and Development Group (EDRDG)',
+  'about.sources.tatoeba.use': '· sentences, translations, transcriptions',
+  'about.sources.tatoeba.holder': 'Tatoeba contributors',
+  'about.sources.jlpt.name': 'JLPT word lists',
+  'about.sources.jlpt.use': '· word levels',
+  'about.sources.mapping.name': 'JLPT → JMdict mapping',
+  'about.sources.mapping.use': '· word matching',
+  'about.sources.generated':
+    'The generated word and phrase data is distributed under the licences of its sources.',
+  'about.terms.title': 'Nekotype',
+  'about.terms.code': 'code',
+  'about.terms.codeHolder': 'Copyright (C) 2026 amp-r3 · source code:',
+  'about.terms.name': 'name, logos and cat',
+  'about.terms.reserved': 'all rights reserved',
+  'about.terms.fonts': 'fonts',
+  'about.credits.title': 'Phrase authors',
+  'about.credits.intro1':
+    'Every phrase comes from Tatoeba. Each row names the authors of the sentence, of its English translation and of its transcription.',
+  'about.credits.intro2':
+    'A transcription without an author is machine-made and checked against kuromoji.',
+  'about.credits.count': 'phrases {from}–{to} of {total}',
+  'about.credits.phrase': 'phrase',
+  'about.credits.sentence': 'sentence',
+  'about.credits.author': 'author',
+  'about.credits.translation': 'translation',
+  'about.credits.transcription': 'transcription',
+  'about.credits.sentenceLink': 'sentence {id} on Tatoeba',
+  'about.credits.machine': 'machine · kuromoji',
+  'about.credits.pages': 'phrase list pages',
+  'about.credits.previous': '← previous',
+  'about.credits.next': 'next →',
+  'about.credits.loading': 'loading…',
+  'about.credits.error': 'failed to load. check the connection and try again.',
+  'about.credits.retry': 'retry',
 } as const satisfies Record<string, string>;

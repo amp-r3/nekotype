@@ -62,9 +62,9 @@ describe('locale: the parts of the dictionary that belong to one screen', () => 
     const i18n = await freshI18n();
     await i18n.setLocale('ru', new MemoryKeyValueStore());
     await i18n.loadDictionaryPart('about');
-    expect(i18n.t('page.stub')).toBe(aboutRu['page.stub']);
+    expect(i18n.t('about.terms.title')).toBe(aboutRu['about.terms.title']);
 
     await i18n.setLocale('en', new MemoryKeyValueStore());
-    expect(i18n.t('page.stub')).toBe(aboutEn['page.stub']);
+    expect(i18n.t('about.terms.title')).toBe(aboutEn['about.terms.title']);
   });
 });
