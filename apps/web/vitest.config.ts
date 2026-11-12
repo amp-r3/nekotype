@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from 'node:url';
 export default defineConfig({
   define: {
     __LATENCY_PROBE__: false,
+    __APP_VERSION__: JSON.stringify('test'),
   },
   test: {
     environment: 'node',

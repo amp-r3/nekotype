@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ESLint } from 'eslint';
-import { isObject, isTestConfig, isKanaStats, isSettings } from './runtime';
+import { isObject, isTestConfig, isSettings } from './runtime';
 
 describe('shared/runtime guards', () => {
   it('isObject accepts plain objects only', () => {
@@ -79,12 +79,6 @@ describe('shared/runtime guards', () => {
       // The old flat shape is not valid any more.
       expect(isSettings({ v: 1, ...valid.typing })).toBe(false);
     });
-  });
-
-  it('isKanaStats requires numeric a, m and t', () => {
-    expect(isKanaStats({ a: 1, m: 0, t: 300 })).toBe(true);
-    expect(isKanaStats({ a: '1', m: 0, t: 300 })).toBe(false);
-    expect(isKanaStats({ a: 1, m: 0 })).toBe(false);
   });
 });
 

@@ -4,7 +4,7 @@ import { t } from '@/shared/i18n';
 import type { Strictness } from '@nekotype/engine';
 import { Button, Dialog, ResetIcon, Segmented, Switch } from '@/shared/ui';
 import { Select } from '@/shared/ui/select';
-import { resetProgress } from '@/entities/stats';
+import { resetTyping } from '@/entities/stats';
 import { resetLearning } from '@/entities/learn';
 import {
   showTranslationSetting,
@@ -59,7 +59,7 @@ export function SettingsPage(): JSX.Element {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
   const handleConfirmReset = () => {
-    resetProgress();
+    void resetTyping();
     void resetLearning();
     setResetDialogOpen(false);
   };

@@ -235,4 +235,14 @@ describe.each([
     expect(await db.count('records')).toBe(1);
     expect(await db.count('delta')).toBe(0);
   });
+
+  it('clears one store with a write, in the same transaction as the others', async () => {
+    const db = await seeded();
+    await db.write([
+      { op: 'clear', store: 'results' },
+      { op: 'delete', store: 'records', key: 'current' },
+    ]);
+    expect(await db.count('results')).toBe(0);
+    expect(await db.count('records')).toBe(0);
+  });
 });

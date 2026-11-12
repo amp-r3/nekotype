@@ -315,7 +315,7 @@ describe('learn store: persistence', () => {
     scheduler.runAll();
     await store.flush();
     expect(writes).toHaveLength(1);
-    expect(writes[0]?.map((w) => `${w.store}/${w.key}`)).toEqual([
+    expect(writes[0]?.map((w) => `${w.store}/${'key' in w ? w.key : ''}`)).toEqual([
       'delta/learn',
       'meta/typingIntervals',
     ]);

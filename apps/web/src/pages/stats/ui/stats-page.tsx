@@ -6,6 +6,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { Stat } from '@/shared/ui/stat';
 import { defaultClock, navigate } from '@/shared/lib';
 import { learnTargetMs, learnTrack } from '@/entities/settings';
+import { initTyping, typingCounters } from '@/entities/stats';
 import type { LearnTrack } from '@/entities/settings';
 import {
   dayStart,
@@ -36,6 +37,7 @@ export function StatsPage(): JSX.Element {
 
   useEffect(() => {
     void initLearn(() => learnTargetMs.value);
+    void initTyping();
   }, []);
 
   if (learnStatus.value === 'error') {
@@ -203,6 +205,15 @@ export function StatsPage(): JSX.Element {
             </tr>
           </thead>
           <tbody>
+            <tr>
+              <td className="text-ui-label text-fur py-1 pr-3">{t('stats.counters.typing')}</td>
+              <td className={`${MONO} py-1 pr-3 text-right`} data-testid="stats-started-typing">
+                {typingCounters.value.started.typing}
+              </td>
+              <td className={`${MONO} py-1 text-right`} data-testid="stats-finished-typing">
+                {typingCounters.value.finished.typing}
+              </td>
+            </tr>
             <tr>
               <td className="text-ui-label text-fur py-1 pr-3">{t('stats.counters.learning')}</td>
               <td className={`${MONO} py-1 pr-3 text-right`} data-testid="stats-started">

@@ -1,3 +1,8 @@
+import type { TestEndReason } from '@nekotype/shared/types';
+import type { KanaStat } from '@nekotype/shared/types';
+import type { TestConfig } from '@/entities/settings';
+import type { Strictness } from '@/entities/prompt';
+
 export type Phase = 'idle' | 'running' | 'finished';
 
 export type TokenOutcome = {
@@ -26,4 +31,29 @@ export type SessionMetrics = {
   readonly bestStreak: number;
   readonly promptsCompleted: number;
   readonly wpmSeries: readonly number[];
+};
+
+/**
+ * What a session reports when a test ends and is to be kept (metrics.md, T4). The trainer adds the
+ * settings, the id and the versions and turns it into a `TestResult`.
+ */
+export type EndedTest = {
+  readonly endReason: TestEndReason;
+  readonly config: TestConfig;
+  readonly strictness: Strictness;
+  readonly startedAt: number;
+  readonly endedAt: number;
+  readonly durationMs: number;
+  /** Committed tokens, the unfinished prompt included, and the errored ones among them. */
+  readonly tokens: number;
+  readonly erroredTokens: number;
+  /** Completed prompts. */
+  readonly items: number;
+  /** Latin keys handled: accepted and rejected. */
+  readonly keystrokes: number;
+  readonly rejectedKeystrokes: number;
+  /** Hints (Esc). */
+  readonly assisted: number;
+  /** Committed tokens per kana, and the errored ones; also the errors of the test per kana. */
+  readonly kanaDelta: Readonly<Record<string, KanaStat>>;
 };

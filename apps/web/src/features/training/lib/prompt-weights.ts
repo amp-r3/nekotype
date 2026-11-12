@@ -1,11 +1,11 @@
 import type { PromptItem } from '@/entities/prompt';
 import { compile } from '@/entities/prompt';
-import type { ProgressMap } from '@/entities/stats';
+import type { KanaStatMap } from '@/entities/stats';
 import { computeItemWeight, computeWeights } from '@/entities/stats';
 
 export type PromptWeights = (
   pool: readonly PromptItem[],
-  stats: ProgressMap,
+  stats: KanaStatMap,
 ) => Map<string, number>;
 
 /**

@@ -61,15 +61,14 @@ export class LocalStorageStore implements KeyValueStore {
 
 export const STORAGE_KEYS = {
   SETTINGS: 'kanaflow:settings:v1',
-  PROGRESS: 'kanaflow:progress:v1',
   LOCALE: 'nekotype:locale',
 } as const;
 
 /**
  * Keys that earlier versions wrote and the code no longer uses (ADR 061). `kanaflow:settings:v1`
- * joins in P3 when settings move to IndexedDB, `kanaflow:progress:v1` in P4.
+ * joins in P3 when settings move to IndexedDB, `kanaflow:progress:v1` in P4 when typing statistics do.
  */
-export const LEGACY_KEYS: readonly string[] = [STORAGE_KEYS.SETTINGS];
+export const LEGACY_KEYS: readonly string[] = [STORAGE_KEYS.SETTINGS, 'kanaflow:progress:v1'];
 
 /** Deletes the legacy keys without reading them. Called once IndexedDB has opened. */
 export function removeLegacyKeys(
@@ -79,26 +78,4 @@ export function removeLegacyKeys(
   for (const key of keys) {
     store.remove(key);
   }
-}
-
-export function createDebouncedSaver(saveFn: () => void, delayMs = 300) {
-  let timer: ReturnType<typeof setTimeout> | null = null;
-
-  const trigger = () => {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(() => {
-      timer = null;
-      saveFn();
-    }, delayMs);
-  };
-
-  const flush = () => {
-    if (timer) {
-      clearTimeout(timer);
-      timer = null;
-      saveFn();
-    }
-  };
-
-  return { trigger, flush };
 }

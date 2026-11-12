@@ -6,9 +6,9 @@ import { settingsReady } from '@/entities/settings';
 import { initApp } from './init';
 
 describe('app/init with IndexedDB available', () => {
-  it('loads the settings and deletes kanaflow:settings:v1 unread, keeping the other keys', async () => {
+  it('loads the settings and deletes kanaflow:settings:v1 and kanaflow:progress:v1 unread, keeping the locale', async () => {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, '{"v":1}');
-    localStorage.setItem(STORAGE_KEYS.PROGRESS, '{"v":1,"stats":{}}');
+    localStorage.setItem('kanaflow:progress:v1', '{"v":1,"stats":{}}');
     localStorage.setItem(STORAGE_KEYS.LOCALE, 'en');
 
     await initApp();
@@ -18,7 +18,7 @@ describe('app/init with IndexedDB available', () => {
     expect(databaseMode.value).toBe('indexeddb');
     expect(settingsReady.value).toBe(true);
     expect(localStorage.getItem(STORAGE_KEYS.SETTINGS)).toBeNull();
-    expect(localStorage.getItem(STORAGE_KEYS.PROGRESS)).toBe('{"v":1,"stats":{}}');
+    expect(localStorage.getItem('kanaflow:progress:v1')).toBeNull();
     expect(localStorage.getItem(STORAGE_KEYS.LOCALE)).toBe('en');
   });
 });

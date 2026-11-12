@@ -8,7 +8,7 @@ import {
   testConfig,
 } from '@/entities/settings';
 import { learnCounters, learnReady, learnState } from '@/entities/learn';
-import { progressStats } from '@/entities/stats';
+import { typingKanaStats } from '@/entities/stats';
 import { createSession } from '@/features/training';
 import type { Session } from '@/features/training';
 import { locale } from '@/shared/i18n';
@@ -30,7 +30,7 @@ export type _CheckShowTranslationSetting = AssertFalse<
   IsWritable<typeof showTranslationSetting, 'value'>
 >;
 export type _CheckTestConfig = AssertFalse<IsWritable<typeof testConfig, 'value'>>;
-export type _CheckProgressStats = AssertFalse<IsWritable<typeof progressStats, 'value'>>;
+export type _CheckTypingKanaStats = AssertFalse<IsWritable<typeof typingKanaStats, 'value'>>;
 export type _CheckLearnState = AssertFalse<IsWritable<typeof learnState, 'value'>>;
 export type _CheckLearnCounters = AssertFalse<IsWritable<typeof learnCounters, 'value'>>;
 export type _CheckLearnReady = AssertFalse<IsWritable<typeof learnReady, 'value'>>;
@@ -66,7 +66,7 @@ describe('store state: ReadonlySignal guarantees', () => {
     expect(weakFocusSetting.value).toBeDefined();
     expect(showTranslationSetting.value).toBeDefined();
     expect(testConfig.value).toBeDefined();
-    expect(progressStats.value).toBeDefined();
+    expect(typingKanaStats.value).toBeDefined();
     expect(locale.value).toBeDefined();
     expect(learnState.value.unlocked.hiragana).toHaveLength(5);
     expect(learnCounters.value.started.learn).toBe(0);

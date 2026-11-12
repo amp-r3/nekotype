@@ -1,4 +1,4 @@
-import type { ValidTestConfig, ValidSettings, ValidKanaStats, ValidProgress } from './types';
+import type { ValidTestConfig, ValidSettings } from './types';
 import { isObject } from './object';
 
 export function isTestConfig(value: unknown): value is ValidTestConfig {
@@ -49,31 +49,6 @@ export function isSettings(value: unknown): value is ValidSettings {
   const updatedAt = value['updatedAt'];
   if (typeof updatedAt !== 'number' || !Number.isFinite(updatedAt)) return false;
   return isTypingSettings(value['typing']) && isLearnSettings(value['learn']);
-}
-
-export function isKanaStats(value: unknown): value is ValidKanaStats {
-  if (!isObject(value)) return false;
-  return (
-    typeof value['a'] === 'number' &&
-    typeof value['m'] === 'number' &&
-    typeof value['t'] === 'number'
-  );
-}
-
-export function isProgress(value: unknown): value is ValidProgress {
-  if (!isObject(value)) return false;
-  if (value['v'] !== 1) return false;
-
-  const stats = value['stats'];
-  if (!isObject(stats)) return false;
-
-  for (const key of Object.keys(stats)) {
-    if (!isKanaStats(stats[key])) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 export { isObject };

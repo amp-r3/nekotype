@@ -3,7 +3,7 @@ import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, options, createRef, Fragment } from 'preact';
 import type { VNode } from 'preact';
 import { act } from 'preact/test-utils';
-import { STORAGE_KEYS, createMemoryDb, immersive } from '@/shared/lib';
+import { createMemoryDb, immersive } from '@/shared/lib';
 import type { Db, Write } from '@/shared/lib';
 import { canonicalFor } from '@/entities/prompt';
 import { t } from '@/shared/i18n';
@@ -312,6 +312,6 @@ describe('learning session screen', () => {
     env.timers.flush();
     await tick();
     expect(env.writes.length).toBeGreaterThan(before);
-    expect(localStorage.getItem(STORAGE_KEYS.PROGRESS)).toBeNull();
+    expect(localStorage.getItem('kanaflow:progress:v1')).toBeNull();
   });
 });

@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createTrainer } from './trainer';
 import * as promptModule from '@/entities/prompt';
+import { CONTENT_VERSION } from '@/entities/prompt';
+import type { SaveTestInput, SavedTest } from '@/entities/stats';
+import { createTypingStore } from '@/entities/stats';
 import type { ContentItem, PromptItem } from '@/entities/prompt';
 import {
   contentSetting,
@@ -373,6 +376,163 @@ describe('trainer: prompt source, restarts and content loading', () => {
 
     expect(trainer.session.phase.value).toBe('finished');
     expect(trainer.session.metrics.value?.promptsCompleted).toBe(2);
+    stop();
+  });
+});
+
+describe('trainer: saving the finished test (ADR 073)', () => {
+  const a: PromptItem = { key: 'basic:a', text: 'あ' };
+
+  function setup() {
+    const saveTest = vi.fn((input: SaveTestInput): Promise<SavedTest> =>
+      Promise.resolve({ result: input.result, average: 80, previousBest: 90, isBest: false }),
+    );
+    const recordDiscarded = vi.fn(() => Promise.resolve());
+    const clock = { now: vi.fn(() => 1000) };
+    const trainer = createTrainer({
+      nextPrompt: () => a,
+      clock,
+      typing: { saveTest, recordDiscarded },
+      newId: (now) => `id-${now}`,
+    });
+    return { saveTest, recordDiscarded, clock, trainer };
+  }
+
+  beforeEach(async () => {
+    await initSettings(Promise.resolve(createMemoryDb()));
+    vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([word]);
+    setContent('phrases');
+    setScript('hiragana');
+    setTestConfig({ kind: 'zen' });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    setContent('words');
+    setScript('both');
+  });
+
+  it('assembles the result from the report and the settings, and keeps what was compared', async () => {
+    const { saveTest, clock, trainer } = setup();
+    const stop = trainer.start();
+    await flush();
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    clock.now.mockReturnValue(7000);
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    clock.now.mockReturnValue(31000);
+    trainer.session.handleIntent({ kind: 'finish' });
+    await flush();
+
+    expect(saveTest).toHaveBeenCalledTimes(1);
+    const input = saveTest.mock.calls[0]?.[0];
+    expect(input?.startedIncrement).toBe(1);
+    expect(input?.kanaDelta).toEqual({ 'hiragana:あ': { attempts: 2, erroredAttempts: 0 } });
+    expect(input?.result).toEqual({
+      id: 'id-31000',
+      content: 'phrases',
+      script: 'hiragana',
+      strictness: 'learner',
+      config: { kind: 'zen' },
+      endReason: 'manual',
+      repeated: false,
+      startedAt: 1000,
+      endedAt: 31000,
+      durationMs: 30000,
+      tokens: 2,
+      erroredTokens: 0,
+      items: 2,
+      keystrokes: 2,
+      rejectedKeystrokes: 0,
+      assisted: 0,
+      // 2 tokens in half a minute.
+      kpm: 4,
+      kanaAccuracy: 1,
+      celebratedPersonalBest: false,
+      contentVersion: CONTENT_VERSION,
+      appVersion: 'test',
+    });
+    expect(trainer.lastSaved.value).toMatchObject({ average: 80, previousBest: 90 });
+    stop();
+  });
+
+  it('a test with no time has KPM 0', async () => {
+    const { saveTest, trainer } = setup();
+    const stop = trainer.start();
+    await flush();
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    // The same instant: no time passed, so it is dropped, not saved.
+    trainer.session.handleIntent({ kind: 'finish' });
+    expect(saveTest).not.toHaveBeenCalled();
+    stop();
+  });
+
+  it('a restart of a running test counts it as started only; an idle or finished one counts nothing', async () => {
+    const { saveTest, recordDiscarded, clock, trainer } = setup();
+    const stop = trainer.start();
+    await flush();
+    trainer.restart();
+    expect(recordDiscarded).not.toHaveBeenCalled();
+
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    trainer.restart();
+    expect(recordDiscarded).toHaveBeenCalledTimes(1);
+
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    clock.now.mockReturnValue(5000);
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    trainer.session.handleIntent({ kind: 'finish' });
+    await flush();
+    expect(saveTest).toHaveBeenCalledTimes(1);
+    trainer.restart();
+    expect(recordDiscarded).toHaveBeenCalledTimes(1);
+    expect(trainer.lastSaved.value).toBeNull();
+    stop();
+  });
+
+  it('leaving the screen during a test counts it as started only', async () => {
+    const { saveTest, recordDiscarded, trainer } = setup();
+    const stop = trainer.start();
+    await flush();
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    stop();
+    expect(recordDiscarded).toHaveBeenCalledTimes(1);
+    expect(saveTest).not.toHaveBeenCalled();
+  });
+
+  it('a zen finish with nothing to keep counts as started only, once', async () => {
+    const { saveTest, recordDiscarded, trainer } = setup();
+    const stop = trainer.start();
+    await flush();
+    trainer.session.handleIntent({ kind: 'char', char: 'x' });
+    trainer.session.handleIntent({ kind: 'finish' });
+    expect(recordDiscarded).toHaveBeenCalledTimes(1);
+    expect(saveTest).not.toHaveBeenCalled();
+    stop();
+    expect(recordDiscarded).toHaveBeenCalledTimes(1);
+  });
+
+  it('writes nothing inside the keystroke that ends a test', async () => {
+    setTestConfig({ kind: 'count', prompts: 10 });
+    const db = createMemoryDb();
+    const writes: unknown[] = [];
+    const original = db.write.bind(db);
+    db.write = (batch) => {
+      writes.push(batch);
+      return original(batch);
+    };
+    const store = createTypingStore({ db: () => Promise.resolve(db) });
+    const trainer = createTrainer({ nextPrompt: () => a, typing: store });
+    const stop = trainer.start();
+    await flush();
+    for (let i = 0; i < 10; i++) {
+      trainer.session.handleIntent({ kind: 'char', char: 'a' });
+      expect(writes).toHaveLength(0);
+    }
+    expect(trainer.session.phase.value).toBe('finished');
+    await flush();
+    expect(writes).toHaveLength(1);
+    expect(store.counters.value.finished.typing).toBe(1);
     stop();
   });
 });
