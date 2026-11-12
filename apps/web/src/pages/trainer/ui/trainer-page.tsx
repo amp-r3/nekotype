@@ -82,7 +82,7 @@ export function TrainerPage(props: TrainerPageProps = {}): JSX.Element {
 
       {isFinished ? (
         Results !== null ? (
-          <Results session={session} onNextTest={restart} />
+          <Results finished={trainer.lastSaved.value} onNextTest={restart} />
         ) : (
           <ResultsPending
             failed={resultsLoadFailed.value}

@@ -101,4 +101,7 @@ export const ru = {
   'stage.switchLayout': 'Переключите раскладку на английскую',
   'key.esc': 'Esc',
   'key.enter': 'enter',
+
+  // Shared marks
+  'badge.personalBest': 'личный рекорд',
 } as const satisfies Record<keyof typeof en, string>;

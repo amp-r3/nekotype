@@ -13,13 +13,48 @@ const CUT = {
   strokeLinecap: 'round',
 } as const;
 
+const EYE_ARC = {
+  fill: 'none',
+  stroke: 'var(--cat-eye)',
+  strokeWidth: '2.2',
+  strokeLinecap: 'round',
+} as const;
+
 export type CatProps = {
+  readonly mood?: 'sleep' | 'content';
   readonly size?: number;
   readonly className?: string;
 };
 
-/** The sleeping cat; decorative, so it is hidden from assistive technology. */
-export function Cat({ size = 96, className = '' }: CatProps): JSX.Element {
+/**
+ * The cat, asleep by default or `content` (typing results on a personal best). Decorative, so it is
+ * hidden from assistive technology.
+ */
+export function Cat({ mood = 'sleep', size = 96, className = '' }: CatProps): JSX.Element {
+  if (mood === 'content') {
+    return (
+      <svg
+        viewBox="0 0 96 96"
+        width={size}
+        height={size}
+        aria-hidden="true"
+        focusable="false"
+        className={`block flex-none ${className}`}
+      >
+        <path
+          d="M26 84.5L26 72A22 22 0 0 1 69.79 68.95A4 4 0 0 0 72.92 72.31A14 14 0 0 1 83.96 84.92A1 1 0 0 1 82.96 86L78.94 86A1 1 0 0 1 77.95 85.11A8 8 0 0 0 71.85 78.22A1.5 1.5 0 0 0 70 79.68L70 84.5A1.5 1.5 0 0 1 68.5 86L27.5 86A1.5 1.5 0 0 1 26 84.5Z"
+          style={FUR}
+        />
+        <circle cx="48" cy="36" r="18" style={GAP} />
+        <path
+          d="M32.33 28.47L29.66 14.47A1.6 1.6 0 0 1 32.04 12.79L42.82 19.13A2.2 2.2 0 0 0 44.4 19.38A17 17 0 0 1 51.6 19.38A2.2 2.2 0 0 0 53.18 19.13L63.96 12.79A1.6 1.6 0 0 1 66.34 14.47L63.67 28.47A2.2 2.2 0 0 0 63.79 29.7A17 17 0 1 1 32.21 29.7A2.2 2.2 0 0 0 32.33 28.47Z"
+          style={FUR}
+        />
+        <path d="M38 38.4Q41 34.2 44 38.4" style={EYE_ARC} />
+        <path d="M52 38.4Q55 34.2 58 38.4" style={EYE_ARC} />
+      </svg>
+    );
+  }
   return (
     <svg
       viewBox="0 0 96 96"

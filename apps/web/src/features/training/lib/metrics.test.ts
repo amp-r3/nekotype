@@ -16,13 +16,8 @@ describe('metrics: pure calculation', () => {
   it('guards elapsedMs = 0 when no keystrokes or elapsed = 0', () => {
     const emptyMetrics = computeMetrics(tallyOf([]), []);
     expect(emptyMetrics.elapsedMs).toBe(0);
-    expect(emptyMetrics.wpm).toBe(0);
-    expect(emptyMetrics.rawWpm).toBe(0);
     expect(emptyMetrics.accuracy).toBe(1.0);
-    expect(emptyMetrics.kanaPerMin).toBe(0);
-    expect(emptyMetrics.bestStreak).toBe(0);
     expect(emptyMetrics.promptsCompleted).toBe(0);
-    expect(emptyMetrics.wpmSeries).toEqual([]);
 
     const zeroTimeKeystrokes: KeystrokeEvent[] = [
       { at: 1000, accepted: true },
@@ -30,7 +25,6 @@ describe('metrics: pure calculation', () => {
     ];
     const zeroMetrics = computeMetrics(tallyOf(zeroTimeKeystrokes), [], 1000);
     expect(zeroMetrics.elapsedMs).toBe(0);
-    expect(zeroMetrics.wpm).toBe(0);
     expect(zeroMetrics.accuracy).toBe(1.0);
   });
 
@@ -81,20 +75,6 @@ describe('metrics: pure calculation', () => {
     // Accuracy: 50 / (50 + 11) = 50 / 61 = 0.81967...
     expect(m.accuracy).toBeCloseTo(50 / 61, 4);
 
-    // WPM: (50 / 5) / 1 min = 10.0
-    expect(m.wpm).toBe(10);
-
-    // Raw WPM: ((50 + 11) / 5) / 1 min = 12.2
-    expect(m.rawWpm).toBe(12.2);
-
-    // 4 completed tokens in 1 min = 4.0 kana/min
-    expect(m.kanaPerMin).toBe(4);
-
-    // Best streak: prompt 1 was 0 mistakes & unassisted, prompt 2 was assisted
-    expect(m.bestStreak).toBe(1);
     expect(m.promptsCompleted).toBe(2);
-
-    // wpmSeries has 60 seconds
-    expect(m.wpmSeries.length).toBe(60);
   });
 });

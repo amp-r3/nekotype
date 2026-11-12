@@ -20,17 +20,13 @@ export type PromptResult = {
   readonly tokenOutcomes: readonly TokenOutcome[];
 };
 
+// The raw counts of a finished test; the results screen reads the saved `TestResult` instead.
 export type SessionMetrics = {
   readonly elapsedMs: number;
   readonly correct: number;
   readonly mistakes: number;
-  readonly wpm: number;
-  readonly rawWpm: number;
   readonly accuracy: number;
-  readonly kanaPerMin: number;
-  readonly bestStreak: number;
   readonly promptsCompleted: number;
-  readonly wpmSeries: readonly number[];
 };
 
 /**
