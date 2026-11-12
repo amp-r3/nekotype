@@ -27,6 +27,7 @@ export const typeEn = {
   'stage.restartLabel': 'Restart test',
   'stage.restart': 'Restart',
   'stage.liveKpm': 'kpm',
+  'stage.repeat': 'repeat',
   'stage.clickToFocus': 'Click to focus',
   'key.ctrlEnter': 'ctrl + enter',
   'key.cmdEnter': '⌘ + enter',
@@ -49,6 +50,7 @@ export const typeEn = {
   'results.weakest': 'mistyped kana',
   'results.errors': 'errors',
   'results.nextTest': 'Next Test',
+  'results.repeat': 'Repeat',
   'results.endedIdle': 'test ended: 5 seconds without input',
   'results.endedHidden': 'test ended: the tab was hidden',
   'results.summary':

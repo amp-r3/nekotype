@@ -50,10 +50,14 @@ function finished(
 describe('results panel', () => {
   let container: HTMLDivElement;
 
-  function show(f: FinishedTest | null, onNextTest = (): void => {}): void {
+  function show(
+    f: FinishedTest | null,
+    onNextTest = (): void => {},
+    onRepeat = (): void => {},
+  ): void {
     container = document.createElement('div');
     document.body.appendChild(container);
-    render(<ResultsPanel finished={f} onNextTest={onNextTest} />, container);
+    render(<ResultsPanel finished={f} onNextTest={onNextTest} onRepeat={onRepeat} />, container);
   }
 
   afterEach(() => {
@@ -75,6 +79,20 @@ describe('results panel', () => {
     expect(document.activeElement).toBe(next);
     next?.click();
     expect(started).toBe(1);
+  });
+
+  it('offers Repeat after Next test, and a click on it repeats', () => {
+    let repeated = 0;
+    show(finished(), undefined, () => {
+      repeated += 1;
+    });
+    const buttons = [...container.querySelectorAll('button')];
+    expect(buttons.map((b) => b.textContent)).toEqual([
+      expect.stringContaining('Next Test'),
+      'Repeat',
+    ]);
+    buttons[1]?.click();
+    expect(repeated).toBe(1);
   });
 
   it('offers Next test alone while the result is being saved', () => {

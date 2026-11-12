@@ -28,6 +28,7 @@ export const typeRu = {
   'stage.restartLabel': 'Перезапустить тест',
   'stage.restart': 'Заново',
   'stage.liveKpm': 'kpm',
+  'stage.repeat': 'повтор',
   'stage.clickToFocus': 'Нажмите для фокусировки',
   'key.ctrlEnter': 'ctrl + enter',
   'key.cmdEnter': '⌘ + enter',
@@ -50,6 +51,7 @@ export const typeRu = {
   'results.weakest': 'каны с ошибками',
   'results.errors': 'ошибки',
   'results.nextTest': 'Следующий тест',
+  'results.repeat': 'Повторить',
   'results.endedIdle': 'тест завершён: 5 секунд без ввода',
   'results.endedHidden': 'тест завершён: вкладка была скрыта',
   'results.summary':
