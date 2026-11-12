@@ -222,7 +222,13 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
       void initTyping();
       restart();
       const stopWatching = setupSettingsResetWatcher(restart);
+      // A hidden tab cannot receive input and may be discarded: the test ends and is saved now.
+      const onVisibility = (): void => {
+        if (document.visibilityState === 'hidden') session.endHidden();
+      };
+      document.addEventListener('visibilitychange', onVisibility);
       return () => {
+        document.removeEventListener('visibilitychange', onVisibility);
         stopped = true;
         // Leaving the screen drops a running test (metrics.md): no timer outlives it.
         dropRunning();

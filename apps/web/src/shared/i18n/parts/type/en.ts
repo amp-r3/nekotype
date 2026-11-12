@@ -52,6 +52,8 @@ export const typeEn = {
   'results.streak': 'Best Streak',
   'results.weakest': 'Weakest Kana This Run',
   'results.nextTest': 'Next Test',
+  'results.endedIdle': 'test ended: 5 seconds without input',
+  'results.endedHidden': 'test ended: the tab was hidden',
   'results.summary':
     'Test complete. Speed: {wpm} WPM, accuracy: {accuracy} percent. Completed {prompts} prompts with {mistakes} mistakes.',
   'results.chartTitle': 'Speed Over Time (WPM)',

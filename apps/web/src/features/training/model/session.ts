@@ -1,5 +1,6 @@
 import type { ReadonlySignal } from '@preact/signals';
 import { batch, computed, signal } from '@preact/signals';
+import type { TestEndReason } from '@nekotype/shared/types';
 import type { KeyIntent } from '@/shared/lib';
 import { computeMetrics } from '../lib/metrics';
 import { createKeyTally } from '../lib/key-tally';
@@ -45,6 +46,9 @@ import { defaultClock, defaultScheduler } from '@/shared/lib';
 // Committed prompts after which the matcher drops them (spec "Window").
 const COMPACT_EVERY = 20;
 
+// Time without a keystroke after which a test ends (metrics.md, D24). Zen is exempt.
+export const IDLE_END_MS = 5000;
+
 // A live indicator stays at 0 until this much of the test has passed, so the first keys do not
 // show a figure that is only noise.
 const MIN_LIVE_MS = 1000;
@@ -72,6 +76,8 @@ export type Session = {
   readonly canonicalRomaji: ReadonlySignal<string>;
   readonly tickerNow: ReadonlySignal<number>;
   readonly phase: ReadonlySignal<Phase>;
+  // Why the finished test ended; null while it runs or before it starts.
+  readonly endReason: ReadonlySignal<TestEndReason | null>;
   readonly metrics: ReadonlySignal<SessionMetrics | null>;
   readonly promptResults: ReadonlySignal<readonly PromptResult[]>;
   // Prompts completed so far, as a test ending now would count them: every prompt before the one on
@@ -106,6 +112,9 @@ export type Session = {
   finish(): void;
   /** Whether `finish()` would end the test now: a zen test that is running. */
   canFinish(): boolean;
+  // Ends a running test because the tab was hidden (metrics.md, "Hidden tab"). It is kept, with the
+  // time of the last keystroke as its end, under the same conditions as a manual finish.
+  endHidden(): void;
   reset(): void;
 };
 
@@ -136,6 +145,7 @@ class TrainingSession implements Session {
   private readonly _canonicalRomaji = signal<string>('');
   private readonly _tickerNow = signal<number>(0);
   private readonly _phase = signal<Phase>('idle');
+  private readonly _endReason = signal<TestEndReason | null>(null);
   private readonly _metrics = signal<SessionMetrics | null>(null);
   // The results of the recorded prompts. They grow by one per prompt to the end of the test (O(n),
   // ADR 050); `promptResults` copies them only when something reads it.
@@ -164,6 +174,7 @@ class TrainingSession implements Session {
   readonly canonicalRomaji: ReadonlySignal<string> = this._canonicalRomaji;
   readonly tickerNow: ReadonlySignal<number> = this._tickerNow;
   readonly phase: ReadonlySignal<Phase> = this._phase;
+  readonly endReason: ReadonlySignal<TestEndReason | null> = this._endReason;
   readonly metrics: ReadonlySignal<SessionMetrics | null> = this._metrics;
   readonly promptResults: ReadonlySignal<readonly PromptResult[]> = computed(() => {
     // The copy is made only when a reader asks and the results changed.
@@ -230,6 +241,9 @@ class TrainingSession implements Session {
   // The test config as it stood when the prompt was loaded; the test runs by it to its end.
   private testConfig: TestConfig;
 
+  // The time of the last key handed to the session; the one idle timer reads it when it fires.
+  private lastKeyAt = 0;
+  private idleTimeoutHandle: TimeoutHandle | null = null;
   private deadlineTimeoutHandle: TimeoutHandle | null = null;
   private tickerIntervalHandle: TimeoutHandle | null = null;
 
@@ -294,6 +308,7 @@ class TrainingSession implements Session {
     }
 
     const now = this.clock.now();
+    this.lastKeyAt = now;
 
     // Reveal intent (Esc): counts one mistake, the prompt must still be typed in full
     if (intent.kind === 'reveal') {
@@ -329,14 +344,14 @@ class TrainingSession implements Session {
     });
   }
 
-  private finishSession(endReason: EndedTest['endReason']): void {
+  private finishSession(endReason: EndedTest['endReason'], endedAt = this.clock.now()): void {
     if (this._phase.value !== 'running') return;
     if (this.matcher !== null && this.matchState !== null) {
       // Every prompt before the one on screen is completed, a final ん of it included (metrics.md).
       this.flushResults(this.displayed);
     }
     this.clearTimers();
-    const endedAt = this.clock.now();
+    this._endReason.value = endReason;
     this.finishTest(endedAt);
     this.report(endReason, endedAt);
   }
@@ -375,19 +390,25 @@ class TrainingSession implements Session {
   }
 
   finish(): void {
-    const matcher = this.matcher;
-    const state = this.matchState;
-    if (this.testConfig.kind !== 'zen' || this._phase.value !== 'running') return;
-    if (matcher === null || state === null) return;
+    if (this.testConfig.kind !== 'zen') return;
+    this.endEarly('manual', this.clock.now());
+  }
 
-    const now = this.clock.now();
-    const completed = this.displayed;
-    const elapsed = now - (this.keyTally.snapshot.firstAt ?? now);
-    if (completed >= 1 && elapsed > 0) {
-      this.finishSession('manual');
+  endHidden(): void {
+    this.endEarly('hidden', this.lastKeyAt);
+  }
+
+  // Ends a running test that was not played to its end. It is kept when a prompt is completed and
+  // time has passed up to `endedAt`; otherwise it is dropped like a restart and the next one starts,
+  // without a results screen (metrics.md, "Test end").
+  private endEarly(endReason: 'manual' | 'idle' | 'hidden', endedAt: number): void {
+    if (this._phase.value !== 'running' || this.matcher === null || this.matchState === null)
+      return;
+    const elapsed = endedAt - (this.keyTally.snapshot.firstAt ?? endedAt);
+    if (this.displayed >= 1 && elapsed > 0) {
+      this.finishSession(endReason, endedAt);
       return;
     }
-    // Nothing worth keeping: back to a new test, without a results screen.
     this.clearTimers();
     if (this.onDiscard) {
       this.onDiscard();
@@ -431,6 +452,7 @@ class TrainingSession implements Session {
     this.resetState();
     this._phase.value = 'running';
     this._sessionStartedAt.value = now;
+    this.armIdle();
 
     // If time test, arm deadline timer
     const config = this.testConfig;
@@ -526,6 +548,7 @@ class TrainingSession implements Session {
 
   private resetState(): void {
     this._phase.value = 'idle';
+    this._endReason.value = null;
     this._sessionStartedAt.value = 0;
     this._correctKeystrokes.value = 0;
     this._committedTokens.value = 0;
@@ -724,7 +747,27 @@ class TrainingSession implements Session {
     return this.keyTimes[index - this.keyBase];
   }
 
+  // One timer for the whole test: a keystroke only stores `lastKeyAt`, and the timer re-arms itself
+  // for what is left of the wait when it fires early (metrics.md, "Idle end").
+  private armIdle(): void {
+    if (this.testConfig.kind === 'zen') return;
+    this.idleTimeoutHandle = this.scheduler.setTimeout(
+      () => {
+        this.idleTimeoutHandle = null;
+        if (this._phase.value !== 'running') return;
+        const left = this.lastKeyAt + IDLE_END_MS - this.clock.now();
+        if (left > 0) this.armIdle();
+        else this.endEarly('idle', this.lastKeyAt);
+      },
+      Math.max(0, this.lastKeyAt + IDLE_END_MS - this.clock.now()),
+    );
+  }
+
   private clearTimers(): void {
+    if (this.idleTimeoutHandle) {
+      this.scheduler.clearTimeout(this.idleTimeoutHandle);
+      this.idleTimeoutHandle = null;
+    }
     if (this.deadlineTimeoutHandle) {
       this.scheduler.clearTimeout(this.deadlineTimeoutHandle);
       this.deadlineTimeoutHandle = null;
