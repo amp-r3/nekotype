@@ -316,7 +316,7 @@ describe('learn store: persistence', () => {
     await store.flush();
     expect(writes).toHaveLength(1);
     expect(writes[0]?.map((w) => `${w.store}/${w.key}`)).toEqual([
-      'delta/current',
+      'delta/learn',
       'meta/typingIntervals',
     ]);
   });
@@ -371,7 +371,7 @@ describe('learn store: persistence', () => {
 
   it('takes the initial state for an invalid record', async () => {
     const db = createMemoryDb();
-    await db.put('delta', 'current', { learn: { unlocked: 'x' }, counters: 1 });
+    await db.put('delta', 'learn', { learn: { unlocked: 'x' }, counters: 1 });
     const { store } = setup({ db });
     await store.init();
     expect(store.status.value).toBe('ready');
@@ -381,14 +381,14 @@ describe('learn store: persistence', () => {
 
   it('takes the error status when the read fails, and writes nothing until a read succeeds', async () => {
     const db = createMemoryDb();
-    await db.put('delta', 'current', {
+    await db.put('delta', 'learn', {
       learn: {
         ...initialLearnState(),
         unlocked: { hiragana: keysOfTrack('hiragana').slice(0, 7), katakana: [] },
       },
       counters: { started: { typing: 0, learn: 3 }, finished: { typing: 0, learn: 2 } },
     });
-    const stored = await db.get('delta', 'current');
+    const stored = await db.get('delta', 'learn');
     let failing = true;
     const flaky: Db = {
       ...db,
@@ -406,7 +406,7 @@ describe('learn store: persistence', () => {
     scheduler.runAll();
     await store.flush();
     expect(writes).toHaveLength(0);
-    expect(await db.get('delta', 'current')).toEqual(stored);
+    expect(await db.get('delta', 'learn')).toEqual(stored);
 
     // A retry that succeeds reads the stored state and lets writes through again.
     failing = false;
@@ -440,10 +440,10 @@ describe('learn store: persistence', () => {
     store.countSession('started');
     scheduler.runAll();
     await store.flush();
-    expect(await db.get('delta', 'current')).toBeDefined();
+    expect(await db.get('delta', 'learn')).toBeDefined();
 
     await store.reset();
-    expect(await db.get('delta', 'current')).toBeUndefined();
+    expect(await db.get('delta', 'learn')).toBeUndefined();
     expect(store.state.value.entries).toEqual({});
     expect(store.state.value.recent).toEqual({});
     expect(store.counters.value.started.learn).toBe(0);

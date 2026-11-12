@@ -42,7 +42,7 @@ describe('learn page: review (N) and the due marks', () => {
       recent: { [a]: answers(900), [i]: answers(2400), [u]: answers(900) },
     };
     const db = await getDatabase();
-    await db.put('delta', 'current', { learn, counters: initialCounters() });
+    await db.put('delta', 'learn', { learn, counters: initialCounters() });
 
     container = document.createElement('div');
     document.body.appendChild(container);

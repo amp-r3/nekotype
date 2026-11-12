@@ -34,7 +34,7 @@ import { trackOfKey } from '../lib/tracks';
 import { evaluateBoxes, evaluateUnlocking, initialCounters, initialLearnState } from '../lib/state';
 
 const DELTA_STORE = 'delta';
-const DELTA_KEY = 'current';
+const DELTA_KEY = 'learn';
 const META_STORE = 'meta';
 const INTERVALS_KEY = 'typingIntervals';
 

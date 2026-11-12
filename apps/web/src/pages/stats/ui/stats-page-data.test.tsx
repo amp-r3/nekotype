@@ -28,7 +28,7 @@ describe('stats page: with answers', () => {
     const today = localDay(Date.now());
     const base = initialLearnState();
     const db = await getDatabase();
-    await db.put('delta', 'current', {
+    await db.put('delta', 'learn', {
       learn: {
         ...base,
         activeDays: [

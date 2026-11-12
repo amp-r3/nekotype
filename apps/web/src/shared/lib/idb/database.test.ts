@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { MockInstance } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
 import { createDatabaseProvider, openDatabase } from './database';
-import { openRaw, deleteRaw } from './idb';
-import { DATABASE_NAME, SCHEMA_VERSION, STORES } from './schema';
+import { createMemoryDb, openRaw, deleteRaw } from './idb';
+import { DATABASE_NAME, SCHEMA_VERSION, STORES, STORE_NAMES } from './schema';
 
 class FailingFactory extends IDBFactory {
   override open(): IDBOpenDBRequest {
@@ -16,7 +16,7 @@ function holdStaleConnection(factory: IDBFactory): Promise<void> {
   return new Promise((resolve, reject) => {
     const req = factory.open(DATABASE_NAME);
     req.onupgradeneeded = () => {
-      for (const name of STORES) req.result.createObjectStore(name);
+      for (const name of STORE_NAMES) req.result.createObjectStore(name);
     };
     req.onerror = () => {
       reject(req.error ?? new Error('open failed'));
@@ -45,7 +45,7 @@ describe('openDatabase', () => {
 
   it('creates a new database silently and writes the schema version', async () => {
     const db = await openDatabase(factory);
-    expect(db.hasStores(STORES)).toBe(true);
+    expect(db.hasStores(STORE_NAMES)).toBe(true);
     expect(await db.get('meta', 'schemaVersion')).toBe(SCHEMA_VERSION);
     expect(info).not.toHaveBeenCalled();
   });
@@ -69,12 +69,24 @@ describe('openDatabase', () => {
     expect(info).toHaveBeenCalledTimes(1);
   });
 
+  it('resets a database left at schema 2 (no results and records stores)', async () => {
+    const old = await openRaw(factory, DATABASE_NAME, ['settings', 'delta', 'meta']);
+    await old.db.put('meta', 'schemaVersion', 2);
+    await old.db.put('delta', 'current', { learn: 1 });
+    old.db.close();
+    const db = await openDatabase(factory);
+    expect(db.hasStores(STORE_NAMES)).toBe(true);
+    expect(await db.get('delta', 'current')).toBeUndefined();
+    expect(await db.get('meta', 'schemaVersion')).toBe(3);
+    expect(info).toHaveBeenCalledTimes(1);
+  });
+
   it('resets a database with a missing store', async () => {
     const old = await openRaw(factory, DATABASE_NAME, ['settings', 'meta']);
     await old.db.put('meta', 'schemaVersion', SCHEMA_VERSION);
     old.db.close();
     const db = await openDatabase(factory);
-    expect(db.hasStores(STORES)).toBe(true);
+    expect(db.hasStores(STORE_NAMES)).toBe(true);
     expect(info).toHaveBeenCalledTimes(1);
   });
 
@@ -89,16 +101,33 @@ describe('openDatabase', () => {
     expect(info).toHaveBeenCalledTimes(1);
   });
 
+  it('creates the indexes of results', async () => {
+    const db = await openDatabase(factory);
+    db.close();
+    const raw = await new Promise<IDBDatabase>((resolve, reject) => {
+      const req = factory.open(DATABASE_NAME);
+      req.onsuccess = () => {
+        resolve(req.result);
+      };
+      req.onerror = () => {
+        reject(req.error ?? new Error('open failed'));
+      };
+    });
+    const names = [...raw.transaction('results').objectStore('results').indexNames];
+    raw.close();
+    expect(names.sort()).toEqual(['endedAt', 'synced']);
+  });
+
   it('writes several stores in one transaction', async () => {
     const db = await openDatabase(factory);
     await db.write([
       { op: 'put', store: 'settings', key: 'current', value: 1 },
-      { op: 'put', store: 'delta', key: 'current', value: 2 },
+      { op: 'put', store: 'delta', key: 'learn', value: 2 },
     ]);
     expect(await db.get('settings', 'current')).toBe(1);
-    expect(await db.get('delta', 'current')).toBe(2);
-    await db.write([{ op: 'delete', store: 'delta', key: 'current' }]);
-    expect(await db.get('delta', 'current')).toBeUndefined();
+    expect(await db.get('delta', 'learn')).toBe(2);
+    await db.write([{ op: 'delete', store: 'delta', key: 'learn' }]);
+    expect(await db.get('delta', 'learn')).toBeUndefined();
   });
 
   it('closes its connection on versionchange so another tab can delete the database', async () => {
@@ -152,5 +181,58 @@ describe('createDatabaseProvider: failed writes', () => {
     expect(provider.mode.value).toBe('indexeddb');
     provider.failWrites();
     expect(provider.mode.value).toBe('memory');
+  });
+});
+
+describe.each([
+  ['IndexedDB', () => openDatabase(new IDBFactory())],
+  ['memory', () => Promise.resolve(createMemoryDb())],
+])('getPage and count (%s)', (_name, open) => {
+  const ids = (page: unknown[]): unknown[] =>
+    page.map((r) => (typeof r === 'object' && r !== null && 'id' in r ? r.id : undefined));
+  const result = (id: string, endedAt: number, synced: 0 | 1) => ({ id, endedAt, synced });
+
+  async function seeded() {
+    const db = await open();
+    await db.write([
+      { op: 'put', store: 'results', key: 'a', value: result('a', 100, 1) },
+      { op: 'put', store: 'results', key: 'b', value: result('b', 300, 0) },
+      { op: 'put', store: 'results', key: 'c', value: result('c', 200, 0) },
+      { op: 'put', store: 'results', key: 'd', value: result('d', 400, 1) },
+      { op: 'put', store: 'results', key: 'e', value: result('e', 300, 1) },
+      { op: 'put', store: 'records', key: 'current', value: { x: 1 } },
+    ]);
+    return db;
+  }
+
+  it('returns the newest first, ties by key', async () => {
+    const db = await seeded();
+    const page = await db.getPage('results', 'endedAt', {
+      direction: 'prev',
+      offset: 0,
+      limit: 10,
+    });
+    expect(ids(page)).toEqual(['d', 'e', 'b', 'c', 'a']);
+  });
+
+  it('applies offset and limit', async () => {
+    const db = await seeded();
+    const page = await db.getPage('results', 'endedAt', { direction: 'prev', offset: 1, limit: 2 });
+    expect(ids(page)).toEqual(['e', 'b']);
+    const past = await db.getPage('results', 'endedAt', { direction: 'prev', offset: 5, limit: 2 });
+    expect(past).toEqual([]);
+  });
+
+  it('reads oldest first with direction next, and by another index', async () => {
+    const db = await seeded();
+    const page = await db.getPage('results', 'synced', { direction: 'next', offset: 0, limit: 2 });
+    expect(ids(page)).toEqual(['b', 'c']);
+  });
+
+  it('counts the records of one store', async () => {
+    const db = await seeded();
+    expect(await db.count('results')).toBe(5);
+    expect(await db.count('records')).toBe(1);
+    expect(await db.count('delta')).toBe(0);
   });
 });
