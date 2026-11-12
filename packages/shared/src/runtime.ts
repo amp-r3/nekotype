@@ -105,3 +105,23 @@ export {
   RECOGNITION_DECAY_AT,
   decayLearnStat,
 } from './learn-runtime';
+
+// Typing records, kana statistics and test results: rules shared with the server.
+export {
+  RECENT_RESULTS,
+  BEST_MIN_ACCURACY,
+  KANA_DECAY_AT,
+  roundKpm,
+  roundAccuracy,
+  personalBestKey,
+  isBestEligible,
+  averageKpm,
+  applyResultToRecords,
+  addKanaStats,
+  decayKanaStat,
+  isKanaStat,
+  isTestResult,
+  isTypingRecordEntry,
+  isTypingRecords,
+} from './typing-runtime';
+export type { ResultApplied } from './typing-runtime';

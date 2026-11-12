@@ -15,7 +15,7 @@ Nekotype is a high-performance, keyboard-first Japanese kana speed trainer engin
 ```
 apps/web/          @nekotype/web: the Preact SPA, Feature-Sliced Design (below)
 packages/engine/   @nekotype/engine: NFA romaji engine, kana tables, track composition (`kanaOf`, `kanaRows`) and the visually-similar kana table (`similarKana`); imports nothing
-packages/shared/   @nekotype/shared: /types (Clock, Rng, Scheduler, Valid* types), /runtime (type guards)
+packages/shared/   @nekotype/shared: /types (Clock, Rng, Scheduler, Valid* types, learning and typing data model), /runtime (type guards, learning merge rules, typing records and personal-best rules)
 ```
 
 Packages are consumed as TypeScript source (no build step). Each package has its own `tsconfig.json`, ESLint config, scripts and tests; the root holds Prettier, `tsconfig.base.json`, `eslint.base.js` (`createBaseConfig`) and scripts that run `pnpm -r`. Enforced by lint:
