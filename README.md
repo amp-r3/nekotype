@@ -28,10 +28,10 @@
 - **🧠 Adaptive Weak-Kana Weighting:**
   - Bayesian-inspired weakness formula: $\text{weakness} = \frac{m + 1}{a + 2}$.
   - Dynamically weights prompts during practice so your most frequent mistakes surface more often. For words and phrases the weight is the mean of the weights of their kana.
-- **📊 Detailed Results & Speed Charts:**
-  - WPM, raw WPM, accuracy, kana/min, elapsed time, and best streak.
-  - SVG speed-over-time trend line.
-  - Breakdown of weakest kana during the session with canonical romaji lookup.
+- **📊 Results screen:**
+  - KPM with the difference to the average of the last 10 tests of the same mode and to the personal best, kana accuracy and time.
+  - A personal best gets a badge and the content cat.
+  - Up to five mistyped kana with their accepted spellings.
 - **⌨️ Keyboard-First Ergonomics:**
   - Hidden input sink auto-focuses on mount and upon clicking the arena.
   - Typing any letter while a button has focus immediately refocuses and processes the key (Plan 6.2).

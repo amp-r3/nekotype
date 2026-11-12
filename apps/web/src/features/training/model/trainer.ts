@@ -18,7 +18,7 @@ import { initTyping, recordDiscardedTest, saveTest, typingKanaStats } from '@/en
 import type { Clock, Rng, Scheduler } from '@/shared/lib';
 import { defaultClock, defaultRng, defaultScheduler, uuidv7 } from '@/shared/lib';
 import { roundAccuracy, roundKpm } from '@nekotype/shared/runtime';
-import type { TestResult } from '@nekotype/shared/types';
+import type { KanaStat, TestResult } from '@nekotype/shared/types';
 import type { EndedTest } from './types';
 
 export type TrainerDeps = {
@@ -39,12 +39,17 @@ const APP_VERSION: string = __APP_VERSION__;
  * The training screen as state: one session, the prompt source that feeds it, and the loading of
  * vocabulary content, chunk by chunk. A view reads these signals and calls `restart()`.
  */
+/** A saved test with the kana errors of it, which the results screen lists and nothing keeps. */
+export type FinishedTest = SavedTest & {
+  readonly kanaDelta: Readonly<Record<string, KanaStat>>;
+};
+
 export type Trainer = {
   readonly session: Session;
   readonly isLoadingContent: ReadonlySignal<boolean>;
   readonly contentLoadFailed: ReadonlySignal<boolean>;
   // The last saved test with the average and the best it was compared with; null while a test runs.
-  readonly lastSaved: ReadonlySignal<SavedTest | null>;
+  readonly lastSaved: ReadonlySignal<FinishedTest | null>;
   // Discards the running test and shows a fresh prompt.
   readonly restart: () => void;
   // Loads the selected vocabulary again after a failure.
@@ -58,7 +63,7 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
   const clock = deps.clock ?? defaultClock;
   const typing = deps.typing ?? { saveTest, recordDiscarded: recordDiscardedTest };
   const newId = deps.newId ?? ((now: number) => uuidv7(now));
-  const lastSaved = signal<SavedTest | null>(null);
+  const lastSaved = signal<FinishedTest | null>(null);
   const promptWeights = createPromptWeights();
   // Loaded chunks, kept whatever the selection does next, so a chunk is fetched once. An empty
   // chunk is loaded too.
@@ -143,7 +148,7 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
       void typing
         .saveTest({ result: toResult(ended), kanaDelta: ended.kanaDelta, startedIncrement: 1 })
         .then((saved) => {
-          lastSaved.value = saved;
+          lastSaved.value = { ...saved, kanaDelta: ended.kanaDelta };
         });
     },
     // A zen test ended with nothing to keep: a fresh prompt, as after a restart.

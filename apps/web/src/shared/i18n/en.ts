@@ -100,4 +100,7 @@ export const en = {
   'stage.switchLayout': 'Switch your keyboard layout to English',
   'key.esc': 'Esc',
   'key.enter': 'enter',
+
+  // Shared marks
+  'badge.personalBest': 'personal best',
 } as const satisfies Record<string, string>;

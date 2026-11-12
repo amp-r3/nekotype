@@ -55,7 +55,7 @@ describe('locale: the parts of the dictionary that belong to one screen', () => 
     await Promise.all([toRussian, part]);
 
     expect(i18n.locale.value).toBe('ru');
-    expect(i18n.t('results.wpm')).toBe(typeRu['results.wpm']);
+    expect(i18n.t('results.accuracy')).toBe(typeRu['results.accuracy']);
   });
 
   it('a part loaded in Russian is loaded again in English after a switch back', async () => {
