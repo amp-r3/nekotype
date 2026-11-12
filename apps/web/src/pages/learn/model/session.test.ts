@@ -50,7 +50,7 @@ async function introducing(kana: string, strictness: 'learner' | 'ime' = 'learne
   const clock = new Clock0();
   const scheduler = new Timers();
   const db = createMemoryDb();
-  await db.put('delta', 'current', {
+  await db.put('delta', 'learn', {
     learn: stateWith({ unlocked: [kana] }),
     counters: initialCounters(),
   });

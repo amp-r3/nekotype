@@ -29,7 +29,7 @@ async function setup() {
     // Confident: only a confident kana is due (ADR 062).
     recent: { あ: answers(10, 900), い: answers(10, 900), う: answers(10, 900) },
   });
-  await db.put('delta', 'current', { learn, counters: initialCounters() });
+  await db.put('delta', 'learn', { learn, counters: initialCounters() });
   const store = createLearnStore({
     db: () => Promise.resolve(db),
     clock,

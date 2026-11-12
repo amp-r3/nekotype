@@ -24,7 +24,7 @@ describe('learn page: after the first answer', () => {
   it('shows the streak, in the plural of the language, and not the first-visit line', async () => {
     const today = localDay(Date.now());
     const db = await getDatabase();
-    await db.put('delta', 'current', {
+    await db.put('delta', 'learn', {
       learn: { ...initialLearnState(), activeDays: [[today - 5, today]] },
       counters: initialCounters(),
     });

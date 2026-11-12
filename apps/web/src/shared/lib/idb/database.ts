@@ -2,14 +2,14 @@ import { signal } from '@preact/signals';
 import type { ReadonlySignal } from '@preact/signals';
 import { createMemoryDb, deleteRaw, openRaw } from './idb';
 import type { Db } from './idb';
-import { DATABASE_NAME, SCHEMA_VERSION, STORES } from './schema';
+import { DATABASE_NAME, SCHEMA_VERSION, STORES, STORE_NAMES } from './schema';
 
 export type DatabaseMode = 'pending' | 'indexeddb' | 'memory';
 
 const SCHEMA_KEY = 'schemaVersion';
 
 async function schemaMatches(db: Db): Promise<boolean> {
-  if (!db.hasStores(STORES)) return false;
+  if (!db.hasStores(STORE_NAMES)) return false;
   try {
     return (await db.get('meta', SCHEMA_KEY)) === SCHEMA_VERSION;
   } catch {

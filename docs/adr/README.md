@@ -96,3 +96,4 @@ Append-only log of architectural decisions, one file per decision.
 | [069](069-word-readings-and-meanings.md)                                             | Word Readings and Meanings                                                                   | In force               |
 | [070](070-phrase-selection.md)                                                       | Phrase Selection                                                                             | In force               |
 | [071](071-glyph-set-from-generated-content.md)                                       | Glyph Set from Generated Content                                                             | In force               |
+| [072](072-delta-split-per-mode.md)                                                   | Delta Split per Mode                                                                         | In force               |

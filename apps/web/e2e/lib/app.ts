@@ -49,14 +49,14 @@ export async function seedSettings(page: Page, patch: StoredSettings): Promise<v
   await page.reload();
 }
 
-/** Writes the learning state (`delta/current`) the same way, on `path`, and reloads. */
+/** Writes the learning state (`delta/learn`) the same way, on `path`, and reloads. */
 export async function seedLearning(
   page: Page,
   path: string,
   learn: Record<string, unknown>,
 ): Promise<void> {
   await page.goto(path);
-  await putRecord(page, 'delta', 'current', {
+  await putRecord(page, 'delta', 'learn', {
     learn,
     counters: { started: { typing: 0, learn: 0 }, finished: { typing: 0, learn: 0 } },
   });

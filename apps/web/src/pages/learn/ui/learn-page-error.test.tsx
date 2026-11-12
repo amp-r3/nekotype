@@ -26,7 +26,7 @@ describe('learn page: the progress cannot be read', () => {
       counters: initialCounters(),
     };
     const db = await getDatabase();
-    await db.put('delta', 'current', stored);
+    await db.put('delta', 'learn', stored);
     const read = db.get.bind(db);
     let failing = true;
     db.get = (store, key) => (failing ? Promise.reject(new Error('closed')) : read(store, key));
@@ -55,6 +55,6 @@ describe('learn page: the progress cannot be read', () => {
     expect(container.querySelector('[data-testid="kana-chart"]')).not.toBeNull();
     expect(byText(t('learn.continue'))?.disabled).toBe(false);
     // The stored record was never replaced by the initial state: the entry is still there.
-    expect(await db.get('delta', 'current')).toEqual(stored);
+    expect(await db.get('delta', 'learn')).toEqual(stored);
   });
 });
