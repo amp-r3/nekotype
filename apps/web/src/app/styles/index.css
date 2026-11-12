@@ -772,3 +772,38 @@ button.nk-cell.is-learning:hover {
   stroke-dasharray: 1;
   animation: nk-draw var(--dur-draw) var(--ease-out) both;
 }
+
+/* ---- The history table on /stats ----------------------------------------------------------------
+   In a container of 480px or less a row is a block of two lines: the date on top; the mode, KPM and
+   accuracy below. The time is hidden and the header stays for screen readers only. */
+
+.nk-hist {
+  container-type: inline-size;
+}
+
+@container (max-width: 480px) {
+  .nk-hist thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .nk-hist tbody tr {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    column-gap: var(--space-4);
+    padding: var(--space-3) 0;
+    border-top: var(--stroke-hair) solid var(--line);
+  }
+  .nk-hist td {
+    padding: 0;
+    border: 0;
+  }
+  .nk-hist td:nth-child(1) {
+    grid-column: 1 / -1;
+  }
+  .nk-hist td:nth-child(5) {
+    display: none;
+  }
+}

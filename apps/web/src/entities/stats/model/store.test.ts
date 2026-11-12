@@ -228,3 +228,32 @@ describe('typing store: two tabs', () => {
     expect(b.records.value['words|hiragana|learner|time:60']?.best?.kpm).toBe(90);
   });
 });
+
+describe('typing store: reading saved results', () => {
+  it('pages the results newest first and counts them', async () => {
+    const { store } = setup();
+    await save(store, result('a', { endedAt: 1000 }));
+    await save(store, result('b', { endedAt: 3000, repeated: true }));
+    await save(store, result('c', { endedAt: 2000 }));
+
+    expect((await store.results(0, 2)).map((r) => r.id)).toEqual(['b', 'c']);
+    expect((await store.results(2, 2)).map((r) => r.id)).toEqual(['a']);
+    expect(await store.results(3, 2)).toEqual([]);
+    expect(await store.resultCount()).toBe(3);
+  });
+
+  it('reads after the write in progress, and leaves out a record that is not a result', async () => {
+    const { db, store } = setup();
+    await db.put('results', 'broken', { id: 'broken', endedAt: 9000 });
+    const saving = save(store, result('a', { endedAt: 1000 }));
+    const rows = await store.results(0, 10);
+    await saving;
+    expect(rows.map((r) => r.id)).toEqual(['a']);
+  });
+
+  it('rejects when the database cannot be read', async () => {
+    const store = createTypingStore({ db: () => Promise.reject(new Error('closed')) });
+    await expect(store.results(0, 10)).rejects.toThrow('closed');
+    await expect(store.resultCount()).rejects.toThrow('closed');
+  });
+});
