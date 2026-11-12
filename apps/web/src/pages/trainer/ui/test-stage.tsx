@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { useComputed } from '@preact/signals';
+import type { ReadonlySignal } from '@preact/signals';
 import { t } from '@/shared/i18n';
 import { isApplePlatform, useMediaQuery } from '@/shared/lib';
 import { testConfig, showTranslationSetting } from '@/entities/settings';
@@ -11,6 +12,8 @@ import { LiveLine } from './live-line';
 
 export type TestStageProps = {
   readonly session: Session;
+  /** Whether the test is a repeat (the live line marks it). */
+  readonly repeating: ReadonlySignal<boolean>;
   /** The hidden field of the page and its focus (the page owns it, see `useTestInput`). */
   readonly input: TestInput;
   /** Restarts and gives the keyboard back to the field, both inside the click. */
@@ -24,7 +27,7 @@ export type TestStageProps = {
  * itself (docs/spec/frontend.md, "Hot path"). So a keystroke renders no component, and a completed
  * prompt renders only the stream.
  */
-export function TestStage({ session, input, onRestart }: TestStageProps): JSX.Element {
+export function TestStage({ session, repeating, input, onRestart }: TestStageProps): JSX.Element {
   const { source, stageRef, focusInput } = input;
   const finishRef = useFinishButton(session);
 
@@ -66,7 +69,7 @@ export function TestStage({ session, input, onRestart }: TestStageProps): JSX.El
       onClick={focusInput}
       className="nk-stage max-w-layout-test mx-auto flex w-full cursor-text flex-col gap-4 py-8 outline-none select-none"
     >
-      <LiveLine session={session} />
+      <LiveLine session={session} repeating={repeating} />
 
       <TextStream session={session} />
 

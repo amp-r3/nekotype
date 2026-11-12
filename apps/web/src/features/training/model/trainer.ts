@@ -50,8 +50,13 @@ export type Trainer = {
   readonly contentLoadFailed: ReadonlySignal<boolean>;
   // The last saved test with the average and the best it was compared with; null while a test runs.
   readonly lastSaved: ReadonlySignal<FinishedTest | null>;
-  // Discards the running test and shows a fresh prompt.
+  // Whether the test on screen is a repeat; the live line shows the mark.
+  readonly repeating: ReadonlySignal<boolean>;
+  // Discards the running test and shows a fresh prompt. Always an ordinary test, never a repeat.
   readonly restart: () => void;
+  // Starts a test over the prompts of the finished one, in order, with new ones after them (ADR 033).
+  // Without a finished test it is a restart.
+  readonly repeat: () => void;
   // Loads the selected vocabulary again after a failure.
   readonly retryContent: () => void;
   // Shows the first prompt and starts following the settings. Returns the function that stops it.
@@ -64,6 +69,12 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
   const typing = deps.typing ?? { saveTest, recordDiscarded: recordDiscardedTest };
   const newId = deps.newId ?? ((now: number) => uuidv7(now));
   const lastSaved = signal<FinishedTest | null>(null);
+  const repeating = signal(false);
+  // Every prompt the running test took, in order; the prompts of the finished test are kept for
+  // Repeat until the results screen closes (T10). `replay` holds those still to be served.
+  let served: PromptItem[] = [];
+  let finishedPrompts: readonly PromptItem[] | null = null;
+  let replay: PromptItem[] = [];
   const promptWeights = createPromptWeights();
   // Loaded chunks, kept whatever the selection does next, so a chunk is fetched once. An empty
   // chunk is loaded too.
@@ -93,7 +104,7 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
     );
   });
 
-  const nextPrompt =
+  const freshPrompt =
     deps.nextPrompt ??
     ((): PromptItem => {
       const settings = getPracticeSettings();
@@ -106,8 +117,14 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
       return picked;
     });
 
+  const nextPrompt = (): PromptItem => {
+    const prompt = replay.shift() ?? freshPrompt();
+    served.push(prompt);
+    return prompt;
+  };
+
   // The result of a test that ended and is kept: the settings, the id and the versions join the
-  // session's report (ADR 073). `repeated` is false until Repeat exists.
+  // session's report (ADR 073).
   const toResult = (ended: EndedTest): TestResult => {
     const { content, script } = getPracticeSettings();
     const minutes = ended.durationMs / 60000;
@@ -118,7 +135,7 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
       strictness: ended.strictness,
       config: ended.config,
       endReason: ended.endReason,
-      repeated: false,
+      repeated: repeating.peek(),
       startedAt: ended.startedAt,
       endedAt: ended.endedAt,
       durationMs: ended.durationMs,
@@ -145,6 +162,8 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
     // The prompts of the selected content are not here yet: nothing to type.
     inputBlocked: () => noPrompts.peek(),
     onEnd: (ended) => {
+      // The completed prompts and the one under way; the window ahead of them was never typed.
+      finishedPrompts = served.slice(0, ended.items + 1);
       void typing
         .saveTest({ result: toResult(ended), kanaDelta: ended.kanaDelta, startedIncrement: 1 })
         .then((saved) => {
@@ -163,13 +182,21 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
     lastSaved.value = null;
   };
 
-  const restart = (): void => {
+  const begin = (replayOf: readonly PromptItem[] | null): void => {
     dropRunning();
     session.reset();
+    served = [];
+    replay = replayOf === null ? [] : [...replayOf];
+    finishedPrompts = null;
+    repeating.value = replayOf !== null;
     // While the selected vocabulary loads, or after it failed, there is no prompt; its arrival or
     // Retry restarts again.
     if (noPrompts.peek()) return;
     session.loadPrompt(nextPrompt(), strictnessSetting.value);
+  };
+
+  const restart = (): void => {
+    begin(null);
   };
 
   const mark = (set: typeof loading, chunk: ContentChunk, on: boolean): void => {
@@ -210,7 +237,12 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
     isLoadingContent,
     contentLoadFailed,
     lastSaved,
+    repeating,
     restart,
+    repeat() {
+      const prompts = finishedPrompts;
+      begin(prompts !== null && prompts.length > 0 ? prompts : null);
+    },
     retryContent() {
       for (const chunk of selectedChunks()) ensureLoaded(chunk);
       restart();

@@ -17,6 +17,8 @@ export type ResultsPanelProps = {
   // Null while the result is being saved: the screen offers Next test only.
   readonly finished: FinishedTest | null;
   readonly onNextTest: () => void;
+  // Runs the same prompts again (ADR 033); only offered once the result is saved.
+  readonly onRepeat: () => void;
 };
 
 function modeLine(result: TestResult): string {
@@ -50,7 +52,7 @@ function ComparisonLine({
   );
 }
 
-export function ResultsPanel({ finished, onNextTest }: ResultsPanelProps): JSX.Element {
+export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelProps): JSX.Element {
   const nextBtnRef = useRef<HTMLButtonElement | null>(null);
   const ready = finished !== null;
 
@@ -142,9 +144,12 @@ export function ResultsPanel({ finished, onNextTest }: ResultsPanelProps): JSX.E
 
       <WeakKanaList items={weakKana(kanaDelta, result.strictness)} />
 
-      <div className="flex items-center justify-center pt-4">
+      <div className="flex items-center justify-center gap-3 pt-4">
         <Button variant="primary" size="lg" buttonRef={nextBtnRef} autoFocus onClick={onNextTest}>
           {t('results.nextTest')} <Kbd>{t('key.enter')}</Kbd>
+        </Button>
+        <Button size="lg" onClick={onRepeat}>
+          {t('results.repeat')}
         </Button>
       </div>
     </div>

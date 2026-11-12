@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import type { ReadonlySignal } from '@preact/signals';
 import { useComputed } from '@preact/signals';
 import { t } from '@/shared/i18n';
 import { testConfig } from '@/entities/settings';
@@ -6,6 +7,8 @@ import type { Session } from '@/features/training';
 
 export type LiveLineProps = {
   readonly session: Session;
+  // Set when the test is a repeat; it changes only when a test starts, never on a keystroke.
+  readonly repeating: ReadonlySignal<boolean>;
 };
 
 /**
@@ -13,7 +16,7 @@ export type LiveLineProps = {
  * the stream. The line is always there, so the text does not move when the test starts. Its numbers
  * are signals passed as text nodes: a keystroke updates them without rendering this component.
  */
-export function LiveLine({ session }: LiveLineProps): JSX.Element {
+export function LiveLine({ session, repeating }: LiveLineProps): JSX.Element {
   const counter = useComputed(() => {
     const config = testConfig.value;
     if (config.kind === 'zen') return String(session.completedPrompts.value);
@@ -39,6 +42,14 @@ export function LiveLine({ session }: LiveLineProps): JSX.Element {
         {' · '}
         <span data-testid="live-accuracy">{session.liveAccuracy}</span>%
       </span>
+      {repeating.value && (
+        <span
+          data-testid="repeat-mark"
+          className="text-fur-dim text-mono-small border-line rounded-sm border px-1.5 font-mono"
+        >
+          {t('stage.repeat')}
+        </span>
+      )}
     </div>
   );
 }

@@ -579,3 +579,132 @@ describe('trainer: saving the finished test (ADR 073)', () => {
     stop();
   });
 });
+
+describe('trainer: repeat (ADR 033, T10)', () => {
+  const kana: readonly PromptItem[] = [
+    { key: 'basic:a', text: 'あ' },
+    { key: 'basic:i', text: 'い' },
+    { key: 'basic:u', text: 'う' },
+    { key: 'basic:e', text: 'え' },
+    { key: 'basic:o', text: 'お' },
+    { key: 'basic:ka', text: 'か' },
+  ];
+  const romaji: Record<string, string> = { あ: 'a', い: 'i', う: 'u', え: 'e', お: 'o', か: 'ka' };
+
+  function setup() {
+    let n = 0;
+    const saveTest = vi.fn((input: SaveTestInput): Promise<SavedTest> =>
+      Promise.resolve({ result: input.result, average: null, previousBest: null, isBest: false }),
+    );
+    const clock = { now: vi.fn(() => 1000) };
+    const shown: string[] = [];
+    const trainer = createTrainer({
+      nextPrompt: () => {
+        const prompt = kana[n % kana.length] ?? { key: 'basic:a', text: 'あ' };
+        n += 1;
+        return prompt;
+      },
+      clock,
+      typing: { saveTest, recordDiscarded: vi.fn(() => Promise.resolve()) },
+    });
+    const type = (text: string): void => {
+      for (const ch of text) trainer.session.handleIntent({ kind: 'char', char: ch });
+    };
+    const typeCurrent = (): void => {
+      const text = trainer.session.currentPrompt.value?.text ?? '';
+      shown.push(text);
+      type(romaji[text] ?? '');
+    };
+    return { saveTest, clock, trainer, shown, typeCurrent };
+  }
+
+  beforeEach(async () => {
+    await initSettings(Promise.resolve(createMemoryDb()));
+    vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([word]);
+    setContent('words');
+    setScript('both');
+    setTestConfig({ kind: 'count', prompts: 10 });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('replays the prompts of the finished test in order, saved as a repeat', async () => {
+    const { saveTest, clock, trainer, shown, typeCurrent } = setup();
+    const stop = trainer.start();
+    await flush();
+    for (let i = 0; i < 10; i++) {
+      clock.now.mockReturnValue(2000 + i * 1000);
+      typeCurrent();
+    }
+    await flush();
+    expect(trainer.session.phase.value).toBe('finished');
+    const expected = [...shown];
+    expect(expected.length).toBe(10);
+    expect(saveTest.mock.calls[0]?.[0].result.repeated).toBe(false);
+    expect(shown).toEqual(expected);
+
+    trainer.repeat();
+    expect(trainer.repeating.value).toBe(true);
+    expect(trainer.lastSaved.value).toBeNull();
+    shown.length = 0;
+    for (let i = 0; i < 10; i++) {
+      clock.now.mockReturnValue(6000 + i * 1000);
+      typeCurrent();
+    }
+    await flush();
+    expect(shown).toEqual(expected);
+    expect(saveTest).toHaveBeenCalledTimes(2);
+    expect(saveTest.mock.calls[1]?.[0].result.repeated).toBe(true);
+    stop();
+  });
+
+  it('a time test continues with new prompts after the replayed ones', async () => {
+    setTestConfig({ kind: 'time', seconds: 15 });
+    const { clock, trainer, shown, typeCurrent } = setup();
+    const stop = trainer.start();
+    await flush();
+    typeCurrent();
+    clock.now.mockReturnValue(3000);
+    typeCurrent();
+    trainer.session.endHidden();
+    await flush();
+    expect(trainer.session.phase.value).toBe('finished');
+
+    trainer.repeat();
+    shown.length = 0;
+    for (let i = 0; i < 4; i++) typeCurrent();
+    // あ い as before, then the source goes on.
+    expect(shown.slice(0, 2)).toEqual(['あ', 'い']);
+    expect(shown.length).toBe(4);
+    stop();
+  });
+
+  it('restart drops the repeat mode and takes fresh prompts', async () => {
+    const { clock, trainer, typeCurrent } = setup();
+    const stop = trainer.start();
+    await flush();
+    for (let i = 0; i < 10; i++) {
+      clock.now.mockReturnValue(2000 + i * 1000);
+      typeCurrent();
+    }
+    trainer.repeat();
+    expect(trainer.repeating.value).toBe(true);
+    trainer.restart();
+    expect(trainer.repeating.value).toBe(false);
+    // The source went on from the first test: not あ again.
+    expect(trainer.session.currentPrompt.value?.text).not.toBe('あ');
+    stop();
+  });
+
+  it('repeat without a finished test is a restart', async () => {
+    const { trainer } = setup();
+    const stop = trainer.start();
+    await flush();
+    trainer.repeat();
+    expect(trainer.repeating.value).toBe(false);
+    expect(trainer.session.currentPrompt.value).not.toBeNull();
+    stop();
+  });
+});

@@ -38,6 +38,10 @@ export function TrainerPage(props: TrainerPageProps = {}): JSX.Element {
     focusInput();
     trainer.restart();
   };
+  const repeat = (): void => {
+    focusInput();
+    trainer.repeat();
+  };
   // A layout effect: the first frame already shows a prompt, and unmounting stops the trainer at once.
   useLayoutEffect(() => trainer.start(), [trainer]);
 
@@ -82,7 +86,7 @@ export function TrainerPage(props: TrainerPageProps = {}): JSX.Element {
 
       {isFinished ? (
         Results !== null ? (
-          <Results finished={trainer.lastSaved.value} onNextTest={restart} />
+          <Results finished={trainer.lastSaved.value} onNextTest={restart} onRepeat={repeat} />
         ) : (
           <ResultsPending
             failed={resultsLoadFailed.value}
@@ -93,7 +97,12 @@ export function TrainerPage(props: TrainerPageProps = {}): JSX.Element {
           />
         )
       ) : (
-        <TestStage session={session} input={input} onRestart={restart} />
+        <TestStage
+          session={session}
+          repeating={trainer.repeating}
+          input={input}
+          onRestart={restart}
+        />
       )}
     </div>
   );
