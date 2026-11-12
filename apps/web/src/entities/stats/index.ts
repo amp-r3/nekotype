@@ -2,6 +2,9 @@ export type { KanaStatMap } from './model/types';
 
 export { computeWeakness, computeWeight, computeWeights, computeItemWeight } from './lib/weights';
 
+export { modeLabel, modeLine } from './lib/mode-line';
+export type { ModeParts } from './lib/mode-line';
+
 export type {
   TypingStore,
   TypingStatus,
@@ -19,4 +22,7 @@ export {
   saveTest,
   recordDiscardedTest,
   resetTyping,
+  retryTyping,
+  readResults,
+  countResults,
 } from './model/store';

@@ -8,6 +8,7 @@ import {
   isCounters,
   isKanaStat,
   isObject,
+  isTestResult,
   isTypingRecords,
 } from '@nekotype/shared/runtime';
 import type { ChangeChannel, Db } from '@/shared/lib';
@@ -67,6 +68,13 @@ export interface TypingStore {
   recordDiscarded: () => Promise<void>;
   /** Waits for the writes in progress. Never rejects. */
   flush: () => Promise<void>;
+  /**
+   * Saved results, newest first: `limit` of them after the first `offset`. Rejects when the
+   * database cannot be read.
+   */
+  results: (offset: number, limit: number) => Promise<TestResult[]>;
+  /** How many results are saved. Rejects when the database cannot be read. */
+  resultCount: () => Promise<number>;
   /** "Reset progress": clears results, records and the typing delta. */
   reset: () => Promise<void>;
 }
@@ -206,6 +214,22 @@ export function createTypingStore(deps: TypingStoreDeps): TypingStore {
       return writing;
     },
 
+    async results(offset, limit) {
+      // After the writes in progress, so a test that has just ended is in the page.
+      await init();
+      await writing;
+      const db = await deps.db();
+      const rows = await db.getPage(RESULTS_STORE, 'endedAt', { direction: 'prev', offset, limit });
+      return rows.filter(isTestResult);
+    },
+
+    async resultCount() {
+      await init();
+      await writing;
+      const db = await deps.db();
+      return db.count(RESULTS_STORE);
+    },
+
     async reset() {
       kanaStats.value = {};
       counters.value = initialCounters();
@@ -242,3 +266,6 @@ export const initTyping = store.init;
 export const saveTest = store.saveTest;
 export const recordDiscardedTest = store.recordDiscarded;
 export const resetTyping = store.reset;
+export const retryTyping = store.retry;
+export const readResults = store.results;
+export const countResults = store.resultCount;

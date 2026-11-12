@@ -128,6 +128,10 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
   const toResult = (ended: EndedTest): TestResult => {
     const { content, script } = getPracticeSettings();
     const minutes = ended.durationMs / 60000;
+    // The clock has fractions of a millisecond; a stored result has whole ones (`isTestResult`,
+    // the INTEGER columns of the server). KPM is computed from the time as measured.
+    const startedAt = Math.round(ended.startedAt);
+    const endedAt = Math.round(ended.endedAt);
     return {
       id: newId(ended.endedAt),
       content,
@@ -136,9 +140,9 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
       config: ended.config,
       endReason: ended.endReason,
       repeated: repeating.peek(),
-      startedAt: ended.startedAt,
-      endedAt: ended.endedAt,
-      durationMs: ended.durationMs,
+      startedAt,
+      endedAt,
+      durationMs: Math.max(0, endedAt - startedAt),
       tokens: ended.tokens,
       erroredTokens: ended.erroredTokens,
       items: ended.items,

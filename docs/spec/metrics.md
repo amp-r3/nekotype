@@ -98,9 +98,9 @@ type TestResult = {
   config: { kind: 'time'; seconds: number } | { kind: 'count'; prompts: number } | { kind: 'zen' };
   endReason: 'complete' | 'manual' | 'idle' | 'hidden';
   repeated: boolean; // started with "Repeat"
-  startedAt: number;
+  startedAt: number; // whole milliseconds, like endedAt and durationMs
   endedAt: number;
-  durationMs: number;
+  durationMs: number; // endedAt − startedAt; KPM is computed from the time as measured, before rounding
   tokens: number;
   erroredTokens: number;
   items: number; // completed prompts

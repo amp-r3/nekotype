@@ -6,9 +6,9 @@ import { Button, Kbd, Notice } from '@/shared/ui';
 import { Cat } from '@/shared/ui/cat';
 import { PersonalBestBadge } from '@/shared/ui/personal-best-badge';
 import { Stat } from '@/shared/ui/stat';
+import { modeLine } from '@/entities/stats';
 import type { FinishedTest } from '@/features/training';
 import { useEnterForNext } from '@/features/training';
-import type { TestResult } from '@nekotype/shared/types';
 import { accuracyPercent, durationSeconds, kpmComparisons, weakKana } from '../lib/results-model';
 import type { Comparison } from '../lib/results-model';
 import { WeakKanaList } from './weak-kana-list';
@@ -20,22 +20,6 @@ export type ResultsPanelProps = {
   // Runs the same prompts again (ADR 033); only offered once the result is saved.
   readonly onRepeat: () => void;
 };
-
-function modeLine(result: TestResult): string {
-  const { config } = result;
-  const mode =
-    config.kind === 'time'
-      ? t('results.mode.time', { n: config.seconds })
-      : config.kind === 'count'
-        ? t('results.mode.count', { n: config.prompts })
-        : t('results.mode.zen');
-  return t('results.modeLine', {
-    content: t(`results.content.${result.content}`),
-    script: t(`results.script.${result.script}`),
-    strictness: t(`results.strictness.${result.strictness}`),
-    mode,
-  });
-}
 
 function ComparisonLine({
   comparison,

@@ -103,4 +103,17 @@ export const en = {
 
   // Shared marks
   'badge.personalBest': 'personal best',
+
+  // The mode of a typing test: results and statistics
+  'mode.line': '{content} · {script} · {strictness} · {mode}',
+  'mode.time': '{n} s',
+  'mode.count': '{n}',
+  'mode.zen': 'zen',
+  'mode.content.words': 'words',
+  'mode.content.phrases': 'phrases',
+  'mode.script.hiragana': 'hiragana',
+  'mode.script.katakana': 'katakana',
+  'mode.script.both': 'both',
+  'mode.strictness.learner': 'relaxed',
+  'mode.strictness.ime': 'strict',
 } as const satisfies Record<string, string>;

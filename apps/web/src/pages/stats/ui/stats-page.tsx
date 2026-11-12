@@ -6,7 +6,7 @@ import { EmptyState } from '@/shared/ui/empty-state';
 import { Stat } from '@/shared/ui/stat';
 import { defaultClock, navigate } from '@/shared/lib';
 import { learnTargetMs, learnTrack } from '@/entities/settings';
-import { initTyping, typingCounters } from '@/entities/stats';
+import { initTyping, retryTyping, typingCounters, typingStatus } from '@/entities/stats';
 import type { LearnTrack } from '@/entities/settings';
 import {
   dayStart,
@@ -21,6 +21,7 @@ import {
 } from '@/entities/learn';
 import { medianAxis, medianSeries } from '../lib/median-series';
 import { ResultChart } from './result-chart';
+import { TypingSection } from './typing-section';
 
 const MONO = 'text-mono-romaji text-fur font-mono';
 
@@ -30,7 +31,7 @@ function dateLabel(day: number): string {
   );
 }
 
-// Statistics. The learning section is built; the typing section comes with P4.
+// Statistics: learning, typing, counters.
 export function StatsPage(): JSX.Element {
   // The chart's switch is local: looking at the other track here does not change the track on `/`.
   const [track, setTrack] = useState<LearnTrack>(learnTrack.value);
@@ -40,7 +41,7 @@ export function StatsPage(): JSX.Element {
     void initTyping();
   }, []);
 
-  if (learnStatus.value === 'error') {
+  if (learnStatus.value === 'error' || typingStatus.value === 'error') {
     return (
       <section className="max-w-layout-max mx-auto flex w-full flex-col items-start gap-6 py-12">
         <Notice
@@ -51,6 +52,7 @@ export function StatsPage(): JSX.Element {
               size="sm"
               onClick={() => {
                 void retryLearn();
+                void retryTyping();
               }}
             >
               {t('learn.retry')}
@@ -63,7 +65,7 @@ export function StatsPage(): JSX.Element {
     );
   }
 
-  if (learnStatus.value !== 'ready') {
+  if (learnStatus.value !== 'ready' || typingStatus.value !== 'ready') {
     return (
       <p role="status" className="text-fur-dim text-ui-label py-12 text-center">
         {t('route.loading')}
@@ -82,10 +84,12 @@ export function StatsPage(): JSX.Element {
   };
   const series = medianSeries(progress[track].medians, today);
   const axis = medianAxis(series.values, target);
+  const typing = typingCounters.value;
   const answered = state.activeDays.length > 0 || counters.started.learn > 0;
+  const typed = typing.started.typing > 0 || typing.finished.typing > 0;
   const heading = t('page.stats');
 
-  if (!answered) {
+  if (!answered && !typed) {
     return (
       <section className="max-w-layout-max mx-auto flex w-full flex-col gap-12 py-12">
         <h1 className="text-ui-title text-fur">{heading}</h1>
@@ -192,6 +196,8 @@ export function StatsPage(): JSX.Element {
         </div>
       </section>
 
+      <TypingSection />
+
       <section className="flex flex-col gap-4" aria-labelledby="stats-counters">
         <h2 id="stats-counters" className="text-ui-heading text-fur">
           {t('stats.counters.title')}
@@ -208,10 +214,10 @@ export function StatsPage(): JSX.Element {
             <tr>
               <td className="text-ui-label text-fur py-1 pr-3">{t('stats.counters.typing')}</td>
               <td className={`${MONO} py-1 pr-3 text-right`} data-testid="stats-started-typing">
-                {typingCounters.value.started.typing}
+                {typing.started.typing}
               </td>
               <td className={`${MONO} py-1 text-right`} data-testid="stats-finished-typing">
-                {typingCounters.value.finished.typing}
+                {typing.finished.typing}
               </td>
             </tr>
             <tr>

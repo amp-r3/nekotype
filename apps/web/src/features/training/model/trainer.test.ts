@@ -15,6 +15,7 @@ import {
   strictnessSetting,
 } from '@/entities/settings';
 import { createMemoryDb } from '@/shared/lib';
+import { isTestResult } from '@nekotype/shared/runtime';
 
 const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -453,6 +454,25 @@ describe('trainer: saving the finished test (ADR 073)', () => {
       appVersion: 'test',
     });
     expect(trainer.lastSaved.value).toMatchObject({ average: 80, previousBest: 90 });
+    stop();
+  });
+
+  it('stores whole milliseconds, so the saved result passes the guard of the history', async () => {
+    const { saveTest, clock, trainer } = setup();
+    // The real clock is `performance.timeOrigin + performance.now()`: fractions of a millisecond.
+    clock.now.mockReturnValue(1000.4);
+    const stop = trainer.start();
+    await flush();
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    clock.now.mockReturnValue(7000.3);
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    clock.now.mockReturnValue(31000.7);
+    trainer.session.handleIntent({ kind: 'finish' });
+    await flush();
+
+    const result = saveTest.mock.calls[0]?.[0].result;
+    expect(result).toMatchObject({ startedAt: 1000, endedAt: 31001, durationMs: 30001 });
+    expect(isTestResult(result)).toBe(true);
     stop();
   });
 
