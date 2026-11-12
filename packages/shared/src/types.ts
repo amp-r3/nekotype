@@ -113,3 +113,65 @@ export type Counters = {
   readonly started: Readonly<Record<Mode, number>>;
   readonly finished: Readonly<Record<Mode, number>>;
 };
+
+// Typing (spec metrics.md, "Data model")
+
+/** The key of a kana in the statistics, as in the engine's kana table. */
+export type KanaKey = LearnKanaKey;
+
+export type KanaStat = {
+  /** Committed tokens of this kana in saved typing tests. */
+  readonly attempts: number;
+  /** Of which errored. */
+  readonly erroredAttempts: number;
+};
+
+export type TestEndReason = 'complete' | 'manual' | 'idle' | 'hidden';
+
+export type TestResult = {
+  /** UUID v7, generated on the client. */
+  readonly id: string;
+  readonly content: 'words' | 'phrases';
+  readonly script: 'hiragana' | 'katakana' | 'both';
+  readonly strictness: 'learner' | 'ime';
+  readonly config:
+    | { readonly kind: 'time'; readonly seconds: number }
+    | { readonly kind: 'count'; readonly prompts: number }
+    | { readonly kind: 'zen' };
+  readonly endReason: TestEndReason;
+  /** Started with "Repeat". */
+  readonly repeated: boolean;
+  readonly startedAt: number;
+  readonly endedAt: number;
+  readonly durationMs: number;
+  readonly tokens: number;
+  readonly erroredTokens: number;
+  /** Completed prompts. */
+  readonly items: number;
+  readonly keystrokes: number;
+  readonly rejectedKeystrokes: number;
+  /** Hints (Esc). */
+  readonly assisted: number;
+  /** Stored rounded to 0.1. */
+  readonly kpm: number;
+  /** A fraction 0–1, stored rounded to 4 decimals. */
+  readonly kanaAccuracy: number;
+  /** A personal best was shown on this device at completion. */
+  readonly celebratedPersonalBest: boolean;
+  readonly contentVersion: string;
+  readonly appVersion: string;
+};
+
+export type TypingRecordEntry = {
+  /** Null until a result is eligible. */
+  readonly best: { readonly kpm: number; readonly resultId: string } | null;
+  /** The last 10 results counted in the average, oldest first. */
+  readonly recent: readonly {
+    readonly resultId: string;
+    readonly endedAt: number;
+    readonly kpm: number;
+  }[];
+};
+
+/** Key: `personalBestKey()`. */
+export type TypingRecords = Readonly<Record<string, TypingRecordEntry>>;
