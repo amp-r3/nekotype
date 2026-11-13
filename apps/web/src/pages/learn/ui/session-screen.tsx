@@ -4,14 +4,14 @@ import type { RefObject } from 'preact';
 import { useComputed, useSignalEffect } from '@preact/signals';
 import { t } from '@/shared/i18n';
 import { setImmersive, useMediaQuery } from '@/shared/lib';
-import { Button, Kbd } from '@/shared/ui';
+import { Button, Kbd, Notice } from '@/shared/ui';
 import { KanaTask } from '@/shared/ui/kana-task';
 import type { TaskLabels } from '@/shared/ui/kana-task';
 import { OptionCard } from '@/shared/ui/option-card';
 import type { OptionState } from '@/shared/ui/option-card';
 import type { LearnKanaKey } from '@nekotype/shared/types';
 import { useSessionInput } from '../lib/use-session-input';
-import type { LearnSession, Notice, TaskView } from '../model/session';
+import type { LearnSession, Notice as SessionNotice, TaskView } from '../model/session';
 
 export type SessionScreenProps = {
   readonly session: LearnSession;
@@ -25,13 +25,13 @@ function kanaOfKey(key: LearnKanaKey): string {
   return key.slice(key.indexOf(':') + 1);
 }
 
-function noticeText(notice: Notice): string {
+function noticeText(notice: SessionNotice): string {
   switch (notice.kind) {
-    case 'revealed':
-      return t('learn.session.revealed', { answer: notice.answer });
     case 'restarted':
       return t('learn.session.restarted');
     // The hint to go on is drawn by the screen itself (a key and a word, or a button on touch).
+    // The revealed answer has its own form (`Notice reveal`).
+    case 'revealed':
     case 'next':
     case 'none':
       return '';
@@ -85,6 +85,15 @@ export function SessionScreen({
         ? t('stage.turnImeOff')
         : noticeText(session.notice.value),
   );
+  // The lead and the answer are two signals: the line is text nodes, as on /type.
+  const revealed = useComputed(() => {
+    const current = session.notice.value;
+    return current.kind === 'revealed' ? current : null;
+  });
+  const revealLead = useComputed(() =>
+    revealed.value !== null ? `${t('learn.session.revealed')} ` : '',
+  );
+  const revealAnswer = useComputed(() => revealed.value?.answer ?? '');
   const live = useRef<HTMLParagraphElement>(null);
   const coarse = useMediaQuery('(pointer: coarse)');
 
@@ -122,18 +131,23 @@ export function SessionScreen({
     <span className="sr-only">{t('learn.session.answer', { kana: kanaOfKey(task.key) })}</span>
   );
   const goOn = coarse ? (
-    <span role="status" className="inline-flex items-center gap-2">
-      <Button variant="text" size="sm" className="nk-task__next" onClick={session.advance}>
-        {t('learn.session.next')}
-      </Button>
+    <Notice
+      action={
+        <Button variant="text" size="sm" className="nk-task__next" onClick={session.advance}>
+          {t('learn.session.next')}
+        </Button>
+      }
+    >
       {answer}
-    </span>
+    </Notice>
   ) : (
-    <span role="status" className="inline-flex items-center gap-2">
-      <Kbd>{t('key.enter')}</Kbd>
-      {t('learn.session.next')}
+    <Notice>
+      <span className="inline-flex items-baseline gap-2">
+        <Kbd>{t('key.enter')}</Kbd>
+        {t('learn.session.next')}
+      </span>
       {answer}
-    </span>
+    </Notice>
   );
 
   const labelProp = (key: LearnKanaKey): { ariaLabel?: string } => {
@@ -192,7 +206,16 @@ export function SessionScreen({
         {...shown}
         session={{ kind: session.mode, n: task.n, total: session.total }}
         labels={labels()}
-        notice={waiting ? goOn : <span role="status">{notice}</span>}
+        notice={
+          waiting ? (
+            goOn
+          ) : (
+            <div className="flex items-baseline gap-3">
+              <Notice reserve>{notice}</Notice>
+              <Notice lead={revealLead}>{revealAnswer}</Notice>
+            </div>
+          )
+        }
         onLeave={onLeave}
         onShow={session.reveal}
         onReady={onReady}

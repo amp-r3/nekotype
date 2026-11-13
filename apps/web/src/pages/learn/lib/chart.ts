@@ -85,12 +85,22 @@ export function chartModel(
  * timing, the median and accuracy, the mixups and the recognition accuracy. */
 export function kanaPanelLines(info: KanaCellInfo): readonly KanaChartPanelLine[] {
   const lines = kanaStateLines(info);
-  const mixups =
+  const mixups: KanaChartPanelLine =
     info.mixups.length === 0
-      ? t('learn.chart.noMixups')
-      : `${t('learn.chart.mixups')} ${info.mixups
-          .map((mixup) => `${mixup.key.slice(mixup.key.indexOf(':') + 1)} ×${mixup.count}`)
-          .join(', ')}`;
+      ? { text: t('learn.chart.noMixups') }
+      : {
+          text: `${t('learn.chart.mixups')} ${info.mixups
+            .map((mixup) => `${mixup.key.slice(mixup.key.indexOf(':') + 1)} ×${mixup.count}`)
+            .join(', ')}`,
+          segments: [
+            { text: `${t('learn.chart.mixups')} ` },
+            ...info.mixups.flatMap((mixup, at) => [
+              ...(at > 0 ? [{ text: ', ' }] : []),
+              { text: mixup.key.slice(mixup.key.indexOf(':') + 1), kana: true },
+              { text: ` ×${mixup.count}` },
+            ]),
+          ],
+        };
   const correct = info.recognitions - info.recognitionErrors;
   const recognition =
     info.recognitions === 0
@@ -103,7 +113,7 @@ export function kanaPanelLines(info: KanaCellInfo): readonly KanaChartPanelLine[
   return [
     { text: lines[1] ?? '' },
     { text: lines[2] ?? '', dim: true },
-    { text: mixups },
+    mixups,
     { text: recognition, dim: true },
   ];
 }

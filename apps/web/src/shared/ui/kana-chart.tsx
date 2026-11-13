@@ -293,8 +293,17 @@ export function KanaChart({
   );
 }
 
-export type KanaChartPanelLine = {
+// A run of a line with its own tone: the kana `fur` in `jp-body`, the rest `fur-dim`.
+export type KanaChartPanelSegment = {
   readonly text: string;
+  readonly kana?: boolean;
+};
+
+export type KanaChartPanelLine = {
+  // The whole line as plain text (also what tests and screen readers read).
+  readonly text: string;
+  // Set when the line has runs of different tones; they join to `text`.
+  readonly segments?: readonly KanaChartPanelSegment[];
   // Secondary lines are drawn in `fur-dim`.
   readonly dim?: boolean;
 };
@@ -328,8 +337,23 @@ export function KanaChartPanel({
       </div>
       <div className="nk-chart__panel-lines text-ui-body">
         {lines.map((line, at) => (
-          <p key={at} className={line.dim === true ? 'text-fur-dim' : 'text-fur'}>
-            {line.text}
+          <p
+            key={at}
+            className={
+              line.dim === true || line.segments !== undefined ? 'text-fur-dim' : 'text-fur'
+            }
+          >
+            {line.segments === undefined
+              ? line.text
+              : line.segments.map((segment, index) =>
+                  segment.kana === true ? (
+                    <span key={index} className="font-jp text-jp-body text-fur" lang="ja">
+                      {segment.text}
+                    </span>
+                  ) : (
+                    segment.text
+                  ),
+                )}
           </p>
         ))}
       </div>

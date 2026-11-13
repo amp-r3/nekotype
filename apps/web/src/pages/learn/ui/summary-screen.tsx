@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import type { RefObject } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { t } from '@/shared/i18n';
-import { Button } from '@/shared/ui';
+import { Button, Notice } from '@/shared/ui';
 import type { SessionSummary } from '../lib/summary';
 import { loadSummaryPanel, summaryLoadFailed, summaryPanel } from '../summary-loader';
 
@@ -56,30 +56,32 @@ export function SummaryScreen({
   }, [onContinue, inputRef]);
 
   return (
-    <section className="max-w-layout-test mx-auto flex w-full flex-col items-start gap-8 py-12">
+    <section className="mx-auto flex w-full max-w-[880px] flex-col items-start gap-8 pb-12">
       {Panel !== null ? (
         <Panel summary={summary} />
-      ) : failed ? (
-        <div className="flex flex-col items-start gap-2">
-          <p role="alert" className="text-miss text-ui-body">
-            {t('learn.summary.failed')}
-          </p>
-          <Button
-            variant="text"
-            size="sm"
-            onClick={() => {
-              void loadSummaryPanel();
-            }}
-          >
-            {t('learn.summary.retry')}
-          </Button>
-        </div>
       ) : (
-        <p role="status" className="text-fur-dim text-ui-label">
-          {t('learn.summary.loading')}
-        </p>
+        <Notice
+          reserve
+          tone={failed ? 'miss' : undefined}
+          loading={!failed}
+          action={
+            failed ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  void loadSummaryPanel();
+                }}
+              >
+                {t('learn.summary.retry')}
+              </Button>
+            ) : undefined
+          }
+        >
+          {failed ? t('learn.summary.failed') : t('learn.summary.loading')}
+        </Notice>
       )}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         <Button variant="primary" size="lg" onClick={onContinue} hint={t('key.enter')}>
           {t('learn.summary.continue')}
         </Button>
