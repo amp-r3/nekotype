@@ -9,7 +9,7 @@ export type NoticeProps = {
   // Static loading text: no animation.
   readonly loading?: boolean;
   // The revealed romaji: `mono-romaji`, the `lead` in `fur-dim` and the children (the romaji) in `eye`.
-  readonly lead?: string | undefined;
+  readonly lead?: ComponentChildren;
   // One link or small button at the end of the line.
   readonly action?: ComponentChildren | undefined;
   readonly children?: ComponentChildren;

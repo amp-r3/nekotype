@@ -143,8 +143,11 @@ test.describe('focus redirection and keyboard-first typing', () => {
       // The screen holds the focus, so Enter and `tab → enter` both start the next test.
       await expect(page.getByTestId('results-panel')).toBeFocused();
 
-      // D20: the results panel fades in (`animate-fadeIn` used to be an undefined class)
-      await expect(page.getByTestId('results-panel')).toHaveCSS('animation-name', 'fadeIn');
+      // D14: every block of the results rises in (`animate-reveal`, one `dur-stagger` apart)
+      await expect(page.getByTestId('mode-line').locator('..')).toHaveCSS(
+        'animation-name',
+        'reveal',
+      );
 
       // Press Enter to activate "next test" button
       await page.keyboard.press('Enter');

@@ -36,6 +36,9 @@ function ComparisonLine({
   );
 }
 
+// Each block rises in turn: one `dur-stagger` after the one above it (design `nk-reveal`).
+const stagger = (n: number): string => `animation-delay: calc(var(--dur-stagger) * ${n})`;
+
 export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelProps): JSX.Element {
   const root = useRef<HTMLDivElement | null>(null);
   const ready = finished !== null;
@@ -76,7 +79,7 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
       ref={root}
       tabIndex={-1}
       data-testid="results-panel"
-      className="nk-holds-focus animate-fadeIn flex w-full flex-col gap-12 py-6 select-none"
+      className="nk-holds-focus flex w-full flex-col gap-12 pb-6 select-none"
     >
       {/* Polite live region for screen readers */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
@@ -87,9 +90,13 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
         })}
       </div>
 
-      {noticeKey !== null && <Notice>{t(noticeKey)}</Notice>}
+      {noticeKey !== null && (
+        <div className="animate-reveal" style={stagger(0)}>
+          <Notice>{t(noticeKey)}</Notice>
+        </div>
+      )}
 
-      <div className="flex flex-col gap-3">
+      <div className="animate-reveal flex flex-col gap-4" style={stagger(1)}>
         <div data-testid="mode-line" className="text-ui-caption text-fur-dim">
           {modeLine(result)}
         </div>
@@ -121,7 +128,7 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
         </div>
       </div>
 
-      <div className="flex gap-8">
+      <div className="animate-reveal flex gap-12" style={stagger(2)}>
         <Stat label={t('results.accuracy')} value={accuracy} unit="%" />
         <Stat
           label={t('results.time')}
@@ -130,9 +137,9 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
         />
       </div>
 
-      <WeakKanaList items={weakKana(kanaErrors, result.strictness)} />
+      <WeakKanaList items={weakKana(kanaErrors, result.strictness)} style={stagger(3)} />
 
-      <div className="flex items-center gap-2">
+      <div className="animate-reveal flex items-center gap-2" style={stagger(4)}>
         <Button variant="primary" size="lg" onClick={onNextTest} hint={t('key.enter')}>
           {t('results.nextTest')}
         </Button>

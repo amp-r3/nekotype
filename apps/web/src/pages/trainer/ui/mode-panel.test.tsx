@@ -43,7 +43,7 @@ describe('ModePanel', () => {
     await mount(true);
     const toggle = container.querySelector('button[aria-expanded]');
     expect(toggle?.getAttribute('aria-expanded')).toBe('false');
-    expect(toggle?.textContent).toMatch(/^words · .+ · relaxed · 30 s$/);
+    expect(toggle?.textContent).toMatch(/^mode: words · .+ · relaxed · 30 s( · weak kana)?$/);
     expect(radios()).toBe(0);
     await act(() => {
       toggle?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
