@@ -51,8 +51,8 @@ Kana table states (`KanaChart mode="state"`):
 
 Over confident or mastered a kana can carry the **review due** mark — a folded corner in the cell's ink (5.28:1 on confident, 6.10:1 on mastered). It is a mark, not a fifth state: learning and locked kana never carry it.
 
-- Charts: one line `chart-kpm`, grid `chart-grid`, cursor `chart-cursor` — on `/stats` only.
-- `heat-miss-1…5` and `heat-fur-1, 2, 5` are not used in the MVP (heatmaps are out, ADR 058); they stay in the token set.
+- Charts (`/stats` only): test marks `fur-dim`, the median line and tick `chart-kpm`, the band `heat-fur-1`, day bars `heat-fur-3`, grid `chart-grid`, cursor `chart-cursor`; the personal best is a ring in `eye`. One y scale per chart.
+- Heat scales (`/stats` only, decisions 108, 110): `heat-fur-1…5` — answers of a day in the activity map; `heat-miss-1…5` — the share of typing attempts with an error in the weak kana table (text `fur` on steps 1–3, `on-fur` on 4–5). A value is never colour alone: an empty cell is an outline, and the number is in the tooltip and the `aria-label`.
 - Hover lightens one step (`fur` → `fur-bright`, `eye` → `eye-bright`, transparent → `bg-hover`). Text on a `fur` fill is `on-fur`. Focus is a solid `stroke-mark` outline in `focus` with a 2px offset.
 
 ## Typography
@@ -103,7 +103,7 @@ Micro-animations only, no springs or bounces. Only `transform` and `opacity` ani
 | hover, focus, tooltip, Restart, `click to focus` | `dur-hover` 120ms | `ease-out` (leaving — `ease-in`) |
 | typing chrome leaves/returns | `dur-fade` 200ms | `ease-in` / `ease-out` |
 | result blocks, dialog | `dur-reveal` 240ms + `dur-stagger` 40ms | `ease-out`, 4px rise |
-| chart line (`/stats`) | `dur-draw` 320ms | `ease-out` |
+| chart line and band (`/stats`) | `dur-draw` 320ms | `ease-out`; the line draws in, the band fades in |
 | caret blink while idle | `dur-blink` 1000ms | `ease-inout` |
 
 The 400ms hold after an answer in a learning task is not motion: colours switch instantly and stay. Loading text does not pulse. Under `prefers-reduced-motion: reduce` there is no animation: durations are 0, the caret does not blink, the reject flash holds for 120ms without a transition. `/` has no animations, charts or new illustrations: it is in the initial JS chunk (32.67 of 35 KB gzip).
@@ -147,7 +147,23 @@ A personal best adds `PersonalBestBadge`, the `content` cat and `+3 vs previous 
 
 ## Stats (`/stats`, lazy route)
 
-Sections through `space-12`. **Learning:** current and best streak, mastered per track (`hiragana 7 of 104`), the daily median answer time (`ResultChart`, one track at a time via a switch, gaps for days without answers, the target answer time as a dashed line, `lower is better` / `меньше — лучше`). **Typing:** personal bests by "content · script · strictness · mode", `kpm per test` (repeats excluded), history (`HistoryTable` + `Pagination`). **Counters:** started / finished for learning sessions and typing tests. No heatmap, no mixups. A guest without data sees `EmptyState` (`sleep`) with one action to `/`.
+One section at a time (decision 100). Under the title `Stats` / `Статистика` stands a `Segmented size="lg"`: `learning` · `typing` / `обучение` · `набор`. It replaces the long column of two sections; the section that has data opens first, learning when both have. Levels: the screen title (`ui-title`), the section switch (`ui-heading` items), block titles (`ui-heading`), captions (`ui-caption`, `fur-dim`). Blocks are `space-12` apart (`space-8` below 640px); a block's title, caption, controls and content are `space-4` apart. No lines, no cards.
+
+**Learning.** A row of `Stat`: `current streak`, `best streak`, `mastered · hiragana` `7` `of 104`, `mastered · katakana` `0` `of 125` — both tracks always, nothing switches them. Then `activity` / `активность` (`ActivityMap`: answers by day, 12–26 weeks); `answer time` / `время ответа` (`ResultChart`: one bar per day, the target line, `lower is better`); the line `learning sessions: 41 started · 36 finished` / `сессии обучения: начато 41 · закончено 36`.
+
+The track switch belongs to `answer time` only (decision 102): it is the first control under that block's title and caption, at the left, followed by the period (`7 days` · `30 days` · `all` / `7 дней` · `30 дней` · `всё`; 30 by default). It is drawn only when both tracks have answers; with one track the caption starts with its name (`hiragana · median recall answer time of a day, ms…`) and there is no switch. A period without answers: `no answers in this period` / `за этот период ответов нет` with `show all time` / `показать всё время`.
+
+**Typing.** Top to bottom:
+
+1. The filter row (decision 105): `mode` / `режим` — a `Select` of the modes that exist in the history (`words · hiragana · relaxed · 60 s`), most used first, plus `all modes` / `все режимы`; the period (`Segmented`, 30 days by default); `with repeats` / `с повторами` (`Toggle`, off by default). The mode of the latest test is selected when the screen opens. Below 640px the `Select` takes the full width and the period and the toggle go under it.
+2. Everything the filters change, right under them: a row of `Stat` — `tests`, `median kpm`, `best kpm`, `kana accuracy` (the two kpm figures only for one mode) / `тесты`, `медиана kpm`, `лучший kpm`, `точность по кане`; `trend` / `динамика` — a `Segmented` of the metric (`kpm` · `kana accuracy` · `rejected keys` · `hints` / `kpm` · `точность по кане` · `отброшенные нажатия` · `подсказки`), the `ResultChart` and its legend; `history` / `история` (`HistoryTable` + `Pagination`).
+3. `All time` / `За всё время` (`ui-title`, with the caption `every saved test · the filters above do not apply` / `все сохранённые тесты · фильтры выше не действуют`), `space-12` lower: `personal bests` / `личные рекорды` by "content · script · strictness · mode"; `weak kana in typing` / `слабые каны в наборе` (`KanaChart mode="miss"`); the line `typing tests: 29 started · 23 finished`.
+
+A selection without tests: `no tests in this selection` / `в этой выборке тестов нет` with `show all time`; the `All time` group stays.
+
+**Before the first answer or test** (decision 101). A section without data shows no zeros and no controls: a `ui-heading` title, one `ui-body` `fur-dim` line and one `primary` action — `No answers yet` / `Ответов пока нет`, `Finish a learning session: the streak, the activity and the answer times will appear here.` → `to learning` / `к обучению`; `No finished tests yet` / `Тестов пока нет`, `Finish a typing test: speed, accuracy and the history will appear here.` → `to typing` / `к набору`. No cat. A guest without any data sees no switch: `EmptyState` (`sleep`) with one action to `/`. While the data loads the switch is drawn and its place holds `loading…` / `загрузка…`; on failure the error with `retry`.
+
+Keyboard: `Tab` goes through the section switch (← → inside), the controls of the section, the chart (one stop: ← → `Home` `End` between marks, `Esc`), the activity map and the kana table (one stop each, arrows inside), the history pages. No global keys. No mixups on this screen.
 
 ## Settings (`/settings`)
 

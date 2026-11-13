@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"namespace":"Nekotype","components":[{"name":"TestArea"},{"name":"Char"},{"name":"TranslationLine"},{"name":"Notice"},{"name":"Kbd"},{"name":"ModePanel"},{"name":"RowPicker"},{"name":"Dialog"},{"name":"Button"},{"name":"Segmented"},{"name":"Switch"},{"name":"Input"},{"name":"Textarea"},{"name":"Select"},{"name":"Tooltip"},{"name":"Stat"},{"name":"PersonalBestBadge"},{"name":"ResultChart"},{"name":"WeakKanaList"},{"name":"KanaChart"},{"name":"HistoryTable"},{"name":"Pagination"},{"name":"OptionCard"},{"name":"VerticalLabel"},{"name":"Nav"},{"name":"Footer"},{"name":"Cat"},{"name":"EmptyState"}]} */
+/* @ds-bundle: {"format":4,"namespace":"Nekotype","components":[{"name":"TestArea"},{"name":"Char"},{"name":"TranslationLine"},{"name":"Notice"},{"name":"Kbd"},{"name":"ModePanel"},{"name":"RowPicker"},{"name":"Dialog"},{"name":"Button"},{"name":"Segmented"},{"name":"Switch"},{"name":"Input"},{"name":"Textarea"},{"name":"Select"},{"name":"Tooltip"},{"name":"Stat"},{"name":"PersonalBestBadge"},{"name":"ResultChart"},{"name":"ActivityMap"},{"name":"WeakKanaList"},{"name":"KanaChart"},{"name":"HistoryTable"},{"name":"Pagination"},{"name":"OptionCard"},{"name":"VerticalLabel"},{"name":"Nav"},{"name":"Footer"},{"name":"Cat"},{"name":"EmptyState"}]} */
 (function () {
   'use strict';
   var React = window.React;
@@ -406,11 +406,11 @@
       e.preventDefault(); var j = (i + d + opts.length) % opts.length; pick(opts[j].value);
       var sib = e.currentTarget.parentNode.children[j]; if (sib) sib.focus();
     }
-    return h('div', { className: cx('nk-seg', p.className), role: 'radiogroup', 'aria-label': p.label },
+    return h('div', { className: cx('nk-seg', p.size === 'lg' && 'nk-seg--lg', p.className), role: 'radiogroup', 'aria-label': p.label },
       opts.map(function (o, i) {
         var on = o.value === value;
         return h('button', { key: String(o.value), type: 'button', role: 'radio', 'aria-checked': on, tabIndex: on ? 0 : -1, disabled: o.disabled,
-          className: cx('nk-seg__item', p.mono ? 'mono-romaji' : 'ui-label', on && 'is-on'),
+          className: cx('nk-seg__item', p.mono ? 'mono-romaji' : p.size === 'lg' ? 'ui-heading' : 'ui-label', on && 'is-on'),
           onClick: function () { pick(o.value); }, onKeyDown: function (e) { key(e, i); } }, o.label);
       }));
   }
@@ -613,63 +613,138 @@
   function PersonalBestBadge(p) { return h('span', { className: 'nk-badge ui-caption' }, p.children || 'personal best'); }
 
   /*
-   * ResultChart — one line on /stats (lazy chunk). `values` may hold null: a day without answers is a gap, never
-   * an invented value. `domain` [min, max] and `ticks` set the y axis (default 0 … max rounded up to 50);
-   * `reference` { value, label } draws one dashed hair line (the target answer time); `xLabels` name the points;
-   * `dots` marks every point (isolated points stay visible between gaps).
+   * ResultChart — the chart of /stats (lazy chunk; decisions 100–112). It only draws: the page computes the series.
+   * Layers, back to front: grid · `band` (the middle half of the last tests) · `ranges` (one bar per day: lo–hi with a
+   * `mid` tick) · `line` (the rolling or daily median; null breaks it) · `reference` (one dashed hair line) · `points`
+   * (one mark per test). x is time (ms or a day number), never an index: a single test is one mark at its date inside
+   * the chosen period, not a dot at the edge of an empty axis. The y axis follows the data (`yDomain`, `yTicks`).
+   * State is never colour alone: a personal best is a ring, a repeat is hollow, every value is in the tooltip.
+   * Keyboard: one Tab stop; ← → step through the marks in time order, Home / End jump, Esc clears.
    */
   function ResultChart(p) {
-    var fig = useRef(null), ws = useState(0);   /* measured: the chart draws at its real width, so axis text never scales */
+    var fig = useRef(null), ws = useState(0), tipId = useId();
     useLayoutEffect(function () {
       var ro = new ResizeObserver(function (e) { var w = Math.round(e[0].contentRect.width); if (w) ws[1](w); });
       ro.observe(fig.current); return function () { ro.disconnect(); };
     }, []);
-    var W = ws[0], H = p.height || 160, padL = 44, padB = 20, padT = 8, padR = 4;
-    var vals = p.values || [];
-    var nums = vals.filter(function (v) { return v != null; });
-    var n = Math.max(vals.length, 2);
-    var lo = p.domain ? p.domain[0] : 0, hi = p.domain ? p.domain[1] : Math.ceil(Math.max.apply(null, nums.concat([10])) / 50) * 50;
-    var ticks = p.ticks || [lo, (lo + hi) / 2, hi];
-    var ix = function (i) { return padL + (i / (n - 1)) * (W - padL - padR); };
-    var iy = function (v) { return padT + (1 - (v - lo) / (hi - lo)) * (H - padT - padB); };
+    var W = ws[0], H = p.height || 200, padL = p.axisWidth != null ? p.axisWidth : 44, padB = p.xTicks === false ? 8 : 24, padT = 16, padR = 12;
+    var xd = p.xDomain || [0, 1], yd = p.yDomain || [0, 1], yf = p.yFormat || String;
+    var fx = function (v) { return padL + (v - xd[0]) / ((xd[1] - xd[0]) || 1) * (W - padL - padR); };
+    var fy = function (v) { return padT + (1 - (v - yd[0]) / ((yd[1] - yd[0]) || 1)) * (H - padT - padB); };
+    var pts = p.points || [], rgs = p.ranges || [];
+    /* what the cursor walks: the tests if there are any, else the day bars */
+    var items = pts.length ? pts.map(function (d) { return { x: d.x, y: d.y, tip: d.tip }; }) : rgs.map(function (d) { return { x: d.x, y: d.mid, tip: d.tip }; });
     var hov = useState(null);
     var show = p.cursor != null ? p.cursor : hov[0];
-    var xl = p.xLabels || vals.map(function (_, i) { return String(i + 1); });
-    var tip = p.tip || function (i, v) { return xl[i] + ' · ' + v; };
+    if (show != null && !items[show]) show = null;
     function move(e) {
-      var r = e.currentTarget.getBoundingClientRect();
-      var i = Math.round(((e.clientX - r.left) * (W / r.width) - padL) / (W - padL - padR) * (n - 1));
-      hov[1](Math.max(0, Math.min(vals.length - 1, i)));
+      var r = e.currentTarget.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top, best = null, bd = Infinity;
+      items.forEach(function (it, i) { var dx = fx(it.x) - mx, dy = (fy(it.y) - my) / 3, d = dx * dx + dy * dy; if (d < bd) { bd = d; best = i; } });
+      hov[1](best);
     }
     function key(e) {
-      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
-      e.preventDefault(); hov[1](Math.max(0, Math.min(vals.length - 1, (show == null ? -1 : show) + d)));
+      var n = items.length, c = show == null ? -1 : show, t = null; if (!n) return;
+      if (e.key === 'ArrowRight') t = Math.min(n - 1, c + 1); else if (e.key === 'ArrowLeft') t = c < 0 ? n - 1 : Math.max(0, c - 1);
+      else if (e.key === 'Home') t = 0; else if (e.key === 'End') t = n - 1; else if (e.key === 'Escape') { hov[1](null); return; } else return;
+      e.preventDefault(); hov[1](t);
     }
-    var segs = [], cur = [];
-    vals.forEach(function (v, i) { if (v == null) { if (cur.length) segs.push(cur); cur = []; } else cur.push([ix(i), iy(v)]); });
-    if (cur.length) segs.push(cur);
-    var xi = vals.length > 2 ? [0, Math.floor((vals.length - 1) / 2), vals.length - 1] : vals.map(function (_, i) { return i; });
+    function runs(arr) { var out = [], cur = []; (arr || []).forEach(function (d) { if (d == null) { if (cur.length) out.push(cur); cur = []; } else cur.push(d); }); if (cur.length) out.push(cur); return out; }
+    var f1 = function (n) { return n.toFixed(1); };
+    var slot = rgs.length ? (W - padL - padR) / Math.max(1, p.slots || rgs.length) : 0, bw = Math.max(2, Math.min(8, Math.round(slot * 0.5)));
+    var cur = show != null ? items[show] : null, cx0 = cur ? fx(cur.x) : 0;
     return h('figure', { className: cx('nk-chart', p.className), ref: fig, style: { minHeight: H } },
-      W > 0 && h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: W, height: H, role: 'img', tabIndex: 0, 'aria-label': p.label,
+      W > 0 && h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: W, height: H, role: 'img', tabIndex: 0, 'aria-label': p.label, 'aria-describedby': cur ? tipId : undefined,
         onMouseMove: move, onMouseLeave: function () { hov[1](null); }, onKeyDown: key, onBlur: function () { hov[1](null); } },
-        ticks.map(function (t) {
-          return h('g', { key: t }, h('line', { className: 'nk-chart__grid', x1: padL, x2: W, y1: iy(t), y2: iy(t) }),
-            h('text', { className: 'nk-chart__axis mono-small', x: padL - 8, y: iy(t) + 4, textAnchor: 'end' }, t));
+        (p.yTicks || []).map(function (t) {
+          return h('g', { key: 'y' + t }, h('line', { className: 'nk-chart__grid', x1: padL, x2: W, y1: fy(t), y2: fy(t) }),
+            h('text', { className: 'nk-chart__axis mono-small', x: padL - 8, y: fy(t) + 4, textAnchor: 'end' }, yf(t)));
+        }),
+        (p.xTicks || []).map(function (t, i) {
+          var x = fx(t.x);
+          return h('text', { key: 'x' + i, className: 'nk-chart__axis mono-small', x: x, y: H - 4, textAnchor: x < padL + 24 ? 'start' : x > W - 24 ? 'end' : 'middle' }, t.label);
+        }),
+        runs(p.band).map(function (sg, k) {
+          if (sg.length < 2) return null;
+          var up = sg.map(function (d) { return f1(fx(d.x)) + ',' + f1(fy(d.hi)); }), dn = sg.slice().reverse().map(function (d) { return f1(fx(d.x)) + ',' + f1(fy(d.lo)); });
+          return h('polygon', { key: 'b' + k, className: 'nk-chart__band', points: up.concat(dn).join(' ') });
         }),
         p.reference && h('g', { className: 'nk-chart__ref' },
-          h('line', { x1: padL, x2: W, y1: iy(p.reference.value), y2: iy(p.reference.value) }),
-          h('text', { className: 'nk-chart__axis mono-small', x: W - padR, y: iy(p.reference.value) - 6, textAnchor: 'end' }, p.reference.label)),
-        xi.map(function (i) {
-          return h('text', { key: 'x' + i, className: 'nk-chart__axis mono-small', x: ix(i), y: H - 4, textAnchor: i === 0 ? 'start' : i === vals.length - 1 ? 'end' : 'middle' }, xl[i]);
+          h('line', { x1: padL, x2: W, y1: fy(p.reference.value), y2: fy(p.reference.value) }),
+          h('text', { className: 'nk-chart__axis mono-small', x: W - padR, y: fy(p.reference.value) - 6, textAnchor: 'end' }, p.reference.label)),
+        rgs.map(function (d, i) {
+          var x = fx(d.x), y1 = fy(d.hi), y2 = fy(d.lo);
+          return h('g', { key: 'r' + i },
+            y2 - y1 >= 2 && h('rect', { className: 'nk-chart__range', x: x - bw / 2, y: y1, width: bw, height: y2 - y1, rx: 2 }),
+            h('rect', { className: 'nk-chart__mid', x: x - bw / 2 - 2, y: fy(d.mid) - 1, width: bw + 4, height: 2, rx: 1 }));
         }),
-        segs.map(function (sg, k) {
-          return sg.length > 1 ? h('polyline', { key: k, className: 'nk-chart__line', points: sg.map(function (pt) { return pt[0].toFixed(1) + ',' + pt[1].toFixed(1); }).join(' '), pathLength: 1 }) : null;
+        runs(p.line).map(function (sg, k) {
+          return sg.length > 1 ? h('polyline', { key: 'l' + k, className: 'nk-chart__line', points: sg.map(function (d) { return f1(fx(d.x)) + ',' + f1(fy(d.y)); }).join(' '), pathLength: 1 }) : null;
         }),
-        (p.dots || segs.some(function (sg) { return sg.length === 1; })) && vals.map(function (v, i) {
-          return v != null && (p.dots || segs.some(function (sg) { return sg.length === 1 && sg[0][0] === ix(i); })) && h('circle', { key: 'd' + i, className: 'nk-chart__dot', cx: ix(i), cy: iy(v), r: 2.5 });
+        pts.map(function (d, i) {
+          return h('circle', { key: 'p' + i, className: cx('nk-chart__pt', d.mark && 'nk-chart__pt--' + d.mark), cx: fx(d.x), cy: fy(d.y), r: (d.mark === 'best' ? 4 : 3) + (p.pointLabels ? 1 : 0) });
         }),
-        show != null && h('line', { className: 'nk-chart__cursor', x1: ix(show), x2: ix(show), y1: padT, y2: H - padB })),
-      W > 0 && show != null && h('figcaption', { className: 'nk-chart__tip ui-caption', style: { left: (ix(show) / W * 100) + '%' } }, tip(show, vals[show])));
+        /* a few tests: each one carries its number, so the picture needs no hover to be read */
+        p.pointLabels && pts.map(function (d, i) {
+          return h('text', { key: 't' + i, className: 'nk-chart__val mono-small', x: fx(d.x), y: fy(d.y) - 10, textAnchor: fx(d.x) > W - 28 ? 'end' : 'middle' }, yf(d.y));
+        }),
+        cur && h('line', { className: 'nk-chart__cursor', x1: cx0, x2: cx0, y1: padT, y2: H - padB }),
+        cur && h('circle', { className: 'nk-chart__ring', cx: cx0, cy: fy(cur.y), r: 7 })),
+      W > 0 && cur && h('figcaption', { id: tipId, role: 'status', className: cx('nk-chart__tip ui-caption', cx0 < 150 && 'is-start', cx0 > W - 150 && 'is-end'), style: { left: cx0 + 'px', top: Math.max(0, fy(cur.y) - 12) + 'px' } },
+        (cur.tip || []).map(function (t, i) { return h('span', { key: i, className: 'nk-chart__tip-line' }, t); })));
+  }
+
+  /*
+   * ActivityMap — activity by day on /stats (decision 108): a calendar grid, one column per week (Monday first), one
+   * cell per day, the last cell is today. Fill = recall answers of the day on `heat-fur-1…5`; a day without answers is
+   * an outlined empty cell; a square in the cell's ink marks a day with a finished typing test; today has an `eye`
+   * border. Nothing is colour alone: the numbers are in the tooltip and in every cell's `aria-label`.
+   * One Tab stop; ← → move by a week, ↑ ↓ by a day, Home / End to the first and the last day.
+   */
+  var AM_LABELS = {
+    label: 'activity by day', less: 'fewer', more: 'more answers', test: 'typing test that day', today: 'today',
+    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    tip: function (d, date) { return [date, d.answers || d.tests ? [d.answers ? d.answers + ' answers' : '', d.tests ? d.tests + ' tests' : ''].filter(Boolean).join(' · ') : 'no activity']; }
+  };
+  function ActivityMap(p) {
+    var L = Object.assign({}, AM_LABELS, p.labels), narrow = useNarrow();
+    var weeks = narrow ? (p.weeksNarrow || 13) : (p.weeks || 26), th = p.thresholds || [1, 10, 25, 50, 100];
+    var by = {}; (p.days || []).forEach(function (d) { by[d.day] = d; });
+    var iso = function (d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+    var end = new Date(p.today + 'T00:00:00'), wd = (end.getDay() + 6) % 7, n = (weeks - 1) * 7 + wd + 1;
+    var cells = [];
+    for (var i = 0; i < n; i++) {
+      var dt = new Date(end); dt.setDate(end.getDate() - (n - 1 - i));
+      var k = iso(dt), d = by[k] || { day: k, answers: 0, tests: 0 }, lv = 0;
+      if (d.answers > 0) { for (var j = 0; j < th.length; j++) if (d.answers >= th[j]) lv = j + 1; } else if (d.active) lv = 1;
+      cells.push({ d: d, date: dt, lv: lv, col: Math.floor(i / 7), row: i % 7 });
+    }
+    var months = [], lastCol = -9;
+    cells.forEach(function (c) { if (c.date.getDate() === 1 && c.col - lastCol >= 3 && c.col < weeks - 1) { months.push({ col: c.col, m: c.date.getMonth() }); lastCol = c.col; } });
+    var act = useState(null), foc = useState(n - 1), grid = useRef(null);
+    var dateOf = function (c) { return c.date.getDate() + ' ' + L.months[c.date.getMonth()]; };
+    function key(e, i) {
+      var t = e.key === 'ArrowRight' ? i + 7 : e.key === 'ArrowLeft' ? i - 7 : e.key === 'ArrowDown' ? i + 1 : e.key === 'ArrowUp' ? i - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : null;
+      if (t == null) return; e.preventDefault(); t = Math.max(0, Math.min(n - 1, t));
+      foc[1](t); var b = grid.current.children[t]; if (b) b.focus();
+    }
+    var a = act[0] != null ? cells[act[0]] : null;
+    var sw = function (cls, key) { return h('span', { key: key, className: 'nk-am__cell nk-am__sw ' + cls, 'aria-hidden': true }); };
+    return h('figure', { className: cx('nk-am', p.className), style: { '--nk-am-weeks': weeks } },
+      h('div', { className: 'nk-am__months mono-small', 'aria-hidden': true }, months.map(function (m) { return h('span', { key: m.col, style: { gridColumn: m.col + 1 } }, L.months[m.m]); })),
+      h('div', { className: 'nk-am__wd mono-small', 'aria-hidden': true }, [0, 2, 4].map(function (r) { return h('span', { key: r, style: { gridRow: r + 1 } }, L.weekdays[r]); })),
+      h('div', { className: 'nk-am__grid', ref: grid, role: 'group', 'aria-label': L.label, onMouseLeave: function () { act[1](null); } },
+        cells.map(function (c, i) {
+          var today = i === n - 1;
+          return h('button', { key: c.d.day, type: 'button', tabIndex: i === foc[0] ? 0 : -1, 'aria-label': L.tip(c.d, dateOf(c)).concat(today ? [L.today] : []).join(', '),
+            className: cx('nk-am__cell', 'is-l' + c.lv, c.d.tests > 0 && 'is-test', today && 'is-today'),
+            onMouseEnter: function () { act[1](i); }, onFocus: function () { act[1](i); foc[1](i); }, onBlur: function () { act[1](null); }, onKeyDown: function (e) { key(e, i); } });
+        }),
+        a && h('div', { className: cx('nk-am__tip nk-kc__tip ui-caption', a.col < 4 && 'is-start', a.col > weeks - 5 && 'is-end'), role: 'tooltip', style: { '--c': a.col, '--r': a.row } },
+          L.tip(a.d, dateOf(a)).concat(act[0] === n - 1 ? [L.today] : []).map(function (t, i) { return h('span', { key: i, className: 'nk-kc__tip-line' }, t); }))),
+      h('div', { className: 'nk-am__legend ui-caption' },
+        h('span', { className: 'nk-am__legend-item' }, L.less, [0, 1, 2, 3, 4, 5].map(function (s) { return sw('is-l' + s, s); }), L.more),
+        h('span', { className: 'nk-am__legend-item' }, sw('is-l2 is-test', 't'), L.test),
+        h('span', { className: 'nk-am__legend-item' }, sw('is-l0 is-today', 'n'), L.today)));
   }
 
   /* Mistyped kana on typing results: up to 5, most errors first. Spellings joined with " · " (Mono; U+00B7 is on the
@@ -932,8 +1007,8 @@
   var C = window;
   C.Nekotype = Object.assign(C.Nekotype || {}, {
     TestArea: TestArea, Char: Char, TranslationLine: TranslationLine, Notice: Notice, Kbd: Kbd, ModePanel: ModePanel, RowPicker: RowPicker, Dialog: Dialog,
-    Button: Button, Segmented: Segmented, Switch: Switch, Input: Input, Textarea: Textarea, Select: Select, Tooltip: Tooltip,
-    Stat: Stat, PersonalBestBadge: PersonalBestBadge, ResultChart: ResultChart, WeakKanaList: WeakKanaList, KanaChart: KanaChart,
+    Button: Button, Segmented: Segmented, Toggle: Toggle, Switch: Switch, Input: Input, Textarea: Textarea, Select: Select, Tooltip: Tooltip,
+    Stat: Stat, PersonalBestBadge: PersonalBestBadge, ResultChart: ResultChart, ActivityMap: ActivityMap, WeakKanaList: WeakKanaList, KanaChart: KanaChart,
     HistoryTable: HistoryTable, Pagination: Pagination, OptionCard: OptionCard, VerticalLabel: VerticalLabel, Nav: Nav, Footer: Footer,
     Cat: Cat, EmptyState: EmptyState, Icon: Icon, KanaTask: KanaTask, KanaChartDetails: KanaChartDetails, kanaStateLines: kanaStateLines, isDue: isDue, KC_LABELS: KC_LABELS,
     /* not components: */ createTestController: createTestController, createTaskController: createTaskController, useNarrow: useNarrow, useCoarse: useCoarse, TASK_LABELS: TASK_LABELS, MODE_LABELS: MODE_LABELS, modeLine: modeLine, KANA_ROWS: ROWS, kanaRows: rowsFor, kanaOf: kanaOf
