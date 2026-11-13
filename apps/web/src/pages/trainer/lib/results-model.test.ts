@@ -58,28 +58,33 @@ describe('kpmComparisons', () => {
 
 describe('weakKana', () => {
   it('lists up to five kana with errors, the most first, with the spellings of the strictness', () => {
-    const delta = {
-      'hiragana:つ': { attempts: 4, erroredAttempts: 3 },
-      'hiragana:あ': { attempts: 4, erroredAttempts: 0 },
-      'hiragana:ふ': { attempts: 4, erroredAttempts: 1 },
-      'hiragana:い': { attempts: 4, erroredAttempts: 2 },
-      'hiragana:う': { attempts: 4, erroredAttempts: 2 },
-      'hiragana:え': { attempts: 4, erroredAttempts: 2 },
-      'hiragana:お': { attempts: 4, erroredAttempts: 2 },
+    const errors = {
+      'hiragana:つ': 3,
+      'hiragana:あ': 0,
+      'hiragana:ふ': 1,
+      'hiragana:い': 2,
+      'hiragana:う': 2,
+      'hiragana:え': 2,
+      'hiragana:お': 2,
     };
-    const items = weakKana(delta, 'learner');
+    const items = weakKana(errors, 'learner');
     expect(items).toHaveLength(5);
     expect(items[0]).toMatchObject({ glyph: 'つ', errors: 3 });
     expect(items[0]?.spellings).toEqual(['tsu', 'tu']);
     expect(items.map((i) => i.glyph)).not.toContain('あ');
     expect(items.map((i) => i.glyph)).not.toContain('ふ');
     // Strict IME accepts no more than relaxed.
-    const strict = weakKana(delta, 'ime')[0]?.spellings ?? [];
+    const strict = weakKana(errors, 'ime')[0]?.spellings ?? [];
     expect(strict.length).toBeLessThanOrEqual(items[0]?.spellings.length ?? 0);
     expect(strict[0]).toBe('tsu');
   });
 
+  it('counts errors, not errored kana: three wrong keys on one kana are 3', () => {
+    expect(weakKana({ 'hiragana:ど': 3 }, 'learner')[0]?.errors).toBe(3);
+  });
+
   it('is empty without errors', () => {
-    expect(weakKana({ 'hiragana:あ': { attempts: 3, erroredAttempts: 0 } }, 'learner')).toEqual([]);
+    expect(weakKana({ 'hiragana:あ': 0 }, 'learner')).toEqual([]);
+    expect(weakKana({}, 'learner')).toEqual([]);
   });
 });

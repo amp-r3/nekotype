@@ -60,7 +60,7 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
     );
   }
 
-  const { result, average, previousBest, isBest, kanaDelta } = finished;
+  const { result, average, previousBest, isBest, kanaErrors } = finished;
   const comparisons = kpmComparisons(result, average, previousBest);
   const noticeKey =
     result.endReason === 'idle'
@@ -126,7 +126,7 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
         />
       </div>
 
-      <WeakKanaList items={weakKana(kanaDelta, result.strictness)} />
+      <WeakKanaList items={weakKana(kanaErrors, result.strictness)} />
 
       <div className="flex items-center justify-center gap-3 pt-4">
         <Button variant="primary" size="lg" buttonRef={nextBtnRef} autoFocus onClick={onNextTest}>

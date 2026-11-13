@@ -1,4 +1,4 @@
-import type { KanaStat, TestResult } from '@nekotype/shared/types';
+import type { TestResult } from '@nekotype/shared/types';
 import { isKanaKey, spellingsFor } from '@/entities/prompt';
 import type { Strictness } from '@/entities/prompt';
 
@@ -54,19 +54,22 @@ export type WeakKana = {
   readonly errors: number;
 };
 
-/** Up to five kana with errors in this test, the most errors first (ties keep the table order). */
+/**
+ * Up to five kana with errors in this test, the most errors first (ties keep the order the session
+ * reported them in). An error is a rejected key or a hint charged to the kana.
+ */
 export function weakKana(
-  kanaDelta: Readonly<Record<string, KanaStat>>,
+  kanaErrors: Readonly<Record<string, number>>,
   strictness: Strictness,
 ): readonly WeakKana[] {
   const items: WeakKana[] = [];
-  for (const [key, stat] of Object.entries(kanaDelta)) {
-    if (stat.erroredAttempts <= 0 || !isKanaKey(key)) continue;
+  for (const [key, errors] of Object.entries(kanaErrors)) {
+    if (errors <= 0 || !isKanaKey(key)) continue;
     items.push({
       key,
       glyph: key.slice(key.indexOf(':') + 1),
       spellings: spellingsFor(key, strictness),
-      errors: stat.erroredAttempts,
+      errors,
     });
   }
   items.sort((a, b) => b.errors - a.errors);

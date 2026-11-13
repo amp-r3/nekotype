@@ -42,7 +42,7 @@ function finished(
     average: null,
     previousBest: null,
     isBest: false,
-    kanaDelta: { 'hiragana:つ': { attempts: 5, erroredAttempts: 3 } },
+    kanaErrors: { 'hiragana:つ': 3 },
     ...rest,
   };
 }
@@ -143,7 +143,7 @@ describe('results panel', () => {
   });
 
   it('has no mistyped kana section without errors', () => {
-    show(finished({ kanaDelta: {} }));
+    show(finished({ kanaErrors: {} }));
     expect(container.querySelector('[data-testid="weak-kana"]')).toBeNull();
   });
 
