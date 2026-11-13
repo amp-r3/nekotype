@@ -56,7 +56,7 @@ describe('results screen: the chunk fails to load', () => {
     expect(container.querySelector('[role="alert"]')).not.toBeNull();
     const labels = Array.from(container.querySelectorAll('button')).map((b) => b.textContent);
     expect(labels).toContain('Try again');
-    expect(labels).toContain('Next Test');
+    expect(labels).toContain('next test');
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     await settle();

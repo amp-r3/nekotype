@@ -100,22 +100,26 @@ export function TypingSection(): JSX.Element {
         </p>
       ) : (
         <>
-          <div className="flex max-w-[480px] flex-col gap-3">
+          <div className="flex max-w-[760px] flex-col gap-3">
             <h3 className={HEADING}>{t('stats.typing.bests')}</h3>
             {bests.length === 0 ? (
               <p className="text-fur-dim text-ui-body">{t('stats.typing.noBests')}</p>
             ) : (
-              <ul className="divide-line flex flex-col divide-y" data-testid="stats-bests">
-                {bests.map((row) => (
-                  <li key={row.key} className="flex items-baseline justify-between gap-4 py-1.5">
-                    <span className="text-ui-label text-fur">{row.label}</span>
-                    <span className="text-fur-dim text-ui-caption whitespace-nowrap">
-                      <span className={`${MONO} tabular-nums`}>{row.kpm}</span>{' '}
-                      {t('stats.history.kpm')}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <table className="w-full border-collapse" data-testid="stats-bests">
+                <tbody>
+                  {bests.map((row) => (
+                    <tr key={row.key}>
+                      <td className="text-ui-label text-fur border-line border-t py-2 pr-3">
+                        {row.label}
+                      </td>
+                      <td className="text-fur-dim text-ui-caption border-line border-t py-2 text-right whitespace-nowrap">
+                        <span className={`${MONO} tabular-nums`}>{row.kpm}</span>{' '}
+                        {t('stats.history.kpm')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
 
@@ -125,6 +129,7 @@ export function TypingSection(): JSX.Element {
               <ResultChart
                 key={series.length}
                 testId="stats-kpm-chart"
+                height={170}
                 values={series}
                 xLabels={series.map((_, index) => String(index + 1))}
                 domain={axis.domain}

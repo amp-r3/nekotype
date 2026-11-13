@@ -13,7 +13,7 @@ afterEach(() => {
 
 const labels = ['1 Nov', '2 Nov', '3 Nov', '4 Nov', '5 Nov'];
 
-function mount(values: (number | null)[]): HTMLElement {
+function mount(values: (number | null)[], dots = false): HTMLElement {
   container = document.createElement('div');
   document.body.appendChild(container);
   render(
@@ -26,6 +26,7 @@ function mount(values: (number | null)[]): HTMLElement {
       reference={{ value: 1500, label: 'target 1500 ms' }}
       tip={(index, value) => `${labels[index] ?? ''} · ${value === null ? 'no answers' : value}`}
       label="daily median"
+      dots={dots}
     />,
     container,
   );
@@ -34,9 +35,16 @@ function mount(values: (number | null)[]): HTMLElement {
 
 describe('ResultChart', () => {
   it('draws a run of days as one line and a gap ends it', () => {
-    const root = mount([1100, 1200, null, 1300, 1250]);
+    const root = mount([1100, 1200, null, 1300, 1250], true);
     expect(root.querySelectorAll('polyline')).toHaveLength(2);
     expect(root.querySelectorAll('[data-testid="chart-dot"]')).toHaveLength(4);
+  });
+
+  // Design ResultChart: `dots` marks every point; otherwise only an isolated point is marked.
+  it('without `dots` marks only the isolated points', () => {
+    const root = mount([1100, 1200, 1250, null, 1300]);
+    expect(root.querySelectorAll('polyline')).toHaveLength(1);
+    expect(root.querySelectorAll('[data-testid="chart-dot"]')).toHaveLength(1);
   });
 
   it('marks an isolated point with a dot only', () => {

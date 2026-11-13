@@ -75,7 +75,7 @@ describe('results panel', () => {
       started += 1;
     });
     const next = container.querySelector('button');
-    expect(next?.textContent).toContain('Next Test');
+    expect(next?.textContent).toContain('next test');
     expect(document.activeElement).toBe(next);
     next?.click();
     expect(started).toBe(1);
@@ -88,8 +88,8 @@ describe('results panel', () => {
     });
     const buttons = [...container.querySelectorAll('button')];
     expect(buttons.map((b) => b.textContent)).toEqual([
-      expect.stringContaining('Next Test'),
-      'Repeat',
+      expect.stringContaining('next test'),
+      'repeat',
     ]);
     buttons[1]?.click();
     expect(repeated).toBe(1);
@@ -107,8 +107,11 @@ describe('results panel', () => {
       'words · hiragana · relaxed · 60 s',
     );
     expect(text()).toContain('92');
-    expect(text()).toContain('96 %');
-    expect(text()).toContain('60 s');
+    expect(text()).toContain('96');
+    expect(text()).toContain('60');
+    // The unit is a separate, smaller span (design Stat), not part of the number.
+    const units = [...container.querySelectorAll('span.text-fur-dim')].map((u) => u.textContent);
+    expect(units).toEqual(expect.arrayContaining(['%', 's']));
     expect(text()).not.toContain('vs ');
     expect(text()).not.toContain('personal best');
     expect(container.querySelector('svg')).toBeNull();
@@ -136,7 +139,9 @@ describe('results panel', () => {
 
   it('lists the mistyped kana with the spellings and the errors', () => {
     show(finished());
-    const row = container.querySelector('[data-testid="weak-kana"] li');
+    const heads = [...container.querySelectorAll('[data-testid="weak-kana"] th')];
+    expect(heads.map((h) => h.textContent)).toEqual(['kana', 'romaji', 'errors']);
+    const row = container.querySelector('[data-testid="weak-kana"] tbody tr');
     expect(row?.textContent).toContain('つ');
     expect(row?.textContent).toContain('tsu · tu');
     expect(row?.textContent).toContain('3');

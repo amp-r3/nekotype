@@ -38,7 +38,7 @@ test.describe('test screen: Restart and the focus', () => {
       await page.getByRole('button', { name: /^Finish/ }).click();
       await expect(page.getByTestId('results-panel')).toBeVisible();
 
-      await page.getByRole('button', { name: 'Next Test' }).click();
+      await page.getByRole('button', { name: 'next test' }).click();
       await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
       await expect(input).toBeFocused();
     },

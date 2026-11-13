@@ -91,7 +91,7 @@ describe('stats page: typing section', () => {
       t('stats.counters.title'),
     ]);
 
-    const bests = Array.from(container.querySelectorAll('[data-testid="stats-bests"] li')).map(
+    const bests = Array.from(container.querySelectorAll('[data-testid="stats-bests"] tr')).map(
       (item) => item.textContent,
     );
     expect(bests).toEqual([
@@ -99,9 +99,11 @@ describe('stats page: typing section', () => {
       'words · hiragana · relaxed · 60 s70 kpm',
     ]);
 
-    // 11 points: the repeat is not on the chart.
+    // 11 points in one line, so none is marked (design ResultChart: only isolated points are);
+    // the repeat is not on the chart.
     const chart = container.querySelector('[data-testid="stats-kpm-chart"]');
-    expect(chart?.querySelectorAll('[data-testid="chart-dot"]')).toHaveLength(11);
+    expect(chart?.querySelectorAll('[data-testid="chart-dot"]')).toHaveLength(0);
+    expect(chart?.querySelector('polyline')?.getAttribute('points')?.split(' ')).toHaveLength(11);
     expect(
       Array.from(chart?.querySelectorAll('[data-testid="axis-tick"]') ?? []).map(
         (tick) => tick.textContent,

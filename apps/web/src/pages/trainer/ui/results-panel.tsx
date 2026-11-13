@@ -52,7 +52,7 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
 
   if (finished === null) {
     return (
-      <div className="text-fur-dim max-w-layout-test mx-auto w-full py-12 text-center">
+      <div className="text-fur-dim w-full py-12">
         <Button variant="primary" buttonRef={nextBtnRef} autoFocus onClick={onNextTest}>
           {t('results.nextTest')}
         </Button>
@@ -73,7 +73,7 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
   return (
     <div
       data-testid="results-panel"
-      className="animate-fadeIn max-w-layout-test mx-auto flex w-full flex-col gap-6 py-6 select-none"
+      className="animate-fadeIn flex w-full flex-col gap-12 py-6 select-none"
     >
       {/* Polite live region for screen readers */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
@@ -90,7 +90,7 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
         <div data-testid="mode-line" className="text-ui-caption text-fur-dim">
           {modeLine(result)}
         </div>
-        <div className="flex items-end justify-between gap-4">
+        <div className="grid grid-cols-[auto_auto] items-end justify-start gap-12">
           <Stat
             size="hero"
             label={t('results.kpm')}
@@ -112,23 +112,24 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
           />
           {isBest && (
             <span role="img" aria-label={t('results.catLabel')}>
-              <Cat mood="content" size={80} />
+              <Cat mood="content" size={72} />
             </span>
           )}
         </div>
       </div>
 
       <div className="flex gap-8">
-        <Stat label={t('results.accuracy')} value={`${String(accuracy)} %`} />
+        <Stat label={t('results.accuracy')} value={accuracy} unit="%" />
         <Stat
           label={t('results.time')}
-          value={t('results.timeValue', { n: durationSeconds(result) })}
+          value={durationSeconds(result)}
+          unit={t('results.timeUnit')}
         />
       </div>
 
       <WeakKanaList items={weakKana(kanaErrors, result.strictness)} />
 
-      <div className="flex items-center justify-center gap-3 pt-4">
+      <div className="flex items-center gap-2">
         <Button variant="primary" size="lg" buttonRef={nextBtnRef} autoFocus onClick={onNextTest}>
           {t('results.nextTest')} <Kbd>{t('key.enter')}</Kbd>
         </Button>
