@@ -81,6 +81,9 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
   const chunks = new Map<ContentChunk, readonly ContentItem[]>();
   let previousKey: string | null = null;
   let stopped = false;
+  // Counts the tests that were dropped or replaced. A save that resolves after the next test began
+  // belongs to the earlier one and must not become what the results screen shows.
+  let generation = 0;
 
   // Loads in flight and failed ones, per chunk. Only the chunks of the selected (content, script)
   // are shown or block input.
@@ -168,10 +171,11 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
     onEnd: (ended) => {
       // The completed prompts and the one under way; the window ahead of them was never typed.
       finishedPrompts = served.slice(0, ended.items + 1);
+      const mine = generation;
       void typing
         .saveTest({ result: toResult(ended), kanaDelta: ended.kanaDelta, startedIncrement: 1 })
         .then((saved) => {
-          lastSaved.value = { ...saved, kanaDelta: ended.kanaDelta };
+          if (mine === generation) lastSaved.value = { ...saved, kanaDelta: ended.kanaDelta };
         });
     },
     // A zen test ended with nothing to keep: a fresh prompt, as after a restart.
@@ -183,6 +187,7 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
   // A test that started and ends without being kept counts as started only (metrics.md, D23).
   const dropRunning = (): void => {
     if (session.phase.peek() === 'running') void typing.recordDiscarded();
+    generation += 1;
     lastSaved.value = null;
   };
 

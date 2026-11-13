@@ -600,6 +600,65 @@ describe('trainer: saving the finished test (ADR 073)', () => {
   });
 });
 
+describe('trainer: a save that resolves late', () => {
+  const a: PromptItem = { key: 'basic:a', text: 'あ' };
+
+  // Ten prompts of あ, the shortest count test.
+  const typeTest = (trainer: {
+    session: { handleIntent: (i: { kind: 'char'; char: string }) => void };
+  }): void => {
+    for (let i = 0; i < 10; i++) trainer.session.handleIntent({ kind: 'char', char: 'a' });
+  };
+
+  beforeEach(async () => {
+    await initSettings(Promise.resolve(createMemoryDb()));
+    vi.spyOn(promptModule, 'loadChunk').mockResolvedValue([word]);
+    setContent('words');
+    setScript('both');
+    setTestConfig({ kind: 'count', prompts: 10 });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('does not show the earlier test on the screen of the next one', async () => {
+    const finishers: (() => void)[] = [];
+    const saveTest = vi.fn(
+      (input: SaveTestInput): Promise<SavedTest> =>
+        new Promise((resolve) => {
+          finishers.push(() => {
+            resolve({ result: input.result, average: null, previousBest: null, isBest: false });
+          });
+        }),
+    );
+    let n = 0;
+    const trainer = createTrainer({
+      nextPrompt: () => a,
+      typing: { saveTest, recordDiscarded: vi.fn(() => Promise.resolve()) },
+      newId: () => `id-${String((n += 1))}`,
+    });
+    const stop = trainer.start();
+    await flush();
+
+    typeTest(trainer);
+    expect(trainer.session.phase.value).toBe('finished');
+    // Next test before the first save is done.
+    trainer.restart();
+    finishers[0]?.();
+    await flush();
+    expect(trainer.lastSaved.value).toBeNull();
+
+    typeTest(trainer);
+    expect(trainer.session.phase.value).toBe('finished');
+    expect(trainer.lastSaved.value).toBeNull();
+    finishers[1]?.();
+    await flush();
+    expect(trainer.lastSaved.value?.result.id).toBe('id-2');
+    stop();
+  });
+});
+
 describe('trainer: repeat (ADR 033, T10)', () => {
   const kana: readonly PromptItem[] = [
     { key: 'basic:a', text: 'あ' },
