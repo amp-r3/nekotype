@@ -123,6 +123,16 @@ test.describe('zen: a test without a length, ended by hand', () => {
     await expect(page.getByTestId('results-panel')).toBeVisible();
   });
 
+  test('the results hold the focus without drawing a ring around the screen', async ({ page }) => {
+    await chooseZen(page);
+    await page.keyboard.type(await canonicalOfPrompt(page), { delay: 15 });
+    // Ended from the keyboard, so the focus is a keyboard focus (`:focus-visible`).
+    await page.keyboard.press('Control+Enter');
+    const panel = page.getByTestId('results-panel');
+    await expect(panel).toBeFocused();
+    await expect(panel).toHaveCSS('outline-style', 'none');
+  });
+
   test('on the results the first Tab reaches Next test, and Enter starts it', async ({ page }) => {
     await chooseZen(page);
     await page.keyboard.type(await canonicalOfPrompt(page), { delay: 15 });

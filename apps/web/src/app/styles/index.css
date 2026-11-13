@@ -47,6 +47,12 @@ html {
   outline-offset: 2px;
 }
 
+/* A screen that takes the focus itself so that Enter and Tab work (results, learning home) is not a
+   control: it shows no ring. This rule is outside the Tailwind layers, so `outline-none` cannot do it. */
+.nk-holds-focus:focus-visible {
+  outline: none;
+}
+
 @keyframes blink {
   0%,
   45% {

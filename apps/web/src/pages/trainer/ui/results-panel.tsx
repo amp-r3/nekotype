@@ -53,7 +53,7 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
 
   if (finished === null) {
     return (
-      <div ref={root} tabIndex={-1} className="text-fur-dim w-full py-12 outline-none">
+      <div ref={root} tabIndex={-1} className="nk-holds-focus text-fur-dim w-full py-12">
         <Button variant="primary" onClick={onNextTest}>
           {t('results.nextTest')}
         </Button>
@@ -76,7 +76,7 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
       ref={root}
       tabIndex={-1}
       data-testid="results-panel"
-      className="animate-fadeIn flex w-full flex-col gap-12 py-6 outline-none select-none"
+      className="nk-holds-focus animate-fadeIn flex w-full flex-col gap-12 py-6 select-none"
     >
       {/* Polite live region for screen readers */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
