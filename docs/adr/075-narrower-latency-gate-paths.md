@@ -1,0 +1,10 @@
+# ADR 075: A Narrower List of Paths for the Latency Gate
+
+- **Status:** In force. Amends [ADR 074](074-latency-gate-on-pull-requests-that-can-move-it.md): point 1 (which files make a pull request run the gate) is narrowed.
+- **Context:** The list of ADR 074 held whole directories: the shared UI, all translations, the application shell, the learning screens and the trainer screens, with their unit tests and styles. Most pull requests after P4 (design fixes, translations, learning screens) touched one of them, so the two-minute gate ran on almost every pull request. ADR 074 meant it for a minority.
+- **Decision:**
+  1. `LATENCY_PATHS` lists what the latency test types through: the input source, the training feature, the trainer page and its test stage and live line, the lazy results loader, the prompt entity (including its generated content chunks), the dictionary, translate and locale modules, the routing, prefetch and start-up files of the shell, the engine, the latency test and its configuration, the Vite configuration, the lockfile and the deploy workflow.
+  2. Unit tests (`*.test.ts(x)`), stylesheets and Markdown never count, wherever they are.
+  3. The shared UI, the translation parts, the learning screens, the other trainer panels and the other pages no longer run the gate. A change there cannot reach the hot path of a keystroke: it is covered by the render-isolation test and the budgets of `verify`. `main` and a manual run still run the full gate before any deploy (ADR 052), so a regression missed by the list stops the deploy.
+- **Justification:** The list follows what the test exercises, not the folders that happen to be near it. The cost of a miss is a red `main` and a fix commit, as before ADR 074; the cost of a list that is always hit is two minutes on every pull request and a gate nobody notices.
+- **Consequences:** Pull requests that only change UI, strings, styles or tests of the learning and trainer screens skip the gate. A new file on the typing path has to be added to `LATENCY_PATHS`; the unit test fails when a listed path no longer exists.

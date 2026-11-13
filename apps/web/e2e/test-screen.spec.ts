@@ -35,7 +35,7 @@ test.describe('test screen: Restart and the focus', () => {
       const canonical = await canonicalOfPrompt(page);
       await page.keyboard.type(canonical, { delay: 15 });
       await expect(page.getByTestId('live-counter')).toHaveText(/^[0-1]$/);
-      await page.getByRole('button', { name: /^Finish/ }).click();
+      await page.getByRole('button', { name: /^finish/ }).click();
       await expect(page.getByTestId('results-panel')).toBeVisible();
 
       await page.getByRole('button', { name: 'next test' }).click();

@@ -19,7 +19,7 @@ export const settingsRu = {
   'settings.data.reset': 'сбросить прогресс',
   'settings.data.resetAction': 'сбросить',
 
-  'dialog.close': 'Закрыть',
+  'dialog.close': 'закрыть',
   'reset.title': 'Сбросить прогресс?',
   'reset.confirm':
     'Прогресс обучения и статистика набора в этом браузере будут стёрты. Это нельзя отменить.',

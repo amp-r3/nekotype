@@ -10,7 +10,7 @@ async function finishZen(page: Page): Promise<void> {
   await page.goto('/type');
   await page.getByRole('radio', { name: 'Zen' }).click();
   await page.keyboard.type(await canonicalOfPrompt(page), { delay: 15 });
-  await page.getByRole('button', { name: /^Finish/ }).click();
+  await page.getByRole('button', { name: /^finish/ }).click();
 }
 
 test.describe('the results screen is a lazy chunk', () => {
@@ -42,7 +42,7 @@ test.describe('the results screen is a lazy chunk', () => {
 
     await expect(page.getByRole('alert')).toBeVisible();
     failing = false;
-    await page.getByRole('button', { name: 'Try again' }).click();
+    await page.getByRole('button', { name: 'retry' }).click();
     await expect(page.getByTestId('results-panel')).toBeVisible();
   });
 
@@ -67,9 +67,9 @@ test.describe('the results screen is a lazy chunk', () => {
     await context.setOffline(true);
     await page.getByRole('radio', { name: 'RU' }).click();
     await expect(page.getByRole('radio', { name: 'Хирагана' })).toBeVisible();
-    await page.getByRole('radio', { name: 'Дзен' }).click();
+    await page.getByRole('radio', { name: 'zen' }).click();
     await page.keyboard.type(await canonicalOfPrompt(page), { delay: 15 });
-    await page.getByRole('button', { name: /^Завершить/ }).click();
+    await page.getByRole('button', { name: /^завершить/ }).click();
     await expect(page.getByTestId('results-panel')).toBeVisible();
   });
 });

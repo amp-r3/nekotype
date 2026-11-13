@@ -105,15 +105,15 @@ describe('render isolation: the hot path renders nothing', () => {
     expect(await press('Escape')).toEqual([]);
     // Cyrillic: the notice line gets text, nothing renders; the next Latin key takes it away.
     expect(await press('ф')).toEqual([]);
-    expect(container.textContent).toContain('Switch your keyboard layout to English');
+    expect(container.textContent).toContain('switch your keyboard layout to English');
     expect(await press('e')).toEqual([]);
-    expect(container.textContent).not.toContain('Switch your keyboard layout to English');
+    expect(container.textContent).not.toContain('switch your keyboard layout to English');
   });
 
   it('shows the hint through a text node, in the line kept for it', async () => {
-    expect(container.textContent).not.toContain('Revealed');
+    expect(container.textContent).not.toContain('revealed');
     expect(await press('Escape')).toEqual([]);
-    expect(container.textContent).toContain('Revealed: neko');
+    expect(container.textContent).toContain('revealed: neko');
   });
 
   it('keeps the rule over 45 prompts, through every compact() of the matcher', async () => {
@@ -232,7 +232,7 @@ describe('render isolation: a zen test', () => {
   });
 
   const finishButton = (): HTMLButtonElement | undefined =>
-    Array.from(container.querySelectorAll('button')).find((b) => b.textContent.includes('Finish'));
+    Array.from(container.querySelectorAll('button')).find((b) => b.textContent.includes('finish'));
 
   async function press(key: string): Promise<string[]> {
     const rendered: string[] = [];

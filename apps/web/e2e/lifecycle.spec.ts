@@ -21,12 +21,12 @@ test.describe('trainer: lifecycle and vocabulary loading', () => {
     const before = await arenaTop(page);
 
     await page.getByRole('radio', { name: 'Words' }).click();
-    await expect(page.getByText('Loading vocabulary')).toBeVisible();
+    await expect(page.getByText('loading vocabulary')).toBeVisible();
     await page.keyboard.type('nekoa', { delay: 20 });
     await expect(page.getByTestId(ARENA)).toHaveAttribute('data-phase', 'idle');
     expect(Math.abs((await arenaTop(page)) - before)).toBeLessThan(1);
 
-    await expect(page.getByText('Loading vocabulary')).toBeHidden();
+    await expect(page.getByText('loading vocabulary')).toBeHidden();
     await expect(page.getByTestId('prompt-text')).not.toHaveText('');
     expect(Math.abs((await arenaTop(page)) - before)).toBeLessThan(1);
     await page.keyboard.press('KeyA');
@@ -60,7 +60,7 @@ test.describe('trainer: lifecycle and vocabulary loading', () => {
     });
     await openTypingScreen(page, { prompt: false });
 
-    await expect(page.getByText('Failed to load the vocabulary')).toBeVisible();
+    await expect(page.getByText('failed to load. check the connection')).toBeVisible();
     await expect(page.getByRole('radio', { name: 'Words' })).toHaveAttribute(
       'aria-checked',
       'true',
@@ -74,11 +74,11 @@ test.describe('trainer: lifecycle and vocabulary loading', () => {
       'aria-checked',
       'true',
     );
-    await expect(page.getByText('Failed to load the vocabulary')).toBeVisible();
+    await expect(page.getByText('failed to load. check the connection')).toBeVisible();
 
     failing = false;
-    await page.getByRole('button', { name: 'Try again' }).click();
-    await expect(page.getByText('Failed to load the vocabulary')).toBeHidden();
+    await page.getByRole('button', { name: 'retry' }).click();
+    await expect(page.getByText('failed to load. check the connection')).toBeHidden();
     await expect(page.getByTestId('prompt-text')).not.toHaveText('');
   });
 
