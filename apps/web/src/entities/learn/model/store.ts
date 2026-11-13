@@ -153,7 +153,11 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
         if (status.value !== 'ready' || pending !== null) return;
         const db = await deps.db();
         const doc = await db.get(DELTA_STORE, DELTA_KEY);
-        if (isObject(doc) && isLearnState(doc['learn']) && isCounters(doc['counters'])) {
+        if (doc === undefined) {
+          // Another tab reset the progress: the record is gone, and so is what this tab held.
+          state.value = initialLearnState();
+          counters.value = initialCounters();
+        } else if (isObject(doc) && isLearnState(doc['learn']) && isCounters(doc['counters'])) {
           state.value = unlock(doc['learn']);
           counters.value = doc['counters'];
         }
@@ -302,6 +306,8 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
         await db.delete(DELTA_STORE, DELTA_KEY);
         // The record is gone, so there is nothing a later write could replace.
         status.value = 'ready';
+        // Other tabs drop what they hold.
+        deps.channel?.post();
       } catch {
         // The record could not be deleted; the next write replaces it.
       }

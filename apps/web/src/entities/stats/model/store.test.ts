@@ -229,6 +229,48 @@ describe('typing store: two tabs', () => {
   });
 });
 
+describe('typing store: reset in another tab', () => {
+  it('drops what the tab held, and its next write does not bring the old state back', async () => {
+    const db = createMemoryDb();
+    const newChannel = channelBus();
+    const a = setup(db, newChannel()).store;
+    const b = setup(db, newChannel()).store;
+    await a.init();
+    await b.init();
+    await save(a, result('r1'));
+    await b.flush();
+    expect(b.counters.value.finished.typing).toBe(1);
+
+    await a.reset();
+    await b.flush();
+    expect(b.kanaStats.value).toEqual({});
+    expect(b.records.value).toEqual({});
+    expect(b.counters.value.started.typing).toBe(0);
+    expect(b.counters.value.finished.typing).toBe(0);
+
+    await b.recordDiscarded();
+    expect(await db.get('delta', 'typing')).toEqual({
+      kanaStats: {},
+      counters: { started: { typing: 1, learn: 0 }, finished: { typing: 0, learn: 0 } },
+    });
+    expect(await db.get('records', 'current')).toBeUndefined();
+    expect(await db.count('results')).toBe(0);
+  });
+});
+
+describe('typing store: a test after a failed read', () => {
+  it('writes nothing and reports it, so the screen does not pretend it was kept', async () => {
+    const failing: Db = { ...createMemoryDb(), get: () => Promise.reject(new Error('closed')) };
+    const onWriteFailed = vi.fn();
+    const store = createTypingStore({ db: () => Promise.resolve(failing), onWriteFailed });
+    const writes = recordedWrites(failing);
+    await save(store, result('r1'));
+    expect(store.status.value).toBe('error');
+    expect(writes).toHaveLength(0);
+    expect(onWriteFailed).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('typing store: reading saved results', () => {
   it('pages the results newest first and counts them', async () => {
     const { store } = setup();
