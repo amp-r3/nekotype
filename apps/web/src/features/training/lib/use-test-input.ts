@@ -37,6 +37,10 @@ export function useTestInput(session: Session, active: boolean): TestInput {
           session.handleIntent(intent);
         },
         canFinish: () => session.canFinish(),
+        // A digit, a space or a letter of another layout keeps the idle wait from running out.
+        onActivity: () => {
+          session.noteActivity();
+        },
       }),
     [session],
   );

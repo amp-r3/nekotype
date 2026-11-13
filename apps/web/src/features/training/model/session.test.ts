@@ -1521,7 +1521,7 @@ describe('session: idle end and hidden-tab end (metrics.md, D24)', () => {
     expect(reports[0]?.endReason).toBe('idle');
   });
 
-  it('an ignored key does not count', () => {
+  it('a key that is not input restarts the wait; an ignored intent alone does not', () => {
     const session = make({ kind: 'count', prompts: 10 });
     session.loadPrompt(a, 'learner');
     type(session, 'a');
@@ -1531,6 +1531,30 @@ describe('session: idle end and hidden-tab end (metrics.md, D24)', () => {
     session.handleIntent({ kind: 'ignore' });
     wait(2000);
     expect(reports[0]?.endReason).toBe('idle');
+  });
+
+  it('noteActivity (a digit, a space, a letter of another layout) restarts the wait', () => {
+    const session = make({ kind: 'count', prompts: 10 });
+    session.loadPrompt(a, 'learner');
+    type(session, 'a');
+    wait(100);
+    type(session, 'a');
+    wait(4000);
+    session.noteActivity();
+    wait(4999);
+    expect(session.phase.value).toBe('running');
+    wait(1);
+    expect(session.phase.value).not.toBe('running');
+    expect(reports[0]?.endReason).toBe('idle');
+  });
+
+  it('noteActivity does nothing before the first key', () => {
+    const session = make({ kind: 'count', prompts: 10 });
+    session.loadPrompt(a, 'learner');
+    session.noteActivity();
+    wait(60 * 1000);
+    expect(session.phase.value).toBe('idle');
+    expect(reports).toHaveLength(0);
   });
 
   it('a test that has not started never ends', () => {

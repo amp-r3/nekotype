@@ -463,6 +463,67 @@ describe('input source: the hybrid of keydown, beforeinput and input', () => {
     });
   });
 
+  describe('activity that is not input (idle wait, metrics.md)', () => {
+    let onActivity: ReturnType<typeof vi.fn<() => void>>;
+
+    beforeEach(() => {
+      unbind();
+      onActivity = vi.fn<() => void>();
+      source = createInputSource({ onIntent, onActivity });
+      unbind = source.bind(input);
+    });
+
+    it('a digit, a space and a mark are activity, and are left to the browser', () => {
+      for (const key of ['1', ' ', '.']) {
+        const event = keydown(input, key);
+        expect(event.defaultPrevented).toBe(false);
+      }
+      expect(onActivity).toHaveBeenCalledTimes(3);
+      expect(onIntent).not.toHaveBeenCalled();
+    });
+
+    it('a letter of another layout and kana are activity too', () => {
+      keydown(input, 'ф');
+      keydown(input, 'あ');
+      expect(onActivity).toHaveBeenCalledTimes(2);
+      expect(onIntent).not.toHaveBeenCalled();
+    });
+
+    it('characters that arrive as text (mobile keyboards) are activity', () => {
+      beforeInput('1', true);
+      beforeInput('ф', true);
+      expect(onActivity).toHaveBeenCalledTimes(2);
+    });
+
+    it('a Latin letter is input, not activity', () => {
+      keydown(input, 'a');
+      expect(onActivity).not.toHaveBeenCalled();
+      expect(chars()).toEqual(['a']);
+    });
+
+    it('a modifier alone, a shortcut, a named key and a held key are not activity', () => {
+      keydown(input, 'Shift');
+      keydown(input, 'Tab');
+      keydown(input, 'ArrowLeft');
+      keydown(input, 'Control', { ctrlKey: true });
+      keydown(input, '1', { ctrlKey: true });
+      keydown(input, '1', { metaKey: true });
+      keydown(input, '1', { repeat: true });
+      expect(onActivity).not.toHaveBeenCalled();
+    });
+
+    it('a key in a dialog or in another text field is not activity', () => {
+      const field = document.createElement('textarea');
+      document.body.append(field);
+      keydown(field, '1');
+      const dialog = document.createElement('dialog');
+      dialog.setAttribute('open', '');
+      document.body.append(dialog);
+      keydown(input, '1');
+      expect(onActivity).not.toHaveBeenCalled();
+    });
+  });
+
   describe('keys the browser keeps', () => {
     it('Ctrl+Enter is left alone when there is nothing to finish', () => {
       unbind();
