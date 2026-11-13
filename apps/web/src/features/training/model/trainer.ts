@@ -48,6 +48,9 @@ export type Trainer = {
   readonly session: Session;
   readonly isLoadingContent: ReadonlySignal<boolean>;
   readonly contentLoadFailed: ReadonlySignal<boolean>;
+  // The selected vocabulary has loaded and holds nothing for the selected script: no prompt, keys
+  // ignored, and the notice slot says so.
+  readonly noContentForScript: ReadonlySignal<boolean>;
   // The last saved test with the average and the best it was compared with; null while a test runs.
   readonly lastSaved: ReadonlySignal<FinishedTest | null>;
   // Whether the test on screen is a repeat; the live line shows the mark.
@@ -97,15 +100,21 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
   const selectedItems = (): readonly ContentItem[] =>
     selectedChunks().flatMap((c) => chunks.get(c) ?? []);
 
+  // The selected vocabulary is here and has nothing for the script (phrases written only in
+  // katakana: the pinned sources give none, ADR 070). The loading and failure signals are read
+  // first, so a chunk that arrives, which changes `loading`, is seen.
+  const noContentForScript = computed(() => {
+    if (isLoadingContent.value || contentLoadFailed.value) return false;
+    if (deps.nextPrompt !== undefined || !selectedChunks().every((c) => chunks.has(c)))
+      return false;
+    return buildPool(getPracticeSettings(), selectedItems()).length === 0;
+  });
+
   // No prompt to show: the selected vocabulary is loading, failed to load, or has nothing for the
   // script. The notice slot says which; Retry loads it again.
-  const noPrompts = computed(() => {
-    if (isLoadingContent.value || contentLoadFailed.value) return true;
-    return (
-      deps.nextPrompt === undefined &&
-      buildPool(getPracticeSettings(), selectedItems()).length === 0
-    );
-  });
+  const noPrompts = computed(
+    () => isLoadingContent.value || contentLoadFailed.value || noContentForScript.value,
+  );
 
   const freshPrompt =
     deps.nextPrompt ??
@@ -245,6 +254,7 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
     session,
     isLoadingContent,
     contentLoadFailed,
+    noContentForScript,
     lastSaved,
     repeating,
     restart,

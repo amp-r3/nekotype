@@ -41,6 +41,7 @@ export const typeEn = {
   'stage.revealed': 'Revealed: {answer}',
   'stage.contentLoading': 'Loading vocabulary...',
   'stage.contentLoadError': 'Failed to load the vocabulary. Kana are practised until it loads.',
+  'stage.noContentForScript': 'Nothing to type for this script yet. Choose {both}.',
 
   // Results panel
   'results.kpm': 'kpm',

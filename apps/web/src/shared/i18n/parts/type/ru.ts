@@ -42,6 +42,7 @@ export const typeRu = {
   'stage.revealed': 'Ответ: {answer}',
   'stage.contentLoading': 'Загрузка словаря...',
   'stage.contentLoadError': 'Не удалось загрузить словарь. Пока он не загружен, тренируются каны.',
+  'stage.noContentForScript': 'Для этой письменности пока ничего нет. Выберите {both}.',
 
   // Results panel
   'results.kpm': 'kpm',

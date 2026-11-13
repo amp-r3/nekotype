@@ -66,6 +66,10 @@ export function TrainerPage(props: TrainerPageProps = {}): JSX.Element {
           <span role="status" className="text-fur-dim">
             {t('stage.contentLoading')}
           </span>
+        ) : trainer.noContentForScript.value ? (
+          <span role="status" className="text-fur-dim">
+            {t('stage.noContentForScript', { both: t('config.script.both') })}
+          </span>
         ) : null}
       </div>
 
