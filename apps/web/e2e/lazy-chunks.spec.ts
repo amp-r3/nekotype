@@ -24,7 +24,7 @@ test.describe('the results screen is a lazy chunk', () => {
     await finishZen(page);
 
     await expect(page.getByRole('status').filter({ hasText: 'Loading' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Next Test' })).toBeFocused();
+    await expect(page.getByRole('button', { name: 'next test' })).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
   });
@@ -51,7 +51,7 @@ test.describe('the results screen is a lazy chunk', () => {
     await finishZen(page);
 
     await expect(page.getByRole('alert')).toBeVisible();
-    await page.getByRole('button', { name: 'Next Test' }).click();
+    await page.getByRole('button', { name: 'next test' }).click();
     await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
   });
 

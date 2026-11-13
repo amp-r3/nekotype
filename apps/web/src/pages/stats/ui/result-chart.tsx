@@ -14,6 +14,8 @@ export type ResultChartProps = {
   // The text of the tooltip of point `index`.
   readonly tip: (index: number, value: number | null) => string;
   readonly label: string;
+  // Marks every point; without it only an isolated point (no neighbour) gets a dot.
+  readonly dots?: boolean;
   readonly testId?: string;
 };
 
@@ -26,7 +28,7 @@ const FALLBACK_WIDTH = 320;
 
 /**
  * One line on `/stats` (design ResultChart): drawn at the width it has, so the axis text never
- * scales; a gap for a day without answers, a dot for every point, a dashed target line; the cursor
+ * scales; a gap for a day without answers, a dot for an isolated point (every point with `dots`), a dashed target line; the cursor
  * follows the pointer or ← → and its tooltip names the day.
  */
 export function ResultChart({
@@ -38,6 +40,7 @@ export function ResultChart({
   reference,
   tip,
   label,
+  dots = false,
   testId,
 }: ResultChartProps): JSX.Element {
   const figure = useRef<HTMLElement>(null);
@@ -190,17 +193,19 @@ export function ResultChart({
             />
           ) : null,
         )}
-        {values.map((value, index) =>
-          value === null ? null : (
-            <circle
-              key={index}
-              className="fill-chart-kpm"
-              cx={x(index)}
-              cy={y(value)}
-              r="2.5"
-              data-testid="chart-dot"
-            />
-          ),
+        {runs.flatMap((points) =>
+          dots || points.length === 1
+            ? points.map((point) => (
+                <circle
+                  key={point.index}
+                  className="fill-chart-kpm"
+                  cx={x(point.index)}
+                  cy={y(point.value)}
+                  r="2.5"
+                  data-testid="chart-dot"
+                />
+              ))
+            : [],
         )}
         {cursor !== null && (
           <line

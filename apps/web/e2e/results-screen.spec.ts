@@ -32,7 +32,7 @@ test.describe('the results screen (metrics.md, Screens)', () => {
     await expect(panel.getByTestId('mode-line')).toHaveText('words · hiragana · relaxed · 10');
     await expect(panel.getByText(/ vs /)).toHaveCount(0);
 
-    await panel.getByRole('button', { name: /Next Test/ }).click();
+    await panel.getByRole('button', { name: /next test/ }).click();
     await expect(page.getByTestId('prompt-arena')).toBeVisible();
 
     await typeCountTest(page, 10, 120);

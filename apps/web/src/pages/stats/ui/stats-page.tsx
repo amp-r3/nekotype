@@ -175,6 +175,7 @@ export function StatsPage(): JSX.Element {
             <ResultChart
               key={track}
               testId="stats-median-chart"
+              dots
               values={series.values}
               xLabels={series.days.map(dateLabel)}
               domain={axis.domain}
@@ -212,21 +213,21 @@ export function StatsPage(): JSX.Element {
           </thead>
           <tbody>
             <tr>
-              <td className="text-ui-label text-fur py-1 pr-3">{t('stats.counters.typing')}</td>
-              <td className={`${MONO} py-1 pr-3 text-right`} data-testid="stats-started-typing">
-                {typing.started.typing}
-              </td>
-              <td className={`${MONO} py-1 text-right`} data-testid="stats-finished-typing">
-                {typing.finished.typing}
-              </td>
-            </tr>
-            <tr>
               <td className="text-ui-label text-fur py-1 pr-3">{t('stats.counters.learning')}</td>
               <td className={`${MONO} py-1 pr-3 text-right`} data-testid="stats-started">
                 {counters.started.learn}
               </td>
               <td className={`${MONO} py-1 text-right`} data-testid="stats-finished">
                 {counters.finished.learn}
+              </td>
+            </tr>
+            <tr>
+              <td className="text-ui-label text-fur py-1 pr-3">{t('stats.counters.typing')}</td>
+              <td className={`${MONO} py-1 pr-3 text-right`} data-testid="stats-started-typing">
+                {typing.started.typing}
+              </td>
+              <td className={`${MONO} py-1 text-right`} data-testid="stats-finished-typing">
+                {typing.finished.typing}
               </td>
             </tr>
           </tbody>

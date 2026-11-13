@@ -6,31 +6,40 @@ export type WeakKanaListProps = {
   readonly items: readonly WeakKana[];
 };
 
+const TH = 'pr-3 pb-2 text-left font-normal';
+const TD = 'border-line border-t py-1.5 pr-3 align-baseline';
+
 /** The kana mistyped in this test (design WeakKanaList): kana, accepted spellings, errors. */
 export function WeakKanaList({ items }: WeakKanaListProps): JSX.Element | null {
   if (items.length === 0) return null;
 
   return (
-    <section data-testid="weak-kana" className="flex flex-col gap-2">
-      <h2 className="text-fur-dim text-ui-label">{t('results.weakest')}</h2>
-      <ul className="divide-line flex flex-col divide-y">
-        {items.map((item) => (
-          <li key={item.key} className="flex items-baseline gap-4 py-1.5">
-            <span className="font-jp text-fur text-jp-cell w-10" lang="ja">
-              {item.glyph}
-            </span>
-            <span className="text-fur-dim text-mono-small flex-1 font-mono">
-              {item.spellings.join(' · ')}
-            </span>
-            <span
-              className="text-fur text-mono-romaji font-mono tabular-nums"
-              aria-label={`${t('results.errors')}: ${String(item.errors)}`}
-            >
-              {item.errors}
-            </span>
-          </li>
-        ))}
-      </ul>
+    <section data-testid="weak-kana" className="flex max-w-[560px] flex-col gap-3">
+      <h2 className="text-ui-heading text-fur">{t('results.weakest')}</h2>
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="text-ui-caption text-fur-dim">
+            <th className={TH}>{t('results.colKana')}</th>
+            <th className={TH}>{t('results.colRomaji')}</th>
+            <th className={`${TH} text-right`}>{t('results.errors')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((item) => (
+            <tr key={item.key}>
+              <td className={`${TD} font-jp text-fur text-jp-cell w-14`} lang="ja">
+                {item.glyph}
+              </td>
+              <td className={`${TD} text-fur-dim text-mono-small font-mono`}>
+                {item.spellings.join(' · ')}
+              </td>
+              <td className={`${TD} text-fur text-mono-romaji text-right font-mono tabular-nums`}>
+                {item.errors}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </section>
   );
 }

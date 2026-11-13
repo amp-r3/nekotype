@@ -138,14 +138,14 @@ test.describe('focus redirection and keyboard-first typing', () => {
       }
 
       // After 10 prompts, the test completes automatically and renders ResultsPanel
-      const nextTestBtn = page.getByRole('button', { name: 'Next Test' });
+      const nextTestBtn = page.getByRole('button', { name: 'next test' });
       await expect(nextTestBtn).toBeVisible({ timeout: 5000 });
       await expect(nextTestBtn).toBeFocused();
 
       // D20: the results panel fades in (`animate-fadeIn` used to be an undefined class)
       await expect(page.getByTestId('results-panel')).toHaveCSS('animation-name', 'fadeIn');
 
-      // Press Enter to activate "Next Test" button
+      // Press Enter to activate "next test" button
       await page.keyboard.press('Enter');
 
       // Results screen closes, returns to idle test stage with input focused
@@ -186,7 +186,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
       }
     }
 
-    await expect(page.getByRole('button', { name: 'Next Test' })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('button', { name: 'next test' })).toBeVisible({ timeout: 5000 });
     // No mistakes: every answer was canonical
     await expect(page.getByTestId('results-panel')).toBeVisible();
   });

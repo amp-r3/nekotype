@@ -61,7 +61,7 @@ test.describe('zen: a test without a length, ended by hand', () => {
     await finish.click();
     await expect(page.getByTestId('results-panel')).toBeVisible();
     // The results take the focus themselves; wait for it so a slow runner cannot press too early.
-    await expect(page.getByRole('button', { name: 'Next Test' })).toBeFocused();
+    await expect(page.getByRole('button', { name: 'next test' })).toBeFocused();
     await page.keyboard.press('Enter');
     // Next test: the same zen config, idle.
     await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
