@@ -598,6 +598,50 @@ describe('learn store: two tabs', () => {
   });
 });
 
+describe('learn store: reset in another tab', () => {
+  it('drops what the tab held, and its next write does not bring the old state back', async () => {
+    const db = createMemoryDb();
+    const newChannel = channelBus();
+    const make = (channel: ChangeChannel) => {
+      const scheduler = new ManualScheduler();
+      const store = createLearnStore({
+        db: () => Promise.resolve(db),
+        clock: new TestClock(),
+        scheduler,
+        targetMs: () => 1500,
+        channel,
+      });
+      return { store, scheduler };
+    };
+    const a = make(newChannel());
+    const b = make(newChannel());
+    await a.store.init();
+    await b.store.init();
+    a.store.introduce(A);
+    answer(a.store, A);
+    a.store.countSession('started');
+    a.scheduler.runAll();
+    await a.store.flush();
+    await b.store.flush();
+    expect(b.store.state.value.recent[A]).toHaveLength(1);
+
+    await a.store.reset();
+    await b.store.flush();
+    expect(b.store.state.value.entries).toEqual({});
+    expect(b.store.state.value.recent).toEqual({});
+    expect(b.store.counters.value.started.learn).toBe(0);
+
+    b.store.countSession('started');
+    b.scheduler.runAll();
+    await b.store.flush();
+    const stored = await db.get('delta', 'learn');
+    expect(stored).toMatchObject({
+      learn: { entries: {}, recent: {} },
+      counters: { started: { learn: 1 } },
+    });
+  });
+});
+
 describe('learn store: write failures and the target', () => {
   it('reports a write that fails', async () => {
     const db = createMemoryDb();

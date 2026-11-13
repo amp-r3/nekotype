@@ -100,13 +100,18 @@ export function createTypingStore(deps: TypingStoreDeps): TypingStore {
   const load = async (): Promise<void> => {
     const db = await deps.db();
     const doc = await db.get(DELTA_STORE, DELTA_KEY);
-    // A record that fails validation is not taken: the initial state stands (ADR 061).
-    if (isObject(doc) && isKanaStatMap(doc['kanaStats']) && isCounters(doc['counters'])) {
+    if (doc === undefined) {
+      // No record: the progress was reset, perhaps by another tab, so nothing is held.
+      kanaStats.value = {};
+      counters.value = initialCounters();
+    } else if (isObject(doc) && isKanaStatMap(doc['kanaStats']) && isCounters(doc['counters'])) {
+      // A record that fails validation is not taken: the state held stands (ADR 061).
       kanaStats.value = doc['kanaStats'];
       counters.value = doc['counters'];
     }
     const stored = await db.get(RECORDS_STORE, RECORDS_KEY);
-    if (isTypingRecords(stored)) records.value = stored;
+    if (stored === undefined) records.value = {};
+    else if (isTypingRecords(stored)) records.value = stored;
   };
 
   // Another tab wrote: take its state, in the chain of writes so that it is not read during our own.
@@ -140,7 +145,11 @@ export function createTypingStore(deps: TypingStoreDeps): TypingStore {
   const enqueue = (extra: (db: Db) => Parameters<Db['write']>[0]): Promise<void> => {
     // After a failed read the state in memory is not the stored one: writing it would replace the
     // stored record with the initial state.
-    if (status.value === 'error') return writing;
+    if (status.value === 'error') {
+      // The test is shown but not kept: say so, as for any write that fails.
+      deps.onWriteFailed?.();
+      return writing;
+    }
     const delta = { kanaStats: kanaStats.value, counters: counters.value };
     writing = writing
       .then(async () => {
