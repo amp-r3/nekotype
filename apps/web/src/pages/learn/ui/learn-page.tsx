@@ -164,7 +164,7 @@ export function LearnPage(): JSX.Element {
   return (
     <>
       {hiddenInput}
-      <section className="max-w-layout-max mx-auto flex w-full flex-col items-start gap-6 py-12">
+      <section className="max-w-layout-max mx-auto flex w-full flex-col items-start gap-6">
         <h1 className="sr-only">{t('page.learn')}</h1>
 
         <div className="flex w-full flex-wrap items-baseline justify-between gap-x-8 gap-y-3">

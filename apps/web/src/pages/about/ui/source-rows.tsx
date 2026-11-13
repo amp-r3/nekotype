@@ -26,10 +26,7 @@ function Rows({ rows }: { readonly rows: readonly Row[] }): JSX.Element {
   return (
     <ul className="flex flex-col">
       {rows.map((row) => (
-        <li
-          key={row.name}
-          className="border-line flex flex-col gap-1 border-t py-3 first:border-t-0 first:pt-0"
-        >
+        <li key={row.name} className="border-line flex flex-col gap-1 border-t py-3">
           <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
             <span>
               <a
@@ -95,7 +92,7 @@ export function SourcesSection(): JSX.Element {
     },
   ];
   return (
-    <section aria-labelledby="about-sources" className="flex flex-col gap-4">
+    <section aria-labelledby="about-sources" className="flex max-w-[720px] flex-col gap-4">
       <h2 id="about-sources" className="text-ui-heading text-fur">
         {t('about.sources.title')}
       </h2>
@@ -108,12 +105,12 @@ export function SourcesSection(): JSX.Element {
 /** Section 2: the terms of Nekotype itself, as in NOTICE.md. */
 export function TermsSection(): JSX.Element {
   return (
-    <section aria-labelledby="about-terms" className="flex flex-col gap-4">
+    <section aria-labelledby="about-terms" className="flex max-w-[720px] flex-col gap-4">
       <h2 id="about-terms" className="text-ui-heading text-fur">
         {t('about.terms.title')}
       </h2>
       <ul className="flex flex-col">
-        <li className="flex flex-col gap-1 pb-3">
+        <li className="border-line flex flex-col gap-1 border-t py-3">
           <div className="flex flex-wrap items-baseline justify-between gap-x-6">
             <span className="text-ui-label text-fur">{t('about.terms.code')}</span>
             <a
