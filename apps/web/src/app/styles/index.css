@@ -2,19 +2,6 @@
 @import '../../shared/styles/fonts.css';
 @import '../../shared/styles/tokens.css';
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn var(--dur-reveal) var(--ease-out);
-}
-
 /* A block or a dialog appears: opacity and a 4 px rise (design motion table, `nk-reveal`). */
 @keyframes reveal {
   from {
@@ -73,7 +60,6 @@ html {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .animate-fadeIn,
   .animate-reveal,
   .nk-caret.is-idle {
     animation: none !important;

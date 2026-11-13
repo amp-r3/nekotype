@@ -47,12 +47,12 @@ describe('i18n: translations and locale handling', () => {
   it('translates strings for active locale with parameter interpolation', async () => {
     await setLocale('en');
     expect(t('app.title')).toBe('Nekotype');
-    expect(t('stage.revealed', { answer: 'ka' })).toBe('revealed: ka');
+    expect(t('stage.revealed')).toBe('revealed:');
 
     await setLocale('ru');
     expect(t('app.title')).toBe('Nekotype');
     expect(t('config.script.hiragana')).toBe('хирагана');
-    expect(t('stage.revealed', { answer: 'ka' })).toBe('ответ: ka');
+    expect(t('stage.revealed')).toBe('ответ:');
 
     // Reset back to en
     await setLocale('en');

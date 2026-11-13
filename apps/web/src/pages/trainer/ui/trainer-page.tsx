@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import { useState, useLayoutEffect } from 'preact/hooks';
 import { useComputed } from '@preact/signals';
 import { t } from '@/shared/i18n';
-import { Button } from '@/shared/ui';
+import { Button, Notice } from '@/shared/ui';
 import { createTrainer, useTestInput } from '@/features/training';
 import type { Trainer } from '@/features/training';
 import { ModePanel } from './mode-panel';
@@ -46,32 +46,42 @@ export function TrainerPage(props: TrainerPageProps = {}): JSX.Element {
   useLayoutEffect(() => trainer.start(), [trainer]);
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6">
-      <ModePanel />
+    <div className="flex flex-1 flex-col">
+      {/* The bar and the notice slot belong to the test: the results screen is only the results. */}
+      {!isFinished && (
+        <>
+          <ModePanel />
 
-      {/* One slot for the notices, always there: a notice appearing must not move the text below. */}
-      <div
-        data-chrome
-        data-testid="stage-notice"
-        className="text-ui-label max-w-layout-test mx-auto flex min-h-12 w-full items-center justify-center gap-3 p-2.5 text-center"
-      >
-        {trainer.contentLoadFailed.value ? (
-          <>
-            <span role="alert" className="text-miss">
-              {t('stage.contentLoadError')}
-            </span>
-            <Button onClick={trainer.retryContent}>{t('route.retry')}</Button>
-          </>
-        ) : trainer.isLoadingContent.value ? (
-          <span role="status" className="text-fur-dim">
-            {t('stage.contentLoading')}
-          </span>
-        ) : trainer.noContentForScript.value ? (
-          <span role="status" className="text-fur-dim">
-            {t('stage.noContentForScript', { both: t('config.script.both') })}
-          </span>
-        ) : null}
-      </div>
+          {/* One slot for the notices, always there: a notice appearing must not move the text
+              below. */}
+          <div
+            data-chrome
+            data-testid="stage-notice"
+            className="max-w-layout-test mx-auto mt-16 w-full max-sm:mt-8"
+          >
+            <Notice
+              reserve
+              tone={trainer.contentLoadFailed.value ? 'miss' : undefined}
+              loading={trainer.isLoadingContent.value}
+              action={
+                trainer.contentLoadFailed.value ? (
+                  <Button variant="secondary" size="sm" onClick={trainer.retryContent}>
+                    {t('route.retry')}
+                  </Button>
+                ) : undefined
+              }
+            >
+              {trainer.contentLoadFailed.value
+                ? t('stage.contentLoadError')
+                : trainer.isLoadingContent.value
+                  ? t('stage.contentLoading')
+                  : trainer.noContentForScript.value
+                    ? t('stage.noContentForScript', { both: t('config.script.both') })
+                    : null}
+            </Notice>
+          </div>
+        </>
+      )}
 
       {/* The field that takes the keyboard; the stream is only a picture of what it receives. */}
       <input

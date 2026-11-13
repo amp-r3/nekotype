@@ -53,7 +53,9 @@ describe('results screen: the chunk fails to load', () => {
   });
 
   it('shows the error with Retry, and Next test and Enter still start a test', async () => {
-    expect(container.querySelector('[role="alert"]')).not.toBeNull();
+    expect(
+      container.querySelector('[data-testid="results-pending"] [role="status"]')?.textContent,
+    ).toContain('failed to load');
     const labels = Array.from(container.querySelectorAll('button')).map((b) => b.textContent);
     expect(labels).toContain('retry');
     expect(labels.some((label) => label.startsWith('next test'))).toBe(true);

@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
 import { useLayoutEffect, useRef } from 'preact/hooks';
 import { t } from '@/shared/i18n';
-import { Button } from '@/shared/ui';
+import { Button, Notice } from '@/shared/ui';
 import { useEnterForNext } from '@/features/training';
 
 export type ResultsPendingProps = {
@@ -27,22 +27,22 @@ export function ResultsPending({ failed, onRetry, onNextTest }: ResultsPendingPr
       ref={root}
       tabIndex={-1}
       data-testid="results-pending"
-      className="nk-holds-focus max-w-layout-test mx-auto flex w-full flex-col items-center gap-4 py-12"
+      className="nk-holds-focus flex w-full flex-col items-start gap-12 pb-6"
     >
-      {failed ? (
-        <>
-          <p role="alert" className="text-miss text-ui-body">
-            {t('route.loadError')}
-          </p>
-          <Button variant="secondary" onClick={onRetry}>
-            {t('route.retry')}
-          </Button>
-        </>
-      ) : (
-        <p role="status" className="text-fur-dim text-ui-label">
-          {t('route.loading')}
-        </p>
-      )}
+      <Notice
+        reserve
+        tone={failed ? 'miss' : undefined}
+        loading={!failed}
+        action={
+          failed ? (
+            <Button variant="secondary" size="sm" onClick={onRetry}>
+              {t('route.retry')}
+            </Button>
+          ) : undefined
+        }
+      >
+        {failed ? t('route.loadError') : t('route.loading')}
+      </Notice>
       <Button variant="primary" size="lg" onClick={onNextTest} hint={t('key.enter')}>
         {t('results.nextTest')}
       </Button>

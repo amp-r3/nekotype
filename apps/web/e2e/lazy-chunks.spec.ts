@@ -40,7 +40,9 @@ test.describe('the results screen is a lazy chunk', () => {
     });
     await finishZen(page);
 
-    await expect(page.getByRole('alert')).toBeVisible();
+    await expect(page.getByTestId('results-pending').getByRole('status')).toContainText(
+      'failed to load',
+    );
     failing = false;
     await page.getByRole('button', { name: 'retry' }).click();
     await expect(page.getByTestId('results-panel')).toBeVisible();
@@ -50,7 +52,9 @@ test.describe('the results screen is a lazy chunk', () => {
     await page.route(RESULTS_CHUNK, (route) => route.abort());
     await finishZen(page);
 
-    await expect(page.getByRole('alert')).toBeVisible();
+    await expect(page.getByTestId('results-pending').getByRole('status')).toContainText(
+      'failed to load',
+    );
     await page.getByRole('button', { name: 'next test' }).click();
     await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
   });

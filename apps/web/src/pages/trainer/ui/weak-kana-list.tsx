@@ -4,17 +4,22 @@ import type { WeakKana } from '../lib/results-model';
 
 export type WeakKanaListProps = {
   readonly items: readonly WeakKana[];
+  readonly style?: string;
 };
 
 const TH = 'pr-3 pb-2 text-left font-normal';
-const TD = 'border-line border-t py-1.5 pr-3 align-baseline';
+const TD = 'border-line border-t py-2 pr-3 align-baseline';
 
 /** The kana mistyped in this test (design WeakKanaList): kana, accepted spellings, errors. */
-export function WeakKanaList({ items }: WeakKanaListProps): JSX.Element | null {
+export function WeakKanaList({ items, style }: WeakKanaListProps): JSX.Element | null {
   if (items.length === 0) return null;
 
   return (
-    <section data-testid="weak-kana" className="flex max-w-[560px] flex-col gap-3">
+    <section
+      data-testid="weak-kana"
+      className="animate-reveal flex max-w-[560px] flex-col gap-4"
+      style={style}
+    >
       <h2 className="text-ui-heading text-fur">{t('results.weakest')}</h2>
       <table className="w-full border-collapse">
         <thead>
