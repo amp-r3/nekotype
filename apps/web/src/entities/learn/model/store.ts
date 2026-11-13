@@ -123,7 +123,11 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
     pending = null;
     // After a failed read the state in memory is not the stored one: writing it would replace the
     // stored record with the initial state.
-    if (status.value === 'error') return writing;
+    if (status.value === 'error') {
+      // The answer is shown but not kept: say so, as for any write that fails.
+      deps.onWriteFailed?.();
+      return writing;
+    }
     const learn = state.value;
     const stored = counters.value;
     const keep = intervals;

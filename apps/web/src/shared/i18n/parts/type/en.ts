@@ -40,7 +40,7 @@ export const typeEn = {
   'stage.finish': 'Finish',
   'stage.revealed': 'Revealed: {answer}',
   'stage.contentLoading': 'Loading vocabulary...',
-  'stage.contentLoadError': 'Failed to load the vocabulary. Kana are practised until it loads.',
+  'stage.contentLoadError': 'Failed to load the vocabulary. Check the connection and try again.',
   'stage.noContentForScript': 'Nothing to type for this script yet. Choose {both}.',
 
   // Results panel

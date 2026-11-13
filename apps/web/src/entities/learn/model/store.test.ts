@@ -598,6 +598,29 @@ describe('learn store: two tabs', () => {
   });
 });
 
+describe('learn store: an answer after a failed read', () => {
+  it('writes nothing and reports it, so the screen does not pretend it was kept', async () => {
+    const failing: Db = { ...createMemoryDb(), get: () => Promise.reject(new Error('closed')) };
+    const onWriteFailed = vi.fn();
+    const scheduler = new ManualScheduler();
+    const store = createLearnStore({
+      db: () => Promise.resolve(failing),
+      clock: new TestClock(),
+      scheduler,
+      targetMs: () => 1500,
+      onWriteFailed,
+    });
+    const writes = recordedWrites(failing);
+    await store.init();
+    expect(store.status.value).toBe('error');
+    answer(store, A);
+    scheduler.runAll();
+    await store.flush();
+    expect(writes).toHaveLength(0);
+    expect(onWriteFailed).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('learn store: reset in another tab', () => {
   it('drops what the tab held, and its next write does not bring the old state back', async () => {
     const db = createMemoryDb();
