@@ -74,6 +74,39 @@ describe('contentVersion (C11)', () => {
     expect(manifest).toMatchObject({ contentVersion: recomputed.contentVersion });
   });
 
+  it('credits every committed phrase with the authors of its sentence and translation', () => {
+    const read = (name: string): unknown[] => {
+      const data: unknown = JSON.parse(readFileSync(new URL(name, OUT), 'utf8'));
+      if (!Array.isArray(data)) throw new Error(`${name} is not a list`);
+      return data;
+    };
+    const idOf = (value: unknown): unknown =>
+      typeof value === 'object' && value !== null && 'id' in value ? value.id : undefined;
+    const authorOf = (value: unknown, part: string): unknown => {
+      if (typeof value !== 'object' || value === null || !(part in value)) return undefined;
+      const entry: unknown = Reflect.get(value, part);
+      return typeof entry === 'object' && entry !== null && 'author' in entry
+        ? entry.author
+        : undefined;
+    };
+
+    const phraseIds = CHUNK_FILES.filter((f) => f.startsWith('phrases-')).flatMap((f) =>
+      read(f).map(idOf),
+    );
+    const credits = read('credits.json');
+    const creditIds = credits.map(idOf);
+
+    expect(phraseIds.length).toBeGreaterThan(0);
+    expect(new Set(creditIds).size).toBe(credits.length);
+    expect([...phraseIds].sort()).toEqual([...creditIds].sort());
+    for (const credit of credits) {
+      for (const part of ['sentence', 'translation']) {
+        const author = authorOf(credit, part);
+        expect(typeof author === 'string' && author !== '').toBe(true);
+      }
+    }
+  });
+
   it('keeps every committed file as the build serialises it', () => {
     for (const name of [...CHUNK_FILES, 'manifest.json']) {
       const text = readFileSync(new URL(name, OUT), 'utf8');
