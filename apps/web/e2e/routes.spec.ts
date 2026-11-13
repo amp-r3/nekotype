@@ -18,6 +18,13 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
     await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
   });
 
+  test('Enter on the not-found screen goes home', async ({ page }) => {
+    await page.goto('/nope');
+    await expect(page.getByRole('button', { name: /^go home/ })).toBeVisible();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/$/);
+  });
+
   test('navigation does not reload the page, and Back returns to a working trainer', async ({
     page,
   }) => {
@@ -73,10 +80,10 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
 
   test('the language switch is in the navigation on every screen', async ({ page }) => {
     await page.goto('/about');
-    await page.getByRole('radio', { name: 'RU' }).click();
+    await page.getByRole('button', { name: 'ru', exact: true }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'О проекте' })).toBeVisible();
     await expect(page).toHaveTitle('О проекте — Nekotype');
-    await page.getByRole('radio', { name: 'en', exact: true }).click();
+    await page.getByRole('button', { name: 'en', exact: true }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'About' })).toBeVisible();
   });
 });

@@ -141,6 +141,7 @@
   --spacing-control: var(--control-h);
   --spacing-control-sm: var(--control-h-sm);
   --spacing-touch-min: var(--touch-min);
+  --spacing-nav: var(--layout-nav-h);
   --container-layout-max: var(--layout-max);
   --container-layout-test: var(--layout-test);
   --breakpoint-sm: 640px;

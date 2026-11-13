@@ -65,7 +65,7 @@ test.describe('the results screen is a lazy chunk', () => {
     await Promise.all([results, ru]);
 
     await context.setOffline(true);
-    await page.getByRole('radio', { name: 'RU' }).click();
+    await page.getByRole('button', { name: 'ru', exact: true }).click();
     await expect(page.getByRole('radio', { name: 'Хирагана' })).toBeVisible();
     await page.getByRole('radio', { name: 'zen' }).click();
     await page.keyboard.type(await canonicalOfPrompt(page), { delay: 15 });

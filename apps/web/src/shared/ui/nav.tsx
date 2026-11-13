@@ -19,8 +19,9 @@ export type NavProps = {
   readonly trailing?: ComponentChildren;
 };
 
+// Plain text links: no fill, only the colour changes (design `nk-nav__link`).
 const itemClass =
-  'text-ui-label h-control-sm pointer-coarse:min-h-touch-min flex flex-1 items-center justify-center rounded-sm px-3 whitespace-nowrap transition-colors sm:flex-none';
+  'text-ui-label pointer-coarse:min-h-touch-min inline-flex items-center rounded-xs whitespace-nowrap transition-colors';
 
 export function Nav({
   brand,
@@ -34,13 +35,16 @@ export function Nav({
   return (
     <header
       data-chrome
-      className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2 py-4 select-none"
+      className="min-h-nav flex w-full flex-wrap items-center gap-x-8 select-none max-sm:gap-x-4 max-sm:pt-2"
     >
       <Link href={brandHref} onNavigate={onNavigate} className="order-1 flex items-center">
         {brand}
       </Link>
 
-      <nav aria-label={ariaLabel} className="order-3 flex w-full gap-1 sm:order-2 sm:w-auto">
+      <nav
+        aria-label={ariaLabel}
+        className="order-2 flex gap-6 max-sm:order-3 max-sm:w-full max-sm:justify-between max-sm:gap-2"
+      >
         {items.map((item) => {
           const current = item.href === currentPath;
           return (
@@ -49,10 +53,7 @@ export function Nav({
               href={item.href}
               onNavigate={onNavigate}
               current={current}
-              className={cx(
-                itemClass,
-                current ? 'text-fur' : 'text-fur-dim hover:text-fur hover:bg-bg-hover',
-              )}
+              className={cx(itemClass, current ? 'text-fur' : 'text-fur-dim hover:text-fur')}
             >
               {item.label}
             </Link>
@@ -60,7 +61,9 @@ export function Nav({
         })}
       </nav>
 
-      <div className="order-2 flex items-center gap-2 sm:order-3">{trailing}</div>
+      <div className="order-3 ml-auto flex items-center gap-6 max-sm:order-2 max-sm:gap-4">
+        {trailing}
+      </div>
     </header>
   );
 }
