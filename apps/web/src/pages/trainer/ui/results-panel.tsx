@@ -56,7 +56,7 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
 
   if (finished === null) {
     return (
-      <div ref={root} tabIndex={-1} className="nk-holds-focus text-fur-dim w-full py-12">
+      <div ref={root} tabIndex={-1} className="nk-holds-focus text-fur-dim w-full">
         <Button variant="primary" onClick={onNextTest}>
           {t('results.nextTest')}
         </Button>

@@ -89,7 +89,7 @@ export function TypingSection(): JSX.Element {
   const pages = historyPages(history?.count ?? 0);
 
   return (
-    <section className="flex flex-col gap-8" aria-labelledby="stats-typing">
+    <section className="flex flex-col gap-4" aria-labelledby="stats-typing">
       <h2 id="stats-typing" className="text-ui-heading text-fur">
         {t('stats.typing.title')}
       </h2>
@@ -99,8 +99,8 @@ export function TypingSection(): JSX.Element {
           {t('stats.typing.noData')}
         </p>
       ) : (
-        <>
-          <div className="flex max-w-[760px] flex-col gap-3">
+        <div className="flex flex-col gap-8">
+          <div className="flex max-w-[760px] flex-col gap-4">
             <h3 className={HEADING}>{t('stats.typing.bests')}</h3>
             {bests.length === 0 ? (
               <p className="text-fur-dim text-ui-body">{t('stats.typing.noBests')}</p>
@@ -112,9 +112,11 @@ export function TypingSection(): JSX.Element {
                       <td className="text-ui-label text-fur border-line border-t py-2 pr-3">
                         {row.label}
                       </td>
-                      <td className="text-fur-dim text-ui-caption border-line border-t py-2 text-right whitespace-nowrap">
-                        <span className={`${MONO} tabular-nums`}>{row.kpm}</span>{' '}
-                        {t('stats.history.kpm')}
+                      <td className="border-line border-t py-2 text-right whitespace-nowrap">
+                        <span className={`${MONO} tabular-nums`}>{row.kpm}</span>
+                        <span className="text-fur-dim text-mono-small font-mono">
+                          {` ${t('stats.history.kpm')}`}
+                        </span>
                       </td>
                     </tr>
                   ))}
@@ -166,7 +168,7 @@ export function TypingSection(): JSX.Element {
               </>
             )}
           </div>
-        </>
+        </div>
       )}
     </section>
   );
