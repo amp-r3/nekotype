@@ -7,6 +7,9 @@ export type { DialogProps } from './dialog';
 export { Segmented } from './segmented';
 export type { SegmentedProps, SegmentedOption } from './segmented';
 
+export { Toggle } from './toggle';
+export type { ToggleProps } from './toggle';
+
 export { Switch } from './switch';
 export type { SwitchProps } from './switch';
 
@@ -28,7 +31,7 @@ export type { NoticeProps } from './notice';
 export { Kbd } from './kbd';
 export type { KbdProps } from './kbd';
 
-export { KeyboardIcon, ResetIcon, RefreshIcon, CheckIcon } from './icons';
+export { ResetIcon, RestartIcon } from './icons';
 export type { IconProps } from './icons';
 
 // `KanaChart`, `KanaTask`, `OptionCard` and `createTaskController` are not exported here: this barrel

@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import type { RefObject } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { t } from '@/shared/i18n';
-import { Button, Kbd } from '@/shared/ui';
+import { Button } from '@/shared/ui';
 import type { SessionSummary } from '../lib/summary';
 import { loadSummaryPanel, summaryLoadFailed, summaryPanel } from '../summary-loader';
 
@@ -80,9 +80,8 @@ export function SummaryScreen({
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <Button variant="primary" size="lg" onClick={onContinue}>
+        <Button variant="primary" size="lg" onClick={onContinue} hint={t('key.enter')}>
           {t('learn.summary.continue')}
-          <Kbd>{t('key.enter')}</Kbd>
         </Button>
         <Button variant="secondary" size="lg" onClick={onTable}>
           {t('learn.summary.toTable')}

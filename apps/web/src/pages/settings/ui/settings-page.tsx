@@ -1,5 +1,5 @@
 import type { ComponentChildren, JSX } from 'preact';
-import { useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import type { Strictness } from '@nekotype/engine';
 import { Button, Dialog, ResetIcon, Segmented, Switch } from '@/shared/ui';
@@ -57,6 +57,7 @@ function SettingRow({
 
 export function SettingsPage(): JSX.Element {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const cancelRef = useRef<HTMLButtonElement | null>(null);
 
   const handleConfirmReset = () => {
     void resetTyping();
@@ -118,7 +119,7 @@ export function SettingsPage(): JSX.Element {
               setResetDialogOpen(true);
             }}
           >
-            <ResetIcon size={14} />
+            <ResetIcon />
             {t('settings.data.resetAction')}
           </Button>
         </SettingRow>
@@ -131,11 +132,13 @@ export function SettingsPage(): JSX.Element {
         }}
         title={t('reset.title')}
         closeLabel={t('dialog.close')}
+        initialFocusRef={cancelRef}
       >
         <p className="text-fur-dim text-ui-body">{t('reset.confirm')}</p>
         <div className="flex items-center justify-end gap-2 pt-2">
           <Button
             variant="text"
+            buttonRef={cancelRef}
             onClick={() => {
               setResetDialogOpen(false);
             }}

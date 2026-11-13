@@ -4,7 +4,7 @@ import type { ReadonlySignal } from '@preact/signals';
 import { t } from '@/shared/i18n';
 import { isApplePlatform, useMediaQuery } from '@/shared/lib';
 import { testConfig, showTranslationSetting } from '@/entities/settings';
-import { Kbd, RefreshIcon, Button } from '@/shared/ui';
+import { Kbd, RestartIcon, Button } from '@/shared/ui';
 import type { Session } from '@/features/training';
 import { TextStream, useTestChrome, useFinishButton } from '@/features/training';
 import type { TestInput } from '@/features/training';
@@ -112,11 +112,11 @@ export function TestStage({ session, repeating, input, onRestart }: TestStagePro
               e.stopPropagation();
               onRestart();
             }}
-            className="nk-on-focus flex items-center gap-1.5"
+            className="nk-on-focus"
             ariaLabel={t('stage.restartLabel')}
           >
-            <RefreshIcon size={13} />
-            <span className="hidden items-center gap-1.5 sm:inline-flex">
+            <RestartIcon />
+            <span className="hidden items-center gap-2 sm:inline-flex">
               <Kbd>{t('key.tabEnter')}</Kbd>
               {t('stage.tabHint')}
             </span>
@@ -135,10 +135,9 @@ export function TestStage({ session, repeating, input, onRestart }: TestStagePro
                 focusInput();
                 session.finish();
               }}
-              className="flex items-center gap-2"
+              hint={isApplePlatform() ? t('key.cmdEnter') : t('key.ctrlEnter')}
             >
               {t('stage.finish')}
-              <Kbd>{isApplePlatform() ? t('key.cmdEnter') : t('key.ctrlEnter')}</Kbd>
             </Button>
           )}
         </div>

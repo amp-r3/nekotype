@@ -1,8 +1,13 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { render } from 'preact';
+import { createRef, render } from 'preact';
+import { act } from 'preact/test-utils';
 import { Button } from './button';
 import { Switch } from './switch';
+import { Segmented } from './segmented';
+import { Toggle } from './toggle';
+import { Dialog } from './dialog';
+import { Kbd } from './kbd';
 import { Nav } from './nav';
 
 let container: HTMLDivElement;
@@ -64,5 +69,97 @@ describe('Nav', () => {
       />,
     );
     expect(container.querySelector('header')?.className).not.toContain('border-b');
+  });
+});
+
+describe('Button', () => {
+  it('draws the hint as a bare key', () => {
+    mount(
+      <Button variant="primary" hint="enter">
+        next test
+      </Button>,
+    );
+    const key = container.querySelector('kbd');
+    expect(key?.textContent).toBe('enter');
+    expect(key?.className).not.toContain('border');
+  });
+});
+
+describe('Kbd', () => {
+  it('has a border unless it is bare', () => {
+    mount(<Kbd>tab</Kbd>);
+    expect(container.querySelector('kbd')?.className).toContain('border');
+  });
+});
+
+describe('Segmented', () => {
+  const options = [
+    { value: 'a', label: 'A' },
+    { value: 'b', label: 'B' },
+    { value: 'c', label: 'C' },
+  ] as const;
+
+  function press(el: Element | null, key: string): void {
+    el?.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+  }
+
+  it('is one Tab stop: only the selected option is tabbable', () => {
+    mount(<Segmented options={options} value="b" onChange={() => {}} ariaLabel="group" />);
+    const tabIndexes = [...container.querySelectorAll('[role="radio"]')].map((el) =>
+      el.getAttribute('tabindex'),
+    );
+    expect(tabIndexes).toEqual(['-1', '0', '-1']);
+  });
+
+  it('moves the choice and the focus with the arrows, wrapping at the ends', () => {
+    const onChange = vi.fn();
+    mount(<Segmented options={options} value="a" onChange={onChange} ariaLabel="group" />);
+    const items = container.querySelectorAll('[role="radio"]');
+    press(items[0] ?? null, 'ArrowLeft');
+    expect(onChange).toHaveBeenLastCalledWith('c');
+    expect(document.activeElement).toBe(items[2]);
+    press(items[0] ?? null, 'ArrowRight');
+    expect(onChange).toHaveBeenLastCalledWith('b');
+    expect(document.activeElement).toBe(items[1]);
+  });
+});
+
+describe('Toggle', () => {
+  it('reports the opposite value and exposes aria-pressed', () => {
+    const onChange = vi.fn();
+    mount(
+      <Toggle pressed={false} onChange={onChange}>
+        weak kana
+      </Toggle>,
+    );
+    const button = container.querySelector('button');
+    expect(button?.getAttribute('aria-pressed')).toBe('false');
+    button?.click();
+    expect(onChange).toHaveBeenCalledWith(true);
+  });
+});
+
+describe('Switch label', () => {
+  it('toggles when the label is clicked', () => {
+    const onChange = vi.fn();
+    mount(<Switch checked={false} label="Show" onChange={onChange} />);
+    container.querySelector('label')?.click();
+    expect(onChange).toHaveBeenCalledWith(true);
+  });
+});
+
+describe('Dialog', () => {
+  it('gives the initial focus to the safe action', async () => {
+    const cancel = createRef<HTMLButtonElement>();
+    await act(() => {
+      mount(
+        <Dialog open onClose={() => {}} title="Reset?" closeLabel="close" initialFocusRef={cancel}>
+          <button type="button" ref={cancel}>
+            cancel
+          </button>
+        </Dialog>,
+      );
+    });
+    expect(document.activeElement).toBe(cancel.current);
   });
 });

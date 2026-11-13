@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import { useRef, useLayoutEffect } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import type { TranslationKey } from '@/shared/i18n';
-import { Button, Kbd, Notice } from '@/shared/ui';
+import { Button, Notice } from '@/shared/ui';
 import { Cat } from '@/shared/ui/cat';
 import { PersonalBestBadge } from '@/shared/ui/personal-best-badge';
 import { Stat } from '@/shared/ui/stat';
@@ -133,8 +133,8 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
       <WeakKanaList items={weakKana(kanaErrors, result.strictness)} />
 
       <div className="flex items-center gap-2">
-        <Button variant="primary" size="lg" onClick={onNextTest}>
-          {t('results.nextTest')} <Kbd>{t('key.enter')}</Kbd>
+        <Button variant="primary" size="lg" onClick={onNextTest} hint={t('key.enter')}>
+          {t('results.nextTest')}
         </Button>
         <Button size="lg" onClick={onRepeat}>
           {t('results.repeat')}

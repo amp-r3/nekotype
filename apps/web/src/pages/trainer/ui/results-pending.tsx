@@ -43,7 +43,7 @@ export function ResultsPending({ failed, onRetry, onNextTest }: ResultsPendingPr
           {t('route.loading')}
         </p>
       )}
-      <Button variant="primary" onClick={onNextTest}>
+      <Button variant="primary" size="lg" onClick={onNextTest} hint={t('key.enter')}>
         {t('results.nextTest')}
       </Button>
     </div>
