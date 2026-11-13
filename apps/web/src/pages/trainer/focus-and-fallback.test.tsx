@@ -90,7 +90,7 @@ describe('trainer UI: focus redirection and content loader error fallback', () =
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(loadChunkSpy).toHaveBeenCalledWith(expect.stringMatching(/^words-/));
-    // The setting is kept (frontend.md, "Loading"); kana are practised until Retry.
+    // The setting is kept (frontend.md, "Loading"); there is nothing to type until Retry.
     expect(contentSetting.value).toBe('words');
 
     // Must show the i18n error notice
