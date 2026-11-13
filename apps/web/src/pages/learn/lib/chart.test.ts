@@ -69,7 +69,17 @@ describe('kanaPanelLines', () => {
     expect(lines[0]?.text).toMatch(/^confident · next review: .+/);
     expect(lines.slice(1)).toEqual([
       { text: 'median 1000 ms · accuracy 100%', dim: true },
-      { text: 'mixed up with い ×4, え ×2' },
+      {
+        text: 'mixed up with い ×4, え ×2',
+        segments: [
+          { text: 'mixed up with ' },
+          { text: 'い', kana: true },
+          { text: ' ×4' },
+          { text: ', ' },
+          { text: 'え', kana: true },
+          { text: ' ×2' },
+        ],
+      },
       { text: 'recognition accuracy 78% (14 of 18)', dim: true },
     ]);
   });

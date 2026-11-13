@@ -209,13 +209,13 @@ export function LearnPage(): JSX.Element {
           >
             <Parts
               parts={tParts('learn.first', { kana: vowels })}
-              valueClass="font-jp text-jp-body text-fur"
+              valueClass="font-jp text-jp-body text-fur [word-spacing:0.15em]"
               lang="ja"
             />
           </p>
         )}
 
-        <div ref={actionsRef} className="flex flex-wrap items-center gap-3">
+        <div ref={actionsRef} className="flex flex-wrap items-center gap-2">
           <Button
             variant="primary"
             size="lg"
@@ -234,7 +234,12 @@ export function LearnPage(): JSX.Element {
               void startSession('review');
             }}
           >
-            {t('learn.review', { n: ready ? due : 0 })}
+            <span>
+              <Parts
+                parts={tParts('learn.review', { n: ready ? due : 0 })}
+                valueClass="text-mono-romaji font-mono"
+              />
+            </span>
           </Button>
         </div>
 
@@ -260,25 +265,27 @@ export function LearnPage(): JSX.Element {
         </Notice>
 
         {ready && (
-          <KanaChart
-            rows={chartModel(track, infos)}
-            ariaLabel={t('learn.chart.label')}
-            blockLabels={chartBlockLabels()}
-            legend={chartLegend(track)}
-            renderDetails={(cell, close) => {
-              const info = infos.get(keyOf(track, cell.kana));
-              if (info === undefined) return null;
-              return (
-                <KanaChartPanel
-                  kana={info.kana}
-                  romaji={romajiOf(info.key)}
-                  lines={kanaPanelLines(info)}
-                  closeLabel={t('learn.chart.close')}
-                  onClose={close}
-                />
-              );
-            }}
-          />
+          <div className="mt-2 w-full">
+            <KanaChart
+              rows={chartModel(track, infos)}
+              ariaLabel={t('learn.chart.label')}
+              blockLabels={chartBlockLabels()}
+              legend={chartLegend(track)}
+              renderDetails={(cell, close) => {
+                const info = infos.get(keyOf(track, cell.kana));
+                if (info === undefined) return null;
+                return (
+                  <KanaChartPanel
+                    kana={info.kana}
+                    romaji={romajiOf(info.key)}
+                    lines={kanaPanelLines(info)}
+                    closeLabel={t('learn.chart.close')}
+                    onClose={close}
+                  />
+                );
+              }}
+            />
+          </div>
         )}
       </section>
     </>
