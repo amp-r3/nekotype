@@ -99,3 +99,4 @@ Append-only log of architectural decisions, one file per decision.
 | [072](072-delta-split-per-mode.md)                                                   | Delta Split per Mode                                                                         | In force               |
 | [073](073-test-result-assembly.md)                                                   | Test Result Assembly                                                                         | In force               |
 | [074](074-latency-gate-on-pull-requests-that-can-move-it.md)                         | The Latency Gate Runs on Pull Requests That Can Move It                                      | In force               |
+| [075](075-narrower-latency-gate-paths.md)                                            | A Narrower List of Paths for the Latency Gate                                                | In force               |
