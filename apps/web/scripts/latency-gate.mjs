@@ -19,6 +19,8 @@ export const LATENCY_PATHS = [
   'apps/web/e2e/latency.spec.ts',
   'apps/web/e2e/lib/',
   'apps/web/playwright.latency.config.ts',
+  'apps/web/scripts/latency-gate.mjs',
+  'apps/web/scripts/latency-gate.d.mts',
   'apps/web/vite.config.ts',
   'packages/engine/',
   'pnpm-lock.yaml',

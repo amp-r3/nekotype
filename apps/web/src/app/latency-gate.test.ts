@@ -17,6 +17,8 @@ describe('latency gate on pull requests (ADR 074)', () => {
       'apps/web/src/app/prefetch.ts',
       'apps/web/vite.config.ts',
       'apps/web/e2e/latency.spec.ts',
+      'apps/web/scripts/latency-gate.mjs',
+      'apps/web/scripts/latency-gate.d.mts',
       'packages/engine/src/matcher/compile.ts',
       'pnpm-lock.yaml',
     ]) {
