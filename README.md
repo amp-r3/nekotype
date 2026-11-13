@@ -41,8 +41,8 @@
   - Zen: a test with no length, ended by the Finish button or Ctrl/Cmd+Enter; it is kept when a prompt is completed and time has passed, and dropped like a restart otherwise (ADR 042).
   - A text stream of three lines (two on a phone) with a caret and a romaji buffer at it; the interface fades out while a test runs and a wrong key flashes the caret (ADR 041).
   - Hybrid input: `keydown` on a desktop, `beforeinput` and an `input` fallback for mobile keyboards (Gboard composition), so a phone types too (ADR 038).
-  - A non-Latin layout is not translated by the physical key: typing a Cyrillic letter shows "Switch your keyboard layout to English" and counts no mistake.
-  - "Turn off the Japanese IME" appears only when the composition holds kana or kanji; Latin composition does not trigger it.
+  - A non-Latin layout is not translated by the physical key: typing a Cyrillic letter shows "switch your keyboard layout to English" and counts no mistake.
+  - "turn off the Japanese IME: Nekotype converts romaji itself" appears only when the composition holds kana or kanji; Latin composition does not trigger it.
 - **🎨 Design System:** Muted dark palette with a single eye-blue accent, Golos Text / JetBrains Mono / Noto Sans JP, a cat logo and favicon. Tokens live in `apps/web/src/shared/styles/tokens.css` and are checked against [`docs/design/source/tokens.json`](docs/design/source/tokens.json) (ADR 031, ADR 034).
 - **🌐 Localization:** Instant bilingual toggle between English and Russian (`en` / `ru`).
 - **♿ Accessible:**

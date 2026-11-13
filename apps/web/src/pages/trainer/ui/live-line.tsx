@@ -26,7 +26,7 @@ export function LiveLine({ session, repeating }: LiveLineProps): JSX.Element {
     const startedAt = session.sessionStartedAt.value;
     const now = session.tickerNow.value;
     const elapsed = startedAt > 0 && now > startedAt ? Math.floor((now - startedAt) / 1000) : 0;
-    return t('config.seconds.option', { n: Math.max(0, config.seconds - elapsed) });
+    return t('config.seconds.summary', { n: Math.max(0, config.seconds - elapsed) });
   });
 
   return (

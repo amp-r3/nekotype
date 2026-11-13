@@ -15,13 +15,13 @@ export const en = {
   'page.stats': 'Stats',
   'page.settings': 'Settings',
   'page.about': 'About',
-  'route.loading': 'Loading...',
-  'storage.unavailable':
-    'Your data will not be saved: this browser does not let the page store it.',
-  'route.loadError': 'Failed to load the page. Check the connection and try again.',
-  'route.retry': 'Try again',
+  'route.loading': 'loading…',
+  'storage.unavailable': 'progress cannot be saved in this browser',
+  'route.loadError': 'failed to load. check the connection and try again.',
+  'route.retry': 'retry',
   'notFound.title': 'Page not found',
-  'notFound.home': 'Back to the trainer',
+  'notFound.text': 'There is no such address.',
+  'notFound.home': 'go home',
 
   // Learning screen
   'learn.track.label': 'track',
@@ -34,10 +34,10 @@ export const en = {
   'learn.streak.other': 'streak: {count} days',
   'learn.first': 'the first session introduces the vowels {kana}',
   'learn.loading': 'loading your progress…',
-  'learn.loadError': 'failed to load your progress. check the connection.',
+  'learn.loadError': 'failed to load your progress. check the connection and try again.',
   'learn.retry': 'retry',
   'learn.storage': 'progress cannot be saved in this browser',
-  'learn.chart.label': 'Kana table',
+  'learn.chart.label': 'kana table',
   'learn.chart.vowels': 'vowels',
   'learn.chart.block.basic': 'basic',
   'learn.chart.block.voiced': 'voiced',
@@ -96,9 +96,9 @@ export const en = {
   'learn.summary.retry': 'retry',
 
   // Typing input, shared by a learning session and the typing screen
-  'stage.turnImeOff': 'Turn off the Japanese IME',
-  'stage.switchLayout': 'Switch your keyboard layout to English',
-  'key.esc': 'Esc',
+  'stage.turnImeOff': 'turn off the Japanese IME: Nekotype converts romaji itself',
+  'stage.switchLayout': 'switch your keyboard layout to English',
+  'key.esc': 'esc',
   'key.enter': 'enter',
 
   // Shared marks
@@ -115,5 +115,5 @@ export const en = {
   'mode.script.katakana': 'katakana',
   'mode.script.both': 'both',
   'mode.strictness.learner': 'relaxed',
-  'mode.strictness.ime': 'strict',
+  'mode.strictness.ime': 'strict IME',
 } as const satisfies Record<string, string>;

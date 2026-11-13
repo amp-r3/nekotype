@@ -3,7 +3,7 @@ import { openTypingScreen } from './lib/app';
 import type { Page } from '@playwright/test';
 import { canonicalOfPrompt } from './lib/prompt';
 
-const FINISH = { name: /^Finish/ };
+const FINISH = { name: /^finish/ };
 
 async function chooseZen(page: Page): Promise<void> {
   await openTypingScreen(page);
@@ -27,8 +27,8 @@ async function typePrompts(page: Page, count: number): Promise<void> {
 test.describe('zen: a test without a length, ended by hand', () => {
   test('has no length control and is remembered across a reload', async ({ page }) => {
     await chooseZen(page);
-    await expect(page.getByRole('radiogroup', { name: 'Time seconds' })).toHaveCount(0);
-    await expect(page.getByRole('radiogroup', { name: 'Count prompts' })).toHaveCount(0);
+    await expect(page.getByRole('radiogroup', { name: 'length' })).toHaveCount(0);
+    await expect(page.getByRole('radiogroup', { name: 'length' })).toHaveCount(0);
 
     // The settings are saved after a short delay.
     await page.waitForTimeout(450);
@@ -38,7 +38,7 @@ test.describe('zen: a test without a length, ended by hand', () => {
 
     // Back to time: the length returns.
     await page.getByRole('radio', { name: 'Time' }).click();
-    await expect(page.getByRole('radiogroup', { name: 'Time seconds' })).toBeVisible();
+    await expect(page.getByRole('radiogroup', { name: 'length' })).toBeVisible();
     await expect(page.getByRole('button', FINISH)).toHaveCount(0);
   });
 

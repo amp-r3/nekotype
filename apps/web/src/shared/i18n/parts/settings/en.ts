@@ -20,7 +20,7 @@ export const settingsEn = {
   'settings.data.reset': 'reset progress',
   'settings.data.resetAction': 'reset',
 
-  'dialog.close': 'Close',
+  'dialog.close': 'close',
   'reset.title': 'Reset progress?',
   'reset.confirm':
     'Learning progress and typing statistics in this browser will be erased. This cannot be undone.',

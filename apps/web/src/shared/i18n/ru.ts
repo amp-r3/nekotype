@@ -17,12 +17,13 @@ export const ru = {
   'page.stats': 'Статистика',
   'page.settings': 'Настройки',
   'page.about': 'О проекте',
-  'route.loading': 'Загрузка...',
-  'storage.unavailable': 'Данные не будут сохранены: браузер не разрешает странице хранить их.',
-  'route.loadError': 'Не удалось загрузить страницу. Проверьте соединение и повторите.',
-  'route.retry': 'Повторить',
+  'route.loading': 'загрузка…',
+  'storage.unavailable': 'прогресс не сохраняется в этом браузере',
+  'route.loadError': 'не удалось загрузить. проверьте соединение.',
+  'route.retry': 'ещё раз',
   'notFound.title': 'Страница не найдена',
-  'notFound.home': 'Вернуться к тренажёру',
+  'notFound.text': 'Такого адреса нет.',
+  'notFound.home': 'на главную',
 
   // Learning screen
   'learn.track.label': 'дорожка',
@@ -38,7 +39,7 @@ export const ru = {
   'learn.loadError': 'не удалось загрузить прогресс. проверьте соединение.',
   'learn.retry': 'ещё раз',
   'learn.storage': 'прогресс не сохраняется в этом браузере',
-  'learn.chart.label': 'Таблица знаков',
+  'learn.chart.label': 'таблица кан',
   'learn.chart.vowels': 'гласные',
   'learn.chart.block.basic': 'основные',
   'learn.chart.block.voiced': 'звонкие',
@@ -97,9 +98,9 @@ export const ru = {
   'learn.summary.retry': 'ещё раз',
 
   // Typing input, shared by a learning session and the typing screen
-  'stage.turnImeOff': 'Отключите японский IME',
-  'stage.switchLayout': 'Переключите раскладку на английскую',
-  'key.esc': 'Esc',
+  'stage.turnImeOff': 'выключите японский IME: Nekotype сам превращает ромадзи в кану',
+  'stage.switchLayout': 'переключите раскладку на английскую',
+  'key.esc': 'esc',
   'key.enter': 'enter',
 
   // Shared marks
@@ -109,12 +110,12 @@ export const ru = {
   'mode.line': '{content} · {script} · {strictness} · {mode}',
   'mode.time': '{n} с',
   'mode.count': '{n}',
-  'mode.zen': 'дзен',
+  'mode.zen': 'zen',
   'mode.content.words': 'слова',
   'mode.content.phrases': 'фразы',
   'mode.script.hiragana': 'хирагана',
   'mode.script.katakana': 'катакана',
   'mode.script.both': 'обе',
   'mode.strictness.learner': 'мягкая',
-  'mode.strictness.ime': 'строгая',
+  'mode.strictness.ime': 'строгая IME',
 } as const satisfies Record<keyof typeof en, string>;

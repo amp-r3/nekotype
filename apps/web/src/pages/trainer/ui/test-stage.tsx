@@ -90,7 +90,7 @@ export function TestStage({ session, repeating, input, onRestart }: TestStagePro
         ) : (
           <div className="flex items-center gap-2">
             <Kbd>{t('key.esc')}</Kbd>
-            <span>{t('stage.escHint')}</span>
+            <span>{t('stage.showRomaji')}</span>
           </div>
         )}
 

@@ -171,7 +171,7 @@ test.describe('focus redirection and keyboard-first typing', () => {
     // middle of typing and the count starts over.
     await words.click();
     await expect(words).toHaveAttribute('aria-checked', 'true');
-    await expect(page.getByText('Loading vocabulary...')).toHaveCount(0);
+    await expect(page.getByText('loading vocabulary…')).toHaveCount(0);
     await expect(page.getByTestId('prompt-text')).toHaveText(/^.+$/);
 
     for (let i = 0; i < 10; i++) {

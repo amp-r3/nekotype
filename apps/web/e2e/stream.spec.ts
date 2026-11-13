@@ -350,6 +350,6 @@ test.describe('a phrase wider than the line (ADR 060)', () => {
     test.skip(!coarse, 'needs a touch device');
     const button = page.getByRole('button', { name: 'show the romaji' });
     await button.click();
-    await expect(page.getByText(/^Revealed: /)).toBeVisible();
+    await expect(page.getByText(/^revealed: /)).toBeVisible();
   });
 });
