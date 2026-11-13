@@ -13,6 +13,9 @@ const CUT = {
   strokeLinecap: 'round',
 } as const;
 
+const CUT_FILL = { fill: 'var(--cat-ground)' } as const;
+const EYE_FILL = { fill: 'var(--cat-eye)' } as const;
+
 const EYE_ARC = {
   fill: 'none',
   stroke: 'var(--cat-eye)',
@@ -21,17 +24,18 @@ const EYE_ARC = {
 } as const;
 
 export type CatProps = {
-  readonly mood?: 'sleep' | 'content';
+  readonly mood?: 'sleep' | 'content' | 'neutral';
   readonly size?: number;
   readonly className?: string;
 };
 
 /**
- * The cat, asleep by default or `content` (typing results on a personal best). Decorative, so it is
+ * The cat, asleep by default, `content` (typing results on a personal best) or `neutral` (the 404
+ * screen). Decorative, so it is
  * hidden from assistive technology.
  */
 export function Cat({ mood = 'sleep', size = 96, className = '' }: CatProps): JSX.Element {
-  if (mood === 'content') {
+  if (mood === 'content' || mood === 'neutral') {
     return (
       <svg
         viewBox="0 0 96 96"
@@ -50,8 +54,19 @@ export function Cat({ mood = 'sleep', size = 96, className = '' }: CatProps): JS
           d="M32.33 28.47L29.66 14.47A1.6 1.6 0 0 1 32.04 12.79L42.82 19.13A2.2 2.2 0 0 0 44.4 19.38A17 17 0 0 1 51.6 19.38A2.2 2.2 0 0 0 53.18 19.13L63.96 12.79A1.6 1.6 0 0 1 66.34 14.47L63.67 28.47A2.2 2.2 0 0 0 63.79 29.7A17 17 0 1 1 32.21 29.7A2.2 2.2 0 0 0 32.33 28.47Z"
           style={FUR}
         />
-        <path d="M38 38.4Q41 34.2 44 38.4" style={EYE_ARC} />
-        <path d="M52 38.4Q55 34.2 58 38.4" style={EYE_ARC} />
+        {mood === 'content' ? (
+          <>
+            <path d="M38 38.4Q41 34.2 44 38.4" style={EYE_ARC} />
+            <path d="M52 38.4Q55 34.2 58 38.4" style={EYE_ARC} />
+          </>
+        ) : (
+          <>
+            <circle cx="41" cy="37" r="3.4" style={EYE_FILL} />
+            <rect x="40.3" y="34.7" width="1.4" height="4.6" rx="0.7" style={CUT_FILL} />
+            <circle cx="55" cy="37" r="3.4" style={EYE_FILL} />
+            <rect x="54.3" y="34.7" width="1.4" height="4.6" rx="0.7" style={CUT_FILL} />
+          </>
+        )}
       </svg>
     );
   }

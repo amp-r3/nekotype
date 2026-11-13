@@ -200,9 +200,9 @@ test.describe('focus redirection and keyboard-first typing', () => {
     await expect(scriptRadio).toBeVisible();
 
     // Switch to Russian locale
-    const ruRadio = page.getByRole('radio', { name: 'RU' });
-    await ruRadio.click();
-    await expect(ruRadio).toHaveAttribute('aria-checked', 'true');
+    const ruButton = page.getByRole('button', { name: 'ru', exact: true });
+    await ruButton.click();
+    await expect(ruButton).toHaveAttribute('aria-pressed', 'true');
 
     // Script switch label updates to Russian
     const ruScriptRadio = page.getByRole('radio', { name: 'Хирагана' });
@@ -217,8 +217,8 @@ test.describe('focus redirection and keyboard-first typing', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
 
     // Clean up: switch back to English
-    const enRadio = page.getByRole('radio', { name: 'en', exact: true });
-    await enRadio.click();
+    const enButton = page.getByRole('button', { name: 'en', exact: true });
+    await enButton.click();
     await expect(page.getByRole('radio', { name: 'Hiragana' })).toBeVisible();
   });
 

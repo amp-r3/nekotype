@@ -1,9 +1,9 @@
 import type { JSX } from 'preact';
-import { t, locale, setLocale } from '@/shared/i18n';
-import type { Locale } from '@/shared/i18n';
-import { currentPath, databaseMode, immersive, navigate } from '@/shared/lib';
-import { Footer, Nav, Segmented } from '@/shared/ui';
+import { t } from '@/shared/i18n';
+import { cx, currentPath, databaseMode, immersive, navigate } from '@/shared/lib';
+import { Footer, Nav } from '@/shared/ui';
 import lockupUrl from '@/assets/logo/lockup.svg';
+import { LangSwitch } from './lang-switch';
 import { RouteView } from './route-view';
 
 export function App(): JSX.Element {
@@ -14,7 +14,7 @@ export function App(): JSX.Element {
 
   return (
     <div className="bg-bg text-fur flex min-h-screen flex-col">
-      <div className="max-w-layout-max mx-auto flex w-full flex-1 flex-col px-4 pb-12">
+      <div className="max-w-layout-max mx-auto flex w-full flex-1 flex-col px-8 pb-8 max-sm:px-4">
         {!immersive.value && (
           <Nav
             brand={<img src={lockupUrl} alt={t('app.title')} width="138" height="28" />}
@@ -28,20 +28,7 @@ export function App(): JSX.Element {
             currentPath={path}
             onNavigate={navigate}
             ariaLabel={t('nav.label')}
-            trailing={
-              <Segmented<Locale>
-                options={[
-                  { value: 'en', label: 'en' },
-                  { value: 'ru', label: 'ru' },
-                ]}
-                value={locale.value}
-                onChange={(next) => {
-                  void setLocale(next);
-                }}
-                ariaLabel={t('app.language')}
-                size="sm"
-              />
-            }
+            trailing={<LangSwitch />}
           />
         )}
 
@@ -52,7 +39,9 @@ export function App(): JSX.Element {
           </p>
         )}
 
-        <main className="mt-4 flex flex-1 flex-col">
+        {/* The page starts 48 px under the bar; a learning session has no bar and keeps the gap, 8 px on a
+            phone (design `.page`, `.page--session`). */}
+        <main className={cx('mt-12 flex flex-1 flex-col', immersive.value && 'max-sm:mt-2')}>
           <RouteView path={path} onHome={goHome} />
         </main>
 

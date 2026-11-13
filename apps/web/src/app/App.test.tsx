@@ -103,14 +103,41 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
     stopRouter = startRouter();
     render(<App />, container);
     expect(container.querySelector('h1')?.textContent).toBe(t('notFound.title'));
+    expect(container.textContent).toContain(t('notFound.text'));
 
-    const home = Array.from(container.querySelectorAll('button')).find(
-      (b) => b.textContent === t('notFound.home'),
+    const home = Array.from(container.querySelectorAll('button')).find((b) =>
+      b.textContent.startsWith(t('notFound.home')),
     );
     home?.click();
     await settle();
     expect(window.location.pathname).toBe('/');
     expect(container.querySelector('h1')?.textContent).toBe(t('page.learn'));
+  });
+
+  it('Enter on the not-found screen goes home', async () => {
+    window.history.replaceState(null, '', '/nope');
+    stopRouter();
+    stopRouter = startRouter();
+    render(<App />, container);
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    await settle();
+    expect(window.location.pathname).toBe('/');
+  });
+
+  it('the language switch marks the chosen language and switches the other one', async () => {
+    render(<App />, container);
+    const buttons = () =>
+      Array.from(
+        container.querySelectorAll<HTMLButtonElement>(
+          '[aria-label="' + t('app.language') + '"] button',
+        ),
+      );
+    expect(buttons().map((b) => b.getAttribute('aria-pressed'))).toEqual(['true', 'false']);
+    buttons()[1]?.click();
+    // The Russian dictionary is a chunk: the choice is applied when it has loaded.
+    await vi.waitFor(() => {
+      expect(buttons().map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
+    });
   });
 
   it('the navigation follows the interface language', async () => {
