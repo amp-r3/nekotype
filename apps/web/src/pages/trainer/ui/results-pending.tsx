@@ -27,7 +27,7 @@ export function ResultsPending({ failed, onRetry, onNextTest }: ResultsPendingPr
       ref={root}
       tabIndex={-1}
       data-testid="results-pending"
-      className="max-w-layout-test mx-auto flex w-full flex-col items-center gap-4 py-12 outline-none"
+      className="nk-holds-focus max-w-layout-test mx-auto flex w-full flex-col items-center gap-4 py-12"
     >
       {failed ? (
         <>
