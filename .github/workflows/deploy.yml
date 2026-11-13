@@ -30,6 +30,10 @@ jobs:
       options: --init --ipc=host
     steps:
       - uses: actions/checkout@v4
+        with:
+          # A pull request is checked out as a merge commit; its first parent is the base, so two
+          # commits are enough to list what the pull request changes (latency gate below).
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 1 }}
 
       # The workspace belongs to the runner's user and the container runs as root, so git refuses it
       # as "dubious ownership" and `pnpm install` fails in the `prepare` script (`git config`).
@@ -53,11 +57,18 @@ jobs:
       # `verify` already produces apps/web/dist, so no second build is needed.
       - run: pnpm run verify
 
-      # The keystroke latency test takes about two minutes, so it does not run on pull requests: it
-      # runs on `main` and by hand, before anything is deployed, and a failure stops the workflow
-      # before the candidate and production (ADR 052).
+      # The keystroke latency test takes about two minutes. On `main` and by hand it always runs,
+      # before anything is deployed, and a failure stops the workflow before the candidate and
+      # production (ADR 052). A pull request runs it only when it changes a file that can move
+      # keystroke latency (`apps/web/scripts/latency-gate.mjs`, ADR 074), so a regression shows
+      # on the pull request and not after the merge.
+      - name: Does this pull request need the latency gate
+        id: latency
+        if: github.event_name == 'pull_request'
+        run: node apps/web/scripts/latency-gate.mjs HEAD^1 HEAD
+
       - name: Keystroke latency gate
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' || steps.latency.outputs.needed == 'true'
         run: pnpm run e2e:latency
 
       # The branch a build is first deployed to. A pull request has its own preview. A push to main

@@ -116,14 +116,14 @@ pnpm test             # vitest run in every package (engine with a coverage thre
 pnpm run build        # vite production build into apps/web/dist
 pnpm run budget       # check-budget.mjs (size budgets from the Vite manifest)
 pnpm run e2e          # Playwright on the production bundle (Chromium; WebKit in mobile emulation runs the @mobile tests)
-pnpm run e2e:latency  # the keystroke latency test (about 2 min); CI runs it on main and by hand, not on pull requests
+pnpm run e2e:latency  # the keystroke latency test (about 2 min); CI runs it on main, by hand and on pull requests that touch input or loading code (ADR 074)
 ```
 
 Fonts are subset by hand, not in CI: `pnpm --filter @nekotype/web run fonts` downloads the pinned sources into `apps/web/scripts/font-src/` (ignored by git), checks their SHA-256 and rewrites `glyphs.txt` and the `woff2` files in `apps/web/src/assets/fonts/` (ADR 034).
 
 ### End-to-End Testing (Playwright)
 
-End-to-end browser integration tests are powered by Playwright and run as the last step of `pnpm run verify` in CI. CI runs in the `mcr.microsoft.com/playwright` image, so it installs no browser (ADR 054); the install below is for your own machine. The pre-push hook does not run them (`verify:quick`); run `pnpm run e2e` yourself when a change touches browser behaviour. The keystroke latency test is separate (`pnpm run e2e:latency`) and runs in CI on `main` and by hand, not on pull requests (ADR 052). Its budgets are measured at 4× CPU throttling of the machine it runs on, so a run on a slower or busy developer machine can fail the worst-keystroke ceilings while CI passes with room to spare; the CI run is the gate (`docs/spec/quality.md`). They need Chromium and WebKit once; WebKit also needs its system libraries (`--with-deps`, which asks for `sudo` on Linux). Without them set `E2E_SKIP_WEBKIT=1` to run Chromium only (CI always runs both).
+End-to-end browser integration tests are powered by Playwright and run as the last step of `pnpm run verify` in CI. CI runs in the `mcr.microsoft.com/playwright` image, so it installs no browser (ADR 054); the install below is for your own machine. The pre-push hook does not run them (`verify:quick`); run `pnpm run e2e` yourself when a change touches browser behaviour. The keystroke latency test is separate (`pnpm run e2e:latency`) and runs in CI on `main`, by hand and on pull requests that change a file which can move keystroke latency (ADR 052, 074). Its budgets are measured at 4× CPU throttling of the machine it runs on, so a run on a slower or busy developer machine can fail the worst-keystroke ceilings while CI passes with room to spare; the CI run is the gate (`docs/spec/quality.md`). They need Chromium and WebKit once; WebKit also needs its system libraries (`--with-deps`, which asks for `sudo` on Linux). Without them set `E2E_SKIP_WEBKIT=1` to run Chromium only (CI always runs both).
 
 To install the browser binary and run the E2E suite:
 
@@ -173,7 +173,7 @@ Nekotype is a fully static SPA (`apps/web/dist/`, no backend; settings, learning
 
 `.github/workflows/deploy.yml` runs on every push to `main` and on every pull request, in the Playwright image `mcr.microsoft.com/playwright:v<version>-noble` (its tag is the version of `@playwright/test` in the lockfile, which a unit test checks) with a 15-minute limit (ADR 054):
 
-1. `pnpm install --frozen-lockfile` → `pnpm run verify` (typecheck + lint + Prettier + unit tests with coverage + build + size budget + e2e on Chromium, and the `@mobile` ones on WebKit). Any failure blocks the deploy. On `main` and on a manual run, `pnpm run e2e:latency` follows (ADR 052).
+1. `pnpm install --frozen-lockfile` → `pnpm run verify` (typecheck + lint + Prettier + unit tests with coverage + build + size budget + e2e on Chromium, and the `@mobile` ones on WebKit). Any failure blocks the deploy. On `main` and on a manual run, `pnpm run e2e:latency` follows (ADR 052); a pull request runs it when it changes a file on the list in `apps/web/scripts/latency-gate.mjs` (ADR 074).
 2. `wrangler pages deploy apps/web/dist` — PRs get a preview deployment; a push to `main` is deployed first to the preview branch `release-candidate`. Fork PRs verify but never deploy, since they cannot read secrets.
 3. `scripts/smoke-deploy.mjs` requests the deployment that was just made (the address wrangler writes to `WRANGLER_OUTPUT_FILE_PATH`, else the branch alias): every route and its trailing-slash form must answer `200` with the application, a missing `/assets/*` file and an unknown path must answer `404` and not the application, and the bundle named by the entry page must load. These are behaviours of Cloudflare Pages that the dev server and the unit tests cannot show (ADR 039). Run it by hand against any address: `pnpm --filter @nekotype/web exec tsx scripts/smoke-deploy.mjs https://nekotype.pages.dev`.
 4. On `main` only, after the candidate passes: the same build is deployed to production and the smoke test runs against production again. A failed candidate stops the workflow before production (ADR 045).
