@@ -1,6 +1,6 @@
 # ADR 074: The Latency Gate Runs on Pull Requests That Can Move It
 
-- **Status:** In force. Amends [ADR 052](052-e2e-scope-and-latency-on-main.md): point 3 (the latency test runs on `main` and by hand, never on a pull request) is narrowed.
+- **Status:** In force; point 1 is narrowed by [ADR 075](075-narrower-latency-gate-paths.md). Amends [ADR 052](052-e2e-scope-and-latency-on-main.md): point 3 (the latency test runs on `main` and by hand, never on a pull request) is narrowed.
 - **Context:** ADR 052 took the two-minute keystroke latency test off pull requests, so a regression showed only after the merge, on `main`, and stopped the deploy. It happened in P4: four content pull requests (#100–#103) were merged onto a red `main` because the recall probe had moved into a lazy chunk (the failure was `no probe`, fixed by #104), and none of them was deployed until then. A rule in the P4 plan, "run `e2e:latency` locally when a change touches lazy loading or the input source", depends on somebody remembering it.
 - **Decision:**
   1. A pull request runs the latency gate (`pnpm run e2e:latency`, as on `main`) when it changes a file that can move keystroke latency or what the test measures through. The list is `LATENCY_PATHS` in `apps/web/scripts/latency-gate.mjs`: the input source, the training and learning code, the prompts and their lazy chunks, the dictionary parts, the shared UI, the application shell (lazy loading and prefetch), the engine, the latency test and its configuration, the Vite configuration, the lockfile and the workflows.
