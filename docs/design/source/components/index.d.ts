@@ -179,9 +179,13 @@ export interface SegmentedProps {
   onChange?: (value: string | number) => void;
   label: string;
   mono?: boolean;
+  /** 'lg' — `ui-heading` items: the sections of a page (`/stats`: learning · typing). */
+  size?: 'lg';
   className?: string;
 }
 export declare function Segmented(props: SegmentedProps): React.ReactElement;
+/** One on/off item in segment style (`aria-pressed`): `weak kana` in the config bar, `with repeats` on /stats. */
+export declare function Toggle(props: { pressed?: boolean; onChange?: (pressed: boolean) => void; children?: React.ReactNode }): React.ReactElement;
 
 export interface SwitchProps { label: React.ReactNode; description?: React.ReactNode; checked?: boolean; defaultChecked?: boolean; onChange?: (checked: boolean) => void; disabled?: boolean; className?: string }
 export declare function Switch(props: SwitchProps): React.ReactElement;
@@ -212,26 +216,59 @@ export declare function Stat(props: StatProps): React.ReactElement;
 export interface PersonalBestBadgeProps { children?: React.ReactNode }
 export declare function PersonalBestBadge(props: PersonalBestBadgeProps): React.ReactElement;
 
+/** One test on the chart. `x` is time (ms) — or a slot index 0–4 while there are fewer than five tests. */
+export interface ChartPoint { x: number; y: number; /** 'best' = personal best (a ring), 'hollow' = a repeat. */ mark?: 'best' | 'hollow' | null; /** Tooltip lines. */ tip: string[] }
+/** One day (or one week) on the chart: lo–hi is the bar, mid the tick. */
+export interface ChartRange { x: number; lo: number; hi: number; mid: number; tip: string[] }
 export interface ResultChartProps {
-  /** One series on /stats: KPM per test, or the daily median answer time of a track. null = no data that day: a gap. */
-  values: (number | null)[];
-  height?: number;
-  /** x labels per point (dates); default 1…n. First, middle and last are drawn. */
-  xLabels?: string[];
-  /** y axis [min, max]; default 0 … max rounded up to 50. */
-  domain?: [number, number];
-  ticks?: number[];
+  /** One mark per test. The page computes every series; the chart only draws. */
+  points?: ChartPoint[];
+  /** The rolling median (null breaks the line). Not drawn for fewer than five tests or for mixed modes. */
+  line?: ({ x: number; y: number } | null)[];
+  /** The middle half (25–75%) of the same window, behind the line. */
+  band?: ({ x: number; lo: number; hi: number } | null)[];
+  /** One bar per day or per week (the answer-time chart). */
+  ranges?: ChartRange[];
+  /** Number of bar slots on the x axis (days or weeks in the domain): sets the bar width. */
+  slots?: number;
+  xDomain: [number, number];
+  /** false = no x labels (a chart stacked over another one). */
+  xTicks?: { x: number; label: string }[] | false;
+  /** The y axis follows the data (decision 106); never fixed to 0–120. */
+  yDomain: [number, number];
+  yTicks?: number[];
+  yFormat?: (v: number) => string;
   /** One dashed hair line, e.g. the target answer time. */
   reference?: { value: number; label: string };
-  /** Mark every point (isolated points are always marked). */
-  dots?: boolean;
-  /** Tooltip text for point i. */
-  tip?: (i: number, v: number | null) => string;
+  /** Draw each point's number over it: fewer than five tests. */
+  pointLabels?: boolean;
+  height?: number;
+  axisWidth?: number;
+  /** Index of the mark under the cursor (controlled; previews). */
   cursor?: number;
   label?: string;
   className?: string;
 }
 export declare function ResultChart(props: ResultChartProps): React.ReactElement;
+
+/** One local day: recall answers of both tracks (the sum of the day's answer-time bins) and finished typing tests (by endedAt). */
+export interface ActivityDay { day: string; answers: number; tests: number; /** An active day without a recall answer (recognition only): step 1. */ active?: boolean }
+export interface ActivityMapLabels { label: string; less: string; more: string; test: string; today: string; months: string[]; /** Monday first. */ weekdays: string[]; tip: (d: ActivityDay, date: string) => string[] }
+export interface ActivityMapProps {
+  /** Any order, days without an entry are empty. */
+  days: ActivityDay[];
+  /** ISO date of the last cell. */
+  today: string;
+  /** Columns: 12–26 (the page passes as many as there is history); default 26. */
+  weeks?: number;
+  /** Columns below 640px; default 13. */
+  weeksNarrow?: number;
+  /** Lower bounds of the five steps; default [1, 10, 25, 50, 100]. */
+  thresholds?: number[];
+  labels?: Partial<ActivityMapLabels>;
+  className?: string;
+}
+export declare function ActivityMap(props: ActivityMapProps): React.ReactElement;
 
 /** A mistyped kana on typing results: accepted spellings and the number of errors (no reaction time, ADR 058). */
 export interface WeakKana { kana: string; spellings: string[]; misses: number }
@@ -410,7 +447,7 @@ declare global {
       TestArea: typeof TestArea; Char: typeof Char; TranslationLine: typeof TranslationLine; Notice: typeof Notice; Kbd: typeof Kbd;
       ModePanel: typeof ModePanel; RowPicker: typeof RowPicker; Dialog: typeof Dialog; Button: typeof Button; Segmented: typeof Segmented;
       Switch: typeof Switch; Input: typeof Input; Textarea: typeof Textarea; Select: typeof Select; Tooltip: typeof Tooltip;
-      Stat: typeof Stat; PersonalBestBadge: typeof PersonalBestBadge; ResultChart: typeof ResultChart; WeakKanaList: typeof WeakKanaList;
+      Stat: typeof Stat; PersonalBestBadge: typeof PersonalBestBadge; ResultChart: typeof ResultChart; ActivityMap: typeof ActivityMap; Toggle: typeof Toggle; WeakKanaList: typeof WeakKanaList;
       KanaChart: typeof KanaChart; HistoryTable: typeof HistoryTable; Pagination: typeof Pagination; OptionCard: typeof OptionCard;
       VerticalLabel: typeof VerticalLabel; Nav: typeof Nav; Footer: typeof Footer; Cat: typeof Cat; EmptyState: typeof EmptyState;
       createTestController: typeof createTestController; useNarrow: typeof useNarrow; kanaRows: typeof kanaRows; modeLine: typeof modeLine; kanaOf: typeof kanaOf;

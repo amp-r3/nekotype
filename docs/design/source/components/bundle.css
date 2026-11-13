@@ -138,6 +138,8 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-seg__item.is-on::after { transform: scaleX(1); }
 .nk-seg__item.is-on:hover::after { background: var(--eye-bright); }
 .nk-seg__item:disabled { color: var(--fur-faint); cursor: default; }
+.nk-seg--lg { gap: var(--space-4); }                          /* the sections of a page (/stats): ui-heading items */
+.nk-seg--lg .nk-seg__item { height: var(--control-h); }
 
 .nk-check { display: inline-flex; align-items: center; gap: var(--space-2); height: var(--control-h); padding: 0 var(--space-2); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fur-dim); cursor: pointer; text-align: left; }
 .nk-check:hover { background: var(--bg-hover); color: var(--fur); }
@@ -229,11 +231,41 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-chart svg { display: block; overflow: visible; border-radius: var(--radius-xs); }
 .nk-chart__grid { stroke: var(--chart-grid); stroke-width: var(--stroke-hair); }
 .nk-chart__axis { fill: var(--fur-dim); }                   /* size and family from .mono-small */
+.nk-chart__val { fill: var(--fur); }                        /* the number on a mark while there are four tests or fewer */
+.nk-chart__band { fill: var(--heat-fur-1); animation: nk-chart-in var(--dur-draw) var(--ease-out) both; }   /* the middle half of the last tests */
+.nk-chart__range { fill: var(--heat-fur-3); }               /* one day: lo–hi */
+.nk-chart__mid { fill: var(--chart-kpm); }                  /* one day: the median tick */
 .nk-chart__line { fill: none; stroke: var(--chart-kpm); stroke-width: var(--stroke-mark); stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1; animation: nk-draw var(--dur-draw) var(--ease-out) both; }
 .nk-chart__cursor { stroke: var(--chart-cursor); stroke-width: var(--stroke-hair); }
+.nk-chart__ring { fill: none; stroke: var(--chart-cursor); stroke-width: var(--stroke-mark); }
 .nk-chart__ref line { stroke: var(--line-strong); stroke-width: var(--stroke-hair); stroke-dasharray: 4 4; }   /* target answer time */
-.nk-chart__dot { fill: var(--chart-kpm); }
-.nk-chart__tip { position: absolute; top: calc(-1 * var(--space-2)); transform: translate(-50%, -100%); padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); background: var(--fur); color: var(--on-fur); white-space: nowrap; pointer-events: none; }
+.nk-chart__pt { fill: var(--fur-dim); stroke: var(--bg); stroke-width: var(--stroke-hair); }                  /* one test; the bg ring keeps overlapping tests apart */
+.nk-chart__pt--best { fill: var(--bg); stroke: var(--eye); stroke-width: var(--stroke-mark); }                  /* personal best: a ring, like the badge outline */
+.nk-chart__pt--hollow { fill: var(--bg); stroke: var(--fur-dim); stroke-width: var(--stroke-hair); }           /* a repeat */
+.nk-chart__tip { position: absolute; z-index: 20; transform: translate(-50%, -100%); display: flex; flex-direction: column; padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); background: var(--fur); color: var(--on-fur); white-space: nowrap; pointer-events: none; }
+.nk-chart__tip.is-start { transform: translate(calc(-1 * var(--space-3)), -100%); }
+.nk-chart__tip.is-end { transform: translate(calc(-100% + var(--space-3)), -100%); }
+@keyframes nk-chart-in { from { opacity: 0; } }
+
+/* ---------- Activity map (/stats) ---------- */
+.nk-am { --nk-am-step: calc(var(--space-4) + var(--space-1)); display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-1) var(--space-2); margin: 0; width: max-content; max-width: 100%; }
+.nk-am__months { grid-column: 2; display: grid; grid-template-columns: repeat(var(--nk-am-weeks), var(--space-4)); column-gap: var(--space-1); height: var(--space-4); color: var(--fur-dim); white-space: nowrap; }
+.nk-am__wd { grid-column: 1; display: grid; grid-template-rows: repeat(7, var(--space-4)); row-gap: var(--space-1); align-items: center; color: var(--fur-dim); }
+.nk-am__grid { grid-column: 2; position: relative; display: grid; grid-template-rows: repeat(7, var(--space-4)); grid-auto-flow: column; grid-auto-columns: var(--space-4); gap: var(--space-1); }
+.nk-am__cell { position: relative; box-sizing: border-box; width: var(--space-4); height: var(--space-4); padding: 0; border: var(--stroke-hair) solid transparent; border-radius: var(--radius-xs); background: transparent; color: var(--fur-dim); cursor: default; }
+.nk-am__cell.is-l0 { border-color: var(--line); }           /* no answers: an outline, no fill */
+.nk-am__cell.is-l1 { background: var(--heat-fur-1); } .nk-am__cell.is-l2 { background: var(--heat-fur-2); } .nk-am__cell.is-l3 { background: var(--heat-fur-3); color: var(--fur); }
+.nk-am__cell.is-l4 { background: var(--heat-fur-4); color: var(--on-fur); } .nk-am__cell.is-l5 { background: var(--heat-fur-5); color: var(--on-fur); }
+.nk-am__cell.is-test::after { content: ''; position: absolute; left: 50%; top: 50%; width: var(--space-1); height: var(--space-1); margin: calc(var(--space-1) / -2); border-radius: var(--radius-xs); background: currentColor; }   /* a finished typing test that day */
+.nk-am__cell.is-today { border: var(--stroke-mark) solid var(--eye); }
+button.nk-am__cell:hover { border-color: var(--fur-dim); }
+button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
+.nk-am__tip { left: calc(var(--c) * var(--nk-am-step) + var(--space-2)); top: calc(var(--r) * var(--nk-am-step) - var(--space-2)); bottom: auto; transform: translate(-50%, -100%); }
+.nk-am__tip.is-start { left: calc(var(--c) * var(--nk-am-step)); transform: translate(0, -100%); }
+.nk-am__tip.is-end { left: calc((var(--c) + 1) * var(--nk-am-step)); right: auto; transform: translate(-100%, -100%); }
+.nk-am__legend { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin-top: var(--space-3); color: var(--fur-dim); }
+.nk-am__legend-item { display: inline-flex; align-items: center; gap: var(--space-1); }
+.nk-am__sw { flex: none; }
 @keyframes nk-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 
 .nk-weak, .nk-hist__table { border-collapse: collapse; width: 100%; }
