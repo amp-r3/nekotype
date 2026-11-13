@@ -38,7 +38,7 @@ pnpm run budget       # size budgets on apps/web/dist/
 pnpm run verify:quick # typecheck + lint + format:check + test (coverage) + build + budget (what pre-push runs)
 pnpm run verify       # verify:quick + e2e (what CI runs on a pull request)
 pnpm run e2e          # Playwright; one-time: pnpm --filter @nekotype/web exec playwright install --with-deps chromium webkit
-pnpm run e2e:latency  # keystroke latency test (about 2 min); CI runs it on main and by hand, not on pull requests (ADR 052)
+pnpm run e2e:latency  # keystroke latency test (about 2 min); CI runs it on main, by hand and on pull requests that touch input or loading code (ADR 052, 074)
 ```
 
 Run a single test file from its package: `cd apps/web && pnpm exec vitest run src/path/file.test.ts`. Run one e2e file on Chromium: `cd apps/web && pnpm exec playwright test e2e/<file>.spec.ts --project=chromium`. Do it when a change touches browser behaviour (focus, IME, layout); CI runs the whole suite.

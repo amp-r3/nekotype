@@ -1,6 +1,6 @@
 # ADR 052: Browser Tests Off the Local Hot Path, Latency Gate on `main`
 
-- **Status:** In force. Amends [ADR 045](045-e2e-on-production-bundle-and-gated-deploy.md) and [ADR 048](048-worst-keystroke-latency-gate.md) on where the browser tests run.
+- **Status:** In force; point 3 is narrowed by [ADR 074](074-latency-gate-on-pull-requests-that-can-move-it.md) (a pull request that changes a file which can move latency runs the gate). Amends [ADR 045](045-e2e-on-production-bundle-and-gated-deploy.md) and [ADR 048](048-worst-keystroke-latency-gate.md) on where the browser tests run.
 - **Context:** The browser tests were about three quarters of `verify`: in a CI run `verify` took 3:45, of which the unit tests took 24 s, the e2e on Chromium and WebKit 1:00 and the latency test 1:48. One change ran them up to three times: in the `pre-push` hook, in CI on the pull request and in CI on `main` after the merge. The project is in active development, and a push that waits for minutes of browser tests slows the work without adding a check that CI does not make.
 - **Decision:**
   1. **`verify:quick`.** `verify` without the e2e: typecheck, lint, Prettier, unit tests with coverage, build and size budgets. The `pre-push` hook runs it. `verify` is `verify:quick` followed by `e2e`.

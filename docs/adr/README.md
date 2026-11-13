@@ -98,3 +98,4 @@ Append-only log of architectural decisions, one file per decision.
 | [071](071-glyph-set-from-generated-content.md)                                       | Glyph Set from Generated Content                                                             | In force               |
 | [072](072-delta-split-per-mode.md)                                                   | Delta Split per Mode                                                                         | In force               |
 | [073](073-test-result-assembly.md)                                                   | Test Result Assembly                                                                         | In force               |
+| [074](074-latency-gate-on-pull-requests-that-can-move-it.md)                         | The Latency Gate Runs on Pull Requests That Can Move It                                      | In force               |
