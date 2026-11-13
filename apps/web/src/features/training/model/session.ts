@@ -110,6 +110,9 @@ export type Session = {
   // completed and time has passed, and drops it like a restart otherwise (metrics.md, "Test end").
   // Any other kind of test, and a test that has not started, ignore it.
   finish(): void;
+  // A key that is not input reached the input source (a digit, a space, a letter of another
+  // layout, IME text): it restarts the idle wait of a running test and does nothing else.
+  noteActivity(): void;
   /** Whether `finish()` would end the test now: a zen test that is running. */
   canFinish(): boolean;
   // Ends a running test because the tab was hidden (metrics.md, "Hidden tab"). It is kept, with the
@@ -386,6 +389,10 @@ class TrainingSession implements Session {
       kanaDelta,
       kanaErrors,
     });
+  }
+
+  noteActivity(): void {
+    if (this._phase.value === 'running') this.lastKeyAt = this.clock.now();
   }
 
   canFinish(): boolean {
