@@ -18,24 +18,30 @@ export function Switch({
   description,
   disabled = false,
 }: SwitchProps): JSX.Element {
+  const controlId = useId();
   const labelId = useId();
   const descriptionId = useId();
   return (
-    <div className="flex items-center justify-between gap-4 select-none max-sm:flex-col max-sm:items-start">
-      <div className="flex flex-col">
-        <span
-          id={labelId}
-          className={cx('text-ui-label', disabled ? 'text-fur-faint' : 'text-fur')}
-        >
-          {label}
-        </span>
+    <div className="flex items-center justify-between gap-6 select-none max-sm:flex-col max-sm:items-start">
+      <label
+        htmlFor={controlId}
+        className={cx(
+          'text-ui-label flex flex-col gap-1',
+          disabled ? 'text-fur-faint cursor-default' : 'text-fur cursor-pointer',
+        )}
+      >
+        <span id={labelId}>{label}</span>
         {description !== undefined && (
-          <span id={descriptionId} className="text-ui-caption text-fur-dim">
+          <span
+            id={descriptionId}
+            className={cx('text-ui-caption', disabled ? 'text-fur-faint' : 'text-fur-dim')}
+          >
             {description}
           </span>
         )}
-      </div>
+      </label>
       <button
+        id={controlId}
         type="button"
         role="switch"
         aria-checked={checked}
@@ -45,12 +51,15 @@ export function Switch({
         onClick={() => {
           onChange(!checked);
         }}
-        className="border-line-strong bg-bg-raised pointer-coarse:min-h-touch-min relative inline-flex h-5 w-[34px] shrink-0 cursor-pointer items-center rounded-sm border transition-colors disabled:cursor-not-allowed"
+        className={cx(
+          'bg-bg-raised hover:border-fur-dim pointer-coarse:min-h-touch-min disabled:hover:border-line relative h-5 w-[34px] shrink-0 cursor-pointer rounded-sm border transition-colors disabled:cursor-default',
+          disabled ? 'border-line' : 'border-line-strong',
+        )}
       >
         <span
           className={cx(
-            'pointer-events-none inline-block h-3.5 w-3.5 rounded-xs transition-transform',
-            checked ? 'bg-eye translate-x-[16px]' : 'bg-fur-dim translate-x-[2px]',
+            'pointer-events-none absolute top-[3px] left-[3px] h-3 w-3 rounded-xs transition-transform',
+            checked ? 'bg-eye translate-x-[14px]' : 'bg-fur-dim',
             disabled && 'bg-fur-faint',
           )}
         />

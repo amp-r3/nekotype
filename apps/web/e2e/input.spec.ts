@@ -120,7 +120,7 @@ test.describe('input: composition (IME emulated through the DevTools protocol)',
     await expect(page.getByTestId('results-panel')).toBeVisible();
     // Every kana was typed once, so the whole run is clean.
     await expect(page.getByTestId('weak-kana')).toHaveCount(0);
-    await expect(page.getByText('100 %')).toBeVisible();
+    await expect(page.getByTestId('results-panel')).toContainText(/kana accuracy\s*100\s*%/);
   });
 
   test('a Japanese IME that is on shows the notice once kana are composed', async ({ page }) => {

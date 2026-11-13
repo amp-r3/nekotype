@@ -57,8 +57,8 @@ describe('stats page: with answers', () => {
     const text = (id: string): string | null | undefined =>
       container.querySelector(`[data-testid="${id}"]`)?.textContent;
     expect(text('stats-mastered')).toBe('hiragana 0 of 104katakana 0 of 125');
-    expect(container.textContent).toContain(`${t('stats.learn.streakCurrent')}3 days`);
-    expect(container.textContent).toContain(`${t('stats.learn.streakBest')}3 days`);
+    expect(container.textContent).toContain(`${t('stats.learn.streakCurrent')}3days`);
+    expect(container.textContent).toContain(`${t('stats.learn.streakBest')}3days`);
     expect(text('stats-started')).toBe('5');
     expect(text('stats-finished')).toBe('4');
 

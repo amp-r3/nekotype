@@ -7,6 +7,9 @@ export type DialogProps = {
   readonly onClose: () => void;
   readonly title: string;
   readonly closeLabel: string;
+  // The safe action comes first and receives the initial focus (design Dialog); without it the
+  // dialog's own first control, `✕`, gets it.
+  readonly initialFocusRef?: { readonly current: HTMLElement | null };
   readonly children: ComponentChildren;
   readonly className?: string;
 };
@@ -16,6 +19,7 @@ export function Dialog({
   onClose,
   title,
   closeLabel,
+  initialFocusRef,
   children,
   className = '',
 }: DialogProps): JSX.Element {
@@ -32,6 +36,7 @@ export function Dialog({
           previouslyFocusedElementRef.current = document.activeElement;
         }
         dialog.showModal();
+        initialFocusRef?.current?.focus();
       }
     } else {
       if (dialog.open) {
@@ -42,7 +47,7 @@ export function Dialog({
         previouslyFocusedElementRef.current = null;
       }
     }
-  }, [open]);
+  }, [open, initialFocusRef]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -73,20 +78,20 @@ export function Dialog({
       ref={dialogRef}
       onClick={handleBackdropClick}
       className={cx(
-        'bg-bg-raised border-line text-fur backdrop:bg-scrim m-auto max-h-[calc(100vh-var(--space-16))] w-[calc(100vw-var(--space-8))] max-w-120 overflow-y-auto rounded-md border p-0',
+        'bg-bg-raised border-line text-fur animate-reveal backdrop:bg-scrim m-auto max-h-[calc(100vh-var(--space-16))] w-[calc(100vw-var(--space-8))] max-w-120 overflow-y-auto rounded-md border p-0',
         className,
       )}
       aria-labelledby="dialog-title"
     >
       <div className="flex flex-col gap-4 p-4 sm:p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between">
           <h2 id="dialog-title" className="text-ui-heading text-fur">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-fur-dim hover:text-fur hover:bg-bg-hover pointer-coarse:min-h-touch-min pointer-coarse:min-w-touch-min cursor-pointer rounded-sm p-1 font-mono transition-colors"
+            className="text-fur-dim hover:text-fur hover:bg-bg-hover pointer-coarse:min-h-touch-min pointer-coarse:min-w-touch-min h-control-sm w-control-sm -mt-1 -mr-2 inline-flex shrink-0 cursor-pointer items-center justify-center rounded-sm font-mono transition-colors"
             aria-label={closeLabel}
           >
             ✕

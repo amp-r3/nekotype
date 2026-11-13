@@ -28,13 +28,12 @@ export function Stat({ label, value, unit, size, badge, comparisons }: StatProps
         >
           {value}
         </span>
-        {unit !== undefined && ' '}
         {unit !== undefined && (
           <span className="text-mono-romaji text-fur-dim font-mono">{unit}</span>
         )}
       </div>
       {comparisons !== undefined && (
-        <div className="text-ui-label text-fur-dim flex flex-col">{comparisons}</div>
+        <div className="text-ui-label text-fur-dim mt-2 flex flex-col gap-1">{comparisons}</div>
       )}
     </div>
   );
