@@ -21,8 +21,8 @@ export type TestStageProps = {
 };
 
 /**
- * The test screen: the live line, the stream, one line for
- * notices, the translation and the hints. Nothing here reads a signal that a keystroke changes
+ * The test screen: the live line, the stream, the hints with Restart, the translation and one
+ * line for notices, in the order of the design. Nothing here reads a signal that a keystroke changes
  * while rendering: the lines of text below are signals passed as text nodes, and the stream writes
  * itself (docs/spec/frontend.md, "Hot path"). So a keystroke renders no component, and a completed
  * prompt renders only the stream.
@@ -73,35 +73,7 @@ export function TestStage({ session, repeating, input, onRestart }: TestStagePro
 
       <TextStream session={session} />
 
-      <div className="flex min-h-7 w-full items-center justify-center gap-3 text-center">
-        <span role="status" className="text-fur-dim text-ui-label">
-          {notice}
-        </span>
-        <span className="text-eye text-mono-romaji font-mono">{revealed}</span>
-      </div>
-
-      {/* Two lines are reserved, so a long translation or the link does not move the stream. */}
-      <div className="text-fur-dim flex min-h-12 flex-wrap items-baseline justify-center gap-x-4 gap-y-1 text-center">
-        <p data-testid="translation" className="text-ui-body m-0 flex-[1_1_320px]">
-          {translation}
-        </p>
-        <a
-          data-testid="source-link"
-          href={sourceHref}
-          hidden={sourceHidden}
-          target="_blank"
-          rel="noopener"
-          // A press on the link must not move the keyboard out of the hidden field.
-          onMouseDown={(e) => {
-            e.preventDefault();
-          }}
-          className="text-ui-caption hover:text-fur underline"
-        >
-          {t('stage.source')}
-        </a>
-      </div>
-
-      <div className="text-fur-dim text-ui-caption flex w-full flex-wrap items-center justify-between gap-3 pt-2">
+      <div className="text-fur-dim text-ui-caption flex w-full flex-wrap items-center justify-between gap-3">
         {touch ? (
           <Button
             variant="text"
@@ -129,7 +101,8 @@ export function TestStage({ session, repeating, input, onRestart }: TestStagePro
           {t('stage.clickToFocus')}
         </span>
 
-        {/* Restart comes first in the tab order: the first Tab reaches it, also in a zen test. */}
+        {/* Restart is the first control after the hidden field, before the source link of a phrase:
+            the first Tab reaches it in every mode (design TestScreen order). */}
         <div className="flex items-center gap-2">
           <Button
             variant="text"
@@ -169,6 +142,34 @@ export function TestStage({ session, repeating, input, onRestart }: TestStagePro
             </Button>
           )}
         </div>
+      </div>
+
+      {/* Two lines are reserved, so a long translation or the link does not move the stream. */}
+      <div className="text-fur-dim flex min-h-12 flex-wrap items-baseline justify-center gap-x-4 gap-y-1 text-center">
+        <p data-testid="translation" className="text-ui-body m-0 flex-[1_1_320px]">
+          {translation}
+        </p>
+        <a
+          data-testid="source-link"
+          href={sourceHref}
+          hidden={sourceHidden}
+          target="_blank"
+          rel="noopener"
+          // A press on the link must not move the keyboard out of the hidden field.
+          onMouseDown={(e) => {
+            e.preventDefault();
+          }}
+          className="text-ui-caption hover:text-fur underline"
+        >
+          {t('stage.source')}
+        </a>
+      </div>
+
+      <div className="flex min-h-7 w-full items-center justify-center gap-3 text-center">
+        <span role="status" className="text-fur-dim text-ui-label">
+          {notice}
+        </span>
+        <span className="text-eye text-mono-romaji font-mono">{revealed}</span>
       </div>
     </div>
   );

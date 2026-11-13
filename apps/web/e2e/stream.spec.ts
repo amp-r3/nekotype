@@ -261,6 +261,20 @@ test.describe('the interface while a test runs', () => {
     await expect(page.getByRole('navigation')).toBeVisible();
   });
 
+  test('Phrases: the first Tab reaches Restart, not the source link', async ({ page }) => {
+    await openTypingScreen(page);
+    await page.getByRole('radio', { name: 'Phrases' }).click();
+    // Keys are ignored until the phrases are in; the source link shows with them.
+    await expect(page.getByTestId('source-link')).toBeVisible();
+    await page.keyboard.press('KeyA');
+    await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'running');
+
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', RESTART)).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
+  });
+
   test('a mouse movement brings the interface back, and the next key hides it again', async ({
     page,
   }, testInfo) => {

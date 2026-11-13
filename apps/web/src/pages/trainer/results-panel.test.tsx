@@ -67,16 +67,18 @@ describe('results panel', () => {
 
   const text = (): string => container.textContent;
 
-  // Spec "Keyboard": Enter on the results screen is "Next test". The button must have the focus the
-  // moment the screen is on display; a key pressed right after it appears must not be lost.
-  it('has the focus on Next test as soon as it is rendered, with no wait for an effect', () => {
+  // Spec "Keyboard": Enter on the results screen is "Next test", and so is `tab → enter`. The screen
+  // has the focus the moment it is on display, so a key pressed right after it appears is not lost,
+  // and Next test is its first control, so the first Tab reaches it.
+  it('holds the focus as soon as it is rendered, with Next test as its first control', () => {
     let started = 0;
     show(finished(), () => {
       started += 1;
     });
+    const panel = container.querySelector('[data-testid="results-panel"]');
+    expect(document.activeElement).toBe(panel);
     const next = container.querySelector('button');
     expect(next?.textContent).toContain('next test');
-    expect(document.activeElement).toBe(next);
     next?.click();
     expect(started).toBe(1);
   });

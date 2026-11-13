@@ -12,6 +12,25 @@ import { t } from '@/shared/i18n';
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
 
 const neko: PromptItem = { key: 'word:neko', text: 'ねこ' };
+// A phrase brings the `source` link of Tatoeba under the stream.
+const phrase: PromptItem = { key: 'phrase:1', text: 'ねこ', tatoebaId: 4705112 };
+
+// The control the browser's Tab moves to from `from`: the next element in document order that takes
+// the focus by Tab (happy-dom does not move the focus on a dispatched Tab).
+function nextTabStop(root: ParentNode, from: Element): HTMLElement | undefined {
+  const stops = Array.from(
+    root.querySelectorAll<HTMLElement>('a[href], button, input, select, textarea, [tabindex]'),
+  ).filter(
+    (el) =>
+      el.tabIndex >= 0 &&
+      !el.hidden &&
+      !(el instanceof HTMLButtonElement && el.disabled) &&
+      el.getAttribute('href') !== '',
+  );
+  return stops.find(
+    (el) => (from.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+  );
+}
 
 // Spec "Test screen" and "Keyboard" (frontend.md): the field keeps the keyboard when Restart, Finish
 // and Next test are used, a dialog ends the test behind it, Tab leaves the interface shown, and
@@ -99,7 +118,6 @@ describe('test screen: focus, hidden interface and keys', () => {
     it('Next test gives the focus to the field within the click', async () => {
       const input = field();
       await finishTest();
-      expect(document.activeElement).toBe(buttonByText(t('results.nextTest')));
       buttonByText(t('results.nextTest')).click();
       expect(document.activeElement).toBe(input);
       await settle();
@@ -110,8 +128,38 @@ describe('test screen: focus, hidden interface and keys', () => {
     it('typing is not taken from the Next test button while the results show', async () => {
       await finishTest();
       const next = buttonByText(t('results.nextTest'));
+      next.focus();
       key(next, 'a');
       expect(document.activeElement).toBe(next);
+    });
+  });
+
+  // Spec "Keyboard": `tab → enter` restarts during a test, and starts a new test on the results.
+  describe('tab → enter', () => {
+    it('the first Tab from the field reaches Restart in a phrase, before the source link', async () => {
+      render(null, container);
+      trainer = createTrainer({ nextPrompt: () => phrase });
+      render(<TrainerPage trainer={trainer} />, container);
+      await settle();
+      const source = container.querySelector('[data-testid="source-link"]');
+      expect(source?.hasAttribute('hidden')).toBe(false);
+      expect(nextTabStop(container, field())).toBe(buttonByText(t('stage.restart')));
+    });
+
+    it('the results hold the focus themselves, so the first Tab reaches Next test', async () => {
+      await finishTest();
+      const panel = container.querySelector('[data-testid="results-panel"]');
+      if (panel === null) throw new Error('no results panel');
+      expect(document.activeElement).toBe(panel);
+      expect(nextTabStop(container, panel)).toBe(buttonByText(t('results.nextTest')));
+    });
+
+    it('Enter on the results starts the next test', async () => {
+      await finishTest();
+      const event = key(document.activeElement ?? document.body, 'Enter');
+      expect(event.defaultPrevented).toBe(true);
+      await settle();
+      expect(trainer.session.phase.value).toBe('idle');
     });
   });
 
