@@ -165,6 +165,9 @@ class TrainingSession implements Session {
   private readonly _erroredTokens = signal<number>(0);
   // Committed tokens per kana, and those of them that were errored (T4); the report's `kanaDelta`.
   private readonly kanaCounts = new Map<string, { attempts: number; erroredAttempts: number }>();
+  // Rejected keys and hints charged to each kana, for the list of mistyped kana. Counted when they
+  // happen: the error log forgets tokens that compaction drops.
+  private readonly kanaErrors = new Map<string, number>();
   // Hints (Esc) over the whole test; `assisted` forgets prompts that compaction dropped.
   private hints = 0;
   private strictness: Strictness = 'learner';
@@ -268,6 +271,8 @@ class TrainingSession implements Session {
     this.committedAt.clear();
     this.assisted.clear();
     this.hints = 0;
+    // Like the hints: an Esc before the first key belongs to the test, so `beginTest` keeps it.
+    this.kanaErrors.clear();
     this.errorLog = createErrorLog();
     this.keyTimes = [];
     this.keyBase = 0;
@@ -318,6 +323,7 @@ class TrainingSession implements Session {
         this._isAssisted.value = true;
         const target = errorTarget(matcher, state);
         this.errorLog.record(target, null, '');
+        this.countKanaError(matcher.tokens[target]?.kanaKey ?? null);
         this.noteMistake(target, 'hint');
       }
       return;
@@ -360,6 +366,8 @@ class TrainingSession implements Session {
   private report(endReason: EndedTest['endReason'], endedAt: number): void {
     const kanaDelta: Record<string, { attempts: number; erroredAttempts: number }> = {};
     for (const [key, count] of this.kanaCounts) kanaDelta[key] = { ...count };
+    const kanaErrors: Record<string, number> = {};
+    for (const [key, count] of this.kanaErrors) kanaErrors[key] = count;
     const startedAt = this._sessionStartedAt.peek();
     const { correct, rejected } = this.keyTally.snapshot;
     this.onEnd?.({
@@ -376,6 +384,7 @@ class TrainingSession implements Session {
       rejectedKeystrokes: rejected,
       assisted: this.hints,
       kanaDelta,
+      kanaErrors,
     });
   }
 
@@ -427,6 +436,7 @@ class TrainingSession implements Session {
     this.committedAt.clear();
     this.assisted.clear();
     this.hints = 0;
+    this.kanaErrors.clear();
     this._isAssisted.value = false;
     this._canonicalRomaji.value = '';
     this.streamPrompts = [];
@@ -473,8 +483,16 @@ class TrainingSession implements Session {
   private reject(matcher: Matcher, state: MatchState, char: string, now: number): void {
     this.keyTally.record(now, false);
     const target = errorTarget(matcher, state);
-    this.errorLog.record(target, matcher.tokens[target]?.kanaKey ?? null, char);
+    const kanaKey = matcher.tokens[target]?.kanaKey ?? null;
+    this.errorLog.record(target, kanaKey, char);
+    this.countKanaError(kanaKey);
     this.noteMistake(target, 'rejected');
+  }
+
+  // A standalone っ or ー has no kana key and is left out, as in the kana statistics.
+  private countKanaError(kanaKey: string | null): void {
+    if (kanaKey === null) return;
+    this.kanaErrors.set(kanaKey, (this.kanaErrors.get(kanaKey) ?? 0) + 1);
   }
 
   private afterAccepted(matcher: Matcher, state: MatchState, now: number): void {

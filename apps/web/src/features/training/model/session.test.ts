@@ -1331,7 +1331,34 @@ describe('session: the report of an ended test (metrics.md, T4)', () => {
       rejectedKeystrokes: 1,
       assisted: 1,
       kanaDelta: { 'hiragana:あ': { attempts: 10, erroredAttempts: 1 } },
+      // The rejected key and the hint are two errors of one kana.
+      kanaErrors: { 'hiragana:あ': 2 },
     });
+  });
+
+  it('counts every rejected key and hint, also before the first key and on an unfinished kana', () => {
+    const session = make({ kind: 'count', prompts: 10 });
+    session.loadPrompt(a, 'learner');
+    // Esc before the test has started belongs to it.
+    session.handleIntent({ kind: 'reveal' });
+    for (const [i, char] of ['x', 'y', 'z'].entries()) typeAt(session, char, 1000 + i * 10);
+    for (let i = 0; i < 10; i++) typeAt(session, 'a', 1100 + i * 100);
+
+    expect(reports[0]?.kanaErrors).toEqual({ 'hiragana:あ': 4 });
+    // One token with errors, however many keys were wrong.
+    expect(reports[0]?.kanaDelta).toEqual({ 'hiragana:あ': { attempts: 10, erroredAttempts: 1 } });
+  });
+
+  it('leaves out a standalone ー, which has no kana key', () => {
+    const bar: PromptItem = { key: 'word:bar', text: 'あー' };
+    const session = make({ kind: 'time', seconds: 15 }, () => bar);
+    session.loadPrompt(bar, 'learner');
+    typeAt(session, 'a', 1000);
+    typeAt(session, 'x', 1100);
+    typeAt(session, '-', 1200);
+    session.handleIntent({ kind: 'ignore' });
+    scheduler.advance(15000);
+    expect(reports[0]?.kanaErrors).toEqual({});
   });
 
   it('counts the committed tokens of an unfinished prompt when a time test runs out', () => {
@@ -1362,6 +1389,7 @@ describe('session: the report of an ended test (metrics.md, T4)', () => {
       keystrokes: 7,
       rejectedKeystrokes: 4,
       kanaDelta: { 'hiragana:ね': { attempts: 1, erroredAttempts: 0 } },
+      kanaErrors: { 'hiragana:こ': 4 },
     });
   });
 

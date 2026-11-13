@@ -167,6 +167,6 @@ type Counters = { started: Record<Mode, number>; finished: Record<Mode, number> 
 
 ## Screens
 
-- **Typing results:** KPM (large) with the difference to the average and to the personal best, kana accuracy, time, and up to 5 kana with errors in this test, most errors first, with spellings from `spellingsFor`; the list comes from the test's error log in memory. On a personal best: badge and the `content` cat. Actions: "Next test" (Enter) and "Repeat".
+- **Typing results:** KPM (large) with the difference to the average and to the personal best, kana accuracy, time, and up to 5 kana with errors in this test, most errors first, with spellings from `spellingsFor`; the number is the errors of the kana in this test, rejected keys and hints (a kana with three wrong keys is `3`, however many times it was typed); the list comes from counts the session keeps in memory and reports at the end, and a standalone っ or ー, which has no kana key, is not listed. On a personal best: badge and the `content` cat. Actions: "Next test" (Enter) and "Repeat".
 - **Session summary:** see [Learning](learning.md#session-summary).
 - **Statistics (`/stats`):** learning — the daily median answer time of each track (lower is better), the current and best streak, mastered kana per track; typing — personal bests from `TypingRecords`, the KPM-per-test chart (repeats left out) and the paginated test history (see "History" in [Storage and sync](storage-sync.md)); started and finished counters per mode.

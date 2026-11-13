@@ -18,7 +18,7 @@ import { initTyping, recordDiscardedTest, saveTest, typingKanaStats } from '@/en
 import type { Clock, Rng, Scheduler } from '@/shared/lib';
 import { defaultClock, defaultRng, defaultScheduler, uuidv7 } from '@/shared/lib';
 import { roundAccuracy, roundKpm } from '@nekotype/shared/runtime';
-import type { KanaStat, TestResult } from '@nekotype/shared/types';
+import type { TestResult } from '@nekotype/shared/types';
 import type { EndedTest } from './types';
 
 export type TrainerDeps = {
@@ -41,7 +41,7 @@ const APP_VERSION: string = __APP_VERSION__;
  */
 /** A saved test with the kana errors of it, which the results screen lists and nothing keeps. */
 export type FinishedTest = SavedTest & {
-  readonly kanaDelta: Readonly<Record<string, KanaStat>>;
+  readonly kanaErrors: Readonly<Record<string, number>>;
 };
 
 export type Trainer = {
@@ -175,7 +175,7 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
       void typing
         .saveTest({ result: toResult(ended), kanaDelta: ended.kanaDelta, startedIncrement: 1 })
         .then((saved) => {
-          if (mine === generation) lastSaved.value = { ...saved, kanaDelta: ended.kanaDelta };
+          if (mine === generation) lastSaved.value = { ...saved, kanaErrors: ended.kanaErrors };
         });
     },
     // A zen test ended with nothing to keep: a fresh prompt, as after a restart.

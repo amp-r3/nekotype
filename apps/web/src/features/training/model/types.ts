@@ -50,6 +50,8 @@ export type EndedTest = {
   readonly rejectedKeystrokes: number;
   /** Hints (Esc). */
   readonly assisted: number;
-  /** Committed tokens per kana, and the errored ones; also the errors of the test per kana. */
+  /** Committed tokens per kana, and the errored ones: the kana statistics of the test. */
   readonly kanaDelta: Readonly<Record<string, KanaStat>>;
+  /** Rejected keys and hints per kana: the errors of the test, for the list of mistyped kana. */
+  readonly kanaErrors: Readonly<Record<string, number>>;
 };
