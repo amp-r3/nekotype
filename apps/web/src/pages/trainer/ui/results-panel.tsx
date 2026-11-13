@@ -37,23 +37,24 @@ function ComparisonLine({
 }
 
 export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelProps): JSX.Element {
-  const nextBtnRef = useRef<HTMLButtonElement | null>(null);
+  const root = useRef<HTMLDivElement | null>(null);
   const ready = finished !== null;
 
-  // Enter works also after a click beside the button took the focus away from it.
+  // Enter is Next test wherever the focus is, except on a control.
   useEnterForNext(onNextTest);
 
-  // A layout effect: the focus is on the button before the first frame, so Enter pressed as soon as
-  // the screen shows is never lost (a passive effect runs after the paint). It runs again when the
-  // saved result arrives and the button is a new element.
+  // The screen holds the focus, not a button: Enter is Next test, and the first Tab reaches Next
+  // test, so `tab → enter` starts a new test here as it does during one. A layout effect: the focus
+  // is set before the first frame, so a key pressed as soon as the screen shows is never lost. It
+  // runs again when the saved result arrives and the screen is a new element.
   useLayoutEffect(() => {
-    nextBtnRef.current?.focus();
+    root.current?.focus({ preventScroll: true });
   }, [ready]);
 
   if (finished === null) {
     return (
-      <div className="text-fur-dim w-full py-12">
-        <Button variant="primary" buttonRef={nextBtnRef} autoFocus onClick={onNextTest}>
+      <div ref={root} tabIndex={-1} className="text-fur-dim w-full py-12 outline-none">
+        <Button variant="primary" onClick={onNextTest}>
           {t('results.nextTest')}
         </Button>
       </div>
@@ -72,8 +73,10 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
 
   return (
     <div
+      ref={root}
+      tabIndex={-1}
       data-testid="results-panel"
-      className="animate-fadeIn flex w-full flex-col gap-12 py-6 select-none"
+      className="animate-fadeIn flex w-full flex-col gap-12 py-6 outline-none select-none"
     >
       {/* Polite live region for screen readers */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
@@ -130,7 +133,7 @@ export function ResultsPanel({ finished, onNextTest, onRepeat }: ResultsPanelPro
       <WeakKanaList items={weakKana(kanaErrors, result.strictness)} />
 
       <div className="flex items-center gap-2">
-        <Button variant="primary" size="lg" buttonRef={nextBtnRef} autoFocus onClick={onNextTest}>
+        <Button variant="primary" size="lg" onClick={onNextTest}>
           {t('results.nextTest')} <Kbd>{t('key.enter')}</Kbd>
         </Button>
         <Button size="lg" onClick={onRepeat}>

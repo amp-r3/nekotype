@@ -61,7 +61,7 @@ test.describe('zen: a test without a length, ended by hand', () => {
     await finish.click();
     await expect(page.getByTestId('results-panel')).toBeVisible();
     // The results take the focus themselves; wait for it so a slow runner cannot press too early.
-    await expect(page.getByRole('button', { name: 'next test' })).toBeFocused();
+    await expect(page.getByTestId('results-panel')).toBeFocused();
     await page.keyboard.press('Enter');
     // Next test: the same zen config, idle.
     await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
@@ -121,6 +121,17 @@ test.describe('zen: a test without a length, ended by hand', () => {
     await expect(page.getByTestId('live-counter')).toHaveText('1');
     await page.keyboard.press('Control+Enter');
     await expect(page.getByTestId('results-panel')).toBeVisible();
+  });
+
+  test('on the results the first Tab reaches Next test, and Enter starts it', async ({ page }) => {
+    await chooseZen(page);
+    await page.keyboard.type(await canonicalOfPrompt(page), { delay: 15 });
+    await page.getByRole('button', FINISH).click();
+    await expect(page.getByTestId('results-panel')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'next test' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('prompt-arena')).toHaveAttribute('data-phase', 'idle');
   });
 
   test('the first Tab still reaches Restart, with Finish after it', async ({ page }) => {

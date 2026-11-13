@@ -15,14 +15,20 @@ export type ResultsPendingProps = {
  * works in both states, by button and by Enter, so a failed chunk never traps the user.
  */
 export function ResultsPending({ failed, onRetry, onNextTest }: ResultsPendingProps): JSX.Element {
-  const nextRef = useRef<HTMLButtonElement | null>(null);
+  const root = useRef<HTMLDivElement | null>(null);
   useEnterForNext(onNextTest);
+  // As on the results: the screen holds the focus, so Enter and `tab → enter` are Next test.
   useLayoutEffect(() => {
-    nextRef.current?.focus();
+    root.current?.focus({ preventScroll: true });
   }, []);
 
   return (
-    <div className="max-w-layout-test mx-auto flex w-full flex-col items-center gap-4 py-12">
+    <div
+      ref={root}
+      tabIndex={-1}
+      data-testid="results-pending"
+      className="max-w-layout-test mx-auto flex w-full flex-col items-center gap-4 py-12 outline-none"
+    >
       {failed ? (
         <>
           <p role="alert" className="text-miss text-ui-body">
@@ -37,7 +43,7 @@ export function ResultsPending({ failed, onRetry, onNextTest }: ResultsPendingPr
           {t('route.loading')}
         </p>
       )}
-      <Button variant="primary" buttonRef={nextRef} onClick={onNextTest}>
+      <Button variant="primary" onClick={onNextTest}>
         {t('results.nextTest')}
       </Button>
     </div>
