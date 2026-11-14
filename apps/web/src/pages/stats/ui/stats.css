@@ -26,6 +26,44 @@
   fill: var(--fur);
 }
 
+/* The middle half of the last tests, then the median over it. Both come in on mount (S20). */
+.nk-rc__band {
+  fill: var(--heat-fur-1);
+  animation: nk-rc-in var(--dur-draw) var(--ease-out) both;
+}
+
+.nk-rc__line {
+  fill: none;
+  stroke: var(--chart-kpm);
+  stroke-width: var(--stroke-mark);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  animation: nk-rc-draw var(--dur-draw) var(--ease-out) both;
+}
+
+@keyframes nk-rc-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes nk-rc-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nk-rc__band,
+  .nk-rc__line {
+    animation: none;
+  }
+}
+
 .nk-rc__cursor {
   stroke: var(--chart-cursor);
   stroke-width: var(--stroke-hair);

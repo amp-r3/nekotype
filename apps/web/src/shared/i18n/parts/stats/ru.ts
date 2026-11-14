@@ -66,6 +66,11 @@ export const statsRu = {
   'stats.legend.test': 'тест',
   'stats.legend.best': 'личный рекорд',
   'stats.legend.repeat': 'повтор',
+  'stats.legend.median': 'медиана последних 10',
+  'stats.legend.band': 'их средняя половина',
+  'stats.typing.few': 'линия медианы появится с 5-го теста',
+  'stats.typing.mixed':
+    'все режимы вместе: скорости разных режимов несравнимы, поэтому линии медианы нет. выберите режим, чтобы увидеть динамику.',
   'stats.typing.chartLabel': 'скорость каждого теста по времени',
   'stats.typing.trend': 'динамика',
   'stats.typing.noSelection': 'в этой выборке тестов нет',

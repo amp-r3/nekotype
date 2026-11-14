@@ -3,11 +3,18 @@ import { t } from '@/shared/i18n';
 import type { ChartPoint } from '../lib/trend';
 
 /** The marks that are on the chart, one caption line. */
-export function ChartLegend({ points }: { readonly points: readonly ChartPoint[] }): JSX.Element {
+export function ChartLegend({
+  points,
+  trend = false,
+}: {
+  readonly points: readonly ChartPoint[];
+  readonly trend?: boolean;
+}): JSX.Element {
   const items = [
     t('stats.legend.test'),
     ...(points.some((point) => point.mark === 'best') ? [t('stats.legend.best')] : []),
     ...(points.some((point) => point.mark === 'hollow') ? [t('stats.legend.repeat')] : []),
+    ...(trend ? [t('stats.legend.median'), t('stats.legend.band')] : []),
   ];
   return (
     <ul className="text-ui-caption text-fur-dim m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0">
