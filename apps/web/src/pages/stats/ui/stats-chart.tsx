@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { useId, useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { cx } from '@/shared/lib';
 import type { ChartPoint, ChartRange, TrendPoint } from '../lib/trend';
 
 export type StatsChartProps = {
@@ -303,7 +304,11 @@ export function StatsChart({
         <div
           id={tipId}
           role="status"
-          className={`nk-rc__tip text-ui-caption${cursorX < EDGE ? 'is-start' : ''}${cursorX > width - EDGE ? 'is-end' : ''}`}
+          className={cx(
+            'nk-rc__tip text-ui-caption',
+            cursorX < EDGE && 'is-start',
+            cursorX > width - EDGE && 'is-end',
+          )}
           style={{ left: cursorX, top: Math.max(0, py(current.y) - 12) }}
           data-testid="chart-tip"
         >

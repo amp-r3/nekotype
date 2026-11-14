@@ -119,4 +119,25 @@ describe('ActivityMap', () => {
     });
     expect(container.querySelector('[role="tooltip"]')?.textContent).toContain('12 answers');
   });
+
+  it('shifts the tooltip at the first and the last columns, not in the middle', () => {
+    mount(new Map());
+    const all = cells();
+    const tip = (): Element | null => container.querySelector('[data-testid="activity-tip"]');
+    const focusCell = (cell: HTMLElement | undefined): void => {
+      void act(() => {
+        cell?.focus();
+      });
+    };
+    focusCell(all[0]);
+    expect(tip()?.classList.contains('is-start')).toBe(true);
+    expect(tip()?.classList.contains('is-end')).toBe(false);
+    expect(tip()?.classList.contains('text-ui-caption')).toBe(true);
+    focusCell(all.at(-1));
+    expect(tip()?.classList.contains('is-end')).toBe(true);
+    expect(tip()?.classList.contains('is-start')).toBe(false);
+    focusCell(all[6 * 7]);
+    expect(tip()?.classList.contains('is-start')).toBe(false);
+    expect(tip()?.classList.contains('is-end')).toBe(false);
+  });
 });
