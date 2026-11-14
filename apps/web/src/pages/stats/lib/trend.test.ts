@@ -136,7 +136,8 @@ describe('trendPoints', () => {
       (r, mark) => [r.id, String(mark)],
     );
     expect(points.map((point) => point.mark)).toEqual(['best', 'hollow', null]);
-    expect(points[0]).toMatchObject({ x: 1000, y: 90, tip: ['a', 'best'] });
+    expect(points[0]).toMatchObject({ x: 1000, y: 90 });
+    expect(points[0]?.tip()).toEqual(['a', 'best']);
   });
 });
 

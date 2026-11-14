@@ -106,7 +106,7 @@ export function StatsChart({
     PAD_TOP + (1 - (value - y0) / (y1 - y0 || 1)) * (height - PAD_TOP - PAD_BOTTOM);
 
   // The cursor walks the marks, or the bars when there are no marks, in time order.
-  const items: readonly { x: number; y: number; tip: readonly string[] }[] =
+  const items: readonly { x: number; y: number; tip: () => readonly string[] }[] =
     points.length > 0 ? points : ranges.map((r) => ({ x: r.x, y: r.mid, tip: r.tip }));
   const order = items
     .map((_, index) => index)
@@ -312,7 +312,7 @@ export function StatsChart({
           style={{ left: cursorX, top: Math.max(0, py(current.y) - 12) }}
           data-testid="chart-tip"
         >
-          {current.tip.map((line, index) => (
+          {current.tip().map((line, index) => (
             <span key={index}>{line}</span>
           ))}
         </div>

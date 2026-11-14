@@ -8,7 +8,8 @@ export type ChartPoint = {
   readonly x: number;
   readonly y: number;
   readonly mark: 'best' | 'hollow' | null;
-  readonly tip: readonly string[];
+  /** The tooltip lines; called only for the mark under the cursor. */
+  readonly tip: () => readonly string[];
 };
 
 /** One point of the rolling median and the middle half of its window. */
@@ -25,7 +26,8 @@ export type ChartRange = {
   readonly lo: number;
   readonly hi: number;
   readonly mid: number;
-  readonly tip: readonly string[];
+  /** The tooltip lines; called only for the bar under the cursor. */
+  readonly tip: () => readonly string[];
 };
 
 export type Axis = {
@@ -132,7 +134,7 @@ export function trendPoints(
         : result.repeated
           ? 'hollow'
           : null;
-    return { x: result.endedAt, y: value(result), mark, tip: tip(result, mark) };
+    return { x: result.endedAt, y: value(result), mark, tip: () => tip(result, mark) };
   });
 }
 

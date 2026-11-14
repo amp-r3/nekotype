@@ -14,9 +14,9 @@ afterEach(() => {
 });
 
 const points: ChartPoint[] = [
-  { x: 200, y: 80, mark: null, tip: ['second', '80 kpm'] },
-  { x: 20, y: 70, mark: 'hollow', tip: ['first', '70 kpm'] },
-  { x: 300, y: 100, mark: 'best', tip: ['third', '100 kpm', 'personal best'] },
+  { x: 200, y: 80, mark: null, tip: () => ['second', '80 kpm'] },
+  { x: 20, y: 70, mark: 'hollow', tip: () => ['first', '70 kpm'] },
+  { x: 300, y: 100, mark: 'best', tip: () => ['third', '100 kpm', 'personal best'] },
 ];
 
 type Extra = Partial<ComponentProps<typeof StatsChart>>;
@@ -89,6 +89,21 @@ describe('StatsChart', () => {
   it('draws nothing at width 0', () => {
     mount(0);
     expect(svg()).toBeNull();
+  });
+
+  it('builds the tooltip lines only for the mark under the cursor', () => {
+    const calls: string[] = [];
+    const lazy = points.map((point) => ({
+      ...point,
+      tip: () => {
+        calls.push(point.tip()[0] ?? '');
+        return point.tip();
+      },
+    }));
+    mount(600, lazy);
+    expect(calls).toEqual([]);
+    press('Home');
+    expect(calls).toEqual(['first']);
   });
 
   it('walks the marks in time order with the arrows, Home and End; Esc clears', () => {
@@ -169,8 +184,8 @@ describe('StatsChart', () => {
   });
 
   const ranges = [
-    { x: 100, lo: 900, hi: 1300, mid: 1100, tip: ['day one', 'median 1100 ms'] },
-    { x: 300, lo: 1000, hi: 1200, mid: 1100, tip: ['day two', 'median 1100 ms'] },
+    { x: 100, lo: 900, hi: 1300, mid: 1100, tip: () => ['day one', 'median 1100 ms'] },
+    { x: 300, lo: 1000, hi: 1200, mid: 1100, tip: () => ['day two', 'median 1100 ms'] },
   ];
   const ys = { yDomain: [500, 1500] as const, yTicks: [500, 1000, 1500] };
 
