@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { TestResult, TypingRecords } from '@nekotype/shared/types';
 import { personalBestKey } from '@nekotype/shared/runtime';
 import type { ModeParts } from '@/entities/stats';
-import { bestRows, historyPages, historyRow, kpmAxis, parseBestKey } from './typing-data';
+import { bestRows, historyPages, historyRow, parseBestKey } from './typing-data';
 
 function result(id: string, patch: Partial<TestResult> = {}): TestResult {
   return {
@@ -90,18 +90,6 @@ describe('bestRows (T13)', () => {
 
   it('is empty without records', () => {
     expect(bestRows({}, label)).toEqual([]);
-  });
-});
-
-describe('kpmAxis', () => {
-  it('is 0 / 60 / 120 of the design', () => {
-    expect(kpmAxis([])).toEqual({ domain: [0, 120], ticks: [0, 60, 120] });
-    expect(kpmAxis([40, 120])).toEqual({ domain: [0, 120], ticks: [0, 60, 120] });
-  });
-
-  it('grows in steps of 60 for a faster test', () => {
-    expect(kpmAxis([84, 121])).toEqual({ domain: [0, 180], ticks: [0, 90, 180] });
-    expect(kpmAxis([300.5])).toEqual({ domain: [0, 360], ticks: [0, 180, 360] });
   });
 });
 

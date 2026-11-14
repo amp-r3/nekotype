@@ -1,0 +1,118 @@
+import { describe, it, expect } from 'vitest';
+import type { TestResult, TypingRecords } from '@nekotype/shared/types';
+import { personalBestKey } from '@nekotype/shared/runtime';
+import { dayStart, localDay } from '@/entities/learn';
+import { kpmAxis, timeAxis, trendPoints } from './trend';
+
+function result(id: string, patch: Partial<TestResult> = {}): TestResult {
+  return {
+    id,
+    content: 'words',
+    script: 'hiragana',
+    strictness: 'learner',
+    config: { kind: 'time', seconds: 60 },
+    endReason: 'complete',
+    repeated: false,
+    startedAt: 0,
+    endedAt: 60_000,
+    durationMs: 60_000,
+    tokens: 100,
+    erroredTokens: 5,
+    items: 20,
+    keystrokes: 150,
+    rejectedKeystrokes: 6,
+    assisted: 0,
+    kpm: 100,
+    kanaAccuracy: 0.95,
+    celebratedPersonalBest: false,
+    contentVersion: 'c',
+    appVersion: 'a',
+    ...patch,
+  };
+}
+
+describe('kpmAxis', () => {
+  it('rounds the range out to tens and picks the step', () => {
+    expect(kpmAxis([61, 101])).toEqual({ domain: [60, 120], ticks: [60, 80, 100, 120] });
+  });
+
+  it('is at least 20 wide for one value or equal values', () => {
+    expect(kpmAxis([100])).toEqual({ domain: [90, 110], ticks: [90, 95, 100, 105, 110] });
+    expect(kpmAxis([100, 100])).toEqual(kpmAxis([100]));
+  });
+
+  it('never goes below 0', () => {
+    const axis = kpmAxis([3, 8]);
+    expect(axis.domain[0]).toBe(0);
+    expect(kpmAxis([]).domain[0]).toBe(0);
+  });
+
+  it('keeps at most four intervals for a wide range', () => {
+    const axis = kpmAxis([40, 300]);
+    expect(axis.ticks.length).toBeLessThanOrEqual(5);
+    expect(axis.ticks).toEqual([0, 100, 200, 300, 400]);
+    expect(axis.domain[0]).toBeLessThanOrEqual(40);
+    expect(axis.domain[1]).toBeGreaterThanOrEqual(300);
+  });
+});
+
+describe('timeAxis', () => {
+  const today = localDay(Date.UTC(2026, 5, 15, 12));
+  const format = (ms: number): string => String(localDay(ms) - today);
+
+  it('covers 7 days with a tick a day, ending today', () => {
+    const axis = timeAxis('7', 0, today, false, format);
+    expect(axis.days).toBe(7);
+    expect(axis.domain).toEqual([dayStart(today - 6), dayStart(today + 1)]);
+    expect(axis.ticks.map((tick) => tick.label)).toEqual(['-6', '-5', '-4', '-3', '-2', '-1', '0']);
+  });
+
+  it('ticks sit in the middle of a day', () => {
+    const [first] = timeAxis('7', 0, today, false, format).ticks;
+    expect(first?.x).toBe(dayStart(today - 6) + 12 * 3600_000);
+  });
+
+  it('steps by 7 days over 30 days, counted back from today', () => {
+    const axis = timeAxis('30', 0, today, false, format);
+    expect(axis.ticks.map((tick) => tick.label)).toEqual(['-28', '-21', '-14', '-7', '0']);
+  });
+
+  it('doubles the step when narrow', () => {
+    const axis = timeAxis('7', 0, today, true, format);
+    expect(axis.ticks.map((tick) => tick.label)).toEqual(['-6', '-4', '-2', '0']);
+  });
+
+  it('"all" starts at the first result and is at least 14 days', () => {
+    const short = timeAxis('all', dayStart(today - 2), today, false, format);
+    expect(short.days).toBe(14);
+    expect(short.ticks.map((tick) => tick.label)).toEqual([
+      '-12',
+      '-10',
+      '-8',
+      '-6',
+      '-4',
+      '-2',
+      '0',
+    ]);
+    const long = timeAxis('all', dayStart(today - 99), today, false, format);
+    expect(long.days).toBe(100);
+    expect(long.domain[0]).toBe(dayStart(today - 99));
+    expect(long.ticks[long.ticks.length - 1]?.label).toBe('0');
+    // ceil(100 / 35) × 7 = 21 days between ticks.
+    expect(long.ticks.map((tick) => tick.label).slice(-2)).toEqual(['-21', '0']);
+  });
+});
+
+describe('trendPoints', () => {
+  it('marks the current best, a repeat, and a plain test', () => {
+    const best = result('a', { kpm: 90.4, endedAt: 1000 });
+    const repeat = result('b', { repeated: true, endedAt: 2000 });
+    const plain = result('c', { endedAt: 3000 });
+    const records: TypingRecords = {
+      [personalBestKey(best)]: { best: { resultId: 'a', kpm: 90.4 }, recent: [] },
+    };
+    const points = trendPoints([best, repeat, plain], records, (r, mark) => [r.id, String(mark)]);
+    expect(points.map((point) => point.mark)).toEqual(['best', 'hollow', null]);
+    expect(points[0]).toMatchObject({ x: 1000, y: 90, tip: ['a', 'best'] });
+  });
+});

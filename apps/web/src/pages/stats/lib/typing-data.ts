@@ -1,7 +1,6 @@
 import type { TestResult, TypingRecords } from '@nekotype/shared/types';
 import { personalBestKey } from '@nekotype/shared/runtime';
 import type { ModeParts } from '@/entities/stats';
-import type { Axis } from './median-series';
 
 /** Rows of the history per page (T12). */
 export const HISTORY_PAGE_SIZE = 10;
@@ -51,14 +50,6 @@ export function bestRows(records: TypingRecords, label: (parts: ModeParts) => st
     rows.push({ key, label: label(parts), kpm: Math.round(entry.best.kpm) });
   }
   return rows.sort((a, b) => a.label.localeCompare(b.label) || (a.key < b.key ? -1 : 1));
-}
-
-const STEP_KPM = 60;
-
-/** The KPM axis of the design, 0 / 60 / 120; it grows in steps of 60 when a test is faster. */
-export function kpmAxis(values: readonly number[]): Axis {
-  const hi = Math.max(2 * STEP_KPM, Math.ceil(Math.max(0, ...values) / STEP_KPM) * STEP_KPM);
-  return { domain: [0, hi], ticks: [0, hi / 2, hi] };
 }
 
 export function historyPages(count: number): number {
