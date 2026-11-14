@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { useRef, useState } from 'preact/hooks';
 import { locale, t, tPlural } from '@/shared/i18n';
+import { cx } from '@/shared/lib';
 import { dayStart } from '@/entities/learn';
 import { levelOf, gridDays } from '../lib/activity';
 import type { ActivityDay } from '../lib/activity';
@@ -146,7 +147,11 @@ export function ActivityMap({ days, today, weeks }: Props): JSX.Element {
         })}
         {shown !== null && (
           <div
-            className={`nk-am__tip text-ui-caption${tipCol < 4 ? 'is-start' : tipCol > weeks - 5 ? 'is-end' : ''}`}
+            className={cx(
+              'nk-am__tip text-ui-caption',
+              tipCol < 4 && 'is-start',
+              tipCol > weeks - 5 && 'is-end',
+            )}
             role="tooltip"
             style={{ '--c': tipCol, '--r': shown % 7 }}
             data-testid="activity-tip"

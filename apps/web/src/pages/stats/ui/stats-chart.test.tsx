@@ -122,12 +122,19 @@ describe('StatsChart', () => {
 
   it('shifts the tooltip within 150 px of an edge', () => {
     mount(600);
+    const tipEl = (): Element | null => container.querySelector('[data-testid="chart-tip"]');
     press('Home');
-    const classes = (): string =>
-      container.querySelector('[data-testid="chart-tip"]')?.className ?? '';
-    expect(classes()).toContain('is-start');
+    expect(tipEl()?.classList.contains('is-start')).toBe(true);
+    expect(tipEl()?.classList.contains('is-end')).toBe(false);
+    expect(tipEl()?.classList.contains('text-ui-caption')).toBe(true);
     press('End');
-    expect(classes()).toContain('is-end');
+    expect(tipEl()?.classList.contains('is-end')).toBe(true);
+    expect(tipEl()?.classList.contains('is-start')).toBe(false);
+    expect(tipEl()?.classList.contains('text-ui-caption')).toBe(true);
+    press('Home');
+    press('ArrowRight');
+    expect(tipEl()?.classList.contains('is-start')).toBe(false);
+    expect(tipEl()?.classList.contains('is-end')).toBe(false);
   });
 
   const at = (x: number, y: number): TrendPoint => ({ x, y, lo: y - 5, hi: y + 5 });

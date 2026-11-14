@@ -32,9 +32,15 @@ describe('KanaHeat', () => {
     });
     const all = cells();
     expect(all).toHaveLength(104);
-    expect(all.find((cell) => cell.dataset['kana'] === 'あ')?.className).toContain('is-heat-3');
-    expect(all.find((cell) => cell.dataset['kana'] === 'い')?.className).toContain('is-heat-0');
-    expect(all.find((cell) => cell.dataset['kana'] === 'う')?.className).toContain('is-untyped');
+    expect(all.find((cell) => cell.dataset['kana'] === 'あ')?.classList.contains('is-heat-3')).toBe(
+      true,
+    );
+    expect(all.find((cell) => cell.dataset['kana'] === 'い')?.classList.contains('is-heat-0')).toBe(
+      true,
+    );
+    expect(
+      all.find((cell) => cell.dataset['kana'] === 'う')?.classList.contains('is-untyped'),
+    ).toBe(true);
   });
 
   it('labels a cell with the rate and the attempts, or says it is not typed', () => {
