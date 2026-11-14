@@ -1,11 +1,24 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import type { TestResult } from '@nekotype/shared/types';
 import { getDatabase } from '@/shared/lib';
 import { t, loadDictionaryPart } from '@/shared/i18n';
+import { dayStart, localDay } from '@/entities/learn';
+import type * as statsModule from '@/entities/stats';
 import { StatsPage } from './stats-page';
+
+// A failed read is simulated per test; otherwise the real store answers.
+const failing = { on: false };
+vi.mock('@/entities/stats', async (importOriginal) => {
+  const original = await importOriginal<typeof statsModule>();
+  return {
+    ...original,
+    readResults: (offset: number, limit: number) =>
+      failing.on ? Promise.reject(new Error('read failed')) : original.readResults(offset, limit),
+  };
+});
 
 // The route brings the strings of the screen; here the test does.
 await loadDictionaryPart('stats');
@@ -47,130 +60,181 @@ function result(n: number, patch: Partial<TestResult> = {}): TestResult {
   };
 }
 
+const DAY = localDay(Date.now());
+const noon = (daysBack: number): number => dayStart(DAY - daysBack) + 12 * 3_600_000;
+
+// r01: phrases, 20 days back; r02..r11: words (kpm 62..71), today; r12: a words repeat, today.
+const SEED: TestResult[] = Array.from({ length: 12 }, (_, i) =>
+  result(i + 1, {
+    endedAt: i === 0 ? noon(20) : noon(0) + i * 60_000,
+    ...(i === 0 ? { content: 'phrases', config: { kind: 'count', prompts: 25 } } : {}),
+    ...(i === 11 ? { repeated: true } : {}),
+  }),
+);
+
+const db = await getDatabase();
+for (const item of SEED) await db.put('results', item.id, { ...item, synced: 0 });
+await db.put('records', 'current', {
+  'words|hiragana|learner|time:60': { best: { kpm: 71, resultId: 'r11' }, recent: [] },
+  'phrases|hiragana|learner|count:25': { best: { kpm: 61, resultId: 'r01' }, recent: [] },
+});
+await db.put('delta', 'typing', {
+  kanaStats: {},
+  counters: { started: { typing: 14, learn: 0 }, finished: { typing: 12, learn: 0 } },
+});
+
 describe('stats page: typing section', () => {
   let container: HTMLDivElement;
 
   afterEach(() => {
+    failing.on = false;
     render(null, container);
     container.remove();
+    window.location.hash = '';
   });
 
-  it('shows the bests, the chart without repeats and the history in pages of 10', async () => {
-    // 12 tests, oldest first; the 11th is a repeat and the 12th a count test of phrases.
-    const results = Array.from({ length: 12 }, (_, i) =>
-      result(i + 1, {
-        ...(i === 10 ? { repeated: true } : {}),
-        ...(i === 11
-          ? { content: 'phrases', config: { kind: 'count', prompts: 25 }, durationMs: 12_540 }
-          : {}),
-      }),
-    );
-    const db = await getDatabase();
-    for (const item of results) await db.put('results', item.id, { ...item, synced: 0 });
-    await db.put('records', 'current', {
-      'words|hiragana|learner|time:60': { best: { kpm: 70, resultId: 'r10' }, recent: [] },
-      'phrases|hiragana|learner|count:25': { best: { kpm: 72, resultId: 'r12' }, recent: [] },
-    });
-    await db.put('delta', 'typing', {
-      kanaStats: {},
-      counters: { started: { typing: 14, learn: 0 }, finished: { typing: 12, learn: 0 } },
-    });
-
+  async function open(): Promise<void> {
+    window.location.hash = '#typing';
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<StatsPage />, container);
-    await until(() => container.querySelector('[data-testid="history-row"]') !== null);
-    await until(() => container.querySelector('[data-testid="stats-kpm-chart"]') !== null);
+    await until(() => container.querySelector('[data-testid="stats-figures"]') !== null);
+  }
 
-    // Typing data alone is enough for the page: no empty state, though nothing was learned.
-    expect(container.textContent).not.toContain(t('stats.empty.title'));
-    // Typing has the data, so it opens first and the learning section is not on the page.
+  const figuresText = (): string | null | undefined =>
+    container.querySelector('[data-testid="stats-figures"]')?.textContent;
+  const rows = (): string[][] =>
+    Array.from(container.querySelectorAll('[data-testid="history-row"]')).map((row) =>
+      Array.from(row.querySelectorAll('td'))
+        .slice(1)
+        .map((cell) => cell.textContent),
+    );
+  const mode = (): HTMLSelectElement | null =>
+    container.querySelector('[data-testid="stats-filter-mode"]');
+  const radio = (label: string): Element | undefined =>
+    Array.from(container.querySelectorAll('[role="radio"]')).find((el) => el.textContent === label);
+  const button = (label: string): Element | undefined =>
+    Array.from(container.querySelectorAll('button')).find((el) => el.textContent === label);
+  const click = (el: Element | undefined): Promise<void> =>
+    act(() => {
+      el?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+  it('opens on the mode of the latest test and 30 days, without repeats', async () => {
+    await open();
+    expect(mode()?.value).toBe('words|hiragana|learner|time:60');
+    expect(Array.from(mode()?.options ?? []).map((o) => o.textContent)).toEqual([
+      t('stats.filter.allModes'),
+      'words · hiragana · relaxed · 60 s',
+      'phrases · hiragana · relaxed · 25',
+    ]);
+    expect(radio(t('stats.filter.p30'))?.getAttribute('aria-checked')).toBe('true');
+
+    // Ten tests (r02..r11); the repeat is out. Median of 62..71 is 66.5 → 67.
+    expect(figuresText()).toBe(
+      [
+        `${t('stats.figure.tests')}10`,
+        `${t('stats.figure.medianKpm')}67`,
+        `${t('stats.figure.bestKpm')}71`,
+        `${t('stats.figure.accuracy')}95%`,
+      ].join(''),
+    );
     const headings = Array.from(container.querySelectorAll('h2')).map((h) => h.textContent);
     expect(headings).toEqual([
-      t('stats.typing.bests'),
-      t('stats.typing.chart'),
+      t('stats.typing.trend'),
       t('stats.typing.history'),
+      t('stats.all.title'),
     ]);
+    const chart = container.querySelector('[data-testid="stats-kpm-chart"]');
+    expect(chart?.querySelector('polyline')?.getAttribute('points')?.split(' ')).toHaveLength(10);
 
+    // Newest first; the current best of the key carries the badge; 10 rows, one page.
+    expect(rows()).toHaveLength(10);
+    expect(rows()[0]).toEqual([`words · 60 s${t('badge.personalBest')}`, '71', '95%', '60 s']);
+    expect(container.querySelector(`nav[aria-label="${t('stats.history.pages')}"]`)).toBeNull();
+
+    // All time: every personal best, whatever the filters.
     const bests = Array.from(container.querySelectorAll('[data-testid="stats-bests"] tr')).map(
       (item) => item.textContent,
     );
     expect(bests).toEqual([
-      'phrases · hiragana · relaxed · 2572 kpm',
-      'words · hiragana · relaxed · 60 s70 kpm',
+      'phrases · hiragana · relaxed · 2561 kpm',
+      'words · hiragana · relaxed · 60 s71 kpm',
     ]);
-
-    // 11 points in one line, so none is marked (design ResultChart: only isolated points are);
-    // the repeat is not on the chart.
-    const chart = container.querySelector('[data-testid="stats-kpm-chart"]');
-    expect(chart?.querySelectorAll('[data-testid="chart-dot"]')).toHaveLength(0);
-    expect(chart?.querySelector('polyline')?.getAttribute('points')?.split(' ')).toHaveLength(11);
-    expect(
-      Array.from(chart?.querySelectorAll('[data-testid="axis-tick"]') ?? []).map(
-        (tick) => tick.textContent,
-      ),
-    ).toEqual(['0', '60', '120']);
-    const svg = chart?.querySelector('svg');
-    await act(() => {
-      svg?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-    });
-    expect(chart?.querySelector('[data-testid="chart-tip"]')?.textContent).toBe(
-      t('stats.typing.tip', { n: 1, kpm: 61 }),
+    expect(container.querySelector('[data-testid="stats-typing-tests"]')?.textContent).toBe(
+      'typing tests: 14 started · 12 finished',
     );
+  });
 
-    const rows = (): string[][] =>
-      Array.from(container.querySelectorAll('[data-testid="history-row"]')).map((row) =>
-        Array.from(row.querySelectorAll('td'))
-          .slice(1)
-          .map((cell) => cell.textContent),
-      );
-    // Newest first; a repeat is a word in the mode column and the current bests carry the badge.
+  it('"with repeats" adds the repeat; the history is paged in memory; a filter resets the page', async () => {
+    await open();
+    await click(button(t('stats.filter.repeats')));
+    expect(figuresText()).toContain(`${t('stats.figure.tests')}11`);
+    // The repeat is not in the KPM figures.
+    expect(figuresText()).toContain(`${t('stats.figure.bestKpm')}71`);
     expect(rows()).toHaveLength(10);
-    expect(rows().slice(0, 3)).toEqual([
-      [`phrases · 25${t('badge.personalBest')}`, '72', '95%', '12.5 s'],
-      ['words · 60 s · repeat', '71', '95%', '60 s'],
-      [`words · 60 s${t('badge.personalBest')}`, '70', '95%', '60 s'],
-    ]);
-    expect(rows()[3]).toEqual(['words · 60 s', '69', '95%', '60 s']);
+    expect(rows()[0]).toEqual(['words · 60 s · repeat', '72', '95%', '60 s']);
 
-    const pages = container.querySelector(`nav[aria-label="${t('stats.history.pages')}"]`);
-    expect(Array.from(pages?.children ?? []).map((item) => item.textContent)).toEqual([
-      t('stats.history.newer'),
-      '1',
-      '2',
-      t('stats.history.older'),
-    ]);
-    const older = Array.from(pages?.querySelectorAll('button') ?? []).find(
-      (item) => item.textContent === t('stats.history.older'),
-    );
-    await act(() => {
-      older?.click();
-    });
-    await until(() => container.querySelectorAll('[data-testid="history-row"]').length === 2);
-    expect(rows()).toEqual([
-      ['words · 60 s', '62', '95%', '60 s'],
-      ['words · 60 s', '61', '95%', '60 s'],
-    ]);
-    expect(pages?.querySelector('[aria-current="page"]')?.textContent).toBe('2');
+    await click(button(t('stats.history.older')));
+    expect(rows()).toEqual([['words · 60 s', '62', '95%', '60 s']]);
 
-    const text = (id: string): string | null | undefined =>
-      container.querySelector(`[data-testid="${id}"]`)?.textContent;
-    expect(text('stats-typing-tests')).toBe('typing tests: 14 started · 12 finished');
+    await click(button(t('stats.filter.repeats')));
+    expect(figuresText()).toContain(`${t('stats.figure.tests')}10`);
+    expect(rows()).toHaveLength(10);
+  });
 
-    // The learning section has no data: its empty state; the hash follows the switch.
-    const learningTab = Array.from(container.querySelectorAll('[role="radio"]')).find(
-      (el) => el.textContent === t('stats.section.learning'),
-    );
+  it('"all modes" has no KPM figures; 7 days drops the old phrases test', async () => {
+    await open();
+    const select = mode();
     await act(() => {
-      learningTab?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      if (select === null) return;
+      select.value = 'all';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
     });
-    expect(window.location.hash).toBe('#learning');
-    expect(container.textContent).toContain(t('stats.learn.empty.title'));
-    expect(container.querySelector('[data-testid="history-row"]')).toBeNull();
-    // A hand-edited hash moves the switch back.
+    expect(figuresText()).toContain(`${t('stats.figure.medianKpm')}–`);
+    expect(figuresText()).toContain(`${t('stats.figure.bestKpm')}–`);
+    // 30 days: the phrases test of 20 days back and ten words tests.
+    expect(figuresText()).toContain(`${t('stats.figure.tests')}11`);
+
+    await click(radio(t('stats.filter.p7')));
+    expect(figuresText()).toContain(`${t('stats.figure.tests')}10`);
+    await click(radio(t('stats.filter.all')));
+    expect(figuresText()).toContain(`${t('stats.figure.tests')}11`);
+  });
+
+  it('an empty selection says so and "show all time" widens it; All time stays', async () => {
+    await open();
+    const select = mode();
     await act(() => {
-      window.location.hash = '#typing';
+      if (select === null) return;
+      select.value = 'phrases|hiragana|learner|count:25';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
     });
-    await until(() => container.querySelector('[data-testid="history-row"]') !== null);
+    // The phrases test is 20 days old: 30 days has it, 7 days does not.
+    expect(figuresText()).toContain(`${t('stats.figure.tests')}1`);
+    await click(radio(t('stats.filter.p7')));
+    expect(container.textContent).toContain(t('stats.typing.noSelection'));
+    expect(container.querySelector('[data-testid="stats-figures"]')).toBeNull();
+    expect(container.querySelector('[data-testid="stats-bests"]')).not.toBeNull();
+
+    await click(button(t('stats.showAll')));
+    expect(radio(t('stats.filter.all'))?.getAttribute('aria-checked')).toBe('true');
+    expect(figuresText()).toContain(`${t('stats.figure.tests')}1`);
+  });
+
+  it('a failed read replaces the selection with an error and a retry; All time stays', async () => {
+    failing.on = true;
+    window.location.hash = '#typing';
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    render(<StatsPage />, container);
+    await until(() => container.textContent.includes(t('stats.history.error')));
+    expect(container.querySelector('[data-testid="stats-figures"]')).toBeNull();
+    expect(container.querySelector('[data-testid="stats-bests"]')).not.toBeNull();
+
+    failing.on = false;
+    await click(button(t('route.retry')));
+    await until(() => container.querySelector('[data-testid="stats-figures"]') !== null);
+    expect(container.textContent).not.toContain(t('stats.history.error'));
   });
 });

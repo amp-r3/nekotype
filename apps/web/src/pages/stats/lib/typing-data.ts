@@ -6,9 +6,6 @@ import type { Axis } from './median-series';
 /** Rows of the history per page (T12). */
 export const HISTORY_PAGE_SIZE = 10;
 
-/** Points of the KPM chart: the last saved tests that are not repeats (T11). */
-export const SERIES_TESTS = 100;
-
 /** Reads saved results, newest first. */
 export type ReadResults = (offset: number, limit: number) => Promise<TestResult[]>;
 
@@ -54,25 +51,6 @@ export function bestRows(records: TypingRecords, label: (parts: ModeParts) => st
     rows.push({ key, label: label(parts), kpm: Math.round(entry.best.kpm) });
   }
   return rows.sort((a, b) => a.label.localeCompare(b.label) || (a.key < b.key ? -1 : 1));
-}
-
-/**
- * The KPM of the last `SERIES_TESTS` saved tests that are not repeats, oldest first. Repeats are
- * skipped, so the store is read in pages until there are enough tests or no more results.
- */
-export async function kpmSeries(
-  read: ReadResults,
-  tests: number = SERIES_TESTS,
-): Promise<number[]> {
-  const newestFirst: number[] = [];
-  for (let offset = 0; newestFirst.length < tests; offset += tests) {
-    const page = await read(offset, tests);
-    for (const result of page) {
-      if (!result.repeated && newestFirst.length < tests) newestFirst.push(result.kpm);
-    }
-    if (page.length < tests) break;
-  }
-  return newestFirst.reverse();
 }
 
 const STEP_KPM = 60;
