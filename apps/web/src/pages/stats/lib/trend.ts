@@ -138,7 +138,7 @@ export function trendPoints(
 }
 
 const WINDOW = 10;
-const FIRST_LINE = 5;
+const FIRST_LINE = 4;
 
 /** The `p`-quantile (0–1) by linear interpolation at `(n − 1) · p`; 0 for no values (S5). */
 export function quantile(values: readonly number[], p: number): number {
@@ -153,8 +153,8 @@ export function quantile(values: readonly number[], p: number): number {
 
 /**
  * The rolling median of the selection (oldest first) and its middle half: for result `i` the last
- * `min(10, i + 1)` values up to `i`. `null` for the first four results, so the line starts at the
- * fifth (S5).
+ * `min(10, i + 1)` values up to `i`. `null` for the first three results, so the line starts at the
+ * fourth and five tests draw two points (S5).
  */
 export function rolling(
   selection: readonly TestResult[],

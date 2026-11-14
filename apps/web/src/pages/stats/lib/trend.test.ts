@@ -166,13 +166,18 @@ describe('rolling', () => {
     );
   const kpm = (r: TestResult): number => r.kpm;
 
-  it('is null for the first four results and starts at the fifth', () => {
+  it('is null for the first three results and starts at the fourth', () => {
     const series = rolling(list(6), kpm);
-    expect(series.slice(0, 4)).toEqual([null, null, null, null]);
-    expect(series[4]).toEqual({ x: 5000, y: 3, lo: 2, hi: 4 });
+    expect(series.slice(0, 3)).toEqual([null, null, null]);
+    expect(series[3]).toEqual({ x: 4000, y: 2.5, lo: 1.75, hi: 3.25 });
   });
 
-  it('grows the window from 5 to 10, then slides', () => {
+  it('five results draw a line of two points', () => {
+    const series = rolling(list(5), kpm);
+    expect(series.filter((point) => point !== null)).toHaveLength(2);
+  });
+
+  it('grows the window from 4 to 10, then slides', () => {
     const series = rolling(list(12), kpm);
     // Window of 10 at index 9: 1..10; at index 11: 3..12.
     expect(series[9]).toMatchObject({ y: 5.5, lo: 3.25, hi: 7.75 });

@@ -79,3 +79,11 @@ export function figures(selection: readonly TestResult[], oneMode: boolean): Fig
     bestKpm: oneMode && kpm.length > 0 ? Math.round(Math.max(...kpm)) : null,
   };
 }
+
+/** The selection is not empty and all its results share one mode (`personalBestKey`). */
+export function oneMode(selection: readonly TestResult[]): boolean {
+  const first = selection[0];
+  if (first === undefined) return false;
+  const key = personalBestKey(first);
+  return selection.every((result) => personalBestKey(result) === key);
+}

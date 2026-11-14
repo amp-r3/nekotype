@@ -19,6 +19,7 @@ import {
   defaultMode,
   figures,
   modesOf,
+  oneMode,
   select,
   type Filters,
   type ModeOption,
@@ -72,7 +73,8 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
   const modes: ModeOption[] = useMemo(() => modesOf(loaded, keyLabel), [results]);
   const selection = useMemo(() => select(loaded, active, today), [results, active, today]);
   const shown = useMemo(() => selection.slice().reverse(), [selection]);
-  const numbers = figures(selection, active.mode !== 'all');
+  const single = oneMode(selection);
+  const numbers = figures(selection, single);
 
   const change = (next: Filters): void => {
     setFilters(next);
@@ -120,9 +122,9 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
   );
   const firstAt = selection[0]?.endedAt ?? defaultClock.now();
   const xAxis = timeAxis(active.period, firstAt, today, narrow, (ms) => dateFormat.format(ms));
-  // Speeds of different modes do not compare: no line for `all modes` over several modes (decision 103).
-  const mixed = active.mode === 'all' && modes.length > 1;
-  const few = !mixed && selection.length < 5;
+  // Speeds of different modes do not compare: no line for a selection of several modes (decision 103).
+  const mixed = !single;
+  const few = single && selection.length < 5;
   const trend = !mixed && !few ? rolling(selection, spec.value) : [];
   const slots = fewAxis(selection, (ms) => dateFormat.format(ms));
   const fewPoints = points.map((point, index) => ({ ...point, x: index }));
@@ -155,7 +157,7 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
       {finished > 0 && (
         <>
           <div className="flex max-w-[760px] flex-col gap-4">
-            <FilterRow filters={active} modes={modes} onChange={change} />
+            {results !== null && <FilterRow filters={active} modes={modes} onChange={change} />}
             {failed ? (
               <Notice
                 tone="miss"
@@ -178,15 +180,17 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
             ) : selection.length === 0 ? (
               <Notice
                 action={
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      change({ ...active, period: 'all' });
-                    }}
-                  >
-                    {t('stats.showAll')}
-                  </Button>
+                  active.period === 'all' ? undefined : (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        change({ ...active, period: 'all' });
+                      }}
+                    >
+                      {t('stats.showAll')}
+                    </Button>
+                  )
                 }
               >
                 {t('stats.typing.noSelection')}

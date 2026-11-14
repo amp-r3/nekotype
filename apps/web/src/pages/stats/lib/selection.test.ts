@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { TestResult } from '@nekotype/shared/types';
 import { dayStart, localDay } from '@/entities/learn';
-import { defaultMode, figures, median, modesOf, select } from './selection';
+import { defaultMode, figures, median, modesOf, oneMode, select } from './selection';
 
 const TODAY = localDay(new Date(2026, 5, 15, 12).getTime());
 const HOUR = 3_600_000;
@@ -134,5 +134,20 @@ describe('figures', () => {
       medianKpm: null,
       bestKpm: null,
     });
+  });
+});
+
+describe('oneMode', () => {
+  it('is false for no results', () => {
+    expect(oneMode([])).toBe(false);
+  });
+
+  it('is true when all results share one key', () => {
+    expect(oneMode([result('1')])).toBe(true);
+    expect(oneMode([result('1'), result('2', { repeated: true })])).toBe(true);
+  });
+
+  it('is false for two keys', () => {
+    expect(oneMode([result('1'), result('2', phrases)])).toBe(false);
   });
 });
