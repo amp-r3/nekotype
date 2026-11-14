@@ -1,5 +1,5 @@
 import type { TestResult } from '@nekotype/shared/types';
-import { kpmAxis, tickStepFor } from './trend';
+import { axisOf, kpmAxis, STEPS } from './trend';
 import type { Axis } from './trend';
 
 export type Metric = 'kpm' | 'accuracy' | 'rejected' | 'hints';
@@ -33,12 +33,7 @@ export const METRICS: Record<Metric, MetricSpec> = {
 const ACCURACY_FLOOR = 90;
 const STEP = 5;
 
-function ticksOf(lo: number, hi: number): Axis {
-  const step = tickStepFor(lo, hi);
-  const ticks: number[] = [];
-  for (let tick = lo; tick <= hi; tick += step) ticks.push(tick);
-  return { domain: [lo, hi], ticks };
-}
+const HINT_STEPS = [1, 2, 5, 10, 20, 50];
 
 /** The y axis of a metric: `kpm` as before, accuracy up to 100, the others from 0. */
 export function metricAxis(metric: Metric, values: readonly number[]): Axis {
@@ -48,15 +43,16 @@ export function metricAxis(metric: Metric, values: readonly number[]): Axis {
     case 'kpm':
       return kpmAxis(values);
     case 'accuracy':
-      return ticksOf(
+      return axisOf(
         values.length === 0
           ? ACCURACY_FLOOR
           : Math.min(ACCURACY_FLOOR, Math.floor(low / STEP) * STEP),
         100,
+        STEPS,
       );
     case 'rejected':
-      return ticksOf(0, Math.max(STEP, Math.ceil(high / STEP) * STEP));
+      return axisOf(0, Math.max(STEP, high), STEPS);
     case 'hints':
-      return ticksOf(0, Math.max(3, high));
+      return axisOf(0, Math.max(3, high), HINT_STEPS);
   }
 }

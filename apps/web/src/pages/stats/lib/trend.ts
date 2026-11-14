@@ -41,8 +41,9 @@ export type TimeAxis = {
 const TEN = 10;
 const MARGIN = 2;
 const MIN_WIDTH = 20;
-const STEPS = [1, 2, 5, 10, 20, 25, 50, 100];
 const MAX_INTERVALS = 4;
+/** Steps of the KPM and percent axes. */
+export const STEPS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500] as const;
 const HALF_DAY_MS = 12 * 60 * 60 * 1000;
 const MIN_DAYS_ALL = 14;
 
@@ -60,22 +61,31 @@ export function kpmAxis(values: readonly number[]): Axis {
     lo = Math.max(0, lo - TEN);
     hi = Math.max(hi, lo + MIN_WIDTH);
   }
-  const step = tickStepFor(lo, hi);
-  lo = Math.floor(lo / step) * step;
-  hi = Math.ceil(hi / step) * step;
-  const ticks: number[] = [];
-  for (let tick = lo; tick <= hi; tick += step) ticks.push(tick);
-  return { domain: [lo, hi], ticks };
+  return axisOf(lo, hi, STEPS);
 }
 
-/** The smallest step that gives at most four intervals between `lo` and `hi`. */
-export function tickStepFor(lo: number, hi: number): number {
-  for (const candidate of STEPS) {
+/**
+ * An axis over `lo`…`hi`: the smallest of `steps` (ascending) for which the domain snapped out to
+ * that step has at most four intervals, the largest when none fits. The domain ends on ticks and
+ * every tick is returned.
+ */
+export function axisOf(lo: number, hi: number, steps: readonly number[]): Axis {
+  let step = steps[steps.length - 1] ?? 1;
+  let bottom = Math.floor(lo / step) * step;
+  let top = Math.ceil(hi / step) * step;
+  for (const candidate of steps) {
     const floor = Math.floor(lo / candidate) * candidate;
     const ceil = Math.ceil(hi / candidate) * candidate;
-    if ((ceil - floor) / candidate <= MAX_INTERVALS) return candidate;
+    if ((ceil - floor) / candidate <= MAX_INTERVALS) {
+      step = candidate;
+      bottom = floor;
+      top = ceil;
+      break;
+    }
   }
-  return STEPS[STEPS.length - 1] ?? 100;
+  const ticks: number[] = [];
+  for (let tick = bottom; tick <= top; tick += step) ticks.push(tick);
+  return { domain: [bottom, top], ticks };
 }
 
 function tickStep(days: number): number {

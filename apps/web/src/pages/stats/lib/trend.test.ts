@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { TestResult, TypingRecords } from '@nekotype/shared/types';
 import { personalBestKey } from '@nekotype/shared/runtime';
 import { dayStart, localDay } from '@/entities/learn';
-import { fewAxis, kpmAxis, quantile, rolling, timeAxis, trendPoints } from './trend';
+import { axisOf, fewAxis, kpmAxis, quantile, rolling, timeAxis, trendPoints } from './trend';
 
 function result(id: string, patch: Partial<TestResult> = {}): TestResult {
   return {
@@ -53,6 +53,24 @@ describe('kpmAxis', () => {
     expect(axis.ticks).toEqual([0, 100, 200, 300, 400]);
     expect(axis.domain[0]).toBeLessThanOrEqual(40);
     expect(axis.domain[1]).toBeGreaterThanOrEqual(300);
+  });
+});
+
+describe('axisOf', () => {
+  it('snaps the domain out to the smallest fitting step', () => {
+    expect(axisOf(65, 100, [1, 5, 10])).toEqual({
+      domain: [60, 100],
+      ticks: [60, 70, 80, 90, 100],
+    });
+    expect(axisOf(0, 4, [1, 2, 5])).toEqual({ domain: [0, 4], ticks: [0, 1, 2, 3, 4] });
+    expect(axisOf(0, 5, [1, 2, 5])).toEqual({ domain: [0, 6], ticks: [0, 2, 4, 6] });
+  });
+  it('takes the largest step when none fits', () => {
+    expect(axisOf(0, 100, [1, 2, 5]).domain).toEqual([0, 100]);
+    expect(axisOf(0, 100, [1, 2, 5]).ticks[1]).toBe(5);
+  });
+  it('kpm 10–600 has four intervals', () => {
+    expect(kpmAxis([10, 600])).toEqual({ domain: [0, 800], ticks: [0, 200, 400, 600, 800] });
   });
 });
 
