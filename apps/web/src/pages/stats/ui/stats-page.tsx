@@ -174,6 +174,7 @@ export function StatsPage(): JSX.Element {
           results={results}
           failed={failed}
           onRetry={() => {
+            setFailed(false);
             setAttempt(attempt + 1);
           }}
         />
