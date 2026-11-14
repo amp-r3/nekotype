@@ -220,6 +220,48 @@ describe('stats page: typing section', () => {
     expect(figuresText()).toContain(`${t('stats.figure.tests')}11`);
   });
 
+  it('one mode with five tests or more draws the median line and its band', async () => {
+    await open();
+    expect(container.querySelectorAll('[data-testid="chart-line"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-testid="chart-band"]')).toHaveLength(1);
+    expect(container.textContent).toContain(t('stats.legend.median'));
+    expect(container.textContent).toContain(t('stats.legend.band'));
+    expect(container.querySelector('[data-testid="stats-few"]')).toBeNull();
+  });
+
+  it('one mode with fewer than five tests labels the marks and has no line', async () => {
+    await open();
+    const select = mode();
+    await act(() => {
+      if (select === null) return;
+      select.value = 'phrases|hiragana|learner|count:25';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(container.querySelector('[data-testid="stats-few"]')?.textContent).toBe(
+      t('stats.typing.few'),
+    );
+    expect(container.querySelectorAll('[data-testid="chart-point"]')).toHaveLength(1);
+    expect(container.querySelector('[data-testid="chart-value"]')?.textContent).toBe('61');
+    expect(container.querySelector('[data-testid="chart-line"]')).toBeNull();
+    expect(container.textContent).not.toContain(t('stats.legend.median'));
+  });
+
+  it('"all modes" over two modes has the marks and a caption, no line', async () => {
+    await open();
+    const select = mode();
+    await act(() => {
+      if (select === null) return;
+      select.value = 'all';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(container.querySelector('[data-testid="stats-mixed"]')?.textContent).toBe(
+      t('stats.typing.mixed'),
+    );
+    expect(container.querySelectorAll('[data-testid="chart-point"]')).toHaveLength(11);
+    expect(container.querySelector('[data-testid="chart-line"]')).toBeNull();
+    expect(container.querySelector('[data-testid="chart-band"]')).toBeNull();
+  });
+
   it('an empty selection says so and "show all time" widens it; All time stays', async () => {
     await open();
     const select = mode();

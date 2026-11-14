@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { TestResult, TypingRecords } from '@nekotype/shared/types';
 import { personalBestKey } from '@nekotype/shared/runtime';
 import { dayStart, localDay } from '@/entities/learn';
-import { kpmAxis, timeAxis, trendPoints } from './trend';
+import { fewAxis, kpmAxis, quantile, rolling, timeAxis, trendPoints } from './trend';
 
 function result(id: string, patch: Partial<TestResult> = {}): TestResult {
   return {
@@ -114,5 +114,63 @@ describe('trendPoints', () => {
     const points = trendPoints([best, repeat, plain], records, (r, mark) => [r.id, String(mark)]);
     expect(points.map((point) => point.mark)).toEqual(['best', 'hollow', null]);
     expect(points[0]).toMatchObject({ x: 1000, y: 90, tip: ['a', 'best'] });
+  });
+});
+
+describe('quantile', () => {
+  it('handles 1, 2, 5 and 10 values by linear interpolation', () => {
+    expect(quantile([7], 0.25)).toBe(7);
+    expect(quantile([10, 20], 0.5)).toBe(15);
+    expect(quantile([10, 20], 0.25)).toBe(12.5);
+    expect(quantile([5, 1, 3, 2, 4], 0.5)).toBe(3);
+    expect(quantile([1, 2, 3, 4, 5], 0.25)).toBe(2);
+    expect(quantile([1, 2, 3, 4, 5], 0.75)).toBe(4);
+    const ten = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    expect(quantile(ten, 0.5)).toBe(5.5);
+    expect(quantile(ten, 0.25)).toBe(3.25);
+    expect(quantile(ten, 0.75)).toBe(7.75);
+  });
+
+  it('is 0 for no values', () => {
+    expect(quantile([], 0.5)).toBe(0);
+  });
+});
+
+describe('rolling', () => {
+  const list = (count: number): TestResult[] =>
+    Array.from({ length: count }, (_, i) =>
+      result(`r${i}`, { endedAt: (i + 1) * 1000, kpm: i + 1 }),
+    );
+  const kpm = (r: TestResult): number => r.kpm;
+
+  it('is null for the first four results and starts at the fifth', () => {
+    const series = rolling(list(6), kpm);
+    expect(series.slice(0, 4)).toEqual([null, null, null, null]);
+    expect(series[4]).toEqual({ x: 5000, y: 3, lo: 2, hi: 4 });
+  });
+
+  it('grows the window from 5 to 10, then slides', () => {
+    const series = rolling(list(12), kpm);
+    // Window of 10 at index 9: 1..10; at index 11: 3..12.
+    expect(series[9]).toMatchObject({ y: 5.5, lo: 3.25, hi: 7.75 });
+    expect(series[11]).toMatchObject({ y: 7.5, lo: 5.25, hi: 9.75 });
+  });
+
+  it('is empty for an empty selection', () => {
+    expect(rolling([], kpm)).toEqual([]);
+  });
+});
+
+describe('fewAxis', () => {
+  it('has five slots and one tick per result at its index', () => {
+    const axis = fewAxis(
+      [result('a', { endedAt: 1 }), result('b', { endedAt: 2 })],
+      (ms) => `d${ms}`,
+    );
+    expect(axis.domain).toEqual([-0.5, 4.5]);
+    expect(axis.ticks).toEqual([
+      { x: 0, label: 'd1' },
+      { x: 1, label: 'd2' },
+    ]);
   });
 });

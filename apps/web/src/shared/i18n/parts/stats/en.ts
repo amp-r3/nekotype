@@ -66,6 +66,11 @@ export const statsEn = {
   'stats.legend.test': 'a test',
   'stats.legend.best': 'personal best',
   'stats.legend.repeat': 'repeat',
+  'stats.legend.median': 'median of the last 10',
+  'stats.legend.band': 'their middle half',
+  'stats.typing.few': 'the median line appears from the 5th test',
+  'stats.typing.mixed':
+    'all modes together: speeds of different modes do not compare, so there is no median line. choose a mode to see the trend.',
   'stats.typing.chartLabel': 'speed of each test over time',
   'stats.typing.trend': 'trend',
   'stats.typing.noSelection': 'no tests in this selection',

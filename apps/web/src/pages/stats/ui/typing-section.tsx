@@ -24,7 +24,7 @@ import {
   historyRow,
   parseBestKey,
 } from '../lib/typing-data';
-import { kpmAxis, timeAxis, trendPoints } from '../lib/trend';
+import { fewAxis, kpmAxis, rolling, timeAxis, trendPoints } from '../lib/trend';
 import { FilterRow } from './filter-row';
 import { HistoryTable } from './history-table';
 import { ChartLegend } from './chart-legend';
@@ -136,6 +136,12 @@ export function TypingSection(): JSX.Element {
   const yAxis = kpmAxis(points.map((point) => point.y));
   const firstAt = selection[0]?.endedAt ?? defaultClock.now();
   const xAxis = timeAxis(active.period, firstAt, today, narrow, (ms) => dateFormat.format(ms));
+  // Speeds of different modes do not compare: no line for `all modes` over several modes (decision 103).
+  const mixed = active.mode === 'all' && modes.length > 1;
+  const few = !mixed && selection.length < 5;
+  const trend = !mixed && !few ? rolling(selection, (result) => Math.round(result.kpm)) : [];
+  const slots = fewAxis(selection, (ms) => dateFormat.format(ms));
+  const fewPoints = points.map((point, index) => ({ ...point, x: index }));
 
   const started = typingCounters.value.started.typing;
   if (finished === 0 && started === 0) {
@@ -209,17 +215,32 @@ export function TypingSection(): JSX.Element {
 
               <div className="flex max-w-[760px] flex-col gap-4">
                 <h2 className={HEADING}>{t('stats.typing.trend')}</h2>
-                <ChartLegend points={points} />
-                <StatsChart
-                  testId="stats-kpm-chart"
-                  height={narrow ? 200 : 240}
-                  points={points}
-                  xDomain={xAxis.domain}
-                  xTicks={xAxis.ticks}
-                  yDomain={yAxis.domain}
-                  yTicks={yAxis.ticks}
-                  label={t('stats.typing.chartLabel')}
-                />
+                <ChartLegend points={points} trend={!mixed && !few} />
+                {few && (
+                  <p className="text-ui-caption text-fur-dim m-0" data-testid="stats-few">
+                    {t('stats.typing.few')}
+                  </p>
+                )}
+                {mixed && (
+                  <p className="text-ui-caption text-fur-dim m-0" data-testid="stats-mixed">
+                    {t('stats.typing.mixed')}
+                  </p>
+                )}
+                <div className={few ? 'max-w-[480px]' : undefined}>
+                  <StatsChart
+                    testId="stats-kpm-chart"
+                    height={few ? 160 : narrow ? 200 : 240}
+                    points={few ? fewPoints : points}
+                    line={trend}
+                    band={trend}
+                    pointLabels={few}
+                    xDomain={few ? slots.domain : xAxis.domain}
+                    xTicks={few ? slots.ticks : xAxis.ticks}
+                    yDomain={yAxis.domain}
+                    yTicks={yAxis.ticks}
+                    label={t('stats.typing.chartLabel')}
+                  />
+                </div>
               </div>
 
               <div className="flex max-w-[760px] flex-col gap-4">

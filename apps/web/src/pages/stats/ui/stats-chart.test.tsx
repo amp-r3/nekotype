@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { render } from 'preact';
+import { render, type ComponentProps } from 'preact';
 import { act } from 'preact/test-utils';
 import { StatsChart } from './stats-chart';
-import type { ChartPoint } from '../lib/trend';
+import type { ChartPoint, TrendPoint } from '../lib/trend';
 
 let container: HTMLDivElement;
 
@@ -19,7 +19,9 @@ const points: ChartPoint[] = [
   { x: 300, y: 100, mark: 'best', tip: ['third', '100 kpm', 'personal best'] },
 ];
 
-function mount(width: number, list: readonly ChartPoint[] = points): void {
+type Extra = Partial<ComponentProps<typeof StatsChart>>;
+
+function mount(width: number, list: readonly ChartPoint[] = points, extra: Extra = {}): void {
   vi.stubGlobal(
     'ResizeObserver',
     class {
@@ -45,6 +47,7 @@ function mount(width: number, list: readonly ChartPoint[] = points): void {
         yDomain={[60, 120]}
         yTicks={[60, 90, 120]}
         label="speed"
+        {...extra}
       />,
       container,
     );
@@ -125,5 +128,36 @@ describe('StatsChart', () => {
     expect(classes()).toContain('is-start');
     press('End');
     expect(classes()).toContain('is-end');
+  });
+
+  const at = (x: number, y: number): TrendPoint => ({ x, y, lo: y - 5, hi: y + 5 });
+
+  it('draws a polyline and a polygon per unbroken run, and breaks on null', () => {
+    const series = [at(20, 80), at(100, 85), null, at(200, 90), at(300, 95), at(350, 90)];
+    mount(600, points, { line: series, band: series });
+    const lines = container.querySelectorAll('[data-testid="chart-line"]');
+    const bands = container.querySelectorAll('[data-testid="chart-band"]');
+    expect(lines).toHaveLength(2);
+    expect(bands).toHaveLength(2);
+    expect(lines[0]?.getAttribute('pathLength')).toBe('1');
+    expect(lines[1]?.getAttribute('points')?.split(' ')).toHaveLength(3);
+    // The band goes along the highs and back along the lows.
+    expect(bands[1]?.getAttribute('points')?.split(' ')).toHaveLength(6);
+  });
+
+  it('draws no line for a run of one point, and nothing without data', () => {
+    mount(600, points, { line: [at(20, 80), null], band: [at(20, 80)] });
+    expect(container.querySelector('[data-testid="chart-line"]')).toBeNull();
+    expect(container.querySelector('[data-testid="chart-band"]')).toBeNull();
+  });
+
+  it('writes the value over each mark and makes the marks one pixel larger', () => {
+    mount(600, points, { pointLabels: true });
+    const labels = Array.from(container.querySelectorAll('[data-testid="chart-value"]'));
+    expect(labels.map((label) => label.textContent)).toEqual(['80', '70', '100']);
+    const radii = Array.from(container.querySelectorAll('[data-testid="chart-point"]')).map((c) =>
+      c.getAttribute('r'),
+    );
+    expect(radii).toEqual(['4', '4', '5']);
   });
 });
