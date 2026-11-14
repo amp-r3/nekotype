@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { getDatabase } from '@/shared/lib';
@@ -10,6 +10,21 @@ import { StatsPage } from './stats-page';
 
 // The route brings the strings of the screen; here the test does.
 await loadDictionaryPart('stats');
+
+// happy-dom has no layout: the chart draws once its container has a width.
+vi.stubGlobal(
+  'ResizeObserver',
+  class {
+    constructor(
+      private readonly callback: (entries: { contentRect: { width: number } }[]) => void,
+    ) {}
+    observe(): void {
+      this.callback([{ contentRect: { width: 600 } }]);
+    }
+    disconnect(): void {}
+    unobserve(): void {}
+  },
+);
 
 // A file of its own: the learning store is read once per page load, so the record is seeded before
 // the page first renders.
@@ -73,16 +88,23 @@ describe('stats page: with answers', () => {
       container.querySelector(`[aria-label="${t('stats.section.label')}"] [aria-checked="true"]`)
         ?.textContent,
     ).toBe(t('stats.section.learning'));
-    expect(container.textContent).toContain(`hiragana · ${t('stats.learn.answerCaption')}`);
+    expect(container.textContent).toContain(`hiragana · ${t('stats.learn.answerCaptionDay')}`);
 
-    // 10 days from the first answer to today; days without answers are gaps. The two first days
-    // are one line, the days 2 ago and today stand alone as dots.
-    expect(container.querySelectorAll('[data-testid="chart-dot"]')).toHaveLength(4);
-    expect(container.querySelectorAll('polyline')).toHaveLength(1);
-    // The target is a dashed hair line with its label.
+    // One bar per day with answers (30 days by default); the gap days have none.
+    expect(container.querySelectorAll('[data-testid="chart-range"]')).toHaveLength(4);
+    // The target is a dashed line with its label.
     const target = container.querySelector('[data-testid="chart-reference"]');
-    expect(target?.querySelector('line')?.getAttribute('stroke-dasharray')).toBe('4 4');
+    expect(target?.querySelector('line')?.getAttribute('class')).toBe('nk-rc__ref');
     expect(target?.textContent).toBe(t('stats.learn.target', { ms: 1500 }));
+
+    // 7 days: the two last days only.
+    const sevenDays = Array.from(container.querySelectorAll('[role="radio"]')).find(
+      (el) => el.textContent === t('stats.filter.p7'),
+    );
+    await act(() => {
+      sevenDays?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(container.querySelectorAll('[data-testid="chart-range"]')).toHaveLength(2);
 
     // Only hiragana has answers: the chart shows it and there is no track switch.
     expect(container.querySelector(`[aria-label="${t('learn.track.label')}"]`)).toBeNull();

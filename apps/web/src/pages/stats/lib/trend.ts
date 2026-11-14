@@ -1,7 +1,6 @@
 import type { TestResult, TypingRecords } from '@nekotype/shared/types';
 import { personalBestKey } from '@nekotype/shared/runtime';
 import { dayStart, localDay } from '@/entities/learn';
-import type { Axis } from './median-series';
 import type { Period } from './selection';
 
 export type ChartPoint = {
@@ -17,6 +16,20 @@ export type TrendPoint = {
   readonly y: number;
   readonly lo: number;
   readonly hi: number;
+};
+
+/** One bar of the answer-time chart: the middle half of a day (or week) and its median. */
+export type ChartRange = {
+  readonly x: number;
+  readonly lo: number;
+  readonly hi: number;
+  readonly mid: number;
+  readonly tip: readonly string[];
+};
+
+export type Axis = {
+  readonly domain: readonly [number, number];
+  readonly ticks: readonly number[];
 };
 
 export type TimeAxis = {

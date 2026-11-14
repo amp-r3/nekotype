@@ -160,4 +160,55 @@ describe('StatsChart', () => {
     );
     expect(radii).toEqual(['4', '4', '5']);
   });
+
+  const ranges = [
+    { x: 100, lo: 900, hi: 1300, mid: 1100, tip: ['day one', 'median 1100 ms'] },
+    { x: 300, lo: 1000, hi: 1200, mid: 1100, tip: ['day two', 'median 1100 ms'] },
+  ];
+  const ys = { yDomain: [500, 1500] as const, yTicks: [500, 1000, 1500] };
+
+  it('draws a bar and a median tick per range, and the ticks of the axis', () => {
+    mount(600, [], { ranges, slots: 4, ...ys });
+    expect(container.querySelectorAll('[data-testid="chart-range"]')).toHaveLength(2);
+    expect(container.querySelectorAll('.nk-rc__range')).toHaveLength(2);
+    const ticks = container.querySelectorAll('.nk-rc__mid');
+    expect(ticks).toHaveLength(2);
+    // Plot width 544 over 4 slots: bar 68 × 0.5 clamps to 8; the tick is 2 px wider each side.
+    expect(container.querySelector('.nk-rc__range')?.getAttribute('width')).toBe('8');
+    expect(ticks[0]?.getAttribute('width')).toBe('12');
+    expect(container.querySelectorAll('[data-testid="axis-tick"]')).toHaveLength(3);
+  });
+
+  it('keeps a bar at least 2 px and at most 8 px wide', () => {
+    mount(600, [], { ranges, slots: 400, ...ys });
+    expect(container.querySelector('.nk-rc__range')?.getAttribute('width')).toBe('2');
+  });
+
+  it('draws the reference line with its label under the bars', () => {
+    mount(600, [], {
+      ranges,
+      slots: 4,
+      reference: { value: 1000, label: 'target 1000 ms' },
+      ...ys,
+    });
+    const reference = container.querySelector('[data-testid="chart-reference"]');
+    expect(reference?.textContent).toBe('target 1000 ms');
+    const bar = container.querySelector('.nk-rc__range');
+    expect(bar).not.toBeNull();
+    // The bars follow the reference in the document: they are drawn over it.
+    expect(
+      (reference?.compareDocumentPosition(bar ?? container) ?? 0) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0);
+  });
+
+  it('walks the bars with the arrows when there are no marks', () => {
+    mount(600, [], { ranges, slots: 4, ...ys });
+    press('ArrowRight');
+    expect(tip()).toEqual(['day one', 'median 1100 ms']);
+    press('ArrowRight');
+    expect(tip()[0]).toBe('day two');
+    press('Home');
+    expect(tip()[0]).toBe('day one');
+  });
 });

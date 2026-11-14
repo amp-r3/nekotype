@@ -1,9 +1,18 @@
 // The strings of the stats screen (`/stats`): a chunk of their own, loaded with the screen.
 export const statsEn = {
-  'stats.learn.noData': 'no answers on this track yet',
+  'stats.learn.answerCaptionDay':
+    'median recall answer time of a day, ms · bar: the middle half of the day · lower is better',
+  'stats.learn.answerCaptionWeek':
+    'median recall answer time of a week, ms · bar: the middle half of the week · lower is better',
+  'stats.learn.tip.median': 'median {ms} ms · {answers}',
+  'stats.learn.tip.half': 'middle half {lo}–{hi} ms',
+  'stats.learn.weekOf': 'week of {date}',
+  'stats.learn.noPeriod': 'no answers in this period',
+  'stats.answers.one': '{count} answer',
+  'stats.answers.few': '{count} answers',
+  'stats.answers.many': '{count} answers',
+  'stats.answers.other': '{count} answers',
   'stats.learn.target': 'target {ms} ms',
-  'stats.learn.tip': '{date} · {ms} ms',
-  'stats.learn.tipNone': '{date} · no answers',
   'stats.learn.streakCurrent': 'current streak',
   'stats.learn.streakBest': 'best streak',
   'stats.learn.days.one': 'day',
@@ -32,7 +41,6 @@ export const statsEn = {
   'stats.learn.masteredOf': 'of {total}',
   'stats.learn.masteredTrack': 'mastered · {track}',
   'stats.learn.answerTime': 'answer time',
-  'stats.learn.answerCaption': 'median recall answer time of a day, ms · lower is better',
   'stats.learn.sessions': 'learning sessions: {started} started · {finished} finished',
   'stats.typing.tests': 'typing tests: {started} started · {finished} finished',
   'stats.learn.empty.title': 'No answers yet',
