@@ -1,6 +1,7 @@
 import { addBuckets, quartilesOf } from '@/entities/learn';
 import type { DayBuckets } from '@nekotype/shared/types';
 import type { Period } from './selection';
+import { axisOf } from './trend';
 import type { Axis } from './trend';
 
 export type DayBar = {
@@ -14,7 +15,6 @@ export type DayBar = {
 
 const MIN_DAYS_ALL = 14;
 const WEEKLY_OVER = 45;
-const MAX_INTERVALS = 4;
 const STEPS_MS = [250, 500, 1000, 2000, 5000];
 
 /** The Monday of the week of a local day (day 0, 1970-01-01, was a Thursday). */
@@ -68,16 +68,5 @@ export function dayBars(
 export function msAxis(bars: readonly DayBar[], targetMs: number): Axis {
   const low = Math.min(targetMs, ...bars.map((bar) => bar.lo));
   const high = Math.max(targetMs, ...bars.map((bar) => bar.hi));
-  let step = STEPS_MS[STEPS_MS.length - 1] ?? 5000;
-  let lo = 0;
-  let hi = 0;
-  for (const candidate of STEPS_MS) {
-    lo = Math.max(0, Math.floor(low / candidate) * candidate);
-    hi = (Math.floor(high / candidate) + 1) * candidate;
-    step = candidate;
-    if ((hi - lo) / candidate <= MAX_INTERVALS) break;
-  }
-  const ticks: number[] = [];
-  for (let tick = lo; tick <= hi; tick += step) ticks.push(tick);
-  return { domain: [lo, hi], ticks };
+  return axisOf(Math.max(0, low), Math.floor(high) + 1, STEPS_MS);
 }
