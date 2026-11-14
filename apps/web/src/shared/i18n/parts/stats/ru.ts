@@ -1,10 +1,19 @@
 import type { statsEn } from './en';
 
 export const statsRu = {
-  'stats.learn.noData': 'на этой дорожке пока нет ответов',
+  'stats.learn.answerCaptionDay':
+    'медиана времени ответа по памяти за день, мс · столбик: средняя половина дня · меньше — лучше',
+  'stats.learn.answerCaptionWeek':
+    'медиана времени ответа по памяти за неделю, мс · столбик: средняя половина недели · меньше — лучше',
+  'stats.learn.tip.median': 'медиана {ms} мс · {answers}',
+  'stats.learn.tip.half': 'средняя половина {lo}–{hi} мс',
+  'stats.learn.weekOf': 'неделя с {date}',
+  'stats.learn.noPeriod': 'за этот период ответов нет',
+  'stats.answers.one': '{count} ответ',
+  'stats.answers.few': '{count} ответа',
+  'stats.answers.many': '{count} ответов',
+  'stats.answers.other': '{count} ответа',
   'stats.learn.target': 'цель {ms} мс',
-  'stats.learn.tip': '{date} · {ms} мс',
-  'stats.learn.tipNone': '{date} · нет ответов',
   'stats.learn.streakCurrent': 'текущая серия',
   'stats.learn.streakBest': 'лучшая серия',
   'stats.learn.days.one': 'день',
@@ -33,7 +42,6 @@ export const statsRu = {
   'stats.learn.masteredOf': 'из {total}',
   'stats.learn.masteredTrack': 'освоено · {track}',
   'stats.learn.answerTime': 'время ответа',
-  'stats.learn.answerCaption': 'медиана времени ответа по памяти за день, мс · меньше — лучше',
   'stats.learn.sessions': 'сессии обучения: начато {started} · закончено {finished}',
   'stats.typing.tests': 'тесты набора: начато {started} · закончено {finished}',
   'stats.learn.empty.title': 'Ответов пока нет',

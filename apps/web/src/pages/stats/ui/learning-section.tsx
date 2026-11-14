@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
 import { locale, t, tParts, tPlural } from '@/shared/i18n';
-import { Parts, Segmented } from '@/shared/ui';
+import { Button, Notice, Parts, Segmented } from '@/shared/ui';
 import { Stat } from '@/shared/ui/stat';
 import { defaultClock, navigate } from '@/shared/lib';
 import { learnTargetMs, learnTrack } from '@/entities/settings';
@@ -14,10 +14,15 @@ import {
   streaks,
   trackProgress,
 } from '@/entities/learn';
-import { medianAxis, medianSeries } from '../lib/median-series';
-import { ResultChart } from './result-chart';
+import { dayBars, msAxis } from '../lib/answer-time';
+import type { Period } from '../lib/selection';
+import { timeAxis, type ChartRange } from '../lib/trend';
 import { SectionEmpty } from './section-empty';
+import { StatsChart } from './stats-chart';
+import { useNarrow } from './use-narrow';
 
+const HALF_DAY_MS = 12 * 60 * 60 * 1000;
+const DAY_MS = 2 * HALF_DAY_MS;
 const MONO = 'text-mono-romaji text-fur font-mono';
 
 function dateLabel(day: number): string {
@@ -31,6 +36,8 @@ function dateLabel(day: number): string {
 export function LearningSection(): JSX.Element {
   // The chart's switch is local: looking at the other track here does not change the track on `/`.
   const [chosen, setChosen] = useState<LearnTrack>(learnTrack.value);
+  const [period, setPeriod] = useState<Period>('30');
+  const narrow = useNarrow();
 
   const target = learnTargetMs.value;
   const state = learnState.value;
@@ -68,10 +75,33 @@ export function LearningSection(): JSX.Element {
       : withMedians.hiragana
         ? 'hiragana'
         : chosen;
-  const series = medianSeries(progress[track].medians, today);
-  const axis = medianAxis(series.values, target);
-  const hasPoints = series.values.some((value) => value !== null);
-  const caption = t('stats.learn.answerCaption');
+  const days = state.recallBuckets[track];
+  const { weekly, span, bars } = dayBars(days, period, today);
+  const axis = msAxis(bars, target);
+  const xAxis = timeAxis(period, dayStart(today - span + 1), today, narrow, (ms) =>
+    dateLabel(localDay(ms)),
+  );
+  const [x0, x1] = xAxis.domain;
+  const caption = t(weekly ? 'stats.learn.answerCaptionWeek' : 'stats.learn.answerCaptionDay');
+  const ranges: ChartRange[] = bars.map((bar) => {
+    // A week is drawn at its middle, kept inside the axis (the first week may start before it).
+    const middle = dayStart(bar.day) + (weekly ? 3.5 * DAY_MS : HALF_DAY_MS);
+    const date = dateLabel(bar.day);
+    return {
+      x: Math.min(x1 - HALF_DAY_MS, Math.max(x0 + HALF_DAY_MS, middle)),
+      lo: bar.lo,
+      hi: bar.hi,
+      mid: bar.mid,
+      tip: [
+        weekly ? t('stats.learn.weekOf', { date }) : date,
+        t('stats.learn.tip.median', {
+          ms: Math.round(bar.mid),
+          answers: tPlural('stats.answers', bar.answers),
+        }),
+        t('stats.learn.tip.half', { lo: Math.round(bar.lo), hi: Math.round(bar.hi) }),
+      ],
+    };
+  });
 
   return (
     <div className="flex flex-col gap-8 sm:gap-12">
@@ -101,8 +131,8 @@ export function LearningSection(): JSX.Element {
         <p className="text-ui-caption text-fur-dim">
           {both ? caption : `${t(`learn.track.${track}`)} · ${caption}`}
         </p>
-        {both && (
-          <div>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+          {both && (
             <Segmented<LearnTrack>
               options={[
                 { value: 'hiragana', label: t('learn.track.hiragana') },
@@ -112,30 +142,51 @@ export function LearningSection(): JSX.Element {
               onChange={setChosen}
               ariaLabel={t('learn.track.label')}
             />
-          </div>
-        )}
-        {hasPoints ? (
-          <ResultChart
+          )}
+          <Segmented<Period>
+            ariaLabel={t('stats.filter.period')}
+            value={period}
+            options={[
+              { value: '7', label: t('stats.filter.p7') },
+              { value: '30', label: t('stats.filter.p30') },
+              { value: 'all', label: t('stats.filter.all') },
+            ]}
+            onChange={setPeriod}
+          />
+        </div>
+        {bars.length > 0 ? (
+          <StatsChart
             key={track}
             testId="stats-median-chart"
-            dots
-            values={series.values}
-            xLabels={series.days.map(dateLabel)}
-            domain={axis.domain}
-            ticks={axis.ticks}
+            points={[]}
+            ranges={ranges}
+            slots={weekly ? Math.ceil(span / 7) : span}
+            xDomain={xAxis.domain}
+            xTicks={xAxis.ticks}
+            yDomain={axis.domain}
+            yTicks={axis.ticks}
             reference={{ value: target, label: t('stats.learn.target', { ms: target }) }}
+            height={narrow ? 200 : 240}
             label={`${t('stats.learn.answerTime')} · ${caption}`}
-            tip={(index, value) => {
-              const date = dateLabel(series.days[index] ?? today);
-              return value === null
-                ? t('stats.learn.tipNone', { date })
-                : t('stats.learn.tip', { date, ms: Math.round(value) });
-            }}
           />
         ) : (
-          <p className="text-fur-dim text-ui-body" data-testid="stats-no-data">
-            {t('stats.learn.noData')}
-          </p>
+          <Notice
+            action={
+              period === 'all' ? undefined : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setPeriod('all');
+                  }}
+                >
+                  {t('stats.showAll')}
+                </Button>
+              )
+            }
+          >
+            {t('stats.learn.noPeriod')}
+          </Notice>
         )}
       </div>
 

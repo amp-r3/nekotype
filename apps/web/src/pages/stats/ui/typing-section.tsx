@@ -31,28 +31,10 @@ import { HistoryTable } from './history-table';
 import { ChartLegend } from './chart-legend';
 import { SectionEmpty } from './section-empty';
 import { StatsChart } from './stats-chart';
+import { useNarrow } from './use-narrow';
 
 const MONO = 'text-mono-romaji text-fur font-mono';
 const HEADING = 'text-ui-heading text-fur';
-
-const NARROW = '(max-width: 639px)';
-
-function useNarrow(): boolean {
-  const query = (): boolean => typeof matchMedia === 'function' && matchMedia(NARROW).matches;
-  const [narrow, setNarrow] = useState(query);
-  useEffect(() => {
-    if (typeof matchMedia !== 'function') return undefined;
-    const list = matchMedia(NARROW);
-    const update = (): void => {
-      setNarrow(list.matches);
-    };
-    list.addEventListener('change', update);
-    return () => {
-      list.removeEventListener('change', update);
-    };
-  }, []);
-  return narrow;
-}
 
 function keyLabel(key: string): string {
   const parts = parseBestKey(key);

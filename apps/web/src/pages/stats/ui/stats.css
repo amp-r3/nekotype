@@ -117,3 +117,23 @@
 .nk-rc__tip.is-end {
   transform: translate(calc(-100% + var(--space-3)), -100%);
 }
+
+/* The target answer time: a dashed hair line under the bars. */
+.nk-rc__ref {
+  stroke: var(--line-strong);
+  stroke-width: var(--stroke-hair);
+  stroke-dasharray: 4 4;
+}
+
+.nk-rc__ref-label {
+  fill: var(--fur-dim);
+}
+
+/* The middle half of a day, and its median as a tick across it. */
+.nk-rc__range {
+  fill: var(--heat-fur-3);
+}
+
+.nk-rc__mid {
+  fill: var(--chart-kpm);
+}

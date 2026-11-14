@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { useId, useLayoutEffect, useRef, useState } from 'preact/hooks';
-import type { ChartPoint, TrendPoint } from '../lib/trend';
+import type { ChartPoint, ChartRange, TrendPoint } from '../lib/trend';
 
 export type StatsChartProps = {
   readonly points: readonly ChartPoint[];
@@ -8,6 +8,12 @@ export type StatsChartProps = {
   readonly line?: readonly (TrendPoint | null)[];
   /** The middle half of the same window (`lo`–`hi`); `null` breaks it. */
   readonly band?: readonly (TrendPoint | null)[];
+  /** Bars from `lo` to `hi` with a tick at `mid` (the answer time of a day or a week). */
+  readonly ranges?: readonly ChartRange[];
+  /** How many bar slots the x axis holds; sets the bar width. */
+  readonly slots?: number;
+  /** A dashed line with its label, under the bars. */
+  readonly reference?: { readonly value: number; readonly label: string };
   /** The value over each mark (a few tests). */
   readonly pointLabels?: boolean;
   readonly xDomain: readonly [number, number];
@@ -30,6 +36,12 @@ const RADIUS_BEST = 4;
 const RADIUS_RING = 7;
 const LABEL_LIFT = 10;
 const LABEL_EDGE = 28;
+const BAR_SHARE = 0.5;
+const BAR_MIN = 2;
+const BAR_MAX = 8;
+const MID_OVERHANG = 2;
+const MID_HEIGHT = 2;
+const REF_LIFT = 6;
 
 /** The unbroken runs of a series: `null` ends one. */
 function runs(series: readonly (TrendPoint | null)[]): TrendPoint[][] {
@@ -54,6 +66,9 @@ export function StatsChart({
   points,
   line = [],
   band = [],
+  ranges = [],
+  slots = 1,
+  reference,
   pointLabels = false,
   xDomain,
   xTicks,
@@ -89,22 +104,26 @@ export function StatsChart({
   const py = (value: number): number =>
     PAD_TOP + (1 - (value - y0) / (y1 - y0 || 1)) * (height - PAD_TOP - PAD_BOTTOM);
 
-  // The cursor walks the marks in time order.
-  const order = points
+  // The cursor walks the marks, or the bars when there are no marks, in time order.
+  const items: readonly { x: number; y: number; tip: readonly string[] }[] =
+    points.length > 0 ? points : ranges.map((r) => ({ x: r.x, y: r.mid, tip: r.tip }));
+  const order = items
     .map((_, index) => index)
-    .sort((a, b) => (points[a]?.x ?? 0) - (points[b]?.x ?? 0));
-  const shown = hover !== null && points[hover] !== undefined ? hover : null;
-  const current = shown === null ? null : (points[shown] ?? null);
+    .sort((a, b) => (items[a]?.x ?? 0) - (items[b]?.x ?? 0));
+  const shown = hover !== null && items[hover] !== undefined ? hover : null;
+  const current = shown === null ? null : (items[shown] ?? null);
   const cursorX = current === null ? 0 : px(current.x);
+  const slot = (width - PAD_LEFT - PAD_RIGHT) / Math.max(1, slots);
+  const barWidth = Math.min(BAR_MAX, Math.max(BAR_MIN, Math.round(slot * BAR_SHARE)));
 
   function onMove(box: DOMRect, clientX: number, clientY: number): void {
     const mx = clientX - box.left;
     const my = clientY - box.top;
     let nearest: number | null = null;
     let best = Infinity;
-    points.forEach((point, index) => {
-      const dx = px(point.x) - mx;
-      const dy = (py(point.y) - my) / 3;
+    items.forEach((item, index) => {
+      const dx = px(item.x) - mx;
+      const dy = (py(item.y) - my) / 3;
       const distance = dx * dx + dy * dy;
       if (distance < best) {
         best = distance;
@@ -181,6 +200,44 @@ export function StatsChart({
               </text>
             );
           })}
+          {reference !== undefined && (
+            <g data-testid="chart-reference">
+              <line
+                className="nk-rc__ref"
+                x1={PAD_LEFT}
+                x2={width - PAD_RIGHT}
+                y1={py(reference.value)}
+                y2={py(reference.value)}
+              />
+              <text
+                className="nk-rc__ref-label text-mono-small font-mono"
+                x={width - PAD_RIGHT}
+                y={py(reference.value) - REF_LIFT}
+                text-anchor="end"
+              >
+                {reference.label}
+              </text>
+            </g>
+          )}
+          {ranges.map((range, index) => (
+            <g key={`r${index}`} data-testid="chart-range">
+              <rect
+                className="nk-rc__range"
+                x={px(range.x) - barWidth / 2}
+                y={py(range.hi)}
+                width={barWidth}
+                height={Math.max(MID_HEIGHT, py(range.lo) - py(range.hi))}
+                rx={2}
+              />
+              <rect
+                className="nk-rc__mid"
+                x={px(range.x) - barWidth / 2 - MID_OVERHANG}
+                y={py(range.mid) - MID_HEIGHT / 2}
+                width={barWidth + 2 * MID_OVERHANG}
+                height={MID_HEIGHT}
+              />
+            </g>
+          ))}
           {runs(band).map((run, index) =>
             run.length < 2 ? null : (
               <polygon

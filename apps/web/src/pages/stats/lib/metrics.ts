@@ -1,6 +1,6 @@
 import type { TestResult } from '@nekotype/shared/types';
-import type { Axis } from './median-series';
 import { kpmAxis, tickStepFor } from './trend';
+import type { Axis } from './trend';
 
 export type Metric = 'kpm' | 'accuracy' | 'rejected' | 'hints';
 
