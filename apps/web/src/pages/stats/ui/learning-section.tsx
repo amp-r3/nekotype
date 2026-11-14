@@ -109,7 +109,7 @@ export function LearningSection({
       lo: bar.lo,
       hi: bar.hi,
       mid: bar.mid,
-      tip: [
+      tip: () => [
         weekly ? t('stats.learn.weekOf', { date }) : date,
         t('stats.learn.tip.median', {
           ms: Math.round(bar.mid),
