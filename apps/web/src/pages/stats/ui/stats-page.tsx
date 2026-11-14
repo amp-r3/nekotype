@@ -6,8 +6,16 @@ import { Button, Notice, Segmented } from '@/shared/ui';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { navigate } from '@/shared/lib';
 import { learnTargetMs } from '@/entities/settings';
-import { initTyping, retryTyping, typingCounters, typingStatus } from '@/entities/stats';
+import {
+  initTyping,
+  readResults,
+  retryTyping,
+  typingCounters,
+  typingStatus,
+} from '@/entities/stats';
+import type { TestResult } from '@nekotype/shared/types';
 import { initLearn, learnCounters, learnState, learnStatus, retryLearn } from '@/entities/learn';
+import { loadResults } from '../lib/results';
 import { initialSection, parseSection } from '../lib/section';
 import type { Section } from '../lib/section';
 import { LearningSection } from './learning-section';
@@ -43,6 +51,31 @@ function Pending({
 // Statistics: one section at a time, `learning` or `typing`; the section is in the URL hash (S10).
 export function StatsPage(): JSX.Element {
   const [chosen, setChosen] = useState<Section | null>(() => parseSection(window.location.hash));
+
+  const [results, setResults] = useState<readonly TestResult[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const finished = typingCounters.value.finished.typing;
+
+  // The whole history is read once and shared by both sections; a test saved in another tab
+  // changes the counter and reads it again (S2). A failed read only costs the test marks.
+  useEffect(() => {
+    if (finished === 0) return undefined;
+    let current = true;
+    void loadResults(readResults).then(
+      (loaded) => {
+        if (!current) return;
+        setResults(loaded);
+        setFailed(false);
+      },
+      () => {
+        if (current) setFailed(true);
+      },
+    );
+    return () => {
+      current = false;
+    };
+  }, [finished, attempt]);
 
   useEffect(() => {
     void initLearn(() => learnTargetMs.value);
@@ -135,9 +168,15 @@ export function StatsPage(): JSX.Element {
           }}
         />
       ) : section === 'learning' ? (
-        <LearningSection />
+        <LearningSection results={results} />
       ) : (
-        <TypingSection />
+        <TypingSection
+          results={results}
+          failed={failed}
+          onRetry={() => {
+            setAttempt(attempt + 1);
+          }}
+        />
       )}
     </section>
   );
