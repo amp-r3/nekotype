@@ -1,11 +1,11 @@
 import type { JSX } from 'preact';
-import { useRef, useState } from 'preact/hooks';
+import { useMemo, useRef, useState } from 'preact/hooks';
 import { locale, t, tPlural } from '@/shared/i18n';
 import { cx } from '@/shared/lib';
 import { dayStart } from '@/entities/learn';
 import { levelOf, gridDays } from '../lib/activity';
 import type { ActivityDay } from '../lib/activity';
-import { mondayOf } from '../lib/answer-time';
+import { mondayOf } from '../lib/days';
 
 const NONE: ActivityDay = { answers: 0, tests: 0, active: false };
 const LEVELS = [0, 1, 2, 3, 4, 5] as const;
@@ -32,9 +32,14 @@ export function ActivityMap({ days, today, weeks }: Props): JSX.Element {
   const grid = useRef<HTMLDivElement>(null);
   const current = Math.min(focus, count - 1);
 
-  const dateFormat = new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short' });
-  const monthFormat = new Intl.DateTimeFormat(locale.value, { month: 'short' });
-  const weekdayFormat = new Intl.DateTimeFormat(locale.value, { weekday: 'short' });
+  const { dateFormat, monthFormat, weekdayFormat } = useMemo(
+    () => ({
+      dateFormat: new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short' }),
+      monthFormat: new Intl.DateTimeFormat(locale.value, { month: 'short' }),
+      weekdayFormat: new Intl.DateTimeFormat(locale.value, { weekday: 'short' }),
+    }),
+    [locale.value],
+  );
   const monday = mondayOf(today);
 
   const lines = (index: number): string[] => {

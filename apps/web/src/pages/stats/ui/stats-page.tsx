@@ -4,7 +4,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import { Button, Notice, Segmented } from '@/shared/ui';
 import { EmptyState } from '@/shared/ui/empty-state';
-import { navigate } from '@/shared/lib';
+import { defaultClock, navigate } from '@/shared/lib';
 import { learnTargetMs } from '@/entities/settings';
 import {
   initTyping,
@@ -14,7 +14,14 @@ import {
   typingStatus,
 } from '@/entities/stats';
 import type { TestResult } from '@nekotype/shared/types';
-import { initLearn, learnCounters, learnState, learnStatus, retryLearn } from '@/entities/learn';
+import {
+  initLearn,
+  learnCounters,
+  learnState,
+  learnStatus,
+  localDay,
+  retryLearn,
+} from '@/entities/learn';
 import { initialSection, parseSection } from '../lib/section';
 import type { Section } from '../lib/section';
 import { LearningSection } from './learning-section';
@@ -26,9 +33,13 @@ type Status = 'loading' | 'ready' | 'error';
 function Pending({
   status,
   onRetry,
+  error,
+  retry,
 }: {
   readonly status: Status;
   readonly onRetry: () => void;
+  readonly error: string;
+  readonly retry: string;
 }): JSX.Element {
   if (status === 'error') {
     return (
@@ -36,11 +47,11 @@ function Pending({
         tone="miss"
         action={
           <Button variant="secondary" size="sm" onClick={onRetry}>
-            {t('learn.retry')}
+            {retry}
           </Button>
         }
       >
-        {t('learn.loadError')}
+        {error}
       </Notice>
     );
   }
@@ -55,6 +66,7 @@ export function StatsPage(): JSX.Element {
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const finished = typingCounters.value.finished.typing;
+  const today = localDay(defaultClock.now());
 
   // The whole history is read once and shared by both sections; a test saved in another tab
   // changes the counter and reads it again (S2). A failed read only costs the test marks.
@@ -162,15 +174,18 @@ export function StatsPage(): JSX.Element {
       {status !== 'ready' ? (
         <Pending
           status={status}
+          error={t(section === 'learning' ? 'learn.loadError' : 'route.loadError')}
+          retry={t(section === 'learning' ? 'learn.retry' : 'route.retry')}
           onRetry={() => {
             void (section === 'learning' ? retryLearn() : retryTyping());
           }}
         />
       ) : section === 'learning' ? (
-        <LearningSection results={results} />
+        <LearningSection results={results} today={today} />
       ) : (
         <TypingSection
           results={results}
+          today={today}
           failed={failed}
           onRetry={() => {
             setFailed(false);

@@ -3,10 +3,10 @@ import { useMemo, useState } from 'preact/hooks';
 import type { TestResult } from '@nekotype/shared/types';
 import { locale, t, tParts } from '@/shared/i18n';
 import { Button, Notice, Parts, Segmented } from '@/shared/ui';
-import { defaultClock, navigate } from '@/shared/lib';
+import { navigate } from '@/shared/lib';
 import { Pagination } from '@/shared/ui/pagination';
 import { Stat } from '@/shared/ui/stat';
-import { localDay } from '@/entities/learn';
+import { dayStart } from '@/entities/learn';
 import {
   modeLabel,
   modeLine,
@@ -35,11 +35,13 @@ import { METRICS, METRIC_ORDER, metricAxis, rejectedPercent, type Metric } from 
 import { heatRows, typedScripts } from '../lib/kana-heat';
 import { fewAxis, rolling, timeAxis, trendPoints } from '../lib/trend';
 import { FilterRow } from './filter-row';
+import { BLOCK, NARROW } from './layout';
 import { HistoryTable } from './history-table';
 import { KanaHeat } from './kana-heat';
 import { ChartLegend } from './chart-legend';
 import { SectionEmpty } from './section-empty';
 import { StatsChart } from './stats-chart';
+import { TrackSwitch } from './track-switch';
 import { useNarrow } from './use-narrow';
 
 const MONO = 'text-mono-romaji text-fur font-mono';
@@ -53,12 +55,14 @@ function keyLabel(key: string): string {
 type TypingProps = {
   /** Every saved result, oldest first; `null` until read (S2). */
   readonly results: readonly TestResult[] | null;
+  /** The local day. */
+  readonly today: number;
   readonly failed: boolean;
   readonly onRetry: () => void;
 };
 
 /** Typing on `/stats`: the filters and what they select, then everything that is not filtered. */
-export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.Element {
+export function TypingSection({ results, today, failed, onRetry }: TypingProps): JSX.Element {
   const [filters, setFilters] = useState<Filters | null>(null);
   const [page, setPage] = useState(1);
   const [metric, setMetric] = useState<Metric>('kpm');
@@ -67,9 +71,11 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
   const finished = typingCounters.value.finished.typing;
   const records = typingRecords.value;
 
-  const today = localDay(defaultClock.now());
   const loaded = results ?? [];
-  const active: Filters = filters ?? { mode: defaultMode(loaded), period: '30', repeats: false };
+  const active: Filters = useMemo(
+    () => filters ?? { mode: defaultMode(loaded), period: '30', repeats: false },
+    [filters, results],
+  );
   const modes: ModeOption[] = useMemo(() => modesOf(loaded, keyLabel), [results]);
   const selection = useMemo(() => select(loaded, active, today), [results, active, today]);
   const shown = useMemo(() => selection.slice().reverse(), [selection]);
@@ -85,8 +91,13 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
   const pages = historyPages(shown.length);
   const pageRows = shown.slice((page - 1) * HISTORY_PAGE_SIZE, page * HISTORY_PAGE_SIZE);
   const narrow = useNarrow();
-  const dateFormat = new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short' });
-  const timeFormat = new Intl.DateTimeFormat(locale.value, { hour: '2-digit', minute: '2-digit' });
+  const { dateFormat, timeFormat } = useMemo(
+    () => ({
+      dateFormat: new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short' }),
+      timeFormat: new Intl.DateTimeFormat(locale.value, { hour: '2-digit', minute: '2-digit' }),
+    }),
+    [locale.value],
+  );
   const spec = METRICS[metric];
   const allPoints = trendPoints(selection, records, spec.value, (result, mark) => {
     const rejected = rejectedPercent(result);
@@ -120,7 +131,7 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
     metric,
     points.map((point) => point.y),
   );
-  const firstAt = selection[0]?.endedAt ?? defaultClock.now();
+  const firstAt = selection[0]?.endedAt ?? dayStart(today);
   const xAxis = timeAxis(active.period, firstAt, today, narrow, (ms) => dateFormat.format(ms));
   // Speeds of different modes do not compare: no line for a selection of several modes (decision 103).
   const mixed = !single;
@@ -154,7 +165,7 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
     <div className="flex flex-col gap-8 sm:gap-12">
       {finished > 0 && (
         <>
-          <div className="flex max-w-[760px] flex-col gap-4">
+          <div className={`flex ${BLOCK} flex-col gap-4`}>
             {results !== null && <FilterRow filters={active} modes={modes} onChange={change} />}
             {failed ? (
               <Notice
@@ -199,7 +210,7 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
           {results !== null && selection.length > 0 && (
             <>
               <div
-                className="grid max-w-[760px] grid-cols-2 gap-6 sm:grid-cols-4"
+                className={`grid ${BLOCK} grid-cols-2 gap-6 sm:grid-cols-4`}
                 data-testid="stats-figures"
               >
                 <Stat label={t('stats.figure.tests')} value={numbers.tests} />
@@ -208,7 +219,7 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
                 <Stat label={t('stats.figure.accuracy')} value={numbers.accuracy} unit="%" />
               </div>
 
-              <div className="flex max-w-[760px] flex-col gap-4">
+              <div className={`flex ${BLOCK} flex-col gap-4`}>
                 <h2 className={HEADING}>{t('stats.typing.trend')}</h2>
                 <div>
                   <Segmented<Metric>
@@ -236,7 +247,7 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
                     {t('stats.typing.mixed')}
                   </p>
                 )}
-                <div className={few ? 'max-w-[480px]' : undefined}>
+                <div className={few ? NARROW : undefined}>
                   <StatsChart
                     key={metric}
                     testId="stats-kpm-chart"
@@ -255,7 +266,7 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
                 </div>
               </div>
 
-              <div className="flex max-w-[760px] flex-col gap-4">
+              <div className={`flex ${BLOCK} flex-col gap-4`}>
                 <h2 className={HEADING}>{t('stats.typing.history')}</h2>
                 <HistoryTable rows={pageRows.map((result) => historyRow(result, records))} />
                 {pages > 1 && (
@@ -274,7 +285,7 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
             </>
           )}
 
-          <div className="flex max-w-[760px] flex-col gap-4">
+          <div className={`flex ${BLOCK} flex-col gap-4`}>
             <div className="flex flex-col gap-1">
               <h2 className="text-ui-title text-fur">{t('stats.all.title')}</h2>
               <p className="text-ui-label text-fur-dim">{t('stats.all.caption')}</p>
@@ -304,21 +315,13 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
           </div>
 
           <div className="flex flex-col gap-4" data-testid="stats-heat">
-            <div className="flex max-w-[760px] flex-col gap-1">
+            <div className={`flex ${BLOCK} flex-col gap-1`}>
               <h3 className={HEADING}>{t('stats.heat.title')}</h3>
               <p className="text-ui-label text-fur-dim">{t('stats.heat.caption')}</p>
             </div>
             {both && (
               <div>
-                <Segmented<Track>
-                  options={[
-                    { value: 'hiragana', label: t('learn.track.hiragana') },
-                    { value: 'katakana', label: t('learn.track.katakana') },
-                  ]}
-                  value={heatTrack}
-                  onChange={setScript}
-                  ariaLabel={t('learn.track.label')}
-                />
+                <TrackSwitch value={heatTrack} onChange={setScript} />
               </div>
             )}
             <KanaHeat rows={heat} ariaLabel={t('stats.heat.label')} />

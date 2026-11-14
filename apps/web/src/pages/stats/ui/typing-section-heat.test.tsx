@@ -27,7 +27,7 @@ await db.put('delta', 'typing', {
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 10));
 
-describe('stats page: weak kana table', () => {
+describe('typing section: weak kana table', () => {
   let container: HTMLDivElement;
 
   afterEach(() => {

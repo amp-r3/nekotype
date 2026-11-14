@@ -83,7 +83,7 @@ await db.put('delta', 'typing', {
   counters: { started: { typing: 14, learn: 0 }, finished: { typing: 12, learn: 0 } },
 });
 
-describe('stats page: typing section', () => {
+describe('typing section', () => {
   let container: HTMLDivElement;
 
   // The chart draws at the width it measures.

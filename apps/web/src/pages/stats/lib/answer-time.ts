@@ -1,6 +1,7 @@
 import { addBuckets, quartilesOf } from '@/entities/learn';
 import type { DayBuckets } from '@nekotype/shared/types';
 import type { Period } from './selection';
+import { MIN_DAYS_ALL, mondayOf } from './days';
 import { axisOf } from './trend';
 import type { Axis } from './trend';
 
@@ -13,14 +14,8 @@ export type DayBar = {
   readonly hi: number;
 };
 
-const MIN_DAYS_ALL = 14;
 const WEEKLY_OVER = 45;
 const STEPS_MS = [250, 500, 1000, 2000, 5000];
-
-/** The Monday of the week of a local day (day 0, 1970-01-01, was a Thursday). */
-export function mondayOf(day: number): number {
-  return day - ((((day + 3) % 7) + 7) % 7);
-}
 
 /** The days the period covers: `'7'` and `'30'` back from today, `'all'` from the first answer. */
 export function spanDays(days: DayBuckets, period: Period, today: number): number {

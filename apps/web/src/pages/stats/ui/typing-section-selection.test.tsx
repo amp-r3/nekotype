@@ -85,7 +85,7 @@ await db.put('delta', 'typing', {
   counters: { started: { typing: 7, learn: 0 }, finished: { typing: 7, learn: 0 } },
 });
 
-describe('stats page: what the filters select', () => {
+describe('typing section: what the filters select', () => {
   let container: HTMLDivElement;
 
   beforeEach(() => {

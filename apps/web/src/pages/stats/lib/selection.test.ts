@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { TestResult } from '@nekotype/shared/types';
 import { dayStart, localDay } from '@/entities/learn';
-import { defaultMode, figures, median, modesOf, oneMode, select } from './selection';
+import { defaultMode, figures, modesOf, oneMode, select } from './selection';
 
 const TODAY = localDay(new Date(2026, 5, 15, 12).getTime());
 const HOUR = 3_600_000;
@@ -38,14 +38,6 @@ const P25 = 'phrases|hiragana|learner|count:25';
 const phrases = { content: 'phrases', config: { kind: 'count', prompts: 25 } } as const;
 const all = { mode: 'all', period: 'all', repeats: true } as const;
 
-describe('median', () => {
-  it('takes the middle value, or the mean of the two middle ones', () => {
-    expect(median([3, 1, 2])).toBe(2);
-    expect(median([4, 1, 2, 3])).toBe(2.5);
-    expect(median([])).toBe(0);
-  });
-});
-
 describe('modesOf (S3)', () => {
   it('lists the modes, most results first, ties by label', () => {
     const results = [
@@ -76,11 +68,12 @@ describe('defaultMode', () => {
 
 describe('select (S4)', () => {
   const at = (daysBack: number, hour: number): number => dayStart(TODAY - daysBack) + hour * HOUR;
+  // Oldest first, as the store gives them.
   const results = [
-    result('in7', { endedAt: at(6, 23) + 59 * 60_000 }),
-    result('out7', { endedAt: at(7, 23) + 59 * 60_000 }),
-    result('in30', { endedAt: at(29, 0) }),
     result('out30', { endedAt: at(30, 23) }),
+    result('in30', { endedAt: at(29, 0) }),
+    result('out7', { endedAt: at(7, 23) + 59 * 60_000 }),
+    result('in7', { endedAt: at(6, 23) + 59 * 60_000 }),
   ];
 
   it('keeps whole local days: today and the six days before', () => {
@@ -97,7 +90,7 @@ describe('select (S4)', () => {
     expect(select(results, all, TODAY)).toHaveLength(4);
   });
 
-  it('is sorted oldest first', () => {
+  it('keeps the order of its input, oldest first', () => {
     expect(select(results, all, TODAY).map((r) => r.id)).toEqual(['out30', 'in30', 'out7', 'in7']);
   });
 

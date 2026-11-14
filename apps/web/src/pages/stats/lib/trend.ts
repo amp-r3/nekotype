@@ -1,6 +1,7 @@
 import type { TestResult, TypingRecords } from '@nekotype/shared/types';
 import { personalBestKey } from '@nekotype/shared/runtime';
 import { dayStart, localDay } from '@/entities/learn';
+import { HALF_DAY_MS, MIN_DAYS_ALL } from './days';
 import type { Period } from './selection';
 
 export type ChartPoint = {
@@ -44,8 +45,6 @@ const MIN_WIDTH = 20;
 const MAX_INTERVALS = 4;
 /** Steps of the KPM and percent axes. */
 export const STEPS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500] as const;
-const HALF_DAY_MS = 12 * 60 * 60 * 1000;
-const MIN_DAYS_ALL = 14;
 
 /**
  * The KPM axis: the values' own range rounded out to tens (a margin of 2 above the highest), at
