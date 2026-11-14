@@ -24,7 +24,7 @@ describe('stats page: with answers', () => {
     container.remove();
   });
 
-  it('shows both tracks, the streaks, the counters and a chart with gaps; the switch is local', async () => {
+  it('shows the streaks, both tracks, the session line and a chart with gaps; the section follows the switch', async () => {
     const today = localDay(Date.now());
     const base = initialLearnState();
     const db = await getDatabase();
@@ -56,11 +56,24 @@ describe('stats page: with answers', () => {
 
     const text = (id: string): string | null | undefined =>
       container.querySelector(`[data-testid="${id}"]`)?.textContent;
-    expect(text('stats-mastered')).toBe('hiragana 0 of 104katakana 0 of 125');
-    expect(container.textContent).toContain(`${t('stats.learn.streakCurrent')}3days`);
-    expect(container.textContent).toContain(`${t('stats.learn.streakBest')}3days`);
-    expect(text('stats-started')).toBe('5');
-    expect(text('stats-finished')).toBe('4');
+    const stats = Array.from(container.querySelectorAll('.text-mono-stat')).map(
+      (el) => el.parentElement?.parentElement?.textContent,
+    );
+    expect(stats).toEqual([
+      `${t('stats.learn.streakCurrent')}3days`,
+      `${t('stats.learn.streakBest')}3days`,
+      `${t('stats.learn.masteredTrack', { track: t('learn.track.hiragana') })}0of 104`,
+      `${t('stats.learn.masteredTrack', { track: t('learn.track.katakana') })}0of 125`,
+    ]);
+    expect(text('stats-sessions')).toBe('learning sessions: 5 started · 4 finished');
+    // One section at a time: the typing section is not on the page, the learning one is selected.
+    expect(container.querySelector('h1')?.textContent).toBe(t('page.stats'));
+    expect(container.textContent).not.toContain(t('stats.typing.empty.title'));
+    expect(
+      container.querySelector(`[aria-label="${t('stats.section.label')}"] [aria-checked="true"]`)
+        ?.textContent,
+    ).toBe(t('stats.section.learning'));
+    expect(container.textContent).toContain(`hiragana · ${t('stats.learn.answerCaption')}`);
 
     // 10 days from the first answer to today; days without answers are gaps. The two first days
     // are one line, the days 2 ago and today stand alone as dots.
@@ -71,15 +84,19 @@ describe('stats page: with answers', () => {
     expect(target?.querySelector('line')?.getAttribute('stroke-dasharray')).toBe('4 4');
     expect(target?.textContent).toBe(t('stats.learn.target', { ms: 1500 }));
 
-    // Looking at katakana here does not change the track of `/`.
-    const katakana = Array.from(container.querySelectorAll('[role="radio"]')).find(
-      (el) => el.textContent === t('learn.track.katakana'),
+    // Only hiragana has answers: the chart shows it and there is no track switch.
+    expect(container.querySelector(`[aria-label="${t('learn.track.label')}"]`)).toBeNull();
+    expect(learnTrack.value).toBe('hiragana');
+
+    // The typing section has no data: its empty state, and the hash follows the switch.
+    const typingTab = Array.from(container.querySelectorAll('[role="radio"]')).find(
+      (el) => el.textContent === t('stats.section.typing'),
     );
     await act(() => {
-      katakana?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      typingTab?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
-    expect(text('stats-no-data')).toBe(t('stats.learn.noData'));
+    expect(window.location.hash).toBe('#typing');
+    expect(container.textContent).toContain(t('stats.typing.empty.title'));
     expect(container.querySelector('[data-testid="stats-median-chart"]')).toBeNull();
-    expect(learnTrack.value).toBe('hiragana');
   });
 });

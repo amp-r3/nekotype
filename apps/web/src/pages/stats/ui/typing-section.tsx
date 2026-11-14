@@ -1,8 +1,9 @@
 import type { JSX } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import type { TestResult } from '@nekotype/shared/types';
-import { t } from '@/shared/i18n';
-import { Notice } from '@/shared/ui';
+import { t, tParts } from '@/shared/i18n';
+import { Notice, Parts } from '@/shared/ui';
+import { navigate } from '@/shared/lib';
 import { Pagination } from '@/shared/ui/pagination';
 import {
   countResults,
@@ -21,9 +22,10 @@ import {
 } from '../lib/typing-data';
 import { HistoryTable } from './history-table';
 import { ResultChart } from './result-chart';
+import { SectionEmpty } from './section-empty';
 
 const MONO = 'text-mono-romaji text-fur font-mono';
-const HEADING = 'text-ui-label text-fur';
+const HEADING = 'text-ui-heading text-fur';
 
 type History = {
   readonly results: readonly TestResult[];
@@ -88,20 +90,26 @@ export function TypingSection(): JSX.Element {
   const axis = kpmAxis(series);
   const pages = historyPages(history?.count ?? 0);
 
-  return (
-    <section className="flex flex-col gap-4" aria-labelledby="stats-typing">
-      <h2 id="stats-typing" className="text-ui-heading text-fur">
-        {t('stats.typing.title')}
-      </h2>
+  const started = typingCounters.value.started.typing;
+  if (finished === 0 && started === 0) {
+    return (
+      <SectionEmpty
+        title={t('stats.typing.empty.title')}
+        text={t('stats.typing.empty.text')}
+        action={t('stats.typing.empty.action')}
+        onAction={() => {
+          navigate('/type');
+        }}
+      />
+    );
+  }
 
-      {finished === 0 ? (
-        <p className="text-fur-dim text-ui-body" data-testid="stats-typing-empty">
-          {t('stats.typing.noData')}
-        </p>
-      ) : (
-        <div className="flex flex-col gap-8">
+  return (
+    <div className="flex flex-col gap-8 sm:gap-12">
+      {finished > 0 && (
+        <>
           <div className="flex max-w-[760px] flex-col gap-4">
-            <h3 className={HEADING}>{t('stats.typing.bests')}</h3>
+            <h2 className={HEADING}>{t('stats.typing.bests')}</h2>
             {bests.length === 0 ? (
               <p className="text-fur-dim text-ui-body">{t('stats.typing.noBests')}</p>
             ) : (
@@ -127,7 +135,7 @@ export function TypingSection(): JSX.Element {
 
           {series.length > 0 && (
             <div className="flex max-w-[760px] flex-col gap-4">
-              <h3 className={HEADING}>{t('stats.typing.chart')}</h3>
+              <h2 className={HEADING}>{t('stats.typing.chart')}</h2>
               <ResultChart
                 key={series.length}
                 testId="stats-kpm-chart"
@@ -145,7 +153,7 @@ export function TypingSection(): JSX.Element {
           )}
 
           <div className="flex max-w-[760px] flex-col gap-4">
-            <h3 className={HEADING}>{t('stats.typing.history')}</h3>
+            <h2 className={HEADING}>{t('stats.typing.history')}</h2>
             {failed && <Notice tone="miss">{t('stats.history.error')}</Notice>}
             {history !== null && (
               <>
@@ -168,8 +176,12 @@ export function TypingSection(): JSX.Element {
               </>
             )}
           </div>
-        </div>
+        </>
       )}
-    </section>
+
+      <p className="text-ui-label text-fur-dim" data-testid="stats-typing-tests">
+        <Parts parts={tParts('stats.typing.tests', { started, finished })} valueClass={MONO} />
+      </p>
+    </div>
   );
 }

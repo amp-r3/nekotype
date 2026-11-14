@@ -84,11 +84,12 @@ describe('stats page: typing section', () => {
 
     // Typing data alone is enough for the page: no empty state, though nothing was learned.
     expect(container.textContent).not.toContain(t('stats.empty.title'));
+    // Typing has the data, so it opens first and the learning section is not on the page.
     const headings = Array.from(container.querySelectorAll('h2')).map((h) => h.textContent);
     expect(headings).toEqual([
-      t('stats.learn.title'),
-      t('stats.typing.title'),
-      t('stats.counters.title'),
+      t('stats.typing.bests'),
+      t('stats.typing.chart'),
+      t('stats.typing.history'),
     ]);
 
     const bests = Array.from(container.querySelectorAll('[data-testid="stats-bests"] tr')).map(
@@ -154,7 +155,22 @@ describe('stats page: typing section', () => {
 
     const text = (id: string): string | null | undefined =>
       container.querySelector(`[data-testid="${id}"]`)?.textContent;
-    expect(text('stats-started-typing')).toBe('14');
-    expect(text('stats-finished-typing')).toBe('12');
+    expect(text('stats-typing-tests')).toBe('typing tests: 14 started · 12 finished');
+
+    // The learning section has no data: its empty state; the hash follows the switch.
+    const learningTab = Array.from(container.querySelectorAll('[role="radio"]')).find(
+      (el) => el.textContent === t('stats.section.learning'),
+    );
+    await act(() => {
+      learningTab?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(window.location.hash).toBe('#learning');
+    expect(container.textContent).toContain(t('stats.learn.empty.title'));
+    expect(container.querySelector('[data-testid="history-row"]')).toBeNull();
+    // A hand-edited hash moves the switch back.
+    await act(() => {
+      window.location.hash = '#typing';
+    });
+    await until(() => container.querySelector('[data-testid="history-row"]') !== null);
   });
 });
