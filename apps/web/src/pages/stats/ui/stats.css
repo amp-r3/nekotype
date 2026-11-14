@@ -289,3 +289,35 @@ button.nk-am__cell.is-today:hover {
 .nk-am__sw {
   flex: none;
 }
+
+/* ---- Weak kana in typing: the kana table filled by the share of attempts with an error ------- */
+
+.nk-cell.nk-heat.is-untyped {
+  border-color: var(--line);
+}
+
+.nk-cell.nk-heat.is-heat-0 {
+  color: var(--fur);
+}
+
+.nk-cell.nk-heat.is-heat-1 {
+  background: var(--heat-miss-1);
+}
+
+.nk-cell.nk-heat.is-heat-2 {
+  background: var(--heat-miss-2);
+}
+
+.nk-cell.nk-heat.is-heat-3 {
+  background: var(--heat-miss-3);
+}
+
+.nk-cell.nk-heat.is-heat-4 {
+  background: var(--heat-miss-4);
+  color: var(--on-fur);
+}
+
+.nk-cell.nk-heat.is-heat-5 {
+  background: var(--heat-miss-5);
+  color: var(--on-fur);
+}

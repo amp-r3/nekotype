@@ -229,6 +229,14 @@ describe('stats page: typing section', () => {
     expect(container.querySelector('[data-testid="stats-few"]')).toBeNull();
   });
 
+  it('All time holds the weak kana table of the typed script, with no switch for one script', async () => {
+    await open();
+    const heat = container.querySelector('[data-testid="stats-heat"]');
+    expect(heat?.textContent).toContain(t('stats.heat.title'));
+    expect(heat?.querySelectorAll('[data-testid="heat-cell"]')).toHaveLength(104);
+    expect(heat?.querySelector('[role="radiogroup"]')).toBeNull();
+  });
+
   it('the metric switch redraws the chart: accuracy axis in percent, lower is better for the keys', async () => {
     await open();
     expect(container.textContent).not.toContain(t('stats.legend.lower'));
