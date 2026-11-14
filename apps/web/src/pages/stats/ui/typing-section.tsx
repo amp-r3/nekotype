@@ -7,7 +7,14 @@ import { defaultClock, navigate } from '@/shared/lib';
 import { Pagination } from '@/shared/ui/pagination';
 import { Stat } from '@/shared/ui/stat';
 import { localDay } from '@/entities/learn';
-import { modeLabel, modeLine, typingCounters, typingRecords } from '@/entities/stats';
+import {
+  modeLabel,
+  modeLine,
+  typingCounters,
+  typingKanaStats,
+  typingRecords,
+} from '@/entities/stats';
+import type { Track } from '@nekotype/shared/types';
 import {
   defaultMode,
   figures,
@@ -24,9 +31,11 @@ import {
   parseBestKey,
 } from '../lib/typing-data';
 import { METRICS, METRIC_ORDER, metricAxis, rejectedPercent, type Metric } from '../lib/metrics';
+import { heatRows, typedTracks } from '../lib/kana-heat';
 import { fewAxis, rolling, timeAxis, trendPoints } from '../lib/trend';
 import { FilterRow } from './filter-row';
 import { HistoryTable } from './history-table';
+import { KanaHeat } from './kana-heat';
 import { ChartLegend } from './chart-legend';
 import { SectionEmpty } from './section-empty';
 import { StatsChart } from './stats-chart';
@@ -52,6 +61,7 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
   const [filters, setFilters] = useState<Filters | null>(null);
   const [page, setPage] = useState(1);
   const [metric, setMetric] = useState<Metric>('kpm');
+  const [script, setScript] = useState<Track>('hiragana');
 
   const finished = typingCounters.value.finished.typing;
   const records = typingRecords.value;
@@ -116,6 +126,15 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
   const trend = !mixed && !few ? rolling(selection, spec.value) : [];
   const slots = fewAxis(selection, (ms) => dateFormat.format(ms));
   const fewPoints = points.map((point, index) => ({ ...point, x: index }));
+
+  const typed = typedTracks(loaded);
+  const both = typed.hiragana && typed.katakana;
+  // One script typed: that one; both: the choice; none read yet: hiragana.
+  const heatTrack: Track = both ? script : typed.katakana ? 'katakana' : 'hiragana';
+  const heat = useMemo(
+    () => heatRows(heatTrack, typingKanaStats.value),
+    [heatTrack, typingKanaStats.value],
+  );
 
   const started = typingCounters.value.started.typing;
   if (finished === 0 && started === 0) {
@@ -283,6 +302,27 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
                 </tbody>
               </table>
             )}
+          </div>
+
+          <div className="flex flex-col gap-4" data-testid="stats-heat">
+            <div className="flex max-w-[760px] flex-col gap-1">
+              <h3 className={HEADING}>{t('stats.heat.title')}</h3>
+              <p className="text-ui-label text-fur-dim">{t('stats.heat.caption')}</p>
+            </div>
+            {both && (
+              <div>
+                <Segmented<Track>
+                  options={[
+                    { value: 'hiragana', label: t('learn.track.hiragana') },
+                    { value: 'katakana', label: t('learn.track.katakana') },
+                  ]}
+                  value={heatTrack}
+                  onChange={setScript}
+                  ariaLabel={t('learn.track.label')}
+                />
+              </div>
+            )}
+            <KanaHeat rows={heat} ariaLabel={t('stats.heat.label')} />
           </div>
         </>
       )}
