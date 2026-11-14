@@ -1,7 +1,7 @@
 import type { RowCategory } from '@nekotype/engine';
-import type { KanaStat, LearnKanaKey, TestResult, Track } from '@nekotype/shared/types';
+import type { KanaStat, LearnKanaKey, Track } from '@nekotype/shared/types';
 import { canonicalFor } from '@/entities/prompt';
-import { chartRows, keyOf } from '@/entities/learn';
+import { chartRows, keyOf, keysOfTrack } from '@/entities/learn';
 import type { KanaStatMap } from '@/entities/stats';
 
 export type HeatStep = 0 | 1 | 2 | 3 | 4 | 5;
@@ -72,16 +72,9 @@ export function heatRows(track: Track, stats: KanaStatMap): readonly HeatRow[] {
   }));
 }
 
-/** The scripts that have a saved typing test; `both` counts for each. */
-export function typedTracks(results: readonly Pick<TestResult, 'script'>[]): {
-  hiragana: boolean;
-  katakana: boolean;
-} {
-  let hiragana = false;
-  let katakana = false;
-  for (const result of results) {
-    if (result.script !== 'katakana') hiragana = true;
-    if (result.script !== 'hiragana') katakana = true;
-  }
-  return { hiragana, katakana };
+/** The scripts with a kana typed at least once, by the kana statistics (not by saved tests). */
+export function typedScripts(stats: KanaStatMap): { hiragana: boolean; katakana: boolean } {
+  const typed = (track: Track): boolean =>
+    keysOfTrack(track).some((key) => (stats[key]?.attempts ?? 0) > 0);
+  return { hiragana: typed('hiragana'), katakana: typed('katakana') };
 }

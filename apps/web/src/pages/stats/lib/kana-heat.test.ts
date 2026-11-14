@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { heatRows, heatStep, typedTracks } from './kana-heat';
+import { heatRows, heatStep, typedScripts } from './kana-heat';
 
 const stat = (errored: number, attempts: number) => ({ attempts, erroredAttempts: errored });
 
@@ -34,15 +34,27 @@ describe('heatRows', () => {
   });
 });
 
-describe('typedTracks', () => {
-  const result = (script: 'hiragana' | 'katakana' | 'both'): { script: typeof script } => ({
-    script,
+describe('typedScripts', () => {
+  it('reads the scripts from the attempts of the kana', () => {
+    expect(typedScripts({})).toEqual({ hiragana: false, katakana: false });
+    expect(typedScripts({ 'hiragana:あ': stat(0, 3) })).toEqual({
+      hiragana: true,
+      katakana: false,
+    });
+    expect(typedScripts({ 'katakana:ア': stat(1, 1) })).toEqual({
+      hiragana: false,
+      katakana: true,
+    });
+    expect(typedScripts({ 'hiragana:あ': stat(0, 3), 'katakana:ア': stat(0, 1) })).toEqual({
+      hiragana: true,
+      katakana: true,
+    });
   });
 
-  it('reads the scripts of the results; both counts for each', () => {
-    expect(typedTracks([])).toEqual({ hiragana: false, katakana: false });
-    expect(typedTracks([result('katakana')])).toEqual({ hiragana: false, katakana: true });
-    expect(typedTracks([result('hiragana')])).toEqual({ hiragana: true, katakana: false });
-    expect(typedTracks([result('both')])).toEqual({ hiragana: true, katakana: true });
+  it('does not count an entry with no attempts', () => {
+    expect(typedScripts({ 'hiragana:あ': stat(0, 0) })).toEqual({
+      hiragana: false,
+      katakana: false,
+    });
   });
 });
