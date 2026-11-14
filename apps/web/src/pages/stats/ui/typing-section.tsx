@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useMemo, useState } from 'preact/hooks';
 import type { TestResult } from '@nekotype/shared/types';
 import { locale, t, tParts } from '@/shared/i18n';
 import { Button, Notice, Parts, Segmented } from '@/shared/ui';
@@ -7,8 +7,7 @@ import { defaultClock, navigate } from '@/shared/lib';
 import { Pagination } from '@/shared/ui/pagination';
 import { Stat } from '@/shared/ui/stat';
 import { localDay } from '@/entities/learn';
-import { modeLabel, modeLine, readResults, typingCounters, typingRecords } from '@/entities/stats';
-import { loadResults } from '../lib/results';
+import { modeLabel, modeLine, typingCounters, typingRecords } from '@/entities/stats';
 import {
   defaultMode,
   figures,
@@ -41,36 +40,21 @@ function keyLabel(key: string): string {
   return parts === null ? key : modeLine(parts);
 }
 
+type TypingProps = {
+  /** Every saved result, oldest first; `null` until read (S2). */
+  readonly results: readonly TestResult[] | null;
+  readonly failed: boolean;
+  readonly onRetry: () => void;
+};
+
 /** Typing on `/stats`: the filters and what they select, then everything that is not filtered. */
-export function TypingSection(): JSX.Element {
-  const [results, setResults] = useState<readonly TestResult[] | null>(null);
-  const [failed, setFailed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
+export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.Element {
   const [filters, setFilters] = useState<Filters | null>(null);
   const [page, setPage] = useState(1);
   const [metric, setMetric] = useState<Metric>('kpm');
 
-  // A test saved in another tab changes the counter: the whole history is read again (S2).
   const finished = typingCounters.value.finished.typing;
   const records = typingRecords.value;
-
-  useEffect(() => {
-    if (finished === 0) return undefined;
-    let current = true;
-    void loadResults(readResults).then(
-      (loaded) => {
-        if (!current) return;
-        setResults(loaded);
-        setFailed(false);
-      },
-      () => {
-        if (current) setFailed(true);
-      },
-    );
-    return () => {
-      current = false;
-    };
-  }, [finished, attempt]);
 
   const today = localDay(defaultClock.now());
   const loaded = results ?? [];
@@ -161,7 +145,7 @@ export function TypingSection(): JSX.Element {
                     variant="secondary"
                     size="sm"
                     onClick={() => {
-                      setAttempt(attempt + 1);
+                      onRetry();
                     }}
                   >
                     {t('route.retry')}

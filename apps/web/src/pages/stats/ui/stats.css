@@ -137,3 +137,155 @@
 .nk-rc__mid {
   fill: var(--chart-kpm);
 }
+
+/* The activity map: a week per column, a day per cell (design ActivityMap). `nk-am`. */
+.nk-am {
+  --nk-am-step: calc(var(--space-4) + var(--space-1));
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  width: max-content;
+  max-width: 100%;
+}
+
+.nk-am__months {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--nk-am-weeks), var(--space-4));
+  column-gap: var(--space-1);
+  height: var(--space-4);
+  color: var(--fur-dim);
+  white-space: nowrap;
+}
+
+.nk-am__wd {
+  grid-column: 1;
+  display: grid;
+  grid-template-rows: repeat(7, var(--space-4));
+  row-gap: var(--space-1);
+  align-items: center;
+  color: var(--fur-dim);
+}
+
+.nk-am__grid {
+  grid-column: 2;
+  position: relative;
+  display: grid;
+  grid-template-rows: repeat(7, var(--space-4));
+  grid-auto-flow: column;
+  grid-auto-columns: var(--space-4);
+  gap: var(--space-1);
+}
+
+.nk-am__cell {
+  position: relative;
+  box-sizing: border-box;
+  width: var(--space-4);
+  height: var(--space-4);
+  padding: 0;
+  border: var(--stroke-hair) solid transparent;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--fur-dim);
+  cursor: default;
+}
+
+/* No answers: an outline and no fill. */
+.nk-am__cell.is-l0 {
+  border-color: var(--line);
+}
+
+.nk-am__cell.is-l1 {
+  background: var(--heat-fur-1);
+}
+
+.nk-am__cell.is-l2 {
+  background: var(--heat-fur-2);
+}
+
+.nk-am__cell.is-l3 {
+  background: var(--heat-fur-3);
+  color: var(--fur);
+}
+
+.nk-am__cell.is-l4 {
+  background: var(--heat-fur-4);
+  color: var(--on-fur);
+}
+
+.nk-am__cell.is-l5 {
+  background: var(--heat-fur-5);
+  color: var(--on-fur);
+}
+
+/* A finished typing test that day: a square in the cell's ink. */
+.nk-am__cell.is-test::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--space-1);
+  height: var(--space-1);
+  margin: calc(var(--space-1) / -2);
+  border-radius: var(--radius-xs);
+  background: currentColor;
+}
+
+.nk-am__cell.is-today {
+  border: var(--stroke-mark) solid var(--eye);
+}
+
+button.nk-am__cell:hover {
+  border-color: var(--fur-dim);
+}
+
+button.nk-am__cell.is-today:hover {
+  border-color: var(--eye-bright);
+}
+
+/* The tooltip sits above its cell; the first and the last columns keep it inside the grid. */
+.nk-am__tip {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--fur);
+  color: var(--on-fur);
+  white-space: nowrap;
+  pointer-events: none;
+  left: calc(var(--c) * var(--nk-am-step) + var(--space-2));
+  top: calc(var(--r) * var(--nk-am-step) - var(--space-2));
+  transform: translate(-50%, -100%);
+}
+
+.nk-am__tip.is-start {
+  left: calc(var(--c) * var(--nk-am-step));
+  transform: translate(0, -100%);
+}
+
+.nk-am__tip.is-end {
+  left: calc((var(--c) + 1) * var(--nk-am-step));
+  transform: translate(-100%, -100%);
+}
+
+.nk-am__legend {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin-top: var(--space-3);
+  color: var(--fur-dim);
+}
+
+.nk-am__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.nk-am__sw {
+  flex: none;
+}

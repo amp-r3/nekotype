@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { useState } from 'preact/hooks';
+import type { TestResult } from '@nekotype/shared/types';
 import { locale, t, tParts, tPlural } from '@/shared/i18n';
 import { Button, Notice, Parts, Segmented } from '@/shared/ui';
 import { Stat } from '@/shared/ui/stat';
@@ -14,15 +15,18 @@ import {
   streaks,
   trackProgress,
 } from '@/entities/learn';
+import { activityDays, weeksFor } from '../lib/activity';
 import { dayBars, msAxis } from '../lib/answer-time';
 import type { Period } from '../lib/selection';
 import { timeAxis, type ChartRange } from '../lib/trend';
+import { ActivityMap } from './activity-map';
 import { SectionEmpty } from './section-empty';
 import { StatsChart } from './stats-chart';
 import { useNarrow } from './use-narrow';
 
 const HALF_DAY_MS = 12 * 60 * 60 * 1000;
 const DAY_MS = 2 * HALF_DAY_MS;
+const MAX_WEEKS_NARROW = 13;
 const MONO = 'text-mono-romaji text-fur font-mono';
 
 function dateLabel(day: number): string {
@@ -31,9 +35,14 @@ function dateLabel(day: number): string {
   );
 }
 
-// The learning section: streaks, mastered kana, the answer time, the session counters. It is drawn
+// The learning section: streaks, mastered kana, the activity, the answer time, the session counters. It is drawn
 // once the learning state has loaded.
-export function LearningSection(): JSX.Element {
+export function LearningSection({
+  results,
+}: {
+  /** The typing results for the test marks; `null` while unread or when the read failed. */
+  readonly results: readonly TestResult[] | null;
+}): JSX.Element {
   // The chart's switch is local: looking at the other track here does not change the track on `/`.
   const [chosen, setChosen] = useState<LearnTrack>(learnTrack.value);
   const [period, setPeriod] = useState<Period>('30');
@@ -75,6 +84,12 @@ export function LearningSection(): JSX.Element {
       : withMedians.hiragana
         ? 'hiragana'
         : chosen;
+  const activity = activityDays(state, results ?? []);
+  const firstDay = Math.min(...activity.keys());
+  const weeks = Math.min(
+    weeksFor(activity.size > 0 ? firstDay : null, today),
+    narrow ? MAX_WEEKS_NARROW : Infinity,
+  );
   const days = state.recallBuckets[track];
   const { weekly, span, bars } = dayBars(days, period, today);
   const axis = msAxis(bars, target);
@@ -124,6 +139,14 @@ export function LearningSection(): JSX.Element {
             unit={t('stats.learn.masteredOf', { total: progress[name].total })}
           />
         ))}
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <h2 className="text-ui-heading text-fur">{t('stats.activity.title')}</h2>
+        <p className="text-ui-caption text-fur-dim">
+          {t('stats.activity.caption', { weeks: tPlural('stats.weeks', weeks) })}
+        </p>
+        <ActivityMap days={activity} today={today} weeks={weeks} />
       </div>
 
       <div className="flex max-w-[760px] flex-col gap-4">
