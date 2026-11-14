@@ -5,6 +5,7 @@ import { act } from 'preact/test-utils';
 import { Button } from './button';
 import { Switch } from './switch';
 import { Segmented } from './segmented';
+import { Select } from './select';
 import { Toggle } from './toggle';
 import { Dialog } from './dialog';
 import { Kbd } from './kbd';
@@ -121,6 +122,45 @@ describe('Segmented', () => {
     press(items[0] ?? null, 'ArrowRight');
     expect(onChange).toHaveBeenLastCalledWith('b');
     expect(document.activeElement).toBe(items[1]);
+  });
+});
+
+describe('Segmented size lg', () => {
+  it('uses the heading text and a wider gap', () => {
+    mount(
+      <Segmented
+        size="lg"
+        options={[
+          { value: 'a', label: 'A' },
+          { value: 'b', label: 'B' },
+        ]}
+        value="a"
+        onChange={() => {}}
+        ariaLabel="group"
+      />,
+    );
+    expect(container.querySelector('[role="radiogroup"]')?.className).toContain('gap-4');
+    expect(container.querySelector('[role="radio"]')?.className).toContain('text-ui-heading');
+  });
+});
+
+describe('Select', () => {
+  const options = [{ value: 'a', label: 'A' }];
+
+  it('binds a visible label to the field', () => {
+    mount(<Select options={options} value="a" onChange={() => {}} label="mode" />);
+    const label = container.querySelector('label');
+    const select = container.querySelector('select');
+    expect(label?.textContent).toBe('mode');
+    expect(label?.htmlFor).toBe(select?.id);
+    expect(select?.id).not.toBe('');
+    expect(select?.hasAttribute('aria-label')).toBe(false);
+  });
+
+  it('names the field by aria-label when there is no visible label', () => {
+    mount(<Select options={options} value="a" onChange={() => {}} ariaLabel="mode" />);
+    expect(container.querySelector('label')).toBeNull();
+    expect(container.querySelector('select')?.getAttribute('aria-label')).toBe('mode');
   });
 });
 

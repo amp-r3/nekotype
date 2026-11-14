@@ -12,7 +12,7 @@ export type SegmentedProps<T extends string | number> = {
   readonly onChange: (value: T) => void;
   readonly ariaLabel?: string;
   readonly disabled?: boolean;
-  readonly size?: 'sm' | 'md';
+  readonly size?: 'sm' | 'md' | 'lg';
   // Numbers and romaji are set in the mono face.
   readonly mono?: boolean;
 };
@@ -30,6 +30,11 @@ export function Segmented<T extends string | number>({
   mono = false,
 }: SegmentedProps<T>): JSX.Element {
   const sizeClass = size === 'sm' ? 'h-control-sm px-2' : 'h-control px-3';
+  const textClass = mono
+    ? 'text-mono-romaji font-mono'
+    : size === 'lg'
+      ? 'text-ui-heading'
+      : 'text-ui-label';
 
   // ← → move the choice and the focus inside the group, wrapping at the ends; the group is one
   // Tab stop (the selected option).
@@ -49,7 +54,7 @@ export function Segmented<T extends string | number>({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      className="inline-flex flex-wrap gap-1 select-none"
+      className={cx('inline-flex flex-wrap select-none', size === 'lg' ? 'gap-4' : 'gap-1')}
     >
       {options.map((opt, index) => {
         const isSelected = opt.value === value;
@@ -70,7 +75,7 @@ export function Segmented<T extends string | number>({
               handleKeyDown(e, index);
             }}
             className={cx(
-              mono ? 'text-mono-romaji font-mono' : 'text-ui-label',
+              textClass,
               'pointer-coarse:min-h-touch-min disabled:text-fur-faint relative cursor-pointer rounded-sm whitespace-nowrap transition-colors disabled:cursor-default',
               sizeClass,
               isSelected ? SELECTED_CLASS : 'text-fur-dim hover:text-fur',
