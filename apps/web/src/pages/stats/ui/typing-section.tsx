@@ -32,7 +32,7 @@ import {
   parseBestKey,
 } from '../lib/typing-data';
 import { METRICS, METRIC_ORDER, metricAxis, rejectedPercent, type Metric } from '../lib/metrics';
-import { heatRows, typedTracks } from '../lib/kana-heat';
+import { heatRows, typedScripts } from '../lib/kana-heat';
 import { fewAxis, rolling, timeAxis, trendPoints } from '../lib/trend';
 import { FilterRow } from './filter-row';
 import { HistoryTable } from './history-table';
@@ -129,14 +129,12 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
   const slots = fewAxis(selection, (ms) => dateFormat.format(ms));
   const fewPoints = points.map((point, index) => ({ ...point, x: index }));
 
-  const typed = typedTracks(loaded);
+  const kanaStats = typingKanaStats.value;
+  const typed = useMemo(() => typedScripts(kanaStats), [kanaStats]);
   const both = typed.hiragana && typed.katakana;
-  // One script typed: that one; both: the choice; none read yet: hiragana.
+  // One script typed: that one; both: the choice; none: hiragana.
   const heatTrack: Track = both ? script : typed.katakana ? 'katakana' : 'hiragana';
-  const heat = useMemo(
-    () => heatRows(heatTrack, typingKanaStats.value),
-    [heatTrack, typingKanaStats.value],
-  );
+  const heat = useMemo(() => heatRows(heatTrack, kanaStats), [heatTrack, kanaStats]);
 
   const started = typingCounters.value.started.typing;
   if (finished === 0 && started === 0) {
