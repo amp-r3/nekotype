@@ -21,7 +21,8 @@ test.describe('the statistics page', () => {
     await expect(page.getByTestId('results-panel').getByTestId('mode-line')).toBeVisible();
 
     await page.getByRole('link', { name: 'stats', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Typing' })).toBeVisible();
+    // No answers were given, so the typing section opens first.
+    await expect(page.getByRole('radio', { name: 'typing', exact: true })).toBeChecked();
 
     const rows = page.getByTestId('history-row');
     await expect(rows).toHaveCount(1);
@@ -29,6 +30,10 @@ test.describe('the statistics page', () => {
     await expect(rows.first()).toContainText('personal best');
     await expect(page.getByTestId('stats-bests')).toContainText('words · hiragana · relaxed · 10');
     await expect(page.getByTestId('stats-kpm-chart').getByTestId('chart-dot')).toHaveCount(1);
-    await expect(page.getByTestId('stats-finished-typing')).toHaveText('1');
+    await expect(page.getByTestId('stats-typing-tests')).toContainText('1 finished');
+
+    // The learning section has no data; a hash names it directly.
+    await page.goto('/stats#learning');
+    await expect(page.getByRole('heading', { name: 'No answers yet' })).toBeVisible();
   });
 });

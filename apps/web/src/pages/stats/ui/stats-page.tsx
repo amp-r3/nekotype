@@ -1,98 +1,85 @@
 import type { JSX } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
-import { locale, t, tParts, tPlural } from '@/shared/i18n';
-import { Button, Notice, Parts, Segmented } from '@/shared/ui';
+import { t } from '@/shared/i18n';
+import { Button, Notice, Segmented } from '@/shared/ui';
 import { EmptyState } from '@/shared/ui/empty-state';
-import { Stat } from '@/shared/ui/stat';
-import { defaultClock, navigate } from '@/shared/lib';
-import { learnTargetMs, learnTrack } from '@/entities/settings';
+import { navigate } from '@/shared/lib';
+import { learnTargetMs } from '@/entities/settings';
 import { initTyping, retryTyping, typingCounters, typingStatus } from '@/entities/stats';
-import type { LearnTrack } from '@/entities/settings';
-import {
-  dayStart,
-  initLearn,
-  learnCounters,
-  learnState,
-  learnStatus,
-  localDay,
-  retryLearn,
-  streaks,
-  trackProgress,
-} from '@/entities/learn';
-import { medianAxis, medianSeries } from '../lib/median-series';
-import { ResultChart } from './result-chart';
+import { initLearn, learnCounters, learnState, learnStatus, retryLearn } from '@/entities/learn';
+import { initialSection, parseSection } from '../lib/section';
+import type { Section } from '../lib/section';
+import { LearningSection } from './learning-section';
 import { TypingSection } from './typing-section';
 
-const MONO = 'text-mono-romaji text-fur font-mono';
+type Status = 'loading' | 'ready' | 'error';
 
-function dateLabel(day: number): string {
-  return new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short' }).format(
-    dayStart(day),
-  );
+// A section's place under the switch: its loading text or its error with a retry.
+function Pending({
+  status,
+  onRetry,
+}: {
+  readonly status: Status;
+  readonly onRetry: () => void;
+}): JSX.Element {
+  if (status === 'error') {
+    return (
+      <Notice
+        tone="miss"
+        action={
+          <Button variant="secondary" size="sm" onClick={onRetry}>
+            {t('learn.retry')}
+          </Button>
+        }
+      >
+        {t('learn.loadError')}
+      </Notice>
+    );
+  }
+  return <Notice loading>{t('route.loading')}</Notice>;
 }
 
-// Statistics: learning, typing, counters.
+// Statistics: one section at a time, `learning` or `typing`; the section is in the URL hash (S10).
 export function StatsPage(): JSX.Element {
-  // The chart's switch is local: looking at the other track here does not change the track on `/`.
-  const [track, setTrack] = useState<LearnTrack>(learnTrack.value);
+  const [chosen, setChosen] = useState<Section | null>(() => parseSection(window.location.hash));
 
   useEffect(() => {
     void initLearn(() => learnTargetMs.value);
     void initTyping();
   }, []);
 
-  if (learnStatus.value === 'error' || typingStatus.value === 'error') {
-    return (
-      <section className="max-w-layout-max mx-auto flex w-full flex-col items-start gap-6">
-        <Notice
-          tone="miss"
-          action={
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                void retryLearn();
-                void retryTyping();
-              }}
-            >
-              {t('learn.retry')}
-            </Button>
-          }
-        >
-          {t('learn.loadError')}
-        </Notice>
-      </section>
-    );
-  }
+  // A hand-edited hash moves the switch; `replaceState` below does not fire this event.
+  useEffect(() => {
+    const onHashChange = (): void => {
+      const next = parseSection(window.location.hash);
+      if (next !== null) setChosen(next);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => {
+      window.removeEventListener('hashchange', onHashChange);
+    };
+  }, []);
 
-  if (learnStatus.value !== 'ready' || typingStatus.value !== 'ready') {
-    return (
-      <p role="status" className="text-fur-dim text-ui-label py-12 text-center">
-        {t('route.loading')}
-      </p>
-    );
-  }
-
-  const target = learnTargetMs.value;
-  const state = learnState.value;
-  const counters = learnCounters.value;
-  const today = localDay(defaultClock.now());
-  const { current, best } = streaks(state, today);
-  const progress = {
-    hiragana: trackProgress(state, 'hiragana', target),
-    katakana: trackProgress(state, 'katakana', target),
+  const learning = learnStatus.value;
+  const typing = typingStatus.value;
+  const has = {
+    learning:
+      learning === 'ready' &&
+      (learnState.value.activeDays.length > 0 || learnCounters.value.started.learn > 0),
+    typing:
+      typing === 'ready' &&
+      (typingCounters.value.started.typing > 0 || typingCounters.value.finished.typing > 0),
   };
-  const series = medianSeries(progress[track].medians, today);
-  const axis = medianAxis(series.values, target);
-  const typing = typingCounters.value;
-  const answered = state.activeDays.length > 0 || counters.started.learn > 0;
-  const typed = typing.started.typing > 0 || typing.finished.typing > 0;
-  const heading = t('page.stats');
+  const settled = learning !== 'loading' && typing !== 'loading';
+  // Without a hash the section with data opens, once both stores have said what they hold.
+  const section = chosen ?? (settled ? initialSection('', has) : 'learning');
 
-  if (!answered && !typed) {
+  const heading = <h1 className="text-ui-title text-fur">{t('page.stats')}</h1>;
+
+  if (learning === 'ready' && typing === 'ready' && !has.learning && !has.typing) {
     return (
       <section className="max-w-layout-max mx-auto flex w-full flex-col gap-12">
-        <h1 className="text-ui-title text-fur">{heading}</h1>
+        {heading}
         <EmptyState
           title={t('stats.empty.title')}
           text={t('stats.empty.text')}
@@ -111,146 +98,46 @@ export function StatsPage(): JSX.Element {
     );
   }
 
-  const hasPoints = series.values.some((value) => value !== null);
+  const choose = (next: Section): void => {
+    setChosen(next);
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${window.location.search}#${next}`,
+    );
+  };
+  const status = section === 'learning' ? learning : typing;
 
   return (
-    <section className="max-w-layout-max mx-auto flex w-full flex-col gap-12">
-      <h1 className="text-ui-title text-fur">{heading}</h1>
-
-      <section className="flex flex-col gap-4" aria-labelledby="stats-learning">
-        <h2 id="stats-learning" className="text-ui-heading text-fur">
-          {t('stats.learn.title')}
-        </h2>
-
-        <div className="flex flex-col gap-8">
-          <div className="flex flex-wrap gap-x-12 gap-y-8">
-            <Stat
-              label={t('stats.learn.streakCurrent')}
-              value={current}
-              unit={tPlural('stats.learn.days', current)}
-            />
-            <Stat
-              label={t('stats.learn.streakBest')}
-              value={best}
-              unit={tPlural('stats.learn.days', best)}
-            />
-            <div className="flex flex-col gap-1 pt-2">
-              <div className="text-ui-caption text-fur-dim">{t('stats.learn.mastered')}</div>
-              <div
-                className="text-ui-body text-fur-dim flex flex-col gap-1"
-                data-testid="stats-mastered"
-              >
-                {(['hiragana', 'katakana'] as const).map((name) => (
-                  <span key={name}>
-                    <Parts
-                      parts={tParts('stats.learn.trackProgress', {
-                        track: t(`learn.track.${name}`),
-                        done: progress[name].mastered,
-                        total: progress[name].total,
-                      })}
-                      valueClass={MONO}
-                    />
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex max-w-[760px] flex-col gap-4">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div className="flex flex-col gap-1">
-                <h3 className="text-ui-label text-fur">{t('stats.learn.median')}</h3>
-                <span className="text-ui-caption text-fur-dim">{t('stats.learn.medianHint')}</span>
-              </div>
-              <Segmented<LearnTrack>
-                options={[
-                  { value: 'hiragana', label: t('learn.track.hiragana') },
-                  { value: 'katakana', label: t('learn.track.katakana') },
-                ]}
-                value={track}
-                onChange={setTrack}
-                ariaLabel={t('learn.track.label')}
-              />
-            </div>
-            {hasPoints ? (
-              <ResultChart
-                key={track}
-                testId="stats-median-chart"
-                dots
-                values={series.values}
-                xLabels={series.days.map(dateLabel)}
-                domain={axis.domain}
-                ticks={axis.ticks}
-                reference={{ value: target, label: t('stats.learn.target', { ms: target }) }}
-                label={`${t('stats.learn.median')} · ${t('stats.learn.medianHint')}`}
-                tip={(index, value) => {
-                  const date = dateLabel(series.days[index] ?? today);
-                  return value === null
-                    ? t('stats.learn.tipNone', { date })
-                    : t('stats.learn.tip', { date, ms: Math.round(value) });
-                }}
-              />
-            ) : (
-              <p className="text-fur-dim text-ui-body" data-testid="stats-no-data">
-                {t('stats.learn.noData')}
-              </p>
-            )}
-          </div>
+    <section className="max-w-layout-max mx-auto flex w-full flex-col gap-8 sm:gap-12">
+      <div className="flex flex-col gap-6">
+        {heading}
+        <div>
+          <Segmented<Section>
+            size="lg"
+            options={[
+              { value: 'learning', label: t('stats.section.learning') },
+              { value: 'typing', label: t('stats.section.typing') },
+            ]}
+            value={section}
+            onChange={choose}
+            ariaLabel={t('stats.section.label')}
+          />
         </div>
-      </section>
+      </div>
 
-      <TypingSection />
-
-      <section className="flex flex-col gap-4" aria-labelledby="stats-counters">
-        <h2 id="stats-counters" className="text-ui-heading text-fur">
-          {t('stats.counters.title')}
-        </h2>
-        <table className="w-full max-w-[480px] border-collapse" data-testid="stats-counters">
-          <thead>
-            <tr className="text-ui-caption text-fur-dim">
-              <th className="pr-3 pb-2 text-left font-normal" />
-              <th className="pr-3 pb-2 text-right font-normal">{t('stats.counters.started')}</th>
-              <th className="pb-2 text-right font-normal">{t('stats.counters.finished')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="text-ui-label text-fur border-line border-t py-2 pr-3">
-                {t('stats.counters.learning')}
-              </td>
-              <td
-                className={`${MONO} border-line border-t py-2 pr-3 text-right`}
-                data-testid="stats-started"
-              >
-                {counters.started.learn}
-              </td>
-              <td
-                className={`${MONO} border-line border-t py-2 text-right`}
-                data-testid="stats-finished"
-              >
-                {counters.finished.learn}
-              </td>
-            </tr>
-            <tr>
-              <td className="text-ui-label text-fur border-line border-t py-2 pr-3">
-                {t('stats.counters.typing')}
-              </td>
-              <td
-                className={`${MONO} border-line border-t py-2 pr-3 text-right`}
-                data-testid="stats-started-typing"
-              >
-                {typing.started.typing}
-              </td>
-              <td
-                className={`${MONO} border-line border-t py-2 text-right`}
-                data-testid="stats-finished-typing"
-              >
-                {typing.finished.typing}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
+      {status !== 'ready' ? (
+        <Pending
+          status={status}
+          onRetry={() => {
+            void (section === 'learning' ? retryLearn() : retryTyping());
+          }}
+        />
+      ) : section === 'learning' ? (
+        <LearningSection />
+      ) : (
+        <TypingSection />
+      )}
     </section>
   );
 }

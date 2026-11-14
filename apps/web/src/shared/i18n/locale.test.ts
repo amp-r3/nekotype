@@ -33,10 +33,10 @@ async function freshI18n(): Promise<typeof I18n> {
 describe('locale: the parts of the dictionary that belong to one screen', () => {
   it('a part is missing until its screen asks for it, and `t` falls back to the key', async () => {
     const i18n = await freshI18n();
-    expect(i18n.t('stats.learn.title')).toBe('stats.learn.title');
+    expect(i18n.t('stats.learn.streakCurrent')).toBe('stats.learn.streakCurrent');
 
     await i18n.loadDictionaryPart('stats');
-    expect(i18n.t('stats.learn.title')).toBe(statsEn['stats.learn.title']);
+    expect(i18n.t('stats.learn.streakCurrent')).toBe(statsEn['stats.learn.streakCurrent']);
   });
 
   it('a language switch brings every part asked for so far', async () => {
