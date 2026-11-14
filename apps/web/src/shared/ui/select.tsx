@@ -1,4 +1,5 @@
 import type { JSX } from 'preact';
+import { useId } from 'preact/hooks';
 import { cx } from '../lib';
 
 export type SelectOption = {
@@ -6,15 +7,18 @@ export type SelectOption = {
   readonly label: string;
 };
 
+// The field needs a name: a visible `label`, or an `ariaLabel` for assistive technology only.
+type SelectName =
+  | { readonly label: string; readonly ariaLabel?: string }
+  | { readonly label?: undefined; readonly ariaLabel: string };
+
 export type SelectProps = {
   readonly options: readonly SelectOption[];
   readonly value: string;
   readonly onChange: (value: string) => void;
-  // The name of the field for assistive technology.
-  readonly ariaLabel: string;
   readonly disabled?: boolean;
   readonly testId?: string;
-};
+} & SelectName;
 
 /**
  * A native `<select>` styled as an input (design Select): it fits any width, is keyboard-ready and
@@ -25,13 +29,16 @@ export function Select({
   value,
   onChange,
   ariaLabel,
+  label,
   disabled = false,
   testId,
 }: SelectProps): JSX.Element {
-  return (
+  const selectId = useId();
+  const field = (
     <span className="relative block">
       <select
-        aria-label={ariaLabel}
+        id={label === undefined ? undefined : selectId}
+        aria-label={label === undefined ? ariaLabel : undefined}
         value={value}
         disabled={disabled}
         data-testid={testId}
@@ -54,5 +61,14 @@ export function Select({
         className="border-fur-dim pointer-events-none absolute top-1/2 right-3 -mt-[5px] h-[6px] w-[6px] rotate-45 border-r border-b"
       />
     </span>
+  );
+  if (label === undefined) return field;
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={selectId} className="text-ui-caption text-fur-dim">
+        {label}
+      </label>
+      {field}
+    </div>
   );
 }
