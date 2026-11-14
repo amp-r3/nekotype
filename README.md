@@ -34,7 +34,9 @@
   - Up to five mistyped kana with their accepted spellings.
   - `repeat` replays the prompts of the finished test; a repeat is marked and gives no personal best.
   - A time or count test ends after 5 seconds without input or when the tab is hidden.
-- **🗃️ Statistics on `/stats`:** one section at a time (`learning` or `typing`, kept in the URL hash). Learning: the streaks, mastered kana, the activity map (a column per week, 12–26 weeks, a cell per day filled by its recall answers, a square for a typing test) and the answer time per day. Typing: filters (mode, 7 / 30 days / all, with repeats) over the whole local history, the figures and one metric of the selection at a time (`kpm`, kana accuracy, rejected keys, hints) as one mark per test on a time axis (personal bests ringed on `kpm`, repeats hollow; a median line over the last 10 tests), its history in pages of 10, then `All time` with the personal bests per mode and the weak kana table (the share of typing attempts with an error per kana, five steps, a script switch only when both scripts were typed), all from IndexedDB.
+- **🗃️ Statistics on `/stats`:** one section at a time (`learning` or `typing`, kept in the URL hash), all from IndexedDB.
+  - Learning: the streaks, mastered kana, the activity map (a cell per day over 12–26 weeks, a square for a typing test) and the answer time per day or week.
+  - Typing: filters (mode, 7 / 30 days / all, with repeats), the figures and one metric of the selection (`kpm`, kana accuracy, rejected keys, hints) as a mark per test with a median line over the last 10 tests, the history in pages of 10, then `All time`: the personal bests and the weak kana table.
 - **⌨️ Keyboard-First Ergonomics:**
   - Hidden input sink auto-focuses on mount and upon clicking the arena.
   - Typing any letter while a button has focus immediately refocuses and processes the key (Plan 6.2).
