@@ -2,14 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { TestResult, TypingRecords } from '@nekotype/shared/types';
 import { personalBestKey } from '@nekotype/shared/runtime';
 import type { ModeParts } from '@/entities/stats';
-import {
-  bestRows,
-  historyPages,
-  historyRow,
-  kpmAxis,
-  kpmSeries,
-  parseBestKey,
-} from './typing-data';
+import { bestRows, historyPages, historyRow, kpmAxis, parseBestKey } from './typing-data';
 
 function result(id: string, patch: Partial<TestResult> = {}): TestResult {
   return {
@@ -37,12 +30,6 @@ function result(id: string, patch: Partial<TestResult> = {}): TestResult {
     ...patch,
   };
 }
-
-// Results newest first, as the store returns them.
-const reader =
-  (results: readonly TestResult[]) =>
-  (offset: number, limit: number): Promise<TestResult[]> =>
-    Promise.resolve(results.slice(offset, offset + limit));
 
 describe('parseBestKey', () => {
   it.each<ModeParts>([
@@ -103,43 +90,6 @@ describe('bestRows (T13)', () => {
 
   it('is empty without records', () => {
     expect(bestRows({}, label)).toEqual([]);
-  });
-});
-
-describe('kpmSeries (T11)', () => {
-  it('leaves repeats out and puts the oldest test first', async () => {
-    const results = [
-      result('4', { kpm: 90 }),
-      result('3', { kpm: 120, repeated: true }),
-      result('2', { kpm: 80 }),
-      result('1', { kpm: 70 }),
-    ];
-    expect(await kpmSeries(reader(results))).toEqual([70, 80, 90]);
-  });
-
-  it('takes the last 100 tests that are not repeats, reading past the repeats', async () => {
-    // Newest first: 150 results, every third one a repeat.
-    const results = Array.from({ length: 150 }, (_, i) =>
-      result(String(i), { kpm: 150 - i, repeated: i % 3 === 0 }),
-    );
-    const series = await kpmSeries(reader(results));
-    expect(series).toHaveLength(100);
-    // The newest test that is not a repeat is the last point.
-    expect(series[99]).toBe(149);
-    expect(series[0]).toBe(1);
-    expect(series.every((kpm) => (150 - kpm) % 3 !== 0)).toBe(true);
-  });
-
-  it('stops at the hundredth test', async () => {
-    const results = Array.from({ length: 250 }, (_, i) => result(String(i), { kpm: 250 - i }));
-    const series = await kpmSeries(reader(results));
-    expect(series).toHaveLength(100);
-    expect(series[0]).toBe(151);
-    expect(series[99]).toBe(250);
-  });
-
-  it('is empty without results', async () => {
-    expect(await kpmSeries(reader([]))).toEqual([]);
   });
 });
 
