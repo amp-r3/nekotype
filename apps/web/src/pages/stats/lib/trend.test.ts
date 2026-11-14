@@ -111,7 +111,12 @@ describe('trendPoints', () => {
     const records: TypingRecords = {
       [personalBestKey(best)]: { best: { resultId: 'a', kpm: 90.4 }, recent: [] },
     };
-    const points = trendPoints([best, repeat, plain], records, (r, mark) => [r.id, String(mark)]);
+    const points = trendPoints(
+      [best, repeat, plain],
+      records,
+      (r) => Math.round(r.kpm),
+      (r, mark) => [r.id, String(mark)],
+    );
     expect(points.map((point) => point.mark)).toEqual(['best', 'hollow', null]);
     expect(points[0]).toMatchObject({ x: 1000, y: 90, tip: ['a', 'best'] });
   });

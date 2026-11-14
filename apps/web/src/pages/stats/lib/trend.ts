@@ -47,20 +47,22 @@ export function kpmAxis(values: readonly number[]): Axis {
     lo = Math.max(0, lo - TEN);
     hi = Math.max(hi, lo + MIN_WIDTH);
   }
-  let step = STEPS[STEPS.length - 1] ?? 100;
-  for (const candidate of STEPS) {
-    const floor = Math.floor(lo / candidate) * candidate;
-    const ceil = Math.ceil(hi / candidate) * candidate;
-    if ((ceil - floor) / candidate <= MAX_INTERVALS) {
-      step = candidate;
-      break;
-    }
-  }
+  const step = tickStepFor(lo, hi);
   lo = Math.floor(lo / step) * step;
   hi = Math.ceil(hi / step) * step;
   const ticks: number[] = [];
   for (let tick = lo; tick <= hi; tick += step) ticks.push(tick);
   return { domain: [lo, hi], ticks };
+}
+
+/** The smallest step that gives at most four intervals between `lo` and `hi`. */
+export function tickStepFor(lo: number, hi: number): number {
+  for (const candidate of STEPS) {
+    const floor = Math.floor(lo / candidate) * candidate;
+    const ceil = Math.ceil(hi / candidate) * candidate;
+    if ((ceil - floor) / candidate <= MAX_INTERVALS) return candidate;
+  }
+  return STEPS[STEPS.length - 1] ?? 100;
 }
 
 function tickStep(days: number): number {
@@ -98,6 +100,7 @@ export function timeAxis(
 export function trendPoints(
   selection: readonly TestResult[],
   records: TypingRecords,
+  value: (result: TestResult) => number,
   tip: (result: TestResult, mark: ChartPoint['mark']) => readonly string[],
 ): ChartPoint[] {
   return selection.map((result) => {
@@ -107,7 +110,7 @@ export function trendPoints(
         : result.repeated
           ? 'hollow'
           : null;
-    return { x: result.endedAt, y: Math.round(result.kpm), mark, tip: tip(result, mark) };
+    return { x: result.endedAt, y: value(result), mark, tip: tip(result, mark) };
   });
 }
 

@@ -229,6 +229,19 @@ describe('stats page: typing section', () => {
     expect(container.querySelector('[data-testid="stats-few"]')).toBeNull();
   });
 
+  it('the metric switch redraws the chart: accuracy axis in percent, lower is better for the keys', async () => {
+    await open();
+    expect(container.textContent).not.toContain(t('stats.legend.lower'));
+    await click(radio(t('stats.metric.accuracy')));
+    const chart = container.querySelector('[data-testid="stats-kpm-chart"]');
+    expect(chart?.textContent).toContain('100%');
+    expect(container.querySelector('ul')?.textContent).not.toContain(t('stats.legend.best'));
+    await click(radio(t('stats.metric.rejected')));
+    expect(container.textContent).toContain(t('stats.legend.lower'));
+    await click(radio(t('stats.metric.kpm')));
+    expect(container.textContent).not.toContain(t('stats.legend.lower'));
+  });
+
   it('one mode with fewer than five tests labels the marks and has no line', async () => {
     await open();
     const select = mode();

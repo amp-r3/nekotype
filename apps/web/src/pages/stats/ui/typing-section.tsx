@@ -2,7 +2,7 @@ import type { JSX } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import type { TestResult } from '@nekotype/shared/types';
 import { locale, t, tParts } from '@/shared/i18n';
-import { Button, Notice, Parts } from '@/shared/ui';
+import { Button, Notice, Parts, Segmented } from '@/shared/ui';
 import { defaultClock, navigate } from '@/shared/lib';
 import { Pagination } from '@/shared/ui/pagination';
 import { Stat } from '@/shared/ui/stat';
@@ -24,7 +24,8 @@ import {
   historyRow,
   parseBestKey,
 } from '../lib/typing-data';
-import { fewAxis, kpmAxis, rolling, timeAxis, trendPoints } from '../lib/trend';
+import { METRICS, METRIC_ORDER, metricAxis, rejectedPercent, type Metric } from '../lib/metrics';
+import { fewAxis, rolling, timeAxis, trendPoints } from '../lib/trend';
 import { FilterRow } from './filter-row';
 import { HistoryTable } from './history-table';
 import { ChartLegend } from './chart-legend';
@@ -65,6 +66,7 @@ export function TypingSection(): JSX.Element {
   const [attempt, setAttempt] = useState(0);
   const [filters, setFilters] = useState<Filters | null>(null);
   const [page, setPage] = useState(1);
+  const [metric, setMetric] = useState<Metric>('kpm');
 
   // A test saved in another tab changes the counter: the whole history is read again (S2).
   const finished = typingCounters.value.finished.typing;
@@ -107,11 +109,9 @@ export function TypingSection(): JSX.Element {
   const narrow = useNarrow();
   const dateFormat = new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short' });
   const timeFormat = new Intl.DateTimeFormat(locale.value, { hour: '2-digit', minute: '2-digit' });
-  const points = trendPoints(selection, records, (result, mark) => {
-    const rejected =
-      result.keystrokes === 0
-        ? 0
-        : Math.round((100 * result.rejectedKeystrokes) / result.keystrokes);
+  const spec = METRICS[metric];
+  const allPoints = trendPoints(selection, records, spec.value, (result, mark) => {
+    const rejected = rejectedPercent(result);
     return [
       t('stats.tip.test', {
         date: dateFormat.format(result.endedAt),
@@ -133,13 +133,21 @@ export function TypingSection(): JSX.Element {
           : []),
     ];
   });
-  const yAxis = kpmAxis(points.map((point) => point.y));
+  // The personal best is a speed: only the kpm chart rings it.
+  const points =
+    metric === 'kpm'
+      ? allPoints
+      : allPoints.map((point) => (point.mark === 'best' ? { ...point, mark: null } : point));
+  const yAxis = metricAxis(
+    metric,
+    points.map((point) => point.y),
+  );
   const firstAt = selection[0]?.endedAt ?? defaultClock.now();
   const xAxis = timeAxis(active.period, firstAt, today, narrow, (ms) => dateFormat.format(ms));
   // Speeds of different modes do not compare: no line for `all modes` over several modes (decision 103).
   const mixed = active.mode === 'all' && modes.length > 1;
   const few = !mixed && selection.length < 5;
-  const trend = !mixed && !few ? rolling(selection, (result) => Math.round(result.kpm)) : [];
+  const trend = !mixed && !few ? rolling(selection, spec.value) : [];
   const slots = fewAxis(selection, (ms) => dateFormat.format(ms));
   const fewPoints = points.map((point, index) => ({ ...point, x: index }));
 
@@ -215,7 +223,22 @@ export function TypingSection(): JSX.Element {
 
               <div className="flex max-w-[760px] flex-col gap-4">
                 <h2 className={HEADING}>{t('stats.typing.trend')}</h2>
-                <ChartLegend points={points} trend={!mixed && !few} />
+                <div>
+                  <Segmented<Metric>
+                    options={METRIC_ORDER.map((value) => ({
+                      value,
+                      label: t(`stats.metric.${value}`),
+                    }))}
+                    value={metric}
+                    onChange={setMetric}
+                    ariaLabel={t('stats.metric.label')}
+                  />
+                </div>
+                <ChartLegend
+                  points={points}
+                  trend={!mixed && !few}
+                  lowerIsBetter={spec.lowerIsBetter}
+                />
                 {few && (
                   <p className="text-ui-caption text-fur-dim m-0" data-testid="stats-few">
                     {t('stats.typing.few')}
@@ -228,6 +251,7 @@ export function TypingSection(): JSX.Element {
                 )}
                 <div className={few ? 'max-w-[480px]' : undefined}>
                   <StatsChart
+                    key={metric}
                     testId="stats-kpm-chart"
                     height={few ? 160 : narrow ? 200 : 240}
                     points={few ? fewPoints : points}
@@ -238,6 +262,7 @@ export function TypingSection(): JSX.Element {
                     xTicks={few ? slots.ticks : xAxis.ticks}
                     yDomain={yAxis.domain}
                     yTicks={yAxis.ticks}
+                    yFormat={spec.format}
                     label={t('stats.typing.chartLabel')}
                   />
                 </div>
