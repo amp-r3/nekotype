@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import type { TestResult } from '@nekotype/shared/types';
@@ -86,7 +86,25 @@ await db.put('delta', 'typing', {
 describe('stats page: typing section', () => {
   let container: HTMLDivElement;
 
+  // The chart draws at the width it measures.
+  beforeEach(() => {
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(
+          private readonly callback: (entries: { contentRect: { width: number } }[]) => void,
+        ) {}
+        observe(): void {
+          this.callback([{ contentRect: { width: 600 } }]);
+        }
+        disconnect(): void {}
+        unobserve(): void {}
+      },
+    );
+  });
+
   afterEach(() => {
+    vi.unstubAllGlobals();
     failing.on = false;
     render(null, container);
     container.remove();
@@ -146,7 +164,7 @@ describe('stats page: typing section', () => {
       t('stats.all.title'),
     ]);
     const chart = container.querySelector('[data-testid="stats-kpm-chart"]');
-    expect(chart?.querySelector('polyline')?.getAttribute('points')?.split(' ')).toHaveLength(10);
+    expect(chart?.querySelectorAll('[data-testid="chart-point"]')).toHaveLength(10);
 
     // Newest first; the current best of the key carries the badge; 10 rows, one page.
     expect(rows()).toHaveLength(10);

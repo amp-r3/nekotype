@@ -29,7 +29,12 @@ test.describe('the statistics page', () => {
     await expect(rows.first()).toContainText('words · 10');
     await expect(rows.first()).toContainText('personal best');
     await expect(page.getByTestId('stats-bests')).toContainText('words · hiragana · relaxed · 10');
-    await expect(page.getByTestId('stats-kpm-chart').getByTestId('chart-dot')).toHaveCount(1);
+    const chart = page.getByTestId('stats-kpm-chart');
+    await expect(chart.getByTestId('chart-point')).toHaveCount(1);
+    // One Tab stop: ← shows the test's tooltip.
+    await chart.getByRole('img').focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(chart.getByTestId('chart-tip')).toContainText('kpm');
     await expect(page.getByTestId('stats-typing-tests')).toContainText('1 finished');
 
     // The learning section has no data; a hash names it directly.

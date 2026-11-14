@@ -34,7 +34,7 @@
   - Up to five mistyped kana with their accepted spellings.
   - `repeat` replays the prompts of the finished test; a repeat is marked and gives no personal best.
   - A time or count test ends after 5 seconds without input or when the tab is hidden.
-- **🗃️ Statistics on `/stats`:** one section at a time (`learning` or `typing`, kept in the URL hash). Typing: filters (mode, 7 / 30 days / all, with repeats) over the whole local history, the figures and the KPM trend of the selection, its history in pages of 10, then `All time` with the personal bests per mode, all from IndexedDB.
+- **🗃️ Statistics on `/stats`:** one section at a time (`learning` or `typing`, kept in the URL hash). Typing: filters (mode, 7 / 30 days / all, with repeats) over the whole local history, the figures and the KPM of the selection as one mark per test on a time axis (personal bests ringed, repeats hollow), its history in pages of 10, then `All time` with the personal bests per mode, all from IndexedDB.
 - **⌨️ Keyboard-First Ergonomics:**
   - Hidden input sink auto-focuses on mount and upon clicking the arena.
   - Typing any letter while a button has focus immediately refocuses and processes the key (Plan 6.2).

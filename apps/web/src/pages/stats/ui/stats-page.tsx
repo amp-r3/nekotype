@@ -1,3 +1,4 @@
+import './stats.css';
 import type { JSX } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';

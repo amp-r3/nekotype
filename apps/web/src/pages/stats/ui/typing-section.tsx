@@ -1,13 +1,13 @@
 import type { JSX } from 'preact';
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import type { TestResult } from '@nekotype/shared/types';
-import { t, tParts } from '@/shared/i18n';
+import { locale, t, tParts } from '@/shared/i18n';
 import { Button, Notice, Parts } from '@/shared/ui';
 import { defaultClock, navigate } from '@/shared/lib';
 import { Pagination } from '@/shared/ui/pagination';
 import { Stat } from '@/shared/ui/stat';
 import { localDay } from '@/entities/learn';
-import { modeLine, readResults, typingCounters, typingRecords } from '@/entities/stats';
+import { modeLabel, modeLine, readResults, typingCounters, typingRecords } from '@/entities/stats';
 import { loadResults } from '../lib/results';
 import {
   defaultMode,
@@ -22,16 +22,36 @@ import {
   bestRows,
   historyPages,
   historyRow,
-  kpmAxis,
   parseBestKey,
 } from '../lib/typing-data';
+import { kpmAxis, timeAxis, trendPoints } from '../lib/trend';
 import { FilterRow } from './filter-row';
 import { HistoryTable } from './history-table';
-import { ResultChart } from './result-chart';
+import { ChartLegend } from './chart-legend';
 import { SectionEmpty } from './section-empty';
+import { StatsChart } from './stats-chart';
 
 const MONO = 'text-mono-romaji text-fur font-mono';
 const HEADING = 'text-ui-heading text-fur';
+
+const NARROW = '(max-width: 639px)';
+
+function useNarrow(): boolean {
+  const query = (): boolean => typeof matchMedia === 'function' && matchMedia(NARROW).matches;
+  const [narrow, setNarrow] = useState(query);
+  useEffect(() => {
+    if (typeof matchMedia !== 'function') return undefined;
+    const list = matchMedia(NARROW);
+    const update = (): void => {
+      setNarrow(list.matches);
+    };
+    list.addEventListener('change', update);
+    return () => {
+      list.removeEventListener('change', update);
+    };
+  }, []);
+  return narrow;
+}
 
 function keyLabel(key: string): string {
   const parts = parseBestKey(key);
@@ -84,8 +104,38 @@ export function TypingSection(): JSX.Element {
   const bests = bestRows(records, modeLine);
   const pages = historyPages(shown.length);
   const pageRows = shown.slice((page - 1) * HISTORY_PAGE_SIZE, page * HISTORY_PAGE_SIZE);
-  const values = selection.map((result) => Math.round(result.kpm));
-  const axis = kpmAxis(values);
+  const narrow = useNarrow();
+  const dateFormat = new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short' });
+  const timeFormat = new Intl.DateTimeFormat(locale.value, { hour: '2-digit', minute: '2-digit' });
+  const points = trendPoints(selection, records, (result, mark) => {
+    const rejected =
+      result.keystrokes === 0
+        ? 0
+        : Math.round((100 * result.rejectedKeystrokes) / result.keystrokes);
+    return [
+      t('stats.tip.test', {
+        date: dateFormat.format(result.endedAt),
+        time: timeFormat.format(result.endedAt),
+        mode: t('stats.history.modeValue', {
+          content: t(`mode.content.${result.content}`),
+          mode: modeLabel(result.config),
+        }),
+      }),
+      t('stats.tip.values', {
+        kpm: Math.round(result.kpm),
+        accuracy: Math.round(result.kanaAccuracy * 100),
+      }),
+      t('stats.tip.keys', { rejected, hints: result.assisted }),
+      ...(mark === 'best'
+        ? [t('stats.tip.best')]
+        : mark === 'hollow'
+          ? [t('stats.tip.repeat')]
+          : []),
+    ];
+  });
+  const yAxis = kpmAxis(points.map((point) => point.y));
+  const firstAt = selection[0]?.endedAt ?? defaultClock.now();
+  const xAxis = timeAxis(active.period, firstAt, today, narrow, (ms) => dateFormat.format(ms));
 
   const started = typingCounters.value.started.typing;
   if (finished === 0 && started === 0) {
@@ -159,18 +209,16 @@ export function TypingSection(): JSX.Element {
 
               <div className="flex max-w-[760px] flex-col gap-4">
                 <h2 className={HEADING}>{t('stats.typing.trend')}</h2>
-                <ResultChart
-                  key={values.length}
+                <ChartLegend points={points} />
+                <StatsChart
                   testId="stats-kpm-chart"
-                  height={170}
-                  values={values}
-                  xLabels={values.map((_, index) => String(index + 1))}
-                  domain={axis.domain}
-                  ticks={axis.ticks}
-                  label={t('stats.typing.trend')}
-                  tip={(index, value) =>
-                    t('stats.typing.tip', { n: index + 1, kpm: Math.round(value ?? 0) })
-                  }
+                  height={narrow ? 200 : 240}
+                  points={points}
+                  xDomain={xAxis.domain}
+                  xTicks={xAxis.ticks}
+                  yDomain={yAxis.domain}
+                  yTicks={yAxis.ticks}
+                  label={t('stats.typing.chartLabel')}
                 />
               </div>
 

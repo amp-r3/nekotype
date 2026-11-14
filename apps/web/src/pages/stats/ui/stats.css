@@ -1,0 +1,81 @@
+/* The result chart of /stats (design ResultChart). Lives here, not in the initial stylesheet, so it
+   ships with the lazy chunk (S17). `nk-rc`, because `nk-chart` is the kana chart's (index.css). */
+.nk-rc {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.nk-rc svg {
+  display: block;
+  overflow: visible;
+  border-radius: var(--radius-xs);
+}
+
+.nk-rc__grid {
+  stroke: var(--chart-grid);
+  stroke-width: var(--stroke-hair);
+}
+
+.nk-rc__axis {
+  fill: var(--fur-dim);
+}
+
+.nk-rc__val {
+  fill: var(--fur);
+}
+
+.nk-rc__cursor {
+  stroke: var(--chart-cursor);
+  stroke-width: var(--stroke-hair);
+}
+
+.nk-rc__ring {
+  fill: none;
+  stroke: var(--chart-cursor);
+  stroke-width: var(--stroke-mark);
+}
+
+/* One test; the ring in the page colour keeps overlapping tests apart. */
+.nk-rc__pt {
+  fill: var(--fur-dim);
+  stroke: var(--bg);
+  stroke-width: var(--stroke-hair);
+}
+
+/* The personal best: a ring, like the badge outline. */
+.nk-rc__pt--best {
+  fill: var(--bg);
+  stroke: var(--eye);
+  stroke-width: var(--stroke-mark);
+}
+
+/* A repeat. */
+.nk-rc__pt--hollow {
+  fill: var(--bg);
+  stroke: var(--fur-dim);
+  stroke-width: var(--stroke-hair);
+}
+
+.nk-rc__tip {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--fur);
+  color: var(--on-fur);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+}
+
+.nk-rc__tip.is-start {
+  transform: translate(calc(-1 * var(--space-3)), -100%);
+}
+
+.nk-rc__tip.is-end {
+  transform: translate(calc(-100% + var(--space-3)), -100%);
+}
