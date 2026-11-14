@@ -5,9 +5,6 @@ import type { ModeParts } from '@/entities/stats';
 /** Rows of the history per page (T12). */
 export const HISTORY_PAGE_SIZE = 10;
 
-/** Reads saved results, newest first. */
-export type ReadResults = (offset: number, limit: number) => Promise<TestResult[]>;
-
 function positiveInt(text: string | undefined): number | null {
   if (text === undefined || !/^[1-9]\d*$/.test(text)) return null;
   return Number(text);

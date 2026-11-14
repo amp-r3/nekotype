@@ -1,4 +1,4 @@
-import type { DayBuckets, Track } from '@nekotype/shared/types';
+import type { DayBuckets } from '@nekotype/shared/types';
 import { BUCKET_MS, bucketOf, dropOldDays } from '@nekotype/shared/runtime';
 
 /** Counts a recall answer time in its day's bucket; days older than 365 are dropped. */
@@ -54,26 +54,7 @@ export function quartilesOf(buckets: Readonly<Record<string, number>>): Quartile
   };
 }
 
-/**
- * The day's median: the midpoint of the bucket that holds the ⌈n / 2⌉-th shortest answer time.
- * `null` when the day has no answers.
- */
-export function dailyMedian(days: DayBuckets, day: number): number | null {
-  const buckets = days[String(day)];
-  return buckets === undefined ? null : (quartilesOf(buckets)?.mid ?? null);
-}
-
-/** The days of a track that have answers, ascending, with their medians. */
-export function dailyMedians(
-  all: Readonly<Record<Track, DayBuckets>>,
-  track: Track,
-): { day: number; ms: number }[] {
-  const days = all[track];
-  return Object.keys(days)
-    .map(Number)
-    .sort((a, b) => a - b)
-    .flatMap((day) => {
-      const ms = dailyMedian(days, day);
-      return ms === null ? [] : [{ day, ms }];
-    });
+/** True when some day of the track has answers (a day with an empty bucket record does not count). */
+export function hasAnswers(days: DayBuckets): boolean {
+  return Object.values(days).some((buckets) => quartilesOf(buckets) !== null);
 }

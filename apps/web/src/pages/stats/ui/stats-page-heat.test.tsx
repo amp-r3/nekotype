@@ -10,7 +10,7 @@ import { StatsPage } from './stats-page';
 // The history read always fails: the weak kana table must not depend on it (All time).
 vi.mock('@/entities/stats', async (importOriginal) => {
   const original = await importOriginal<typeof statsModule>();
-  return { ...original, readResults: () => Promise.reject(new Error('read failed')) };
+  return { ...original, readAllResults: () => Promise.reject(new Error('read failed')) };
 });
 
 await loadDictionaryPart('stats');
