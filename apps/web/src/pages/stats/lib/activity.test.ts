@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { LearnState, TestResult } from '@nekotype/shared/types';
 import { initialLearnState, localDay } from '@/entities/learn';
 import { activityDays, gridDays, levelOf, weeksFor } from './activity';
-import { mondayOf } from './answer-time';
+import { mondayOf } from './days';
 
 function state(parts: Partial<LearnState>): LearnState {
   return { ...initialLearnState(), ...parts };

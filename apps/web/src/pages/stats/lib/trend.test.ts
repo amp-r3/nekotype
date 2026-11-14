@@ -142,6 +142,9 @@ describe('trendPoints', () => {
 
 describe('quantile', () => {
   it('handles 1, 2, 5 and 10 values by linear interpolation', () => {
+    expect(quantile([3, 1, 2], 0.5)).toBe(2);
+    expect(quantile([4, 1, 2, 3], 0.5)).toBe(2.5);
+    expect(quantile([], 0.5)).toBe(0);
     expect(quantile([7], 0.25)).toBe(7);
     expect(quantile([10, 20], 0.5)).toBe(15);
     expect(quantile([10, 20], 0.25)).toBe(12.5);

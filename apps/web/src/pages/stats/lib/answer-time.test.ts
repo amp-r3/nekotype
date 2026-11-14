@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { addRecallTime } from '@/entities/learn';
 import type { DayBuckets } from '@nekotype/shared/types';
-import { dayBars, mondayOf, msAxis } from './answer-time';
+import { dayBars, msAxis } from './answer-time';
 
 function withAnswers(entries: readonly (readonly [number, number])[]): DayBuckets {
   let days: DayBuckets = {};
@@ -54,14 +54,6 @@ describe('dayBars', () => {
       [95, 1],
     ]);
     expect(bars[0]).toMatchObject({ lo: 550, mid: 550, hi: 1550 });
-  });
-});
-
-describe('mondayOf', () => {
-  it('maps every day of a week to its Monday, also before 1970', () => {
-    for (let day = 4; day <= 10; day++) expect(mondayOf(day)).toBe(4);
-    expect(mondayOf(-3)).toBe(-3);
-    expect(mondayOf(0)).toBe(-3);
   });
 });
 

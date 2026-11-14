@@ -1,6 +1,6 @@
 import type { LearnState, TestResult } from '@nekotype/shared/types';
 import { localDay } from '@/entities/learn';
-import { mondayOf } from './answer-time';
+import { mondayOf } from './days';
 
 export type ActivityDay = {
   /** Recall answers of both tracks. */

@@ -4,7 +4,8 @@ import { canonicalFor } from '@/entities/prompt';
 import { chartRows, keyOf, keysOfTrack } from '@/entities/learn';
 import type { KanaStatMap } from '@/entities/stats';
 
-export type HeatStep = 0 | 1 | 2 | 3 | 4 | 5;
+const HEAT_STEPS = [0, 1, 2, 3, 4, 5] as const;
+export type HeatStep = (typeof HEAT_STEPS)[number];
 
 /** Percent of errored attempts above which a cell takes the next step (S8). */
 const THRESHOLDS: readonly number[] = [0, 3, 7, 12, 20];
@@ -20,7 +21,7 @@ export function heatStep(stat: KanaStat | undefined): HeatStep | null {
   for (const threshold of THRESHOLDS) {
     if (scaled > stat.attempts * threshold) step += 1;
   }
-  return step === 0 ? 0 : step === 1 ? 1 : step === 2 ? 2 : step === 3 ? 3 : step === 4 ? 4 : 5;
+  return HEAT_STEPS[step] ?? 5;
 }
 
 export type HeatCell = {

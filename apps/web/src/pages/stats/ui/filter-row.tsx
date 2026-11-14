@@ -1,8 +1,9 @@
 import type { JSX } from 'preact';
 import { t } from '@/shared/i18n';
-import { Segmented, Toggle } from '@/shared/ui';
+import { Toggle } from '@/shared/ui';
 import { Select } from '@/shared/ui/select';
-import type { Filters, ModeOption, Period } from '../lib/selection';
+import type { Filters, ModeOption } from '../lib/selection';
+import { PeriodSwitch } from './period-switch';
 
 export type FilterRowProps = {
   readonly filters: Filters;
@@ -29,14 +30,8 @@ export function FilterRow({ filters, modes, onChange }: FilterRowProps): JSX.Ele
         />
       </div>
       <div className="flex flex-wrap items-center gap-4">
-        <Segmented<Period>
-          ariaLabel={t('stats.filter.period')}
+        <PeriodSwitch
           value={filters.period}
-          options={[
-            { value: '7', label: t('stats.filter.p7') },
-            { value: '30', label: t('stats.filter.p30') },
-            { value: 'all', label: t('stats.filter.all') },
-          ]}
           onChange={(period) => {
             onChange({ ...filters, period });
           }}

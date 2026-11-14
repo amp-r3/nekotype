@@ -1,10 +1,10 @@
 import type { JSX } from 'preact';
-import { useState } from 'preact/hooks';
+import { useMemo, useState } from 'preact/hooks';
 import type { TestResult } from '@nekotype/shared/types';
 import { locale, t, tParts, tPlural } from '@/shared/i18n';
-import { Button, Notice, Parts, Segmented } from '@/shared/ui';
+import { Button, Notice, Parts } from '@/shared/ui';
 import { Stat } from '@/shared/ui/stat';
-import { defaultClock, navigate } from '@/shared/lib';
+import { navigate } from '@/shared/lib';
 import { learnTargetMs, learnTrack } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
 import {
@@ -12,42 +12,44 @@ import {
   hasAnswers,
   learnCounters,
   learnState,
-  localDay,
   streaks,
   trackProgress,
 } from '@/entities/learn';
 import { activityDays, weeksFor } from '../lib/activity';
 import { dayBars, msAxis } from '../lib/answer-time';
+import { DAY_MS, HALF_DAY_MS } from '../lib/days';
 import type { Period } from '../lib/selection';
 import { timeAxis, type ChartRange } from '../lib/trend';
 import { ActivityMap } from './activity-map';
+import { BLOCK } from './layout';
+import { PeriodSwitch } from './period-switch';
 import { SectionEmpty } from './section-empty';
 import { StatsChart } from './stats-chart';
+import { TrackSwitch } from './track-switch';
 import { useNarrow } from './use-narrow';
 
-const HALF_DAY_MS = 12 * 60 * 60 * 1000;
-const DAY_MS = 2 * HALF_DAY_MS;
 const MAX_WEEKS_NARROW = 13;
 const MONO = 'text-mono-romaji text-fur font-mono';
-
-function dateLabel(day: number): string {
-  return new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short' }).format(
-    dayStart(day),
-  );
-}
 
 // The learning section: streaks, mastered kana, the activity, the answer time, the session counters. It is drawn
 // once the learning state has loaded.
 export function LearningSection({
   results,
+  today,
 }: {
   /** The typing results for the test marks; `null` while unread or when the read failed. */
   readonly results: readonly TestResult[] | null;
+  /** The local day. */
+  readonly today: number;
 }): JSX.Element {
   // The chart's switch is local: looking at the other track here does not change the track on `/`.
   const [chosen, setChosen] = useState<LearnTrack>(learnTrack.value);
   const [period, setPeriod] = useState<Period>('30');
   const narrow = useNarrow();
+  const dateFormat = useMemo(
+    () => new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short' }),
+    [locale.value],
+  );
 
   const target = learnTargetMs.value;
   const state = learnState.value;
@@ -66,7 +68,6 @@ export function LearningSection({
     );
   }
 
-  const today = localDay(defaultClock.now());
   const { current, best } = streaks(state, today);
   const progress = {
     hiragana: trackProgress(state, 'hiragana', target),
@@ -95,14 +96,14 @@ export function LearningSection({
   const { weekly, span, bars } = dayBars(days, period, today);
   const axis = msAxis(bars, target);
   const xAxis = timeAxis(period, dayStart(today - span + 1), today, narrow, (ms) =>
-    dateLabel(localDay(ms)),
+    dateFormat.format(ms),
   );
   const [x0, x1] = xAxis.domain;
   const caption = t(weekly ? 'stats.learn.answerCaptionWeek' : 'stats.learn.answerCaptionDay');
   const ranges: ChartRange[] = bars.map((bar) => {
     // A week is drawn at its middle, kept inside the axis (the first week may start before it).
     const middle = dayStart(bar.day) + (weekly ? 3.5 * DAY_MS : HALF_DAY_MS);
-    const date = dateLabel(bar.day);
+    const date = dateFormat.format(dayStart(bar.day));
     return {
       x: Math.min(x1 - HALF_DAY_MS, Math.max(x0 + HALF_DAY_MS, middle)),
       lo: bar.lo,
@@ -150,33 +151,14 @@ export function LearningSection({
         <ActivityMap days={activity} today={today} weeks={weeks} />
       </div>
 
-      <div className="flex max-w-[760px] flex-col gap-4">
+      <div className={`flex ${BLOCK} flex-col gap-4`}>
         <h2 className="text-ui-heading text-fur">{t('stats.learn.answerTime')}</h2>
         <p className="text-ui-caption text-fur-dim">
           {both ? caption : `${t(`learn.track.${track}`)} · ${caption}`}
         </p>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-          {both && (
-            <Segmented<LearnTrack>
-              options={[
-                { value: 'hiragana', label: t('learn.track.hiragana') },
-                { value: 'katakana', label: t('learn.track.katakana') },
-              ]}
-              value={track}
-              onChange={setChosen}
-              ariaLabel={t('learn.track.label')}
-            />
-          )}
-          <Segmented<Period>
-            ariaLabel={t('stats.filter.period')}
-            value={period}
-            options={[
-              { value: '7', label: t('stats.filter.p7') },
-              { value: '30', label: t('stats.filter.p30') },
-              { value: 'all', label: t('stats.filter.all') },
-            ]}
-            onChange={setPeriod}
-          />
+          {both && <TrackSwitch value={track} onChange={setChosen} />}
+          <PeriodSwitch value={period} onChange={setPeriod} />
         </div>
         {bars.length > 0 ? (
           <StatsChart

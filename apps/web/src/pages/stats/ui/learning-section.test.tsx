@@ -28,7 +28,7 @@ vi.stubGlobal(
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
 
-describe('stats page: the answer-time periods and tracks', () => {
+describe('learning section: the answer-time periods and tracks', () => {
   let container: HTMLDivElement;
 
   afterEach(() => {
