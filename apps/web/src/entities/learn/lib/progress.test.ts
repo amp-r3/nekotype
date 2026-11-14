@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { initialLearnState } from './state';
 import { masteredCount, streaks, trackProgress } from './progress';
-import { addRecallTime } from './buckets';
 import { addActiveDay } from './streak';
 
 describe('learning progress', () => {
@@ -11,21 +10,7 @@ describe('learning progress', () => {
     expect(trackProgress(state, 'katakana', 1500)).toEqual({
       mastered: 0,
       total: 125,
-      medians: [],
     });
-  });
-
-  it('lists the daily medians of one track only', () => {
-    const base = initialLearnState();
-    const state = {
-      ...base,
-      recallBuckets: {
-        ...base.recallBuckets,
-        hiragana: addRecallTime(addRecallTime(base.recallBuckets.hiragana, 10, 1200), 12, 900),
-      },
-    };
-    expect(trackProgress(state, 'hiragana', 1500).medians.map((m) => m.day)).toEqual([10, 12]);
-    expect(trackProgress(state, 'katakana', 1500).medians).toEqual([]);
   });
 
   it('reports the current and the best streak', () => {

@@ -42,14 +42,7 @@ export {
   settleEntry,
 } from './lib/boxes';
 export { addActiveDay, bestStreak, currentStreak } from './lib/streak';
-export {
-  addBuckets,
-  addRecallTime,
-  dailyMedian,
-  dailyMedians,
-  dayAnswers,
-  quartilesOf,
-} from './lib/buckets';
+export { addBuckets, addRecallTime, dayAnswers, hasAnswers, quartilesOf } from './lib/buckets';
 
 export type {
   LearnStatus,

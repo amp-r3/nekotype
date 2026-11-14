@@ -23,6 +23,5 @@ export {
   recordDiscardedTest,
   resetTyping,
   retryTyping,
-  readResults,
-  countResults,
+  readAllResults,
 } from './model/store';

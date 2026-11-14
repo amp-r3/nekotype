@@ -272,30 +272,33 @@ describe('typing store: a test after a failed read', () => {
 });
 
 describe('typing store: reading saved results', () => {
-  it('pages the results newest first and counts them', async () => {
+  it('returns every result, oldest first', async () => {
     const { store } = setup();
     await save(store, result('a', { endedAt: 1000 }));
     await save(store, result('b', { endedAt: 3000, repeated: true }));
     await save(store, result('c', { endedAt: 2000 }));
 
-    expect((await store.results(0, 2)).map((r) => r.id)).toEqual(['b', 'c']);
-    expect((await store.results(2, 2)).map((r) => r.id)).toEqual(['a']);
-    expect(await store.results(3, 2)).toEqual([]);
-    expect(await store.resultCount()).toBe(3);
+    expect((await store.allResults()).map((r) => r.id)).toEqual(['a', 'c', 'b']);
   });
 
-  it('reads after the write in progress, and leaves out a record that is not a result', async () => {
-    const { db, store } = setup();
-    await db.put('results', 'broken', { id: 'broken', endedAt: 9000 });
+  it('reads after the write in progress', async () => {
+    const { store } = setup();
     const saving = save(store, result('a', { endedAt: 1000 }));
-    const rows = await store.results(0, 10);
+    const rows = await store.allResults();
     await saving;
     expect(rows.map((r) => r.id)).toEqual(['a']);
   });
 
+  it('skips an invalid row and still returns the rows older than it', async () => {
+    const { db, store } = setup();
+    await save(store, result('old', { endedAt: 1000 }));
+    await save(store, result('new', { endedAt: 3000 }));
+    await db.put('results', 'broken', { id: 'broken', endedAt: 2000 });
+    expect((await store.allResults()).map((r) => r.id)).toEqual(['old', 'new']);
+  });
+
   it('rejects when the database cannot be read', async () => {
     const store = createTypingStore({ db: () => Promise.reject(new Error('closed')) });
-    await expect(store.results(0, 10)).rejects.toThrow('closed');
-    await expect(store.resultCount()).rejects.toThrow('closed');
+    await expect(store.allResults()).rejects.toThrow('closed');
   });
 });

@@ -15,8 +15,8 @@ vi.mock('@/entities/stats', async (importOriginal) => {
   const original = await importOriginal<typeof statsModule>();
   return {
     ...original,
-    readResults: (offset: number, limit: number) =>
-      failing.on ? Promise.reject(new Error('read failed')) : original.readResults(offset, limit),
+    readAllResults: () =>
+      failing.on ? Promise.reject(new Error('read failed')) : original.readAllResults(),
   };
 });
 

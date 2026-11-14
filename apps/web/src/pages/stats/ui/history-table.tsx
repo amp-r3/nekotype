@@ -1,14 +1,11 @@
 import type { JSX } from 'preact';
 import { locale, t } from '@/shared/i18n';
-import { Notice } from '@/shared/ui';
 import { PersonalBestBadge } from '@/shared/ui/personal-best-badge';
 import { modeLabel } from '@/entities/stats';
 import type { HistoryRow } from '../lib/typing-data';
 
 export type HistoryTableProps = {
   readonly rows: readonly HistoryRow[];
-  // Another page is being read: a static line under the table, no skeleton.
-  readonly loading: boolean;
 };
 
 const TH = 'pr-3 pb-2 text-left font-normal';
@@ -23,7 +20,7 @@ function modeText(row: HistoryRow): string {
 }
 
 /** One page of the typing test history (design HistoryTable); the narrow layout is in `.nk-hist`. */
-export function HistoryTable({ rows, loading }: HistoryTableProps): JSX.Element {
+export function HistoryTable({ rows }: HistoryTableProps): JSX.Element {
   const date = new Intl.DateTimeFormat(locale.value, {
     day: 'numeric',
     month: 'short',
@@ -67,7 +64,6 @@ export function HistoryTable({ rows, loading }: HistoryTableProps): JSX.Element 
           ))}
         </tbody>
       </table>
-      {loading && <Notice loading>{t('stats.history.loading')}</Notice>}
     </div>
   );
 }

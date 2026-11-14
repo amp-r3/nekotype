@@ -9,6 +9,7 @@ import { learnTargetMs, learnTrack } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
 import {
   dayStart,
+  hasAnswers,
   learnCounters,
   learnState,
   localDay,
@@ -72,8 +73,8 @@ export function LearningSection({
     katakana: trackProgress(state, 'katakana', target),
   };
   const withMedians = {
-    hiragana: progress.hiragana.medians.length > 0,
-    katakana: progress.katakana.medians.length > 0,
+    hiragana: hasAnswers(state.recallBuckets.hiragana),
+    katakana: hasAnswers(state.recallBuckets.katakana),
   };
   const both = withMedians.hiragana && withMedians.katakana;
   // With one track that has answers, the chart shows it and there is nothing to switch.

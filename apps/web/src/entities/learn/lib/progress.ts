@@ -1,14 +1,11 @@
 import type { LearnState, Track } from '@nekotype/shared/types';
 import { isMastered } from './boxes';
 import { keysOfTrack } from './tracks';
-import { dailyMedians } from './buckets';
 import { bestStreak, currentStreak } from './streak';
 
 export type TrackProgress = {
   readonly mastered: number;
   readonly total: number;
-  /** Daily median recall answer time, ascending by day. */
-  readonly medians: readonly { day: number; ms: number }[];
 };
 
 /** Mastered kana of a track against the target answer time. */
@@ -22,7 +19,6 @@ export function trackProgress(state: LearnState, track: Track, targetMs: number)
   return {
     mastered: masteredCount(state, track, targetMs),
     total: keysOfTrack(track).length,
-    medians: dailyMedians(state.recallBuckets, track),
   };
 }
 

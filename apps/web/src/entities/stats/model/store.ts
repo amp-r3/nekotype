@@ -69,12 +69,10 @@ export interface TypingStore {
   /** Waits for the writes in progress. Never rejects. */
   flush: () => Promise<void>;
   /**
-   * Saved results, newest first: `limit` of them after the first `offset`. Rejects when the
-   * database cannot be read.
+   * Every saved result, oldest first, read in one transaction. Rejects when the database cannot
+   * be read.
    */
-  results: (offset: number, limit: number) => Promise<TestResult[]>;
-  /** How many results are saved. Rejects when the database cannot be read. */
-  resultCount: () => Promise<number>;
+  allResults: () => Promise<TestResult[]>;
   /** "Reset progress": clears results, records and the typing delta. */
   reset: () => Promise<void>;
 }
@@ -223,20 +221,13 @@ export function createTypingStore(deps: TypingStoreDeps): TypingStore {
       return writing;
     },
 
-    async results(offset, limit) {
-      // After the writes in progress, so a test that has just ended is in the page.
+    async allResults() {
+      // After the writes in progress, so a test that has just ended is in the list.
       await init();
       await writing;
       const db = await deps.db();
-      const rows = await db.getPage(RESULTS_STORE, 'endedAt', { direction: 'prev', offset, limit });
+      const rows = await db.getAll(RESULTS_STORE, 'endedAt');
       return rows.filter(isTestResult);
-    },
-
-    async resultCount() {
-      await init();
-      await writing;
-      const db = await deps.db();
-      return db.count(RESULTS_STORE);
     },
 
     async reset() {
@@ -276,5 +267,4 @@ export const saveTest = store.saveTest;
 export const recordDiscardedTest = store.recordDiscarded;
 export const resetTyping = store.reset;
 export const retryTyping = store.retry;
-export const readResults = store.results;
-export const countResults = store.resultCount;
+export const readAllResults = store.allResults;

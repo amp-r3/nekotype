@@ -8,14 +8,13 @@ import { navigate } from '@/shared/lib';
 import { learnTargetMs } from '@/entities/settings';
 import {
   initTyping,
-  readResults,
+  readAllResults,
   retryTyping,
   typingCounters,
   typingStatus,
 } from '@/entities/stats';
 import type { TestResult } from '@nekotype/shared/types';
 import { initLearn, learnCounters, learnState, learnStatus, retryLearn } from '@/entities/learn';
-import { loadResults } from '../lib/results';
 import { initialSection, parseSection } from '../lib/section';
 import type { Section } from '../lib/section';
 import { LearningSection } from './learning-section';
@@ -62,7 +61,7 @@ export function StatsPage(): JSX.Element {
   useEffect(() => {
     if (finished === 0) return undefined;
     let current = true;
-    void loadResults(readResults).then(
+    void readAllResults().then(
       (loaded) => {
         if (!current) return;
         setResults(loaded);

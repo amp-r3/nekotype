@@ -187,7 +187,7 @@ describe('createDatabaseProvider: failed writes', () => {
 describe.each([
   ['IndexedDB', () => openDatabase(new IDBFactory())],
   ['memory', () => Promise.resolve(createMemoryDb())],
-])('getPage and count (%s)', (_name, open) => {
+])('getAll and count (%s)', (_name, open) => {
   const ids = (page: unknown[]): unknown[] =>
     page.map((r) => (typeof r === 'object' && r !== null && 'id' in r ? r.id : undefined));
   const result = (id: string, endedAt: number, synced: 0 | 1) => ({ id, endedAt, synced });
@@ -205,28 +205,19 @@ describe.each([
     return db;
   }
 
-  it('returns the newest first, ties by key', async () => {
+  it('returns every record ascending by the index, ties by key', async () => {
     const db = await seeded();
-    const page = await db.getPage('results', 'endedAt', {
-      direction: 'prev',
-      offset: 0,
-      limit: 10,
-    });
-    expect(ids(page)).toEqual(['d', 'e', 'b', 'c', 'a']);
+    expect(ids(await db.getAll('results', 'endedAt'))).toEqual(['a', 'c', 'b', 'e', 'd']);
   });
 
-  it('applies offset and limit', async () => {
+  it('reads by another index', async () => {
     const db = await seeded();
-    const page = await db.getPage('results', 'endedAt', { direction: 'prev', offset: 1, limit: 2 });
-    expect(ids(page)).toEqual(['e', 'b']);
-    const past = await db.getPage('results', 'endedAt', { direction: 'prev', offset: 5, limit: 2 });
-    expect(past).toEqual([]);
+    expect(ids(await db.getAll('results', 'synced'))).toEqual(['b', 'c', 'a', 'd', 'e']);
   });
 
-  it('reads oldest first with direction next, and by another index', async () => {
-    const db = await seeded();
-    const page = await db.getPage('results', 'synced', { direction: 'next', offset: 0, limit: 2 });
-    expect(ids(page)).toEqual(['b', 'c']);
+  it('returns nothing for an empty store', async () => {
+    const db = await open();
+    expect(await db.getAll('results', 'endedAt')).toEqual([]);
   });
 
   it('counts the records of one store', async () => {

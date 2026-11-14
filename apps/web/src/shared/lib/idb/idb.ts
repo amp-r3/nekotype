@@ -10,20 +10,14 @@ export interface StoreDef {
   indexes?: readonly string[];
 }
 
-export interface PageOptions {
-  direction: 'next' | 'prev';
-  offset: number;
-  limit: number;
-}
-
 export interface Db {
   get(store: string, key: string): Promise<unknown>;
   put(store: string, key: string, value: unknown): Promise<void>;
   delete(store: string, key: string): Promise<void>;
   /** Applies the writes in one transaction over their stores: all of them or none. */
   write(writes: readonly Write[]): Promise<void>;
-  /** Values of `store` in the order of `index` (ties by key); records without an indexable value are left out. */
-  getPage(store: string, index: string, options: PageOptions): Promise<unknown[]>;
+  /** All values of `store`, ascending in the order of `index` (ties by key), in one transaction; records without an indexable value are left out. */
+  getAll(store: string, index: string): Promise<unknown[]>;
   count(store: string): Promise<number>;
   hasStores(names: readonly string[]): boolean;
   close(): void;
@@ -80,38 +74,10 @@ function wrap(raw: IDBDatabase): Db {
     put: (store, key, value) => run([{ op: 'put', store, key, value }]),
     delete: (store, key) => run([{ op: 'delete', store, key }]),
     write: (writes) => (writes.length === 0 ? Promise.resolve() : run(writes)),
-    getPage: (store, index, { direction, offset, limit }) =>
-      new Promise((resolve, reject) => {
-        const values: unknown[] = [];
-        if (limit <= 0) {
-          resolve(values);
-          return;
-        }
-        const req = raw
-          .transaction(store, 'readonly')
-          .objectStore(store)
-          .index(index)
-          .openCursor(null, direction);
-        let skipped = offset <= 0;
-        req.onsuccess = () => {
-          const cursor = req.result;
-          if (!cursor) {
-            resolve(values);
-            return;
-          }
-          if (!skipped) {
-            skipped = true;
-            cursor.advance(offset);
-            return;
-          }
-          values.push(cursor.value);
-          if (values.length >= limit) resolve(values);
-          else cursor.continue();
-        };
-        req.onerror = () => {
-          reject(req.error ?? new Error('IndexedDB request failed'));
-        };
-      }),
+    getAll: (store, index) =>
+      request<unknown[]>(
+        raw.transaction(store, 'readonly').objectStore(store).index(index).getAll(),
+      ),
     count: (store) => request(raw.transaction(store, 'readonly').objectStore(store).count()),
     hasStores: (names) => names.every((n) => raw.objectStoreNames.contains(n)),
     close: () => {
@@ -203,7 +169,7 @@ export function createMemoryDb(): Db {
       }
       return Promise.resolve();
     },
-    getPage: (store, index, { direction, offset, limit }) => {
+    getAll: (store, index) => {
       const prefix = id(store, '');
       const rows: { key: string; at: number | string; value: unknown }[] = [];
       for (const [k, value] of data) {
@@ -214,12 +180,7 @@ export function createMemoryDb(): Db {
       const compare = (a: number | string, b: number | string): number =>
         typeof a === typeof b ? (a < b ? -1 : a > b ? 1 : 0) : typeof a === 'number' ? -1 : 1;
       rows.sort((a, b) => compare(a.at, b.at) || compare(a.key, b.key));
-      if (direction === 'prev') rows.reverse();
-      return Promise.resolve(
-        rows
-          .slice(Math.max(offset, 0), Math.max(offset, 0) + Math.max(limit, 0))
-          .map((r) => r.value),
-      );
+      return Promise.resolve(rows.map((r) => r.value));
     },
     count: (store) => {
       const prefix = id(store, '');

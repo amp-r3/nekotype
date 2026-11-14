@@ -257,10 +257,7 @@ export function TypingSection({ results, failed, onRetry }: TypingProps): JSX.El
 
               <div className="flex max-w-[760px] flex-col gap-4">
                 <h2 className={HEADING}>{t('stats.typing.history')}</h2>
-                <HistoryTable
-                  rows={pageRows.map((result) => historyRow(result, records))}
-                  loading={false}
-                />
+                <HistoryTable rows={pageRows.map((result) => historyRow(result, records))} />
                 {pages > 1 && (
                   <Pagination
                     page={page}

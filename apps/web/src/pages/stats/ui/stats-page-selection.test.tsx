@@ -16,12 +16,12 @@ vi.mock('@/entities/stats', async (importOriginal) => {
   const original = await importOriginal<typeof statsModule>();
   return {
     ...original,
-    readResults: (offset: number, limit: number) =>
+    readAllResults: () =>
       read.mode === 'fail'
         ? Promise.reject(new Error('read failed'))
         : read.mode === 'hold'
           ? new Promise<never>(() => undefined)
-          : original.readResults(offset, limit),
+          : original.readAllResults(),
   };
 });
 
