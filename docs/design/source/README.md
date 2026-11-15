@@ -78,13 +78,12 @@ Styles:
 - Results: `mono-hero` 72 (KPM; `mono-hero-sm` 56 on a narrow screen) — one number per screen; `mono-stat` 32 — other metrics; `mono-counter` 24 — counter and ghost hint.
 - Romaji: `mono-romaji` 16 (buffer, revealed romaji, numbers inside labels), `mono-small` 12 (live indicators, keys, axes, session progress `7 of 25`).
 - Interface: `ui-title` 24 → `ui-heading` 17 → `ui-body` 15 → `ui-label` 14 → `ui-caption` 12. Weights 400 and 500 only.
-- Vertical writing (`jp-vertical`, `VerticalLabel`) — not used in the MVP: mode labels come from i18n without Japanese (decision 85).
 
 ## Grid, spacing, shapes
 
 - 4px step: `space-1` … `space-24`. Around the text stream — `space-24` on desktop and `space-8` on a phone; between sections — `space-12`.
 - Centred column: content up to `layout-max` (1120), text stream `layout-test` (960). Page padding `space-8`, `space-4` on a narrow screen.
-- Narrow screen — below `bp-narrow` (640px): `*-sm` styles, `test-lines-sm` (2) stream lines, config bar groups in a column, navigation in two rows, the kana table in one column.
+- Narrow screen — below `bp-narrow` (640px): `*-sm` styles, 2 stream lines instead of 3, config bar groups in a column, navigation in two rows, the kana table in one column.
 - Touch targets under `pointer: coarse` — at least `touch-min` (44px).
 - Radii: `radius-xs` (2) — caret, indicators, cells; `radius-sm` (4) — buttons, fields, tooltip; `radius-md` (6) — dialogs. Never more than 6px.
 - Lines: `stroke-hair` (1px) — dividers and borders; `stroke-mark` (2px) — caret, selection indicator, mastered-kana mark, focus, KPM line. The caret and the selection mark are one and the same shape: this is the system's signature.
@@ -252,7 +251,7 @@ The interface labels every key in this list with `Kbd` or `hint`.
 
 ## Cat
 
-One style — `geometry`. She appears in four places: the logo and favicon; empty states (`sleep`); typing results — only on a personal best (`content` next to `PersonalBestBadge`); 404 (`neutral`; drawn twice: the app's screen and the static `404.html` that Pages serves for unknown paths, ADR 077). She is not on the typing test screen, not on a learning task, not on `/` and not on `/about`. The `line` and `silhouette` styles stay in the **Cat** asset group as an archive. A fifth mood, `grumpy` (half-closed eyes), is drawn and waits for a place — an error or a failure (decision 98).
+One style — `geometry`. She appears in four places: the logo and favicon; empty states (`sleep`); typing results — only on a personal best (`content` next to `PersonalBestBadge`); 404 (`neutral`; drawn twice: the app's screen and the static `404.html` that Pages serves for unknown paths, ADR 077). She is not on the typing test screen, not on a learning task, not on `/` and not on `/about`. A fifth mood, `grumpy` (half-closed eyes), is drawn and waits for a place — an error or a failure (decision 98).
 
 ## Prohibitions
 

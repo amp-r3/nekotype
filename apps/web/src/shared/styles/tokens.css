@@ -97,14 +97,12 @@
   --space-16: 64px;
   --space-24: 96px;
 
-  --radius-0: 0;
   --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 6px;
 
   --stroke-hair: 1px;
   --stroke-mark: 2px;
-  --stroke-cat: 2.5;
 
   --layout-max: 1120px;
   --layout-test: 960px;
@@ -114,8 +112,6 @@
   --caret-h: 1.1em;
   --touch-min: 44px;
   --bp-narrow: 640px;
-  --test-lines: 3;
-  --test-lines-sm: 2;
 
   --dur-caret: 90ms;
   --dur-reject: 120ms;
@@ -177,10 +173,6 @@
   --text-jp-body: 16px;
   --text-jp-body--line-height: 28px;
   --text-jp-body--font-weight: 400;
-  --text-jp-vertical: 13px;
-  --text-jp-vertical--line-height: 16px;
-  --text-jp-vertical--font-weight: 400;
-  --text-jp-vertical--letter-spacing: 0.4em;
   --text-mono-hero: 72px;
   --text-mono-hero--line-height: 72px;
   --text-mono-hero--font-weight: 400;

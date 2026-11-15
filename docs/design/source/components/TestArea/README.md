@@ -2,7 +2,7 @@
 
 The typing test's text stream (`/type`): kana, caret, romaji buffer, counter, live indicators and the bottom line. Renders once per prompt; every keystroke goes through the controller, without renders.
 
-Learning tasks (introduction, recall, recognition) are not `TestArea`: they use `KanaTask`, which keeps the same controller approach for one centred kana. `mode="kana"` stays for the record and is not used.
+Learning tasks (introduction, recall, recognition) are not `TestArea`: they use `KanaTask`, which keeps the same controller approach for one centred kana.
 
 **The consumer provides:** `words` (prompts in kana), `mode` (`words` · `phrase` — ADR 058 removed the kana mode; `jp-solo` belongs to learning tasks), the initial `counter` and its static `counterSuffix`, `labels` from i18n. The input engine gets the controller from `onReady` and calls only its methods on every keystroke.
 

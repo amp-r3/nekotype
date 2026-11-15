@@ -1,11 +1,11 @@
-/* @ds-bundle: {"format":4,"namespace":"Nekotype","components":[{"name":"TestArea"},{"name":"Char"},{"name":"TranslationLine"},{"name":"Notice"},{"name":"Kbd"},{"name":"ModePanel"},{"name":"RowPicker"},{"name":"Dialog"},{"name":"Button"},{"name":"Segmented"},{"name":"Switch"},{"name":"Input"},{"name":"Textarea"},{"name":"Select"},{"name":"Tooltip"},{"name":"Stat"},{"name":"PersonalBestBadge"},{"name":"ResultChart"},{"name":"ActivityMap"},{"name":"WeakKanaList"},{"name":"KanaChart"},{"name":"HistoryTable"},{"name":"Pagination"},{"name":"OptionCard"},{"name":"VerticalLabel"},{"name":"Nav"},{"name":"Footer"},{"name":"Cat"},{"name":"EmptyState"}]} */
+/* @ds-bundle: {"format":4,"namespace":"Nekotype","components":[{"name":"TestArea"},{"name":"Char"},{"name":"TranslationLine"},{"name":"Notice"},{"name":"Kbd"},{"name":"ModePanel"},{"name":"Dialog"},{"name":"Button"},{"name":"Segmented"},{"name":"Switch"},{"name":"Input"},{"name":"Textarea"},{"name":"Select"},{"name":"Tooltip"},{"name":"Stat"},{"name":"PersonalBestBadge"},{"name":"ResultChart"},{"name":"ActivityMap"},{"name":"WeakKanaList"},{"name":"KanaChart"},{"name":"HistoryTable"},{"name":"Pagination"},{"name":"OptionCard"},{"name":"Nav"},{"name":"Footer"},{"name":"Cat"},{"name":"EmptyState"}]} */
 (function () {
   'use strict';
   var React = window.React;
   var h = React.createElement;
   var useState = React.useState, useRef = React.useRef, useLayoutEffect = React.useLayoutEffect, useEffect = React.useEffect,
     useId = React.useId, useImperativeHandle = React.useImperativeHandle, forwardRef = React.forwardRef;
-  var CAT = {"cats":{"line":{"neutral":[["path",{"d":"M84 58C91 70 88 86 70 86L27 86C19 80 19 62 32 53C26 47 26 36 29.5 29L31 11L43.5 20.5Q48 19.2 52.5 20.5L65 11L66.5 29C70 36 70 47 64 53C73 61 74 74 70 83"},"line"],["path",{"d":"M36.8 37.0Q41.0 31.2 45.2 37.0Q41.0 42.8 36.8 37.0Z"},"eye"],["rect",{"x":"40.30","y":"34.6","width":"1.4","height":"4.8","rx":"0.70"},"cut"],["path",{"d":"M50.8 37.0Q55.0 31.2 59.2 37.0Q55.0 42.8 50.8 37.0Z"},"eye"],["rect",{"x":"54.30","y":"34.6","width":"1.4","height":"4.8","rx":"0.70"},"cut"]],"sleep":[["path",{"d":"M36 77C28 77 22 79 24 83C25 84 27 84 30 84L76 84C88 84 90 70 82 63C76 58 66 57 58 59C59 54 58 49 55 45L56 31L46 38Q41 37 36 38L26 31L27 45C21 53 21 65 26 71"},"line"],["path",{"d":"M32.5 55.0Q35.5 58.0 38.5 55.0"},"line"],["path",{"d":"M43.5 55.0Q46.5 58.0 49.5 55.0"},"line"]],"content":[["path",{"d":"M84 58C91 70 88 86 70 86L27 86C19 80 19 62 32 53C26 47 26 36 29.5 29L31 11L43.5 20.5Q48 19.2 52.5 20.5L65 11L66.5 29C70 36 70 47 64 53C73 61 74 74 70 83"},"line"],["path",{"d":"M36.8 37.0Q41.0 35.8 45.2 37.0Q41.0 42.0 36.8 37.0Z"},"eye"],["path",{"d":"M50.8 37.0Q55.0 35.8 59.2 37.0Q55.0 42.0 50.8 37.0Z"},"eye"]]},"geometry":{"neutral":[["path",{"d":"M26 84.5L26 72A22 22 0 0 1 69.79 68.95A4 4 0 0 0 72.92 72.31A14 14 0 0 1 83.96 84.92A1 1 0 0 1 82.96 86L78.94 86A1 1 0 0 1 77.95 85.11A8 8 0 0 0 71.85 78.22A1.5 1.5 0 0 0 70 79.68L70 84.5A1.5 1.5 0 0 1 68.5 86L27.5 86A1.5 1.5 0 0 1 26 84.5Z"},"fur"],["circle",{"cx":"48","cy":"36","r":"18"},"gap"],["path",{"d":"M32.33 28.47L29.66 14.47A1.6 1.6 0 0 1 32.04 12.79L42.82 19.13A2.2 2.2 0 0 0 44.4 19.38A17 17 0 0 1 51.6 19.38A2.2 2.2 0 0 0 53.18 19.13L63.96 12.79A1.6 1.6 0 0 1 66.34 14.47L63.67 28.47A2.2 2.2 0 0 0 63.79 29.7A17 17 0 1 1 32.21 29.7A2.2 2.2 0 0 0 32.33 28.47Z"},"fur"],["circle",{"cx":"41","cy":"37","r":"3.4"},"eye"],["rect",{"x":"40.3","y":"34.7","width":"1.4","height":"4.6","rx":"0.7"},"cut"],["circle",{"cx":"55","cy":"37","r":"3.4"},"eye"],["rect",{"x":"54.3","y":"34.7","width":"1.4","height":"4.6","rx":"0.7"},"cut"]],"sleep":[["path",{"d":"M14 84A34 30 0 0 1 82 84Z"},"fur"],["circle",{"cx":"38","cy":"56","r":"15"},"gap"],["path",{"d":"M25.16 49.64L23.02 38.42A1.31 1.31 0 0 1 24.97 37.05L33.62 42.14A1.8 1.8 0 0 0 34.93 42.34A14 14 0 0 1 41.07 42.34A1.8 1.8 0 0 0 42.38 42.14L51.03 37.05A1.31 1.31 0 0 1 52.98 38.42L50.84 49.64A1.8 1.8 0 0 0 50.94 50.66A14 14 0 1 1 25.06 50.66A1.8 1.8 0 0 0 25.16 49.64Z"},"fur"],["path",{"d":"M29.8 57Q32.5 60 35.2 57"},"cutline"],["path",{"d":"M40.8 57Q43.5 60 46.2 57"},"cutline"]],"content":[["path",{"d":"M26 84.5L26 72A22 22 0 0 1 69.79 68.95A4 4 0 0 0 72.92 72.31A14 14 0 0 1 83.96 84.92A1 1 0 0 1 82.96 86L78.94 86A1 1 0 0 1 77.95 85.11A8 8 0 0 0 71.85 78.22A1.5 1.5 0 0 0 70 79.68L70 84.5A1.5 1.5 0 0 1 68.5 86L27.5 86A1.5 1.5 0 0 1 26 84.5Z"},"fur"],["circle",{"cx":"48","cy":"36","r":"18"},"gap"],["path",{"d":"M32.33 28.47L29.66 14.47A1.6 1.6 0 0 1 32.04 12.79L42.82 19.13A2.2 2.2 0 0 0 44.4 19.38A17 17 0 0 1 51.6 19.38A2.2 2.2 0 0 0 53.18 19.13L63.96 12.79A1.6 1.6 0 0 1 66.34 14.47L63.67 28.47A2.2 2.2 0 0 0 63.79 29.7A17 17 0 1 1 32.21 29.7A2.2 2.2 0 0 0 32.33 28.47Z"},"fur"],["path",{"d":"M38 38.4Q41 34.2 44 38.4"},"eyeline"],["path",{"d":"M52 38.4Q55 34.2 58 38.4"},"eyeline"]],"grumpy":[["path",{"d":"M26 84.5L26 72A22 22 0 0 1 69.79 68.95A4 4 0 0 0 72.92 72.31A14 14 0 0 1 83.96 84.92A1 1 0 0 1 82.96 86L78.94 86A1 1 0 0 1 77.95 85.11A8 8 0 0 0 71.85 78.22A1.5 1.5 0 0 0 70 79.68L70 84.5A1.5 1.5 0 0 1 68.5 86L27.5 86A1.5 1.5 0 0 1 26 84.5Z"},"fur"],["circle",{"cx":"48","cy":"36","r":"18"},"gap"],["path",{"d":"M32.33 28.47L29.66 14.47A1.6 1.6 0 0 1 32.04 12.79L42.82 19.13A2.2 2.2 0 0 0 44.4 19.38A17 17 0 0 1 51.6 19.38A2.2 2.2 0 0 0 53.18 19.13L63.96 12.79A1.6 1.6 0 0 1 66.34 14.47L63.67 28.47A2.2 2.2 0 0 0 63.79 29.7A17 17 0 1 1 32.21 29.7A2.2 2.2 0 0 0 32.33 28.47Z"},"fur"],["path",{"d":"M37.6 37A3.4 3.4 0 0 0 44.4 37Z"},"eye"],["path",{"d":"M51.6 37A3.4 3.4 0 0 0 58.4 37Z"},"eye"]]},"silhouette":{"neutral":[["path",{"d":"M30 86C20 78 19 62 31 53C26 46 26 36 29.5 29L31 10L43.5 20.5Q48 19.2 52.5 20.5L65 10L66.5 29C70 36 70 46 65 53C70 57 72 62 73 67C78 63 82 60 84 54C86 50 90 51 90 55C90 66 84 78 74 84L72 86Z"},"fur"],["path",{"d":"M36.8 37.0Q41.0 31.2 45.2 37.0Q41.0 42.8 36.8 37.0Z"},"eye"],["rect",{"x":"40.30","y":"34.6","width":"1.4","height":"4.8","rx":"0.70"},"cut"],["path",{"d":"M50.8 37.0Q55.0 31.2 59.2 37.0Q55.0 42.8 50.8 37.0Z"},"eye"],["rect",{"x":"54.30","y":"34.6","width":"1.4","height":"4.8","rx":"0.70"},"cut"]],"sleep":[["path",{"d":"M16 84C14 70 22 64 25 61C21 55 21 50 24 45L25 30L36 37Q40.5 36 45 37L56 30L57 45C58 47 58.5 49 58.6 51C66 51 78 54 84 62C90 70 90 84 78 84Z"},"fur"],["path",{"d":"M32.0 51.0Q35.0 54.0 38.0 51.0"},"cutline"],["path",{"d":"M43.0 51.0Q46.0 54.0 49.0 51.0"},"cutline"]],"content":[["path",{"d":"M30 86C20 78 19 62 31 53C26 46 26 36 29.5 29L31 10L43.5 20.5Q48 19.2 52.5 20.5L65 10L66.5 29C70 36 70 46 65 53C70 57 72 62 73 67C78 63 82 60 84 54C86 50 90 51 90 55C90 66 84 78 74 84L72 86Z"},"fur"],["path",{"d":"M36.8 37.0Q41.0 35.8 45.2 37.0Q41.0 42.0 36.8 37.0Z"},"eye"],["path",{"d":"M50.8 37.0Q55.0 35.8 59.2 37.0Q55.0 42.0 50.8 37.0Z"},"eye"]]}},"marks":{"line":[["path",{"d":"M32 53C26 47 26 36 29.5 29L31 11L43.5 20.5Q48 19.2 52.5 20.5L65 11L66.5 29C70 36 70 47 64 53Q48 58 32 53Z"},"line"],["path",{"d":"M36.8 37.0Q41.0 31.2 45.2 37.0Q41.0 42.8 36.8 37.0Z"},"eye"],["rect",{"x":"40.30","y":"34.6","width":"1.4","height":"4.8","rx":"0.70"},"cut"],["path",{"d":"M50.8 37.0Q55.0 31.2 59.2 37.0Q55.0 42.8 50.8 37.0Z"},"eye"],["rect",{"x":"54.30","y":"34.6","width":"1.4","height":"4.8","rx":"0.70"},"cut"]],"geometry":[["path",{"d":"M32 26.75L29.66 14.47A1.6 1.6 0 0 1 32.04 12.79L41.59 18.4A2.2 2.2 0 0 0 43.28 18.63A18 18 0 0 1 52.72 18.63A2.2 2.2 0 0 0 54.41 18.4L63.96 12.79A1.6 1.6 0 0 1 66.34 14.47L64 26.75A2.2 2.2 0 0 0 64.18 28.12A18 18 0 1 1 31.82 28.12A2.2 2.2 0 0 0 32 26.75Z"},"fur"],["circle",{"cx":"41","cy":"37","r":"3.6"},"eye"],["rect",{"x":"40.25","y":"34.6","width":"1.5","height":"4.8","rx":"0.75"},"cut"],["circle",{"cx":"55","cy":"37","r":"3.6"},"eye"],["rect",{"x":"54.25","y":"34.6","width":"1.5","height":"4.8","rx":"0.75"},"cut"]],"silhouette":[["path",{"d":"M32 53C26 47 26 36 29.5 29L31 11L43.5 20.5Q48 19.2 52.5 20.5L65 11L66.5 29C70 36 70 47 64 53Q48 58 32 53Z"},"fur"],["path",{"d":"M36.8 37.0Q41.0 31.2 45.2 37.0Q41.0 42.8 36.8 37.0Z"},"eye"],["rect",{"x":"40.30","y":"34.6","width":"1.4","height":"4.8","rx":"0.70"},"cut"],["path",{"d":"M50.8 37.0Q55.0 31.2 59.2 37.0Q55.0 42.8 50.8 37.0Z"},"eye"],["rect",{"x":"54.30","y":"34.6","width":"1.4","height":"4.8","rx":"0.70"},"cut"]]},"vb":"24 6 48 48"};
+  var CAT = {"cats":{"geometry":{"neutral":[["path",{"d":"M26 84.5L26 72A22 22 0 0 1 69.79 68.95A4 4 0 0 0 72.92 72.31A14 14 0 0 1 83.96 84.92A1 1 0 0 1 82.96 86L78.94 86A1 1 0 0 1 77.95 85.11A8 8 0 0 0 71.85 78.22A1.5 1.5 0 0 0 70 79.68L70 84.5A1.5 1.5 0 0 1 68.5 86L27.5 86A1.5 1.5 0 0 1 26 84.5Z"},"fur"],["circle",{"cx":"48","cy":"36","r":"18"},"gap"],["path",{"d":"M32.33 28.47L29.66 14.47A1.6 1.6 0 0 1 32.04 12.79L42.82 19.13A2.2 2.2 0 0 0 44.4 19.38A17 17 0 0 1 51.6 19.38A2.2 2.2 0 0 0 53.18 19.13L63.96 12.79A1.6 1.6 0 0 1 66.34 14.47L63.67 28.47A2.2 2.2 0 0 0 63.79 29.7A17 17 0 1 1 32.21 29.7A2.2 2.2 0 0 0 32.33 28.47Z"},"fur"],["circle",{"cx":"41","cy":"37","r":"3.4"},"eye"],["rect",{"x":"40.3","y":"34.7","width":"1.4","height":"4.6","rx":"0.7"},"cut"],["circle",{"cx":"55","cy":"37","r":"3.4"},"eye"],["rect",{"x":"54.3","y":"34.7","width":"1.4","height":"4.6","rx":"0.7"},"cut"]],"sleep":[["path",{"d":"M14 84A34 30 0 0 1 82 84Z"},"fur"],["circle",{"cx":"38","cy":"56","r":"15"},"gap"],["path",{"d":"M25.16 49.64L23.02 38.42A1.31 1.31 0 0 1 24.97 37.05L33.62 42.14A1.8 1.8 0 0 0 34.93 42.34A14 14 0 0 1 41.07 42.34A1.8 1.8 0 0 0 42.38 42.14L51.03 37.05A1.31 1.31 0 0 1 52.98 38.42L50.84 49.64A1.8 1.8 0 0 0 50.94 50.66A14 14 0 1 1 25.06 50.66A1.8 1.8 0 0 0 25.16 49.64Z"},"fur"],["path",{"d":"M29.8 57Q32.5 60 35.2 57"},"cutline"],["path",{"d":"M40.8 57Q43.5 60 46.2 57"},"cutline"]],"content":[["path",{"d":"M26 84.5L26 72A22 22 0 0 1 69.79 68.95A4 4 0 0 0 72.92 72.31A14 14 0 0 1 83.96 84.92A1 1 0 0 1 82.96 86L78.94 86A1 1 0 0 1 77.95 85.11A8 8 0 0 0 71.85 78.22A1.5 1.5 0 0 0 70 79.68L70 84.5A1.5 1.5 0 0 1 68.5 86L27.5 86A1.5 1.5 0 0 1 26 84.5Z"},"fur"],["circle",{"cx":"48","cy":"36","r":"18"},"gap"],["path",{"d":"M32.33 28.47L29.66 14.47A1.6 1.6 0 0 1 32.04 12.79L42.82 19.13A2.2 2.2 0 0 0 44.4 19.38A17 17 0 0 1 51.6 19.38A2.2 2.2 0 0 0 53.18 19.13L63.96 12.79A1.6 1.6 0 0 1 66.34 14.47L63.67 28.47A2.2 2.2 0 0 0 63.79 29.7A17 17 0 1 1 32.21 29.7A2.2 2.2 0 0 0 32.33 28.47Z"},"fur"],["path",{"d":"M38 38.4Q41 34.2 44 38.4"},"eyeline"],["path",{"d":"M52 38.4Q55 34.2 58 38.4"},"eyeline"]],"grumpy":[["path",{"d":"M26 84.5L26 72A22 22 0 0 1 69.79 68.95A4 4 0 0 0 72.92 72.31A14 14 0 0 1 83.96 84.92A1 1 0 0 1 82.96 86L78.94 86A1 1 0 0 1 77.95 85.11A8 8 0 0 0 71.85 78.22A1.5 1.5 0 0 0 70 79.68L70 84.5A1.5 1.5 0 0 1 68.5 86L27.5 86A1.5 1.5 0 0 1 26 84.5Z"},"fur"],["circle",{"cx":"48","cy":"36","r":"18"},"gap"],["path",{"d":"M32.33 28.47L29.66 14.47A1.6 1.6 0 0 1 32.04 12.79L42.82 19.13A2.2 2.2 0 0 0 44.4 19.38A17 17 0 0 1 51.6 19.38A2.2 2.2 0 0 0 53.18 19.13L63.96 12.79A1.6 1.6 0 0 1 66.34 14.47L63.67 28.47A2.2 2.2 0 0 0 63.79 29.7A17 17 0 1 1 32.21 29.7A2.2 2.2 0 0 0 32.33 28.47Z"},"fur"],["path",{"d":"M37.6 37A3.4 3.4 0 0 0 44.4 37Z"},"eye"],["path",{"d":"M51.6 37A3.4 3.4 0 0 0 58.4 37Z"},"eye"]]}},"marks":[["path",{"d":"M32 26.75L29.66 14.47A1.6 1.6 0 0 1 32.04 12.79L41.59 18.4A2.2 2.2 0 0 0 43.28 18.63A18 18 0 0 1 52.72 18.63A2.2 2.2 0 0 0 54.41 18.4L63.96 12.79A1.6 1.6 0 0 1 66.34 14.47L64 26.75A2.2 2.2 0 0 0 64.18 28.12A18 18 0 1 1 31.82 28.12A2.2 2.2 0 0 0 32 26.75Z"},"fur"],["circle",{"cx":"41","cy":"37","r":"3.6"},"eye"],["rect",{"x":"40.25","y":"34.6","width":"1.5","height":"4.8","rx":"0.75"},"cut"],["circle",{"cx":"55","cy":"37","r":"3.6"},"eye"],["rect",{"x":"54.25","y":"34.6","width":"1.5","height":"4.8","rx":"0.75"},"cut"]],"vb":"24 6 48 48"};
 
   function cx() { return Array.prototype.filter.call(arguments, Boolean).join(' '); }
   function omit(p, keys) { var o = {}; for (var k in p) if (keys.indexOf(k) < 0) o[k] = p[k]; return o; }
@@ -36,14 +36,13 @@
   /* ================= Cat ================= */
   var ROLE = {
     fur: { fill: 'var(--cat-fur)' }, eye: { fill: 'var(--cat-eye)' }, cut: { fill: 'var(--cat-ground)' },
-    line: { fill: 'none', stroke: 'var(--cat-fur)', strokeWidth: 'var(--stroke-cat)', strokeLinecap: 'round', strokeLinejoin: 'round' },
     cutline: { fill: 'none', stroke: 'var(--cat-ground)', strokeWidth: 2, strokeLinecap: 'round' },
     eyeline: { fill: 'none', stroke: 'var(--cat-eye)', strokeWidth: 2.2, strokeLinecap: 'round' },
     gap: { fill: 'none', stroke: 'var(--cat-ground)', strokeWidth: 2.5 }
   };
   function Cat(p) {
-    var variant = p.variant || 'geometry', mood = p.mood || 'neutral', size = p.size || 96;
-    var els = p.mark ? CAT.marks[variant] : CAT.cats[variant][mood] || CAT.cats[variant].neutral;
+    var mood = p.mood || 'neutral', size = p.size || 96;
+    var els = p.mark ? CAT.marks : CAT.cats.geometry[mood] || CAT.cats.geometry.neutral;
     return h('svg', { className: cx('nk-cat', p.className), viewBox: p.mark ? CAT.vb : '0 0 96 96', width: size, height: size,
       role: p.label ? 'img' : undefined, 'aria-label': p.label, 'aria-hidden': p.label ? undefined : true },
       els.map(function (e, i) {
@@ -513,38 +512,6 @@
   /** Every kana of a track (gaps removed): hiragana 104, katakana 125. */
   function kanaOf(script) { var out = []; rowsFor(script).forEach(function (r) { cellsOf(r, script).forEach(function (c) { if (c) out.push(c); }); }); return out; }
 
-  /* ================= RowPicker ================= */
-  function RowPicker(p) {
-    var L = Object.assign({ base: 'basic', voiced: 'voiced', combo: 'combinations', ext: 'extended (katakana only)', all: 'all', none: 'none',
-      count: function (n) { return n + ' rows selected'; }, empty: 'No rows selected — the test will use the base rows' }, p.labels);
-    var script = p.script || 'hiragana', showScript = script === 'hiragana' ? 'hiragana' : 'katakana';
-    var rows = rowsFor(script), visible = rows.map(function (r) { return r.id; });
-    var sel = p.value || [];
-    /* Extended ids stay stored when the script switches to hiragana, but they yield no kana there: count only rows that do. */
-    var counted = sel.filter(function (id) { return visible.indexOf(id) >= 0; });
-    function set(next) { p.onChange && p.onChange(next); }
-    function toggle(id) { set(sel.indexOf(id) >= 0 ? sel.filter(function (x) { return x !== id; }) : sel.concat(id)); }
-    return h('div', { className: 'nk-rows' },
-      GROUPS.map(function (g) {
-        var gr = rows.filter(function (r) { return r.group === g; }); if (!gr.length) return null;
-        var ids = gr.map(function (r) { return r.id; });
-        return h('fieldset', { key: g, className: 'nk-rows__group' },
-          h('legend', { className: 'nk-rows__legend' },
-            h('span', { className: 'ui-caption' }, L[g]),
-            h('button', { type: 'button', className: 'nk-link ui-caption', onClick: function () { set(sel.filter(function (x) { return ids.indexOf(x) < 0; }).concat(ids)); } }, L.all),
-            h('button', { type: 'button', className: 'nk-link ui-caption', onClick: function () { set(sel.filter(function (x) { return ids.indexOf(x) < 0; })); } }, L.none)),
-          h('div', { className: 'nk-rows__grid' }, gr.map(function (r) {
-            var on = sel.indexOf(r.id) >= 0;
-            return h('button', { key: r.id, type: 'button', role: 'checkbox', 'aria-checked': on, className: cx('nk-check', on && 'is-on'), onClick: function () { toggle(r.id); } },
-              h('span', { className: 'nk-check__box', 'aria-hidden': true }),
-              h('span', { className: 'nk-check__kana jp-body', lang: 'ja' }, cellsOf(r, showScript).filter(Boolean).join(' ')),
-              h('span', { className: 'nk-check__id mono-small' }, r.id));
-          })));
-      }),
-      h('div', { className: 'nk-rows__foot' },
-        counted.length ? h('span', { className: 'ui-caption nk-dim' }, L.count(counted.length)) : h(Notice, null, L.empty)));
-  }
-
   /* ================= ModePanel ================= */
   var MODE_LABELS = {
     ru: { script: 'письмо', hiragana: 'хирагана', katakana: 'катакана', both: 'обе', content: 'материал', words: 'слова', phrases: 'фразы',
@@ -765,12 +732,10 @@
   function stepFor(mode, v) {
     if (v == null) return null;
     if (mode === 'miss') { var t = [0, 0.03, 0.07, 0.12, 0.2]; if (v <= 0) return 0; for (var i = 4; i >= 0; i--) if (v > t[i]) return i + 1; return 1; }
-    if (mode === 'time') { var u = [0, 450, 600, 750, 950]; for (var j = 4; j >= 0; j--) if (v >= u[j]) return j + 1; return 1; }
     return v;
   }
   /*
-   * KanaChart. MVP mode: `state` (ADR 058) — the learning table on `/`. `miss` and `time` (heatmaps) and `box`
-   * (v9 learning map, superseded by `state`) are kept but not used in the MVP.
+   * KanaChart. `state` (ADR 058) — the learning table on `/`; `miss` — weak kana in typing on `/stats` (decision 110).
    * state data per kana: { state: 'learning'|'confident'|'mastered', box, due, next (ISO date), median (ms), acc (%),
    *   answers (recall answers counted, ≤ 10), mixups: [[kana, n]], recog: [correct, total] }. A kana without data is locked.
    * `due` is a mark over confident or mastered, not a state: it is ignored on learning.
@@ -778,7 +743,7 @@
    */
   var KC_LABELS = {
     base: 'basic', voiced: 'voiced', combo: 'combinations', ext: 'extended',
-    none: 'no data', locked: 'locked', fresh: 'not introduced', box0: 'box 0', box: 'box', mastered: 'mastered',
+    none: 'no data', locked: 'locked', mastered: 'mastered',
     learning: 'learning', confident: 'confident', due: 'review due', notIntroduced: 'not introduced yet', opensNext: 'opens next', vowels: 'vowels',
     next: function (d) { return 'next review: ' + d; },
     stats: function (m, a) { return 'median ' + m + ' ms · accuracy ' + a + '%'; },
@@ -786,8 +751,8 @@
     date: function (iso) { var d = new Date(iso + 'T00:00:00'); return d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; },
     mixedWith: 'mixed up with', noMixups: 'no mixups yet', noRecog: 'no recognition answers yet',
     recog: function (p, a, b) { return 'recognition accuracy ' + p + '% (' + a + ' of ' + b + ')'; }, close: 'close',
-    missFmt: function (v, n) { return 'errors ' + Math.round(v * 100) + '% · attempts ' + n; }, timeFmt: function (v) { return 'reaction ' + v + ' ms'; },
-    lowMiss: 'fewer errors', highMiss: 'more errors', fast: 'faster', slow: 'slower'
+    missFmt: function (v, n) { return 'errors ' + Math.round(v * 100) + '% · attempts ' + n; },
+    lowMiss: 'fewer errors', highMiss: 'more errors'
   };
   /* Tooltip / aria-label lines of a kana in the state mode (exception to Tooltip's one-line rule). */
   /* Due = the mark: a confident or mastered kana whose review date has come. Review (N) counts exactly these kana and the
@@ -830,14 +795,13 @@
     var det = useState(null), open = det[0];
     var grid = useRef(null);
     var rows = rowsFor(script), first = cellsOf(rows[0], script)[0];
-    function isLocked(k) { return mode === 'state' ? !data[k] : data[k] === 'locked'; }
+    function isLocked(k) { return mode === 'state' && !data[k]; }
     function stateLines(k) { return kanaStateLines(k, data[k], L, romaji, p.nextUnlock); }
     function describe(k) {
       var d = data[k];
       if (mode === 'state') return stateLines(k);
-      if (mode === 'box') { if (d === 'locked') return [L.locked]; if (d == null || d === 'new') return [L.fresh]; return [d === 0 ? L.box0 : L.box + ' ' + d + (d >= 4 ? ' · ' + L.mastered : '')]; }
       if (d == null) return [L.none];
-      return [mode === 'miss' ? L.missFmt(d.v, d.n) : L.timeFmt(d.v)];
+      return [L.missFmt(d.v, d.n)];
     }
     function cellCls(k) {
       var d = data[k];
@@ -845,13 +809,9 @@
         if (!d) return 'is-st-locked';
         return 'is-st-' + d.state + (d.state === 'mastered' ? ' is-mastered' : '') + (isDue(d) ? ' is-due' : '');
       }
-      if (mode === 'box') {
-        if (d === 'locked') return 'is-locked'; if (d == null || d === 'new') return 'is-empty';
-        if (d === 0) return 'is-box0'; return 'is-fur-' + d + (d >= 4 ? ' is-mastered' : '');
-      }
       if (d == null) return 'is-empty';
       var s = stepFor(mode, d.v); if (!s) return 'is-zero';
-      return (mode === 'miss' ? 'is-miss-' : 'is-fur-') + s;
+      return 'is-miss-' + s;
     }
     /* Arrows: ← → along the row (then the next row), ↑ ↓ to the nearest column of the row above / below, across blocks. Esc closes the details. */
     function nav(e) {
@@ -906,7 +866,6 @@
           return open && cells.indexOf(open) >= 0 ? [row, details(open)] : row;
         }));
     }
-    var steps = mode === 'miss' ? 'miss' : 'fur';
     var sample = script === 'hiragana' ? 'あ' : 'ア';
     function sw(cls, label) { return [h('span', { key: cls, className: 'nk-kc__sw nk-kc__sw--state jp-body ' + cls, 'aria-hidden': true }, sample), h('span', { key: cls + 'l' }, label)]; }
     return h('div', { className: cx('nk-kc', 'nk-kc--' + mode, p.className) },
@@ -916,12 +875,10 @@
         ? h('div', { className: 'nk-kc__legend ui-caption' }, sw('is-st-locked', L.locked), sw('is-st-learning', L.learning), sw('is-st-confident', L.confident), sw('is-st-mastered is-mastered', L.mastered),
             h('span', { key: 'sep', className: 'nk-kc__legend-sep', 'aria-hidden': true }), sw('is-st-confident is-due', L.due))
         : h('div', { className: 'nk-kc__legend ui-caption' },
-          mode !== 'box' && h('span', null, mode === 'miss' ? L.lowMiss : L.fast),
-          [1, 2, 3, 4, 5].map(function (s) { return h('span', { key: s, className: 'nk-kc__sw mono-small is-' + steps + '-' + s + (mode === 'box' && s >= 4 ? ' is-mastered' : '') }, mode === 'box' ? s : ''); }),
-          mode !== 'box' && h('span', null, mode === 'miss' ? L.highMiss : L.slow),
-          mode === 'box'
-            ? [h('span', { key: 'b0', className: 'nk-kc__sw mono-small is-box0' }, '0'), h('span', { key: 'n', className: 'nk-kc__sw mono-small is-empty' }), h('span', { key: 'nl' }, L.fresh), h('span', { key: 'l', className: 'nk-kc__sw jp-body is-locked' }, sample), h('span', { key: 'll' }, L.locked)]
-            : [h('span', { key: 'e', className: 'nk-kc__sw mono-small is-empty' }), h('span', { key: 'el' }, L.none)]));
+          h('span', null, L.lowMiss),
+          [1, 2, 3, 4, 5].map(function (s) { return h('span', { key: s, className: 'nk-kc__sw mono-small is-miss-' + s }); }),
+          h('span', null, L.highMiss),
+          h('span', { className: 'nk-kc__sw mono-small is-empty' }), h('span', null, L.none)));
   }
 
   /* ================= History ================= */
@@ -965,8 +922,6 @@
       h('span', { className: cx('nk-opt__label', p.kana ? 'jp-test-sm' : 'mono-stat'), lang: p.kana ? 'ja' : undefined }, p.children));
   }
 
-  function VerticalLabel(p) { return h('span', { className: cx('nk-vlabel', 'jp-vertical', p.className), lang: 'ja', role: 'img', 'aria-label': p.ariaLabel }, p.children); }
-
   /* ================= Nav & footer ================= */
   function Nav(p) {
     var ref = useRef(null);
@@ -974,7 +929,7 @@
     var items = p.items || [];
     return h('header', { ref: ref, className: cx('nk-nav', p.hidden && 'is-hidden', p.className) },
       h('a', { className: 'nk-nav__brand', href: p.homeHref || '#', 'aria-label': p.homeLabel || 'Nekotype' },
-        h(Cat, { mark: true, variant: 'geometry', size: 28 }), h('span', { className: 'nk-nav__word' }, 'nekotype')),
+        h(Cat, { mark: true, size: 28 }), h('span', { className: 'nk-nav__word' }, 'nekotype')),
       h('nav', { className: 'nk-nav__links', 'aria-label': p.label },
         items.map(function (it) {
           return h('a', { key: it.id, href: it.href || '#', className: cx('nk-nav__link', 'ui-label', it.id === p.active && 'is-active'), 'aria-current': it.id === p.active ? 'page' : undefined,
@@ -998,7 +953,7 @@
   /* ================= Empty state ================= */
   function EmptyState(p) {
     return h('div', { className: cx('nk-empty', p.className) },
-      h(Cat, { variant: 'geometry', mood: p.mood || 'sleep', size: p.size || 112 }),
+      h(Cat, { mood: p.mood || 'sleep', size: p.size || 112 }),
       h('div', { className: 'nk-empty__title ui-heading' }, p.title),
       p.text && h('p', { className: 'nk-empty__text ui-body' }, p.text),
       p.action);
@@ -1006,10 +961,10 @@
 
   var C = window;
   C.Nekotype = Object.assign(C.Nekotype || {}, {
-    TestArea: TestArea, Char: Char, TranslationLine: TranslationLine, Notice: Notice, Kbd: Kbd, ModePanel: ModePanel, RowPicker: RowPicker, Dialog: Dialog,
+    TestArea: TestArea, Char: Char, TranslationLine: TranslationLine, Notice: Notice, Kbd: Kbd, ModePanel: ModePanel, Dialog: Dialog,
     Button: Button, Segmented: Segmented, Toggle: Toggle, Switch: Switch, Input: Input, Textarea: Textarea, Select: Select, Tooltip: Tooltip,
     Stat: Stat, PersonalBestBadge: PersonalBestBadge, ResultChart: ResultChart, ActivityMap: ActivityMap, WeakKanaList: WeakKanaList, KanaChart: KanaChart,
-    HistoryTable: HistoryTable, Pagination: Pagination, OptionCard: OptionCard, VerticalLabel: VerticalLabel, Nav: Nav, Footer: Footer,
+    HistoryTable: HistoryTable, Pagination: Pagination, OptionCard: OptionCard, Nav: Nav, Footer: Footer,
     Cat: Cat, EmptyState: EmptyState, Icon: Icon, KanaTask: KanaTask, KanaChartDetails: KanaChartDetails, kanaStateLines: kanaStateLines, isDue: isDue, KC_LABELS: KC_LABELS,
     /* not components: */ createTestController: createTestController, createTaskController: createTaskController, useNarrow: useNarrow, useCoarse: useCoarse, TASK_LABELS: TASK_LABELS, MODE_LABELS: MODE_LABELS, modeLine: modeLine, KANA_ROWS: ROWS, kanaRows: rowsFor, kanaOf: kanaOf
   });

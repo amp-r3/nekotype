@@ -1,6 +1,6 @@
 # KanaChart
 
-The kana table of a track. MVP mode: `state` — the learning table on `/` (ADR 058). It replaces the `box` mode. The `miss` mode is used on `/stats` (decision 110); `time` is not used in the MVP; `box` is superseded by `state`.
+The kana table of a track. Two modes: `state` — the learning table on `/` (ADR 058); `miss` — weak kana in typing on `/stats` (decision 110).
 
 **Composition — the groups of `docs/spec/learning.md`, rows by the engine's `RowId`:**
 
@@ -46,10 +46,4 @@ Data per kana: `{ state, box, due, next, median, acc, answers, mixups, recog }`.
 
 `/stats` → typing → `weak kana in typing` / `слабые каны в наборе`: the table of a script filled by the share of typing attempts with an error. Data per kana: `{ v, n }` — `erroredAttempts / attempts` and `attempts` of the stored `KanaStat`, over every saved typing test. It does not follow the filters of the page: per-kana errors are stored as totals, not per test. A kana that was never typed has no datum: a `line` outline, `not typed yet` / `ещё не набиралась`. The cells are not locked and open no details; the tooltip and `aria-label` are `ぬ` + `errors 22% · 75 attempts` / `ошибки 22% · 75 попыток`. A script switch (`Segmented`) stands over the table only when tests of both scripts exist. The legend (`fewer errors` … `more errors` / `меньше ошибок` … `больше ошибок`) is part of the component.
 
-## `time`, `box` — not used in the MVP (ADR 058)
-
-| mode | steps | text in the cell |
-| --- | --- | --- |
-| `miss` — error rate | `heat-miss-1…5` (> 0, 3, 7, 12, 20%) | 1–3 `fur`, 4–5 `on-fur` |
-| `time` — reaction, ms | `heat-fur-1…5` (< 450, 600, 750, 950, more) | 1–3 `fur`, 4–5 `on-fur` |
-| `box` — superseded by `state` | `heat-fur-1…5`; 4–5 = mastered, `eye` mark | same |
+Steps: `heat-miss-1…5` for a share above 0, 3, 7, 12 and 20%; the kana is `fur` on steps 1–3 and `on-fur` on 4–5.

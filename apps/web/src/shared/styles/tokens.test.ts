@@ -80,7 +80,7 @@ describe('tokens.css matches docs/design/source/tokens.json', () => {
         styles += 1;
       }
     }
-    expect(styles).toBe(19);
+    expect(styles).toBe(18);
   });
 });
 
