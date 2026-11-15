@@ -3,7 +3,7 @@
 Working file of phase P5 ([phases.md](docs/spec/phases.md), item 6). It tells the executor of each pull request what to build, in which order, and which decisions are already made. It is not part of `docs/`: the last pull request of the phase moves it to `docs/archive/`.
 
 - Written on 2026-11-15 against `main` at d70c954 (PR 154 merged).
-- Where this plan and `docs/spec/` disagree, the spec wins until the pull request named here changes the spec. Every such change is listed under [Q5](#q5-spec-amendments) and needs the maintainer's approval first.
+- Where this plan and `docs/spec/` disagree, the spec wins until the pull request named here changes the spec. Every such change is listed under [Q5](#q5-spec-amendments); the maintainer approved the list on 2026-11-15.
 - Sections: [status](#status), [goal and scope](#1-goal-and-scope), [what was checked](#2-what-was-checked), [decisions](#3-decisions), [questions](#4-questions-for-the-maintainer), [manual steps](#5-maintainers-manual-steps), [pull requests](#6-pull-requests), [executor instructions](#7-instructions-for-executor-agents), [risks](#8-risks).
 
 ## Status
@@ -27,7 +27,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | 12  | `p5-12-report`           | not started |              |
 | 13  | `p5-13-acceptance`       | not started |              |
 
-Answers to the questions of [section 4](#4-questions-for-the-maintainer) are written into that section by the maintainer (or by an agent on the maintainer's word), under each question's **Answer** line.
+The maintainer answered every question of [section 4](#4-questions-for-the-maintainer) on 2026-11-15: the recommended option each time. The answers are on the **Answer** line of each question; a later question is answered the same way.
 
 ## 1. Goal and scope
 
@@ -73,7 +73,7 @@ Checked on 2026-11-15 against the npm registry and the vendor documentation. "No
 
 ## 3. Decisions
 
-Each decision fills a gap the spec leaves open. A decision that changes a sentence of the spec is also listed under [Q5](#q5-spec-amendments) and is not final until the maintainer approves it.
+Each decision fills a gap the spec leaves open. A decision that changes a sentence of the spec is also listed under [Q5](#q5-spec-amendments), which the maintainer approved; the spec itself changes in the pull request named there.
 
 ### Server
 
@@ -368,7 +368,7 @@ Replaces "Two tabs before P5" in [storage-sync.md](docs/spec/storage-sync.md).
   - `200`, same user: `sessionExpired` and `pendingSignIn` are removed and syncing resumes with the same `deviceId` and `lastSeq`.
   - `200`, another user: the rule of [storage-sync.md](docs/spec/storage-sync.md) ("Different user"), with the dialog of [Q2](#q2-design-gaps).
 - **`deviceId`** is `uuidv7(clock.now())` from `shared/lib/uuid.ts`, which the results already use. No new helper.
-- **Sign-out** clears every user store and the user keys of `meta`, keeps `meta.schemaVersion`, `meta.typingIntervals` (the keyboard's K, a property of the device) and `nekotype:locale`. Whether it clears the settings: [Q3](#q3-does-sign-out-clear-the-settings).
+- **Sign-out** clears every user store and the user keys of `meta`, keeps `meta.schemaVersion`, `meta.typingIntervals` (the keyboard's K, a property of the device) and `nekotype:locale`. It also resets the settings to their defaults, and so does account deletion ([Q3](#q3-does-sign-out-clear-the-settings)).
 - **"Reset progress"** is hidden whenever `meta.userId` is set, an expired session included (A33).
 
 #### D20. Preview and the production host
@@ -402,7 +402,7 @@ The spec contradicts itself. [storage-sync.md](docs/spec/storage-sync.md) sends 
 - **Option B.** Raise the body limit to 512 KB and accept that a rare first sync may exceed 10 ms, relying on the platform's tolerance for infrequent overruns. The spec says the design does not rely on it (O4).
 - **Option C.** Leave it and document the limit. A long-time guest then loses the ability to sync.
 - **Waiting:** PR 1 (what to measure), PR 4, PR 5, PR 7.
-- **Answer:**
+- **Answer (2026-11-15):** option A. The caps of 60 kana and 31 bucket days per track are the starting values; PR 1 may lower them by its measurement, and the final values are recorded in the ADR of PR 1.
 
 ### Q2. Design gaps
 
@@ -427,7 +427,7 @@ Proposals (existing components and tokens only; English / Russian):
 | j   | The profile                                 | As drawn: the cat mark, the display name, `via GitHub` / `через GitHub`. No avatar image (it would be a request to a third party). Without a display name, the email; without both, `account` / `аккаунт`                                                                                                                                                         |
 
 - **Waiting:** pull request D, then PR 8 (e, f, g, h, j), PR 11 (h, i), PR 12 (a, b, c, d).
-- **Answer:**
+- **Answer (2026-11-15):** option A. The items are drawn in the design artifact and exported by pull request D before PR 8, PR 11 and PR 12.
 
 ### Q3. Does sign-out clear the settings?
 
@@ -436,7 +436,7 @@ Proposals (existing components and tokens only; English / Russian):
 - **Option A (recommended).** Sign-out and account deletion reset the settings to their defaults. The next person at a shared computer starts clean (A5), and nothing of the account is left.
 - **Option B.** The settings stay on the device.
 - **Waiting:** PR 8, PR 11.
-- **Answer:**
+- **Answer (2026-11-15):** option A. Sign-out and account deletion reset the settings to their defaults.
 
 ### Q4. Who runs the commands against Cloudflare
 
@@ -445,7 +445,7 @@ PR 1, PR 5 and PR 13 deploy to a test project and read its logs; that needs acce
 - **Option A (recommended).** The maintainer does the manual steps M1 once (including `wrangler login` on the development machine); the executor agent then runs `pnpm --filter @nekotype/bench run seed` and `run measure` itself and writes the results into the pull request.
 - **Option B.** The maintainer runs those two commands and pastes the output; the executor writes the report from it.
 - **Waiting:** PR 1.
-- **Answer:**
+- **Answer (2026-11-15):** option A. The maintainer runs `wrangler login` on the development machine; the executor runs the scripts.
 
 ### Q5. Spec amendments
 
@@ -468,7 +468,7 @@ Small changes to sentences of the spec that the decisions above need. Approve th
 
 - **Recommendation:** approve all.
 - **Waiting:** the pull request named in each row.
-- **Answer:**
+- **Answer (2026-11-15):** all twelve approved.
 
 ## 5. Maintainer's manual steps
 
@@ -507,7 +507,7 @@ Check: `pnpm exec wrangler pages secret list --project-name nekotype` lists the 
 
 ### M4. Design session — before PR 8 and PR 12
 
-Only if [Q2](#q2-design-gaps) is answered with option A: approve the drawings in the design artifact, so that pull request D can export them.
+[Q2](#q2-design-gaps) was answered with option A. An agent draws the items of Q2 in the design artifact from the proposals there; the maintainer reviews the previews and approves them, and only then pull request D exports them. The session does not depend on PR 1–7 and can run next to them.
 
 ### M5. Turnstile — before PR 12
 
@@ -529,22 +529,22 @@ Common to all: the branch is cut from fresh `main`; the acceptance items are tho
 
 Order. A pull request starts when the ones it depends on are merged; pull requests with no path between them can run in parallel.
 
-| PR  | Depends on       | Can run in parallel with |
-| --- | ---------------- | ------------------------ |
-| 1   | —                | —                        |
-| 2   | 1                | 4                        |
-| 3   | 2                | 4, 6                     |
-| 4   | 1                | 2, 3                     |
-| 5   | 3, 4             | 6                        |
-| 6   | 4                | 3, 5                     |
-| 7   | 5, 6             | D, 12                    |
-| D   | the answer to Q2 | 2–7                      |
-| 8   | 3, 7, D          | 10, 12                   |
-| 9   | 8                | 10, 11, 12               |
-| 10  | 5, 7             | 8, 9, 11, 12             |
-| 11  | 8, D             | 9, 10, 12                |
-| 12  | 3, D             | 5–11                     |
-| 13  | all              | —                        |
+| PR  | Depends on | Can run in parallel with |
+| --- | ---------- | ------------------------ |
+| 1   | —          | —                        |
+| 2   | 1          | 4                        |
+| 3   | 2          | 4, 6                     |
+| 4   | 1          | 2, 3                     |
+| 5   | 3, 4       | 6                        |
+| 6   | 4          | 3, 5                     |
+| 7   | 5, 6       | D, 12                    |
+| D   | M4         | 2–7                      |
+| 8   | 3, 7, D    | 10, 12                   |
+| 9   | 8          | 10, 11, 12               |
+| 10  | 5, 7       | 8, 9, 11, 12             |
+| 11  | 8, D       | 9, 10, 12                |
+| 12  | 3, D       | 5–11                     |
+| 13  | all        | —                        |
 
 Sign-in is hidden on previews, so nothing behind a session can be tried on a preview URL. Those parts are checked locally (`pnpm run dev` with `pnpm run dev:api`) and, after the merge, by the maintainer on production, which nobody else uses before the release (ADR 061).
 
@@ -654,19 +654,19 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 
 ### PR D — Design export
 
-- **Branch:** `docs/p5-design`. **Depends on:** Q2 answered with option A, M4. Not needed with option B: then PR 8, PR 11 and PR 12 take the proposals of Q2, and the executor of PR 8 writes the ADR.
+- **Branch:** `docs/p5-design`. **Depends on:** M4 (the design session of Q2, approved by the maintainer). It can start at any time and must be merged before PR 8, PR 11 and PR 12.
 - **Goal.** The items of Q2, as approved, exported from the design artifact into `docs/design/source/` (the workflow of the design system: change the artifact, export, never edit the export by hand).
 - **Docs:** `docs/design/source/` (`README.md`, `decisions.md`, the `Dialog`, `Notice`, `Nav` and `TranslationLine` guidelines); an ADR; `frontend.md` (the sign-in notice, the navigation with an expired session, the report dialog's states); `storage-sync.md` (sign-out needs a connection, if item h is approved).
 - **Size:** documents only.
 
 ### PR 8 — Sign-in, sign-out, the expired session, the account section
 
-- **Branch:** `p5-08-account`. **Depends on:** PR 3, PR 7, PR D (or Q2 option B), Q3.
+- **Branch:** `p5-08-account`. **Depends on:** PR 3, PR 7, PR D, Q3.
 - **Goal.** A user can sign in, see the sync status, sign out and continue after an expired session (D19, D20).
 - **Adds:** `features/sync/model/account.ts` and `ui/another-account-dialog.tsx`; `entities/user`: `beginSignIn`, `authAvailable`, `authError`; the rest of `pages/settings/ui/account-panel.tsx` (the profile, sign-out) and the guest form; the navigation link in `app/App.tsx`; the sign-in notice on `/`; i18n keys (the navigation link and the notice in the core dictionary, the rest in the `settings` part, `en` and `ru`).
 - **Changes:** `pages/settings/ui/settings-page.tsx` (the Account section; "reset progress" hidden for a signed-in user).
 - **Dependencies:** none.
-- **Tests:** unit tests of the four outcomes of `GET /api/me` (D19); the guest merge sends the delta in the first batch and 1,000 results in 20 further ones (fake clock); an expired session resumes with the same `deviceId` and `lastSeq`; another user with unsent data: cancel calls logout and keeps everything, discard clears; another user without unsent data clears silently; sign-out runs a sync first, asks only with unsent data, then clears the stores (and the settings by Q3); signing out and in again to the same account restores everything from the server; DOM tests of the account panel in each status, of the dialogs, of the navigation link on a production host, a preview host and with a session, and of the notice for `auth_error` with the parameter removed from the URL.
+- **Tests:** unit tests of the four outcomes of `GET /api/me` (D19); the guest merge sends the delta in the first batch and 1,000 results in 20 further ones (fake clock); an expired session resumes with the same `deviceId` and `lastSeq`; another user with unsent data: cancel calls logout and keeps everything, discard clears; another user without unsent data clears silently; sign-out runs a sync first, asks only with unsent data, then clears the stores and resets the settings (Q3); signing out and in again to the same account restores everything from the server; DOM tests of the account panel in each status, of the dialogs, of the navigation link on a production host, a preview host and with a session, and of the notice for `auth_error` with the parameter removed from the URL.
 - **Acceptance:** 8, 10, 11.
 - **Docs:** `frontend.md` (the account section as built); `storage-sync.md` (the `pendingSignIn` mechanism, Q3); `baseline-v1.md`; `README.md` (the description of the application: accounts and sync exist).
 - **Preview URL:** no `sign in` link and no sign-in buttons; `/settings` shows the Account section with nothing to press; everything else unchanged. Locally with `.dev.vars`: the whole flow with both providers. After the merge the maintainer signs in on production from two browsers and checks that progress appears in the second.
@@ -700,7 +700,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 
 ### PR 11 — Account deletion
 
-- **Branch:** `p5-11-account-deletion`. **Depends on:** PR 8, PR D (or Q2 option B), Q3.
+- **Branch:** `p5-11-account-deletion`. **Depends on:** PR 8, PR D, Q3.
 - **Goal.** `DELETE /api/me` and the dialog of the design (the word typed, `delete forever`).
 - **Adds:** the route (one `batch()`: `content_reports.user_id` set to `NULL`, then the `users` row deleted, which cascades; the cookie cleared; `204`); the dialog in the account panel; `features/sync/model/account.ts`: `deleteAccount()` clears the user stores after a `204` and returns to guest mode.
 - **Tests:** API: every table is empty for the user afterwards, a report keeps its row with `user_id` `NULL`, another user is untouched, `401`. Unit and DOM: the button is disabled until the word of the current language is typed; a failure keeps everything; success leaves a guest with empty data.
@@ -711,7 +711,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 
 ### PR 12 — Report a problem
 
-- **Branch:** `p5-12-report`. **Depends on:** PR 3, PR D (or Q2 option B), M5, Q5 (S11). Independent of sync: it can run any time after PR 3.
+- **Branch:** `p5-12-report`. **Depends on:** PR 3, PR D, M5, Q5 (S11). Independent of sync: it can run any time after PR 3.
 - **Goal.** `POST /api/reports` with Turnstile, and the dialog on `/type` (D21).
 - **Adds:** `apps/api/src/routes/reports.ts` (no session needed; a valid session sets `user_id`; body at most 8 KB; the token verified with `deps.verifyTurnstile` and `CF-Connecting-IP`); `reportRequestSchema`; the real `verifyTurnstile` in `pages-entry.ts`; `pages/trainer/ui/report-dialog.tsx`, `lib/turnstile.ts`, `api/reports.ts`, loaded when the dialog opens; the `report a problem` action in the translation line (hidden with the translation, disabled offline with `available online only`, as in the `TranslationLine` guidelines); i18n keys in the `type` part.
 - **Dependencies:** none. The Turnstile script is loaded from Cloudflare at run time and is not part of any chunk.
