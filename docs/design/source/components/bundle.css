@@ -141,13 +141,6 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-seg--lg { gap: var(--space-4); }                          /* the sections of a page (/stats): ui-heading items */
 .nk-seg--lg .nk-seg__item { height: var(--control-h); }
 
-.nk-check { display: inline-flex; align-items: center; gap: var(--space-2); height: var(--control-h); padding: 0 var(--space-2); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--fur-dim); cursor: pointer; text-align: left; }
-.nk-check:hover { background: var(--bg-hover); color: var(--fur); }
-.nk-check__box { flex: none; width: 12px; height: 12px; box-sizing: border-box; border: var(--stroke-hair) solid var(--line-strong); border-radius: var(--radius-xs); }
-.nk-check.is-on { color: var(--fur); }
-.nk-check.is-on .nk-check__box { background: var(--eye); border-color: var(--eye); }
-.nk-check__id { color: var(--fur-dim); margin-left: auto; }
-
 /* ---------- Mode panel ---------- */
 .nk-modes { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); transition: opacity var(--dur-fade) var(--ease-out); }
 .nk-modes__row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; row-gap: var(--space-2); }
@@ -211,13 +204,6 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-dialog__close:hover { background: var(--bg-hover); color: var(--fur); }
 .nk-dialog__body { min-height: 0; overflow: auto; margin: 0 calc(-1 * var(--space-2)); padding: 0 var(--space-2); color: var(--fur-dim); }
 .nk-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-6); }
-
-/* ---------- Row picker ---------- */
-.nk-rows { display: flex; flex-direction: column; gap: var(--space-4); }
-.nk-rows__group { margin: 0; padding: 0; border: 0; min-width: 0; }
-.nk-rows__legend { display: flex; align-items: baseline; gap: var(--space-3); padding: 0; margin-bottom: var(--space-2); color: var(--fur-dim); }
-.nk-rows__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 0 var(--space-2); }
-.nk-rows__foot { min-height: 20px; }
 
 /* ---------- Results ---------- */
 .nk-stat { display: flex; flex-direction: column; gap: var(--space-1); }
@@ -296,10 +282,6 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
 .nk-kc:not(.nk-kc--state) .nk-kc__cell:hover, .nk-kc:not(.nk-kc--state) .nk-kc__cell.is-active { border-color: var(--fur-dim); }
 .nk-kc__sw { width: 20px; height: 20px; line-height: 1; }     /* size and family from .mono-small */
 .nk-kc .is-empty { border-color: var(--line); color: var(--fur-dim); }
-.nk-kc .is-box0 { border-color: var(--line-strong); }
-.nk-kc .is-locked { color: var(--fur-faint); cursor: default; }
-.nk-kc .is-fur-1 { background: var(--heat-fur-1); } .nk-kc .is-fur-2 { background: var(--heat-fur-2); } .nk-kc .is-fur-3 { background: var(--heat-fur-3); }
-.nk-kc .is-fur-4 { background: var(--heat-fur-4); color: var(--on-fur); } .nk-kc .is-fur-5 { background: var(--heat-fur-5); color: var(--on-fur); }
 .nk-kc .is-miss-1 { background: var(--heat-miss-1); } .nk-kc .is-miss-2 { background: var(--heat-miss-2); } .nk-kc .is-miss-3 { background: var(--heat-miss-3); }
 .nk-kc .is-miss-4 { background: var(--heat-miss-4); color: var(--on-fur); } .nk-kc .is-miss-5 { background: var(--heat-miss-5); color: var(--on-fur); }
 /* mastered: an eye mark under the cell, on bg — readable on any fill step */
@@ -347,9 +329,6 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
 @media (pointer: coarse) { .nk-opt .nk-kbd { display: none; } }
 .nk-task.is-coarse .nk-opt .nk-kbd { display: none; }
 
-/* ---------- Vertical label ---------- */
-.nk-vlabel { writing-mode: vertical-rl; text-orientation: upright; color: var(--fur-dim); }
-
 /* ---------- Nav & footer ---------- */
 .nk-nav { display: flex; align-items: center; gap: var(--space-8); width: 100%; min-height: var(--layout-nav-h); max-width: var(--layout-max); margin: 0 auto; padding: 0 var(--space-8); box-sizing: border-box; transition: opacity var(--dur-fade) var(--ease-out), visibility 0s linear 0s; }
 .nk-nav.is-hidden, .nk-foot.is-hidden, .nk-modes.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity var(--dur-fade) var(--ease-in), visibility 0s linear var(--dur-fade); }
@@ -390,7 +369,7 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
 }
 /* Touch: every target ≥ touch-min (Q13) */
 @media (pointer: coarse) {
-  .nk-btn, .nk-btn--sm, .nk-seg__item, .nk-check, .nk-input__field { min-height: var(--touch-min); }
+  .nk-btn, .nk-btn--sm, .nk-seg__item, .nk-input__field { min-height: var(--touch-min); }
   .nk-nav__link, .nk-lang__btn, .nk-link { display: inline-flex; align-items: center; min-height: var(--touch-min); }
   .nk-switch__track { outline-offset: 12px; }
 }

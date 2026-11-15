@@ -134,15 +134,6 @@ export interface ModePanelProps {
 export declare function modeLine(value: Partial<ModeValue>, lang?: 'ru' | 'en', labels?: Record<string, string>): string;
 export declare function ModePanel(props: ModePanelProps): React.ReactElement;
 
-export interface RowPickerProps {
-  script?: 'hiragana' | 'katakana' | 'both';
-  /** Engine `RowId`s: vowels k s t n h m y r w_n · g z d b p · ky sh ch ny hy my ry gy j by py · ext_fa ext_va ext_wi ext_ti ext_che (katakana and 'both' only). */
-  value: string[];
-  onChange?: (rows: string[]) => void;
-  labels?: { base?: string; voiced?: string; combo?: string; all?: string; none?: string; count?: (n: number) => string; empty?: string };
-}
-export declare function RowPicker(props: RowPickerProps): React.ReactElement;
-
 export interface DialogProps {
   open: boolean;
   onClose?: () => void;
@@ -295,10 +286,11 @@ export interface KanaState {
   /** Recognition: [correct, total]. */
   recog: [number, number];
 }
-export type KanaChartDatum = KanaState | { v: number; n?: number } | number | 'new' | 'locked';
+/** `state`: KanaState. `miss`: the share of typing attempts with an error (`v`, 0–1) and the attempts (`n`). */
+export type KanaChartDatum = KanaState | { v: number; n?: number };
 export interface KanaChartProps {
-  /** state (MVP): learning table on `/`. miss / time (heatmaps) and box (v9) are not used in the MVP. */
-  mode: 'state' | 'miss' | 'time' | 'box';
+  /** state: the learning table on `/`. miss: weak kana in typing on `/stats` (decision 110). */
+  mode: 'state' | 'miss';
   script?: 'hiragana' | 'katakana';
   /** Keyed by kana. */
   data: Record<string, KanaChartDatum>;
@@ -391,9 +383,6 @@ export interface OptionCardProps {
 }
 export declare function OptionCard(props: OptionCardProps): React.ReactElement;
 
-export interface VerticalLabelProps { children: React.ReactNode; ariaLabel: string; className?: string }
-export declare function VerticalLabel(props: VerticalLabelProps): React.ReactElement;
-
 /* ================= Shell ================= */
 export interface NavItem { id: string; label: React.ReactNode; href?: string }
 export interface NavProps {
@@ -417,11 +406,9 @@ export declare function Nav(props: NavProps): React.ReactElement;
 export interface FooterProps { links: { id: string; label: React.ReactNode; href?: string; onClick?: () => void }[]; hidden?: boolean }
 export declare function Footer(props: FooterProps): React.ReactElement;
 
-/** `grumpy` is drawn in `geometry` only and has no place in the product yet (decision 98). */
+/** `grumpy` is drawn and has no place in the product yet (decision 98). */
 export type CatMood = 'neutral' | 'sleep' | 'content' | 'grumpy';
 export interface CatProps {
-  /** Product style is 'geometry'. 'line' and 'silhouette' are archived. */
-  variant?: 'geometry' | 'line' | 'silhouette';
   mood?: CatMood;
   mark?: boolean;
   size?: number;
@@ -445,11 +432,11 @@ declare global {
   interface Window {
     Nekotype: {
       TestArea: typeof TestArea; Char: typeof Char; TranslationLine: typeof TranslationLine; Notice: typeof Notice; Kbd: typeof Kbd;
-      ModePanel: typeof ModePanel; RowPicker: typeof RowPicker; Dialog: typeof Dialog; Button: typeof Button; Segmented: typeof Segmented;
+      ModePanel: typeof ModePanel; Dialog: typeof Dialog; Button: typeof Button; Segmented: typeof Segmented;
       Switch: typeof Switch; Input: typeof Input; Textarea: typeof Textarea; Select: typeof Select; Tooltip: typeof Tooltip;
       Stat: typeof Stat; PersonalBestBadge: typeof PersonalBestBadge; ResultChart: typeof ResultChart; ActivityMap: typeof ActivityMap; Toggle: typeof Toggle; WeakKanaList: typeof WeakKanaList;
       KanaChart: typeof KanaChart; HistoryTable: typeof HistoryTable; Pagination: typeof Pagination; OptionCard: typeof OptionCard;
-      VerticalLabel: typeof VerticalLabel; Nav: typeof Nav; Footer: typeof Footer; Cat: typeof Cat; EmptyState: typeof EmptyState;
+      Nav: typeof Nav; Footer: typeof Footer; Cat: typeof Cat; EmptyState: typeof EmptyState;
       createTestController: typeof createTestController; useNarrow: typeof useNarrow; kanaRows: typeof kanaRows; modeLine: typeof modeLine; kanaOf: typeof kanaOf;
       KanaChartDetails: typeof KanaChartDetails; kanaStateLines: typeof kanaStateLines; isDue: typeof isDue; Icon: typeof Icon; KanaTask: typeof KanaTask; createTaskController: typeof createTaskController; useCoarse: typeof useCoarse;
     };

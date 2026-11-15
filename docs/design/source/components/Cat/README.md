@@ -1,13 +1,13 @@
 # Cat
 
-The Nekotype cat. The product uses the `geometry` style only (Q24): mark, favicon and illustrations. `line` and `silhouette` are kept in the asset archive and are not used in the product.
+The Nekotype cat. One style, `geometry` (Q24): mark, favicon and illustrations.
 
 | mood | where |
 | --- | --- |
 | `neutral` | 404 |
 | `sleep` | empty states (`EmptyState`) |
 | `content` | typing results — on a personal best only (Q17) |
-| `grumpy` | not placed yet: reserved for an error or a failure (decision 98); `geometry` only |
+| `grumpy` | not placed yet: reserved for an error or a failure (decision 98) |
 
 - Colours: `cat-fur`, `cat-eye`, `cat-ground`. The eyes are the only colour spot.
 - `content` has closed, smiling eyes (two `eye` arcs); the half-closed eyes it had before read as displeasure and now belong to `grumpy` (decision 98).
