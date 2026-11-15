@@ -61,7 +61,7 @@ The UI locale is device-local (`nekotype:locale`) and is not synced.
 
 ## Merge rules
 
-The server merges a batch by these rules; the client applies the same functions from `shared/runtime` to build the local view.
+The server merges a batch by these rules; the client applies the same functions from `shared/runtime` to build the local view. The server applies the rules for recent recall answers and answer-time buckets to the kana and days the batch touches only, and the result equals the full merge ([ADR 078](../adr/078-user-stats-targeted-updates.md)).
 
 | Data                                                | Rule                                                                                                                                                                                                                                                                                                  |
 | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -80,7 +80,7 @@ The server merges a batch by these rules; the client applies the same functions 
 
 1. A new random `deviceId` is generated on every sign-in that starts from guest mode and stored in `meta` with `lastSeq` = 0. The server therefore never sees a reused `deviceId` with a reset `seq`, including after sign-out and sign-in to the same account. Renewing an expired session keeps them (see "Guest, sign-in and sign-out").
 2. Sync runs under the Web Lock `nekotype-sync`, so only one tab of a device syncs at a time; all tabs share `deviceId`, `delta` and `outbox`.
-3. If `outbox` holds an unacknowledged batch, it is resent unchanged. Otherwise a new batch is built with `seq = lastSeq + 1` from `delta` and up to 200 unsynced results, within 256 KB; it is written to `outbox` and `delta` is cleared in the same transaction.
+3. If `outbox` holds an unacknowledged batch, it is resent unchanged. Otherwise a new batch is built with `seq = lastSeq + 1` from `delta` and up to 50 unsynced results, within 256 KB; it is written to `outbox` and `delta` is cleared in the same transaction.
 4. The server keeps the last applied `seq` per `deviceId` and returns it in every sync response. `seq` ≤ last: not applied, the current snapshot is returned. `seq` = last + 1: applied atomically, snapshot returned. `seq` > last + 1: `409` with the server's last `seq`; the client keeps its batch and resends it as last + 1.
 5. On acknowledgement the client stores the snapshot, sets `lastSeq`, marks the included results `synced` and clears `outbox`. If unsynced results remain, the next batch is sent 5 seconds later (the server's per-user interval), until none remain.
 6. Entries in `user_stats.device_seq` not updated for 90 days are removed on the next write of that row.
