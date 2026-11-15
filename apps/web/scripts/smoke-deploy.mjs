@@ -8,6 +8,8 @@ import { ROUTE_PATHS } from '../src/app/route-paths.ts';
 // application (ADR 037). It requests the deployment itself.
 
 const APP_MARKER = 'id="app"';
+// The static 404 page (public/404.html) carries this, so an old or missing page is caught (ADR 077).
+const NOT_FOUND_MARKER = 'data-page="not-found"';
 
 const header = (response, name) => response.headers.get(name) ?? '';
 
@@ -61,11 +63,12 @@ export async function checkDeployment(baseUrl, { fetchFn = fetch } = {}) {
 
   const expectNotFound = async (path, label) => {
     const { response, body } = await get(fetchFn, baseUrl, path);
-    const ok = response.status === 404 && !body.includes(APP_MARKER);
+    const ok =
+      response.status === 404 && !body.includes(APP_MARKER) && body.includes(NOT_FOUND_MARKER);
     lines.push(`${ok ? 'ok  ' : 'FAIL'} ${label} ${path} ${describeResponse(response)}`);
     if (!ok)
       failures.push(
-        `${path} should answer 404 and not the application, got ${describeResponse(response)}`,
+        `${path} should answer 404 with the not-found page and not the application, got ${describeResponse(response)}`,
       );
     return response;
   };

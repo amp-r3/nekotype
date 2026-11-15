@@ -18,6 +18,24 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
     await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
   });
 
+  // On Pages an unknown path is answered with the static 404.html, not the application (ADR 077).
+  test('the static 404 page shows the cat, follows the saved language and links home', async ({
+    page,
+  }) => {
+    await page.goto('/404.html');
+    await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /^go home/ })).toHaveAttribute('href', '/');
+
+    await page.evaluate(() => {
+      localStorage.setItem('nekotype:locale', 'ru');
+    });
+    await page.reload();
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Страница не найдена' }),
+    ).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
+  });
+
   test('Enter on the not-found screen goes home', async ({ page }) => {
     await page.goto('/nope');
     await expect(page.getByRole('button', { name: /^go home/ })).toBeVisible();
