@@ -482,7 +482,7 @@ Only the maintainer can do these: they need the Cloudflare, Google and GitHub ac
 3. `pnpm dlx wrangler@4 d1 create nekotype-bench`
 4. Give the executor the `database_id` the command prints (it goes into `apps/bench/wrangler.toml`).
 
-State on 2026-11-15: steps 1 and 3 are done. The database `nekotype-bench` is in region EEUR, `database_id` `d49b1f07-7287-4b0f-be91-3bf2d1938f14`. Step 2 failed without `--force` and is to be repeated with it; the executor of PR 1 checks that the project exists before deploying.
+State on 2026-11-15: M1 is done. The Pages project `nekotype-bench` exists (created with `--force`; it will be served at `https://nekotype-bench.pages.dev` after its first deployment). The database `nekotype-bench` is in region EEUR, `database_id` `d49b1f07-7287-4b0f-be91-3bf2d1938f14`. Later commands against this project run on Pages and take no `--force`.
 
 Check: `pnpm dlx wrangler@4 pages project list` shows `nekotype-bench`; `pnpm dlx wrangler@4 d1 list` shows `nekotype-bench`. Both can be deleted when the phase is closed.
 
