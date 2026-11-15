@@ -9,7 +9,7 @@ Revised Nov 6, 2026: learning first ([ADR 058](../adr/058-learning-first.md)).
 This document specifies the Nekotype MVP: required behaviour, data models, interfaces, performance budgets and acceptance criteria. "Baseline" refers to the repository state at commit 0f4927d.
 
 - **Location in the repository:** `docs/spec/`, one file per area (see "Contents").
-- **Precedence:** where this document conflicts with `README.md`, `docs/architecture/baseline-v1.md` or `docs/archive/v1-implementation-plan.md`, this document applies.
+- **Precedence:** where this document conflicts with `README.md`, `docs/architecture/` or `docs/archive/v1-implementation-plan.md`, this document applies.
 - **Requirement keywords:** MUST, MUST NOT and MAY are used as defined in RFC 2119.
 - **Unresolved items** are listed under [Design decisions and open items](decisions.md). No requirement depends on them unless stated.
 

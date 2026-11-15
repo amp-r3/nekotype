@@ -580,7 +580,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Dependencies:** `hono` (runtime, `apps/api`); dev: `wrangler` (root), `@cloudflare/vitest-plugin`, `@cloudflare/workers-types`, `vitest`. Client bundle: none. The lockfile and `vite.config.ts` change, so the latency gate runs on this pull request.
 - **Tests:** API tests as above; unit tests for `_routes.json`, the entry file and the smoke test.
 - **Acceptance:** 1 (the infrastructure).
-- **Docs:** an ADR (server package and entry, root `wrangler.toml`, migrations in CI, the test runner actually used); `backend.md` (S1, S3, where migrations live); `architecture.md` (the tree: `apps/api/migrations`, `wrangler.toml`); `quality.md` (S12, API tests); `README.md` (scripts, local development with two servers, deployment with Functions and D1, the one-time setup); `baseline-v1.md` (workspace, verification gates); `AGENTS.md` (the project paragraph no longer says "there is no backend"; `dev:api`).
+- **Docs:** an ADR (server package and entry, root `wrangler.toml`, migrations in CI, the test runner actually used); `backend.md` (S1, S3, where migrations live); `architecture.md` (the tree: `apps/api/migrations`, `wrangler.toml`); `quality.md` (S12, API tests); `README.md` (scripts, local development with two servers, deployment with Functions and D1, the one-time setup); `docs/architecture/` (workspace, verification gates); `AGENTS.md` (the project paragraph no longer says "there is no backend"; `dev:api`).
 - **Preview URL:** `/api/unknown` answers `404` with `{"error":{"code":"not_found"}}`; `/`, `/type` and a missing asset behave as before; the deploy log shows the Functions bundle uploaded.
 - **Done when:** CI is green including the migration step and the smoke test; this confirms the three "not confirmed" items of section 2 that belong to it, or the fallback of D8 is in place and recorded.
 - **Size:** about 700 lines.
@@ -593,7 +593,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Dependencies:** `arctic` (runtime, `apps/api`). Client bundle: none.
 - **Tests (API, fake provider and fake clock):** a new user gets `users`, `oauth_accounts` and `user_stats` rows; a second provider with the same verified email links to the same user; an unverified email creates a separate user and stores no address; a wrong or missing state redirects to `/?auth_error=failed`; `access_denied` to `/?auth_error=denied`; the cookie attributes; `GET /api/me` with a session, without one and with an expired one; renewal below 15 days and none above; logout deletes the row and the cookie; `POST` with a foreign `Origin` is `403`; `/api/auth/google` is `404` with `ENVIRONMENT` = `preview`. One file for the Arctic-backed provider with a stubbed `fetch`.
 - **Acceptance:** 1 (OAuth callback, the error table).
-- **Docs:** an ADR (the provider seam, the state cookie, verified addresses only); `backend.md` (S2, S3, the state cookie, the session cleanup); `README.md` (`.dev.vars`, the OAuth clients); `baseline-v1.md`; `smoke-deploy.mjs` gets the `/api/me` and `/api/auth/google` checks (D22).
+- **Docs:** an ADR (the provider seam, the state cookie, verified addresses only); `backend.md` (S2, S3, the state cookie, the session cleanup); `README.md` (`.dev.vars`, the OAuth clients); `docs/architecture/`; `smoke-deploy.mjs` gets the `/api/me` and `/api/auth/google` checks (D22).
 - **Preview URL:** `/api/me` answers `401`; `/api/auth/google` answers `404`. After the merge the maintainer does the check of M3 on production.
 - **Done when:** the API tests pass; a local sign-in with both providers works with the maintainer's `.dev.vars` (the executor asks the maintainer to try it if it has no secrets).
 - **Size:** about 1,100 lines.
@@ -607,7 +607,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Dependencies:** none.
 - **Tests:** the property, convergence, splitting and equivalence tests of D12, each over at least 500 generated cases; example tests for the tie rule and for `mergeLearn` on the year-long state.
 - **Acceptance:** 14, 15, 17.
-- **Docs:** an ADR (one merge function, a delta is a state, the tie rule, splitting); `storage-sync.md` ("Merge rules": the tie rule, the server's `unlocked`, the split); `metrics.md` (S5, S7); `baseline-v1.md` (`packages/shared`).
+- **Docs:** an ADR (one merge function, a delta is a state, the tie rule, splitting); `storage-sync.md` ("Merge rules": the tie rule, the server's `unlocked`, the split); `metrics.md` (S5, S7); `docs/architecture/` (`packages/shared`).
 - **Preview URL:** typing results and records behave as before (the tie rule is invisible).
 - **Done when:** `pnpm test` in `packages/shared` passes with the new suites; the initial JS does not grow (nothing imports the new functions yet).
 - **Size:** about 1,300 lines.
@@ -621,7 +621,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Dependencies:** `valibot` (runtime, `packages/shared`). Client bundle: none, checked by the lint test of D10.
 - **Tests (API):** `seq` ≤ last, = last + 1 and > last + 1 (`409` with `lastSeq`); a resent batch changes nothing and inserts no duplicate; a delayed old batch is not applied; every merge rule on stored data; `seq` = 1 keeps the account's settings and a later batch overwrites older ones; two devices that send interleaved batches converge; a lost `version` update is retried once without double counting, and a second loss is `503 conflict` with `Retry-After: 5`; two concurrent syncs lose no increment; `429` inside the interval with `Retry-After`; `413` over 256 KB; `400` for each schema bound and for a batch over the caps; `401`; `403`; the 90-day cleanup of `device_seq`; bucket days older than 365 days are deleted; a learning-only sync writes at most 2 rows and a finished test at most 6 (`meta.rows_written`); at most 18 statements for a batch of 50 results at the caps; a sample of the equivalence cases against `json_patch`; the snapshot of the response equals the stored row parsed.
 - **Acceptance:** 1, 4, 5, 6 (two devices), 7, 12, 15, 16, 17, 18.
-- **Docs:** `backend.md` (S4, the order of checks, the read and write statements, the caps); `storage-sync.md` (S4); `quality.md` (`apps/api` tests); `baseline-v1.md`.
+- **Docs:** `backend.md` (S4, the order of checks, the read and write statements, the caps); `storage-sync.md` (S4); `quality.md` (`apps/api` tests); `docs/architecture/`.
 - **Preview URL:** `/api/sync` answers `401` to `GET` and to `POST` with the preview's own `Origin`.
 - **Done when:** the API tests pass, and the measurement of PR 1 repeated against the real endpoint on `nekotype-bench` stays within 10 ms (cold maximum and warm p95) for the three batches. Over the limit: stop and report, as in PR 1.
 - **Size:** about 1,500 lines.
@@ -636,7 +636,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Dependencies:** none.
 - **Tests (unit, fake database):** the view equals snapshot ⊕ outbox ⊕ delta for learning, typing statistics, counters and records; statistics stay visible while the outbox holds a batch; two stores on one database with interleaved changes keep both; a reload keeps unwritten changes; reset in one tab empties the other; the schema reset from version 3; the wrapper's two methods on IndexedDB (`fake-indexeddb`) and on the memory fallback; no IndexedDB write inside a keystroke handler and the render budget of recall (the existing tests still pass).
 - **Acceptance:** 3, 6 (two tabs, at the store level).
-- **Docs:** an ADR (schema 4, read-modify-write transactions, merges between tabs, the `meta` keys); `storage-sync.md` (the table, "Two tabs", S8, S9); `baseline-v1.md` (`shared/lib/idb`, `entities/learn`, `entities/stats`); `README.md` and `quality.md` only if the budget figures they quote change.
+- **Docs:** an ADR (schema 4, read-modify-write transactions, merges between tabs, the `meta` keys); `storage-sync.md` (the table, "Two tabs", S8, S9); `docs/architecture/` (`shared/lib/idb`, `entities/learn`, `entities/stats`); `README.md` and `quality.md` only if the budget figures they quote change.
 - **Preview URL:** a learning session and a typing test in two tabs at once: after both, each tab shows the answers and the test of the other; progress survives a reload; "reset progress" in one tab empties the other. The first load after the deploy starts from empty data (the schema reset).
 - **Done when:** `verify:quick` passes; the initial JS grew by at most 1.4 KB; the latency gate passes in CI.
 - **Size:** about 1,600 lines.
@@ -651,7 +651,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Dependencies:** none.
 - **Tests (unit: fake database, fake `Clock` and `Scheduler`, a fake server that implements the protocol with the shared merge functions):** a batch is built from both deltas, the settings rule and at most 50 results, and clears what it took in the same transaction; a delta over the caps is split and the rest follows 5 seconds later; an unacknowledged batch is resent unchanged; the acknowledgement stores the snapshot, marks the results, merges the records and applies the settings rule; `409`, `429`, `503` with `Retry-After`, a network error, `401` and `400`/`413` each do what the table of "Failed requests" says, and a `400` is retried only after `appVersion` changes; the 10-second and 5-second spacing; the keepalive request at `hidden` within 60 KB, and nothing sent when the lock is held; two engines on one database send one batch; two devices against one server converge; retention keeps unsynced results and removes the oldest synced ones above 1,000; `GET` on `start` and `online` with nothing to send.
 - **Acceptance:** 4 (resend), 6 (two devices at the engine level), 9.
-- **Docs:** an ADR (the engine, its triggers, the pull, the lazy chunk and the budget rule); `storage-sync.md` (S6, the split, the settings marker of D16); `quality.md` (the budget rule); `baseline-v1.md`.
+- **Docs:** an ADR (the engine, its triggers, the pull, the lazy chunk and the budget rule); `storage-sync.md` (S6, the split, the settings marker of D16); `quality.md` (the budget rule); `docs/architecture/`.
 - **Preview URL:** a guest's network panel shows no request to `/api` and no sync chunk loaded, also after the idle prefetch.
 - **Done when:** `verify:quick` passes; the initial JS grew by at most 0.3 KB; the budget script proves the sync chunk is lazy.
 - **Size:** about 1,800 lines.
@@ -672,7 +672,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Dependencies:** none.
 - **Tests:** unit tests of the four outcomes of `GET /api/me` (D19); the guest merge sends the delta in the first batch and 1,000 results in 20 further ones (fake clock); an expired session resumes with the same `deviceId` and `lastSeq`; another user with unsent data: cancel calls logout and keeps everything, discard clears; another user without unsent data clears silently; sign-out runs a sync first, asks only with unsent data, then clears the stores and resets the settings (Q3); signing out and in again to the same account restores everything from the server; DOM tests of the account panel in each status, of the dialogs, of the navigation link on a production host, a preview host and with a session, and of the notice for `auth_error` with the parameter removed from the URL.
 - **Acceptance:** 8, 10, 11.
-- **Docs:** `frontend.md` (the account section as built); `storage-sync.md` (the `pendingSignIn` mechanism, Q3); `baseline-v1.md`; `README.md` (the description of the application: accounts and sync exist).
+- **Docs:** `frontend.md` (the account section as built); `storage-sync.md` (the `pendingSignIn` mechanism, Q3); `docs/architecture/`; `README.md` (the description of the application: accounts and sync exist).
 - **Preview URL:** no `sign in` link and no sign-in buttons; `/settings` shows the Account section with nothing to press; everything else unchanged. Locally with `.dev.vars`: the whole flow with both providers. After the merge the maintainer signs in on production from two browsers and checks that progress appears in the second.
 - **Done when:** `verify:quick` passes; the initial JS grew by at most 0.4 KB and is at most 33.5 KB.
 - **Size:** about 1,500 lines.
@@ -698,7 +698,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Changes:** `pages/stats` history table: on the last local page, for a signed-in user who is online, the next page is requested; `loading history…` under the table (the string of the design's `Notice` guidelines).
 - **Tests:** API: paging through 120 results with equal `endedAt` values among them, the cursor and limit bounds, another user's results never returned, `401`. Unit: a new device fills its history page by page; inserting twice changes nothing; a guest never requests.
 - **Acceptance:** 1.
-- **Docs:** `backend.md` (the query); `baseline-v1.md` (`pages/stats`, `entities/stats`).
+- **Docs:** `backend.md` (the query); `docs/architecture/` (`pages/stats`, `entities/stats`).
 - **Preview URL:** the history of `/stats` works as before for a guest. Locally: sign in on a clean profile and page through older results.
 - **Size:** about 500 lines.
 
@@ -709,7 +709,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Adds:** the route (one `batch()`: `content_reports.user_id` set to `NULL`, then the `users` row deleted, which cascades; the cookie cleared; `204`); the dialog in the account panel; `features/sync/model/account.ts`: `deleteAccount()` clears the user stores after a `204` and returns to guest mode.
 - **Tests:** API: every table is empty for the user afterwards, a report keeps its row with `user_id` `NULL`, another user is untouched, `401`. Unit and DOM: the button is disabled until the word of the current language is typed; a failure keeps everything; success leaves a guest with empty data.
 - **Acceptance:** 1.
-- **Docs:** `backend.md` if the statement order is worth a line; `baseline-v1.md`.
+- **Docs:** `backend.md` if the statement order is worth a line; `docs/architecture/`.
 - **Preview URL:** nothing reachable. Locally: delete an account and sign in again to find it new.
 - **Size:** about 350 lines.
 
@@ -721,7 +721,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Dependencies:** none. The Turnstile script is loaded from Cloudflare at run time and is not part of any chunk.
 - **Tests:** API: an anonymous report and a signed-in one; a rejected token is `403 turnstile_failed`; a body over 8 KB is `413`; a comment over 500 characters and an unknown reason are `400`; without the secret `503`; a test secret with `ENVIRONMENT` = `production` is refused. DOM, with a fake loader: the script is requested only on open; the states of Q2 (b, c); offline; the item id and `contentVersion` of the prompt on display are sent.
 - **Acceptance:** 1 (anonymous reports).
-- **Docs:** an ADR (the dialog in the page, keys by host, the fail-closed secret); `frontend.md` (S11, the dialog); `backend.md` (the secret rule); `baseline-v1.md`; `README.md` (the Turnstile secret in the one-time setup).
+- **Docs:** an ADR (the dialog in the page, keys by host, the fail-closed secret); `frontend.md` (S11, the dialog); `backend.md` (the secret rule); `docs/architecture/`; `README.md` (the Turnstile secret in the one-time setup).
 - **Preview URL:** on `/type`, with words and with phrases: open the dialog, pass the check, send; the dialog confirms; the count of M5 grows. Offline (DevTools): the action is disabled. The Turnstile script appears in the network panel only after the dialog opens.
 - **Size:** about 900 lines.
 
@@ -730,7 +730,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Branch:** `p5-13-acceptance`. **Depends on:** every other pull request.
 - **Goal.** The measurements of the acceptance on Cloudflare, and the documents brought in line with the code.
 - **Does:** deploys `main` to `nekotype-bench` and repeats the measurement of PR 1 on the real endpoint: `cpuTime` cold and warm for a learning sync and for a batch of 50 results on the year-long row; `rows_written` of one finished test (at most 6) and of a learning-only sync (at most 2); the number of D1 statements of the largest batch (at most 50). A second report under `docs/research/`.
-- **Docs:** `phases.md` (the "Closed" line of P5 with the commit and the pull requests); `quality.md` (an "End of P5" column: sizes from `check-budget.mjs`, latency from the CI run); `README.md` and `baseline-v1.md` reread against the code; `AGENTS.md` (the project paragraph: P5 done, what the target still lacks); `docs/adr/README.md` checked for every ADR of the phase; this file moved to `docs/archive/p5-plan.md` with a note on top.
+- **Docs:** `phases.md` (the "Closed" line of P5 with the commit and the pull requests); `quality.md` (an "End of P5" column: sizes from `check-budget.mjs`, latency from the CI run); `README.md` and `docs/architecture/` reread against the code; `AGENTS.md` (the project paragraph: P5 done, what the target still lacks); `docs/adr/README.md` checked for every ADR of the phase; this file moved to `docs/archive/p5-plan.md` with a note on top.
 - **Acceptance:** 12, 13, 16, 18 (on Cloudflare).
 - **Done when:** every row of the table below has a passing test or measurement named in the pull request description; the maintainer has done the production check of PR 8 and M6 is listed as open.
 - **Size:** about 300 lines, mostly documents.
@@ -771,7 +771,7 @@ One executor takes one pull request of section 6.
 4. **Follow `AGENTS.md`:** the code rules (no `any`, no assertions, strings through i18n with `en` and `ru` in parity, injected time and randomness), the layer rules, the hot-path and budget rules. Never bypass a hook.
 5. **Budgets.** Run `pnpm run build && pnpm run budget` before and after, and write both initial JS figures into the pull request description. If your allowance (D17) does not hold, stop and ask.
 6. **Tests.** Write the tests your pull request lists and name, for each acceptance item you close, the test that proves it. Report results as they are.
-7. **Documents** change in the same pull request: the spec files and ADR named, `README.md` and `baseline-v1.md` when the code they describe changed, `AGENTS.md` only where named and within 250 lines. A new ADR takes the next free number and a row in `docs/adr/README.md`.
+7. **Documents** change in the same pull request: the spec files and ADR named, `README.md` and `docs/architecture/` when the code they describe changed, `AGENTS.md` only where named and within 250 lines. A new ADR takes the next free number and a row in `docs/adr/README.md`.
 8. **Finish:** when the work is done and `pnpm run verify:quick` passes, commit with a Conventional Commits message, push the branch (the pre-push hook runs the checks; do not run them by hand a second time) and open the pull request. Its description lists: what changed, why, anything outside the scope, what to check on the preview URL (from your pull request's entry here), the acceptance items closed with their tests, and the initial JS before and after. No AI attribution in commits or in the pull request. Never merge: the maintainer does.
 9. **Mark the plan:** after `gh pr create`, set your row of the Status table to `done` with the pull request number, in a second commit on the same branch (`docs: mark P5 PR n done`).
 10. **Communication:** with the maintainer in Russian; code, comments, commits and documents in English.
