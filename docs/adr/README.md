@@ -103,3 +103,4 @@ Append-only log of architectural decisions, one file per decision.
 | [076](076-stats-screen-redesign.md)                                                  | The `/stats` Screen: One Section at a Time, Filters, Test Marks and Heat Maps                | In force                 |
 | [077](077-static-404-page.md)                                                        | The Static 404 Page Mirrors the App's Not-Found Screen                                       | In force                 |
 | [078](078-user-stats-targeted-updates.md)                                            | `user_stats` Updated per Touched Key                                                         | In force                 |
+| [079](079-account-and-report-states.md)                                              | Account, Sign-In and Report Dialog States for P5                                             | In force                 |
