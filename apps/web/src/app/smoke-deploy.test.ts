@@ -10,7 +10,8 @@ import { ROUTE_PATHS } from './route-paths';
 
 const HTML =
   '<!doctype html><html><body><div id="app"></div><script src="/assets/index-a1.js"></script><link href="/assets/index-b2.css"></body></html>';
-const NOT_FOUND = '<!doctype html><title>404</title><h1>Page not found</h1>';
+const NOT_FOUND =
+  '<!doctype html><title>404</title><main data-page="not-found"><h1>Page not found</h1></main>';
 
 function page(status: number, body: string, headers: Record<string, string> = {}): Response {
   return new Response(body, { status, headers: { 'content-type': 'text/html', ...headers } });
@@ -90,6 +91,16 @@ describe('smoke test of a deployment', () => {
         : healthy()(url, init);
     const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn });
     expect(failures.some((f) => f.includes('immutable'))).toBe(true);
+  });
+
+  it('catches a 404 that is not the current not-found page', async () => {
+    const { failures } = await checkDeployment('https://x.pages.dev', {
+      fetchFn: healthy({
+        '/smoke-no-such-page': () => page(404, '<h1>Page not found</h1><div>かな</div>'),
+      }),
+    });
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('/smoke-no-such-page should answer 404 with the not-found page');
   });
 
   it('catches an unknown path that is answered with the application', async () => {

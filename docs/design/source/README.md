@@ -246,7 +246,7 @@ The interface labels every key in this list with `Kbd` or `hint`.
 
 ## Cat
 
-One style — `geometry`. She appears in four places: the logo and favicon; empty states (`sleep`); typing results — only on a personal best (`content` next to `PersonalBestBadge`); 404 (`neutral`). She is not on the typing test screen, not on a learning task, not on `/` and not on `/about`. The `line` and `silhouette` styles stay in the **Cat** asset group as an archive. A fifth mood, `grumpy` (half-closed eyes), is drawn and waits for a place — an error or a failure (decision 98).
+One style — `geometry`. She appears in four places: the logo and favicon; empty states (`sleep`); typing results — only on a personal best (`content` next to `PersonalBestBadge`); 404 (`neutral`; drawn twice: the app's screen and the static `404.html` that Pages serves for unknown paths, ADR 077). She is not on the typing test screen, not on a learning task, not on `/` and not on `/about`. The `line` and `silhouette` styles stay in the **Cat** asset group as an archive. A fifth mood, `grumpy` (half-closed eyes), is drawn and waits for a place — an error or a failure (decision 98).
 
 ## Prohibitions
 
