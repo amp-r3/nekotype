@@ -6,13 +6,14 @@ The repository is a pnpm monorepo with two applications and three packages. The 
 nekotype/
 ├── apps/
 │   ├── web/        Preact + Vite + Tailwind v4, FSD: app → pages → features → entities → shared
-│   └── api/        Hono app (OAuth, sync, reports), mounted by Pages Functions
+│   ├── api/        Hono app (OAuth, sync, reports), mounted by Pages Functions
+│   └── bench/      @nekotype/bench: the CPU and D1 measurement of one sync on Cloudflare (P5; a tool run by hand, never deployed to production)
 ├── functions/
 │   └── api/[[route]].ts   Pages Functions entry point; imports apps/api
 ├── packages/
 │   ├── engine/     @nekotype/engine: input engine, kana tables (with the sound of each kana from P6), visually-similar kana table; zero dependencies
 │   ├── content/    @nekotype/content: dictionary build scripts → JSON chunks; not part of the runtime
-│   └── shared/     @nekotype/shared; entry points: /types, /runtime (decay, merge rules, personal-best rule and key, constants), /schemas (valibot, server only)
+│   └── shared/     @nekotype/shared; entry points: /types, /runtime (decay, merge rules, personal-best rule and key, constants), /schemas (valibot, server only), /testing (generated test data; for tests and measurements only)
 ├── docs/           spec/, adr/, architecture/, archive/ (index: docs/README.md)
 ├── pnpm-workspace.yaml
 └── .github/workflows/
@@ -22,17 +23,18 @@ The engine and all user data live in the browser. Pages Functions handle sign-in
 
 ## Dependency rules
 
-| Package          | May import                                                                | Must not import                             |
-| ---------------- | ------------------------------------------------------------------------- | ------------------------------------------- |
-| `engine`         | nothing                                                                   | DOM, signals, storage, any package          |
-| `shared/types`   | types from `engine`                                                       | runtime code                                |
-| `shared/runtime` | `shared/types`                                                            | `shared/schemas`, valibot, application code |
-| `shared/schemas` | `shared/types`, valibot                                                   | application code                            |
-| `content`        | `engine` (compile check for every item), `shared/types`, `shared/runtime` | `apps/*`                                    |
-| `apps/web`       | `engine`, `shared/types`, `shared/runtime`                                | `shared/schemas`, `content`, `apps/api`     |
-| `apps/api`       | `shared/*`; `engine` from v2 for server-side result validation            | `apps/web`                                  |
+| Package          | May import                                                                | Must not import                                              |
+| ---------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `engine`         | nothing                                                                   | DOM, signals, storage, any package                           |
+| `shared/types`   | types from `engine`                                                       | runtime code                                                 |
+| `shared/runtime` | `shared/types`                                                            | `shared/schemas`, valibot, application code                  |
+| `shared/schemas` | `shared/types`, valibot                                                   | application code                                             |
+| `shared/testing` | `shared/types`, `shared/runtime`                                          | application code; `apps/web` imports it from test files only |
+| `content`        | `engine` (compile check for every item), `shared/types`, `shared/runtime` | `apps/*`                                                     |
+| `apps/web`       | `engine`, `shared/types`, `shared/runtime`                                | `shared/schemas`, `content`, `apps/api`                      |
+| `apps/api`       | `shared/*`; `engine` from v2 for server-side result validation            | `apps/web`                                                   |
 
-The `apps/web` restriction on `shared/schemas` is enforced by an ESLint import rule, so valibot never reaches the client bundle.
+The `apps/web` restriction on `shared/schemas` is enforced by an ESLint import rule, so valibot never reaches the client bundle. The same rule keeps `shared/testing` out of the application: only test files may import it.
 
 The prompt picker and weight functions are not part of the engine: they live in `apps/web` (`entities/prompt`) and take `Rng` from `shared`. Nor are the rules of the learning mode (see "Learning logic" below).
 

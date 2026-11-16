@@ -62,6 +62,7 @@ A pnpm workspace ([ADR 027](docs/adr/027-pnpm-workspace-layout-for-the-monorepo.
 | Path                | Package             | Contents                                                                                                                                   |
 | ------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `apps/web/`         | `@nekotype/web`     | The Preact single-page app (Feature-Sliced Design), its tests, e2e tests, scripts, assets                                                  |
+| `apps/bench/`       | `@nekotype/bench`   | The CPU and D1 measurement of one sync on a test Pages project (P5); a tool run by hand, never deployed to production                      |
 | `packages/engine/`  | `@nekotype/engine`  | The NFA romaji engine and the kana tables; imports nothing, runs in a browser or a Worker                                                  |
 | `packages/shared/`  | `@nekotype/shared`  | Types (`Clock`, `Rng`, `Scheduler`, …) and runtime type guards shared with a future server                                                 |
 | `packages/content/` | `@nekotype/content` | The content pipeline (build tool, never bundled): pinned sources, parsers, the word and phrase steps; `generate` writes the content chunks |

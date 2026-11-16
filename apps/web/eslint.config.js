@@ -54,6 +54,10 @@ export default [
               group: ['@nekotype/shared/schemas', '@nekotype/content', '@nekotype/api'],
               message: 'apps/web must not import shared/schemas, content or api.',
             },
+            {
+              group: ['@nekotype/shared/testing'],
+              message: 'shared/testing is test data: import it from test files only.',
+            },
           ],
         },
       ],
@@ -199,6 +203,23 @@ export default [
           selector:
             ':matches(JSXAttribute[name.name="aria-label"], JSXAttribute[name.name="ariaLabel"], JSXAttribute[name.name="title"], JSXAttribute[name.name="alt"]) > Literal',
           message: 'Accessible names must come from shared/i18n: use t().',
+        },
+      ],
+    },
+  },
+  {
+    // Test files may use the generated data of shared/testing.
+    files: ['src/**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@nekotype/shared/schemas', '@nekotype/content', '@nekotype/api'],
+              message: 'apps/web must not import shared/schemas, content or api.',
+            },
+          ],
         },
       ],
     },
