@@ -2,9 +2,8 @@
 
 Append-only log of architectural decisions, one file per decision.
 
-- Entries are never deleted or rewritten. A decision that no longer holds gets a `**Status:**` line naming what superseded or amended it, and its row below is updated. An entry without a Status line is in force.
-- The [MVP spec](../spec/README.md) defines the requirements; its [design decisions](../spec/decisions.md) table (A1…) holds the decisions made while writing the spec.
-- Decisions made during implementation are added here, continuing the numbering.
+- Entries are never deleted or rewritten. A decision that no longer holds gets its `**Status:**` line changed to name what superseded or amended it, and its row below is updated. Entries written before the template below may have no Status line; they are in force unless the index says otherwise.
+- Decisions made during implementation are added here, continuing the numbering. How ADRs relate to the spec's A-items and the design decisions: [Decision logs](../README.md#decision-logs).
 
 ## Adding a decision
 
@@ -14,12 +13,17 @@ Append-only log of architectural decisions, one file per decision.
    ```markdown
    # ADR NNN: Title
 
-   - **Context:** the problem and the constraints.
+   - **Context:** the problem and the constraints; the date the maintainer asked or decided, when it matters.
    - **Decision:** what was decided.
-   - **Justification:** why, and which alternatives were rejected.
+   - **Justification:** why.
+   - **Rejected alternatives:** what else was considered and why not.
+   - **Consequences:** what changes elsewhere: documents, tests, budgets.
+   - **Status:** In force.
    ```
 
-3. Add a row to the index below. If the decision replaces an earlier one, add a Status line to the earlier file and update its row.
+   `Context`, `Decision`, `Justification` and `Status` are required. `Rejected alternatives` and `Consequences` are written when there is something to say; a short ADR may name rejected alternatives inside `Justification`. Fields specific to one decision (`Measured:`, `Open:`) go before `Status`, which is always last.
+
+3. Add a row to the index below. If the decision replaces an earlier one, change the Status line of the earlier file (add one if it has none) and update its row.
 
 ## Index
 

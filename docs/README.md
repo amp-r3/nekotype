@@ -32,6 +32,21 @@ Start here. Each folder has its own `README.md` with an index.
 | Setup, scripts, git hooks, deployment                             | [../README.md](../README.md)                                                 |
 | Rules for AI agents                                               | [../AGENTS.md](../AGENTS.md)                                                 |
 
+## Decision logs
+
+Decisions are recorded in three places, by where they were made. Each has its own numbering; cite an item with its prefix or its log's name, so the numbers never clash.
+
+| Log                                                           | Cited as                    | Holds                                                                                       |
+| ------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------- |
+| [spec/README.md](spec/README.md), "Changes from the baseline" | D1…                         | What the MVP changes in the v1 code                                                         |
+| [spec/decisions.md](spec/decisions.md)                        | A1… (decisions), O1… (open) | Decisions taken while writing the spec, and questions still open                            |
+| [adr/](adr/README.md)                                         | ADR 001…                    | Decisions taken during implementation; the log for anything new                             |
+| [design/source/decisions.md](design/source/decisions.md)      | design decision 1…          | How each design question was resolved; exported from the design artifact, never edited here |
+
+- A new decision about code, architecture or process is an ADR. When it changes a requirement, the spec changes in the same pull request and gets a one-line A-item that links the ADR (as A46 links [ADR 078](adr/078-user-stats-targeted-updates.md)); an open question becomes an O-item and moves to "Resolved items" when answered.
+- A design decision that changes the code or the spec gets an ADR that cites it (as [ADR 080](adr/080-design-system-clean-up.md) cites design decision 125). A purely visual one stays in the design log.
+- Where two logs disagree, the spec wins, then the newest ADR.
+
 ## Conventions
 
 - File and folder names are lowercase kebab-case. Every folder has a `README.md` index, except single-file folders.
