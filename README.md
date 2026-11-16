@@ -114,6 +114,7 @@ To run individual verification gates:
 pnpm run typecheck    # tsc --noEmit (zero any, zero as T, zero !)
 pnpm run lint         # eslint in every package, plus steiger ./src in apps/web
 pnpm run format:check # prettier --check .
+pnpm run docs:check   # Markdown links and anchors (docs/README.md, "Conventions")
 pnpm test             # vitest run in every package (engine with a coverage threshold)
 pnpm run build        # vite production build into apps/web/dist
 pnpm run budget       # check-budget.mjs (size budgets from the Vite manifest)
@@ -141,7 +142,7 @@ pnpm run e2e                        # Run the Playwright suite against the produ
 | Hook         | Runs                                                                                                               | Notes                                                                                                                                                                                                                                                                                    |
 | ------------ | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pre-commit` | Line limit for `AGENTS.md`/`CLAUDE.md` (250), `prettier --check` on staged files, then `typecheck`, `lint`, `test` | Code checks are skipped when only Markdown files are staged                                                                                                                                                                                                                              |
-| `pre-push`   | `pnpm run verify:quick` (no e2e); `prettier --check` only if the push changes only `.md` files                     | The e2e are not part of it: `pnpm run e2e` runs them against their own production build served on port 5273 (`E2E_PORT`), never a dev server you keep running; they need `pnpm --filter @nekotype/web exec playwright install --with-deps chromium webkit` once (or `E2E_SKIP_WEBKIT=1`) |
+| `pre-push`   | `pnpm run verify:quick` (no e2e); `prettier --check` and `docs:check` only if the push changes only `.md` files    | The e2e are not part of it: `pnpm run e2e` runs them against their own production build served on port 5273 (`E2E_PORT`), never a dev server you keep running; they need `pnpm --filter @nekotype/web exec playwright install --with-deps chromium webkit` once (or `E2E_SKIP_WEBKIT=1`) |
 
 CI runs `verify` (with e2e) on every push and pull request; the hooks catch the same failures, except the browser ones, earlier. In an emergency, `git commit --no-verify` / `git push --no-verify` skips them.
 
