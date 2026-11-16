@@ -15,4 +15,4 @@
   - New: `apps/bench` and the `@nekotype/shared/testing` entry point ([architecture.md](../spec/architecture.md)), the research note, and an import rule that keeps `shared/testing` out of the application's non-test files.
   - [decisions.md](../spec/decisions.md), O4: how `json_each` is counted.
   - No effect on the client bundle.
-- **Status:** In force. The follow-up to ADR 078 is open.
+- **Status:** In force. The follow-up is [ADR 082](082-sync-acknowledgement-without-snapshot.md), which replaces the pass line and confirms the caps.
