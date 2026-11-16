@@ -8,20 +8,20 @@ Nekotype is a keyboard-first web app for learning hiragana and katakana from zer
 
 - **Current code** is the v1 baseline in a pnpm monorepo (ADR 027; phases P0–P4 done): a Preact SPA in `apps/web/` (learning on `/`, the typing trainer with words and phrases on `/type`), the stream input engine and kana tables in `packages/engine`, shared types, guards and merge functions in `packages/shared`, the content pipeline in `packages/content` (a build tool, run by hand; its generated chunks are committed). Settings, learning state and typing results, records and statistics are in IndexedDB, the language in localStorage; there is no backend.
 - **Target** is the learning-first MVP in `docs/spec/`, delivered in phases P0–P7: adaptive kana learning on `/` with IndexedDB (done in P3), words and phrases from the content pipeline (done in P4), Pages Functions + D1 sync (P5), kana audio (P6), polish and release (P7).
-- Where documents disagree, `docs/spec/` wins over everything else. `README.md` and `docs/architecture/baseline-v1.md` describe the code after the latest finished phase; when a phase changes the code, update them in the same PR.
+- Where documents disagree, `docs/spec/` wins over everything else. `README.md` and `docs/architecture/` describe the code after the latest finished phase; when a phase changes the code, update them in the same PR.
 
 ## Documents
 
 Start at `docs/README.md`: it maps each question to the file that answers it. Open only the file you need.
 
-| Path                               | Purpose                                                                                                       |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `docs/spec/`                       | MVP requirements, one file per area (`engine.md`, `metrics.md`, `storage-sync.md`, …); `README.md` lists them |
-| `docs/design/`                     | Design system: tokens, components, assets; start at `README.md`                                               |
-| `docs/adr/`                        | Decision records, one file per decision; `README.md` is the index with statuses                               |
-| `docs/architecture/baseline-v1.md` | Architecture of the current v1 code                                                                           |
-| `docs/archive/`                    | Historical documents; not maintained                                                                          |
-| `README.md`                        | Setup, scripts, git hooks, deployment                                                                         |
+| Path                 | Purpose                                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `docs/spec/`         | MVP requirements, one file per area (`engine.md`, `metrics.md`, `storage-sync.md`, …); `README.md` lists them |
+| `docs/design/`       | Design system: tokens, components, assets; start at `README.md`                                               |
+| `docs/adr/`          | Decision records, one file per decision; `README.md` is the index with statuses                               |
+| `docs/architecture/` | Architecture of the current code, one file per area; start at `README.md`                                     |
+| `docs/archive/`      | Historical documents; not maintained                                                                          |
+| `README.md`          | Setup, scripts, git hooks, deployment                                                                         |
 
 ## Commands
 

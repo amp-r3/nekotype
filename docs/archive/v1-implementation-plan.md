@@ -1,4 +1,4 @@
-> **Archived.** This is the v1 implementation plan the baseline code was built from. It is superseded by the [MVP specification](../spec/README.md) and is no longer maintained. Paths it mentions (`ARCHITECTURE.md`, `docs/DECISIONS.md`) now live in [`docs/architecture/`](../architecture/baseline-v1.md) and [`docs/adr/`](../adr/README.md).
+> **Archived.** This is the v1 implementation plan the baseline code was built from. It is superseded by the [MVP specification](../spec/README.md) and is no longer maintained. Paths it mentions (`ARCHITECTURE.md`, `docs/DECISIONS.md`) now live in [`docs/architecture/`](../architecture/README.md) and [`docs/adr/`](../adr/README.md).
 
 # Kana Flow — Implementation Plan (v1)
 

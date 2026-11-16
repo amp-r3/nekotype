@@ -222,7 +222,7 @@ pnpm dlx wrangler pages deploy apps/web/dist --project-name nekotype --branch=ma
 - **[docs/README.md](docs/README.md):** Documentation index — where to find each topic.
 - **[docs/spec/](docs/spec/README.md):** MVP specification, one file per area. Normative.
 - **[docs/adr/](docs/adr/README.md):** Architecture decision records, one file per decision.
-- **[docs/architecture/baseline-v1.md](docs/architecture/baseline-v1.md):** Architecture of the current v1 code: layers, import boundaries, the NFA romaji engine, two-tier spelling tables, extension recipes.
+- **[docs/architecture/](docs/architecture/README.md):** Architecture of the current code, one file per area: layers, import boundaries, the NFA romaji engine, two-tier spelling tables, extension recipes.
 - **[AGENTS.md](AGENTS.md):** Rules for AI coding agents (`CLAUDE.md` is a symlink to it).
 
 ---

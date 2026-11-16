@@ -2,13 +2,13 @@
 
 Start here. Each folder has its own `README.md` with an index.
 
-| Folder                                        | Contents                                             | Status                                              |
-| --------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------- |
-| [spec/](spec/README.md)                       | MVP specification, one file per area                 | Normative: wins over every other document           |
-| [design/](design/README.md)                   | Design system: tokens, components, assets            | Visual reference; the spec wins                     |
-| [adr/](adr/README.md)                         | Architecture decision records, one file per decision | Append-only log                                     |
-| [architecture/](architecture/baseline-v1.md)  | Architecture of the current code                     | Describes the v1 baseline; rewritten during the MVP |
-| [archive/](archive/v1-implementation-plan.md) | Historical documents                                 | Not maintained; kept for context                    |
+| Folder                                        | Contents                                             | Status                                             |
+| --------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------- |
+| [spec/](spec/README.md)                       | MVP specification, one file per area                 | Normative: wins over every other document          |
+| [design/](design/README.md)                   | Design system: tokens, components, assets            | Visual reference; the spec wins                    |
+| [adr/](adr/README.md)                         | Architecture decision records, one file per decision | Append-only log                                    |
+| [architecture/](architecture/README.md)       | Architecture of the current code                     | Describes the code after the latest finished phase |
+| [archive/](archive/v1-implementation-plan.md) | Historical documents                                 | Not maintained; kept for context                   |
 
 ## Where to find
 
@@ -27,7 +27,7 @@ Start here. Each folder has its own `README.md` with an index.
 | What is built in which phase, and acceptance criteria             | [spec/phases.md](spec/phases.md)                                             |
 | What does the interface look like? Tokens, components, logo       | [design/README.md](design/README.md)                                         |
 | Why was something decided?                                        | [spec/decisions.md](spec/decisions.md) (A-items), then [adr/](adr/README.md) |
-| How the current v1 code is structured                             | [architecture/baseline-v1.md](architecture/baseline-v1.md)                   |
+| How the current code is structured                                | [architecture/README.md](architecture/README.md)                             |
 | Licences of the code, brand and fonts                             | [../NOTICE.md](../NOTICE.md), [../BRAND.md](../BRAND.md)                     |
 | Setup, scripts, git hooks, deployment                             | [../README.md](../README.md)                                                 |
 | Rules for AI agents                                               | [../AGENTS.md](../AGENTS.md)                                                 |
@@ -35,7 +35,7 @@ Start here. Each folder has its own `README.md` with an index.
 ## Conventions
 
 - File and folder names are lowercase kebab-case. Every folder has a `README.md` index, except single-file folders.
-- One topic per file. When a file passes about 300 lines, split it and update the folder index.
+- One topic per file. When a file passes about 300 lines or 20 KB, split it and update the folder index. A paragraph or list item that grows past a few sentences is split into a list.
 - Link instead of copying: a fact lives in one place.
 - New kinds of documents get their own folder, created when the first document appears:
   - `guides/` — how-to instructions (adding a kana row, running the content pipeline, releasing);
