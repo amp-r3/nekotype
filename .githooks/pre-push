@@ -5,7 +5,7 @@
 # hand with `pnpm run e2e` when a change touches browser behaviour.
 # The output is not silenced: `--silent` is inherited by the nested pnpm calls and would hide the output of
 # a failing step, which showed only as "failed to push some refs".
-# A push that changes only Markdown files skips it and checks formatting instead: no code changed, and CI
+# A push that changes only Markdown files skips it and checks formatting and links instead: no code changed, and CI
 # still runs the full `verify` on the pull request. Deleted files are left out of the list: Prettier
 # fails on a path that does not exist.
 # Bypass in an emergency with `git push --no-verify`.
@@ -16,6 +16,7 @@ if [ -n "$base" ]; then
   changed=$(git diff --name-only --diff-filter=d "$base" HEAD)
   if [ -n "$changed" ] && ! printf '%s\n' "$changed" | grep -qv '\.md$'; then
     printf '%s\n' "$changed" | tr '\n' '\0' | xargs -0 pnpm exec prettier --check --ignore-unknown
+    pnpm run docs:check
     exit 0
   fi
 fi

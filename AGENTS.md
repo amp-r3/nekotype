@@ -35,8 +35,9 @@ pnpm run lint         # eslint . && steiger ./src, per package
 pnpm test             # vitest run in every package (engine: with a coverage threshold)
 pnpm run build        # production build into apps/web/dist/
 pnpm run budget       # size budgets on apps/web/dist/
-pnpm run verify:quick # typecheck + lint + format:check + test (coverage) + build + budget (what pre-push runs)
+pnpm run verify:quick # typecheck + lint + format:check + docs:check + test (coverage) + build + budget (what pre-push runs)
 pnpm run verify       # verify:quick + e2e (what CI runs on a pull request)
+pnpm run docs:check   # relative links and anchors in Markdown; lists files over the size rule
 pnpm run e2e          # Playwright; one-time: pnpm --filter @nekotype/web exec playwright install --with-deps chromium webkit
 pnpm run e2e:latency  # keystroke latency test (about 2 min); CI runs it on main, by hand and on pull requests that touch input or loading code (ADR 052, 074)
 ```
@@ -57,7 +58,7 @@ Run a single test file from its package: `cd apps/web && pnpm exec vitest run sr
   When the maintainer says to merge, squash-merge with `gh pr merge --squash --delete-branch`.
 - Git hooks live in `.githooks/`:
   - `pre-commit`: `prettier --check` on staged files, then typecheck, lint, unit tests (code checks are skipped for Markdown-only commits); `AGENTS.md`/`CLAUDE.md` over 250 lines are rejected.
-  - `pre-push`: `pnpm run verify:quick` (no e2e); when only Markdown files changed, `prettier --check` instead. Do not run it by hand before pushing: the hook does it.
+  - `pre-push`: `pnpm run verify:quick` (no e2e); when only Markdown files changed, `prettier --check` and `docs:check` instead. Do not run it by hand before pushing: the hook does it.
 - Never bypass hooks with `--no-verify` unless the maintainer explicitly asks. If a hook fails, fix the cause.
 - CI (`.github/workflows/deploy.yml`) runs `verify` (with e2e) on every push and PR, the latency test on `main` and by hand, and deploys with wrangler.
 
