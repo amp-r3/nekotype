@@ -8,7 +8,8 @@ Part of the [architecture description](README.md) of the current code.
 apps/web/          @nekotype/web: the Preact SPA, Feature-Sliced Design (below)
 packages/engine/   @nekotype/engine: NFA romaji engine, kana tables, track composition (`kanaOf`, `kanaRows`) and the visually-similar kana table (`similarKana`); imports nothing
 packages/content/  @nekotype/content: the content pipeline, a build tool; the application reads the files it generates
-packages/shared/   @nekotype/shared: /types (Clock, Rng, Scheduler, Valid* types, learning and typing data model), /runtime (type guards, learning merge rules, typing records and personal-best rules)
+packages/shared/   @nekotype/shared: /types (Clock, Rng, Scheduler, Valid* types, learning and typing data model), /runtime (type guards, learning merge rules, typing records and personal-best rules; `learn-patch.ts`: the per-key patches of ADR 078), /testing (a seeded generator of a year of learning and of sync batches, for tests and measurements only; `apps/web` imports it from test files)
+apps/bench/        @nekotype/bench: the measurement of one sync on Cloudflare (CPU time and D1 rows), run by hand against the Pages project `nekotype-bench`; see its README
 ```
 
 Packages are consumed as TypeScript source (no build step). Each package has its own `tsconfig.json`, ESLint config, scripts and tests; the root holds Prettier, `tsconfig.base.json`, `eslint.base.js` (`createBaseConfig`) and scripts that run `pnpm -r`. Enforced by lint:

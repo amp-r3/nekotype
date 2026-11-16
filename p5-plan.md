@@ -12,7 +12,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 
 | PR  | Branch                   | Status      | Pull request |
 | --- | ------------------------ | ----------- | ------------ |
-| 1   | `p5-01-sync-measurement` | not started |              |
+| 1   | `p5-01-sync-measurement` | done        | #162         |
 | 2   | `p5-02-api-scaffold`     | not started |              |
 | 3   | `p5-03-auth`             | not started |              |
 | 4   | `p5-04-merge-patch`      | not started |              |

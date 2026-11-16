@@ -7,7 +7,8 @@
   "sideEffects": false,
   "exports": {
     "./types": "./src/types.ts",
-    "./runtime": "./src/runtime.ts"
+    "./runtime": "./src/runtime.ts",
+    "./testing": "./src/testing/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

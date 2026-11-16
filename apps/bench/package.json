@@ -1,0 +1,25 @@
+{
+  "name": "@nekotype/bench",
+  "version": "1.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "description": "Measures the CPU time and the D1 rows of one sync on Cloudflare (p5-plan.md, PR 1). A build tool run by hand; never deployed to production.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "seed": "tsx scripts/seed.ts",
+    "measure": "tsx scripts/measure.ts"
+  },
+  "dependencies": {
+    "@nekotype/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "eslint": "^10.13.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "wrangler": "4.162.0"
+  }
+}

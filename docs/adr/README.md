@@ -109,3 +109,4 @@ Append-only log of architectural decisions, one file per decision.
 | [078](078-user-stats-targeted-updates.md)                                            | `user_stats` Updated per Touched Key                                                         | In force                 |
 | [079](079-account-and-report-states.md)                                              | Account, Sign-In and Report Dialog States for P5                                             | In force                 |
 | [080](080-design-system-clean-up.md)                                                 | The Design System Keeps Only What the Product Uses                                           | In force                 |
+| [081](081-sync-measurement-p5.md)                                                    | The Sync Measurement of P5 Fails Its Limits; the Caps of Q1 Stay Unconfirmed                 | In force; follow-up open |

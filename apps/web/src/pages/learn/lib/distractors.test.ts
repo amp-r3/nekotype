@@ -42,7 +42,8 @@ describe('recognition options', () => {
         }
       }
     }
-  });
+    // An exhaustive walk over both tracks: it takes about 5 s on a slow machine, the default limit.
+  }, 30_000);
 
   it('keeps the same script', () => {
     const list = options('katakana', keyOf('katakana', 'シ'), 'learner');

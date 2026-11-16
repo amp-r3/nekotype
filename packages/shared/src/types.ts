@@ -164,3 +164,40 @@ export type TypingRecordEntry = {
 
 /** Key: `personalBestKey()`. */
 export type TypingRecords = Readonly<Record<string, TypingRecordEntry>>;
+
+// Sync batches (spec backend.md, "Request and response bodies")
+
+/** The fields of `LearnState`, holding only changes; increments for statistics and buckets. */
+export type LearnDelta = {
+  /** Changed entries. */
+  readonly entries: Readonly<Record<LearnKanaKey, LearnEntry>>;
+  /** Newly unlocked kana. */
+  readonly unlocked: Readonly<Record<Track, readonly LearnKanaKey[]>>;
+  /** New recall answers, at most 10 per kana. */
+  readonly recent: Readonly<Record<LearnKanaKey, readonly RecallAnswer[]>>;
+  /** Increments. */
+  readonly stats: Readonly<Record<LearnKanaKey, LearnStat>>;
+  /** Runs of days that became active. */
+  readonly activeDays: readonly (readonly [first: number, last: number])[];
+  /** Increments. */
+  readonly recallBuckets: Readonly<Record<Track, DayBuckets>>;
+};
+
+export type SyncDelta = {
+  /** Increments. */
+  readonly kanaStats: Readonly<Record<KanaKey, KanaStat>>;
+  /** Increments. */
+  readonly counters: Counters;
+  readonly learn: LearnDelta;
+  /** Null when unchanged. */
+  readonly settings: ValidSettings | null;
+};
+
+export type SyncRequest = {
+  /** Batch format version. */
+  readonly v: 1;
+  readonly deviceId: string;
+  readonly seq: number;
+  readonly delta: SyncDelta;
+  readonly results: readonly TestResult[];
+};

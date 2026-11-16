@@ -80,6 +80,8 @@ export {
   RECOGNITION_DECAY_AT,
   decayLearnStat,
 } from './learn-runtime';
+export { touchedKeys, patchRecent, patchBuckets, splitLearnDelta } from './learn-patch';
+export type { TouchedKeys } from './learn-patch';
 
 // Typing records, kana statistics and test results: rules shared with the server.
 export {
