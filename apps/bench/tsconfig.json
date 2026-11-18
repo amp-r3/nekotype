@@ -1,5 +1,5 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "types": ["node"] },
-  "include": ["functions", "src", "scripts", "eslint.config.js"]
+  "compilerOptions": { "lib": ["ES2022"], "types": ["node", "@cloudflare/workers-types"] },
+  "include": ["functions", "scripts", "eslint.config.js"]
 }

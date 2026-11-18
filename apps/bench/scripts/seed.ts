@@ -1,36 +1,50 @@
-// Writes the year-long `user_stats` row of ADR 078 to the remote D1 `nekotype-bench`, and resets it.
+// Resets the remote D1 `nekotype-bench` to the application's schema and writes a user, a session and
+// the year-long `user_stats` row of ADR 078. The Pages project of the bench serves the real
+// application, so the requests of `measure.ts` are signed in like a user's.
 // D1 allows 100 KB per statement, so each large column is appended in chunks.
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { KANA_KEYS, generateYear } from '@nekotype/shared/testing';
+import type { Year } from '@nekotype/shared/testing';
 
 const USER_ID = 'bench-user';
+/** The session token `measure.ts` sends; D1 keeps its SHA-256 digest only. */
+export const SESSION_TOKEN = 'bench-session-token';
 const CHUNK_CHARS = 20_000; // up to 60 KB of UTF-8 for kana
+const migrations = fileURLToPath(new URL('../../api/migrations', import.meta.url));
 
-const SCHEMA = `
-DROP TABLE IF EXISTS user_stats;
-DROP TABLE IF EXISTS user_settings;
-DROP TABLE IF EXISTS results;
-CREATE TABLE user_stats (
-  user_id TEXT PRIMARY KEY,
-  kana_stats TEXT NOT NULL, counters TEXT NOT NULL,
-  learn TEXT NOT NULL, learn_recent TEXT NOT NULL, learn_buckets TEXT NOT NULL,
-  typing_records TEXT NOT NULL, device_seq TEXT NOT NULL, last_sync_at INTEGER NOT NULL,
-  version INTEGER NOT NULL DEFAULT 0
-);
-CREATE TABLE user_settings (user_id TEXT PRIMARY KEY, json TEXT NOT NULL, updated_at INTEGER NOT NULL);
-CREATE TABLE results (
-  id TEXT PRIMARY KEY, user_id TEXT NOT NULL,
-  ended_at INTEGER NOT NULL, content TEXT NOT NULL, script TEXT NOT NULL, strictness TEXT NOT NULL,
-  config TEXT NOT NULL, kpm REAL NOT NULL, kana_accuracy REAL NOT NULL, json TEXT NOT NULL
-);
-CREATE INDEX results_user_time ON results(user_id, ended_at DESC);
-`;
+/** Drops the tables of the application and creates them again with its own migrations. */
+function schema(): string {
+  const drops = [
+    'content_reports',
+    'results',
+    'user_settings',
+    'user_stats',
+    'sessions',
+    'oauth_accounts',
+    'users',
+  ].map((table) => `DROP TABLE IF EXISTS ${table};`);
+  const files = readdirSync(migrations)
+    .filter((name) => name.endsWith('.sql'))
+    .sort();
+  return [...drops, ...files.map((name) => readFileSync(join(migrations, name), 'utf8'))].join(
+    '\n',
+  );
+}
 
 const quote = (text: string): string => `'${text.replaceAll("'", "''")}'`;
+
+function newestDays(learn: Year['learn']): Record<string, number> {
+  const newest: Record<string, number> = {};
+  for (const track of ['hiragana', 'katakana'] as const) {
+    newest[track] = Math.max(...Object.keys(learn.recallBuckets[track]).map(Number));
+  }
+  return newest;
+}
 
 export function seedSql(seed = 1): { sql: string; sizes: Record<string, number> } {
   const year = generateYear({ seed, keys: KANA_KEYS });
@@ -41,12 +55,16 @@ export function seedSql(seed = 1): { sql: string; sizes: Record<string, number> 
     ['learn', JSON.stringify(rest)],
     ['learn_recent', JSON.stringify(recent)],
     ['learn_buckets', JSON.stringify(recallBuckets)],
+    ['bucket_newest', JSON.stringify(newestDays(year.learn))],
     ['typing_records', JSON.stringify(year.typingRecords)],
     ['device_seq', JSON.stringify(year.deviceSeq)],
   ];
+  const sessionHash = createHash('sha256').update(SESSION_TOKEN).digest('hex');
   const lines = [
-    SCHEMA,
-    `INSERT INTO user_stats (user_id, kana_stats, counters, learn, learn_recent, learn_buckets, typing_records, device_seq, last_sync_at, version) VALUES (${quote(USER_ID)}, '', '', '', '', '', '', '', 0, 0);`,
+    schema(),
+    `INSERT INTO users (id, email, display_name, avatar_url, created_at) VALUES (${quote(USER_ID)}, NULL, NULL, NULL, 0);`,
+    `INSERT INTO sessions (id_hash, user_id, expires_at) VALUES (${quote(sessionHash)}, ${quote(USER_ID)}, 4102444800000);`,
+    `INSERT INTO user_stats (user_id, kana_stats, counters, learn, learn_recent, learn_buckets, bucket_newest, typing_records, device_seq, last_sync_at, version) VALUES (${quote(USER_ID)}, '', '', '', '', '', '', '', '', 0, 0);`,
   ];
   const sizes: Record<string, number> = {};
   for (const [column, text] of columns) {

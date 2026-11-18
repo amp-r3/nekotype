@@ -8,15 +8,15 @@ Part of the [architecture description](README.md) of the current code.
 apps/web/          @nekotype/web: the Preact SPA, Feature-Sliced Design (below)
 packages/engine/   @nekotype/engine: NFA romaji engine, kana tables, track composition (`kanaOf`, `kanaRows`) and the visually-similar kana table (`similarKana`); imports nothing
 packages/content/  @nekotype/content: the content pipeline, a build tool; the application reads the files it generates
-packages/shared/   @nekotype/shared: /types (Clock, Rng, Scheduler, Valid* types, learning and typing data model), /runtime (type guards, learning merge rules, typing records and personal-best rules; `learn-state.ts`: `mergeLearn` and the patch of `learn`; `learn-patch.ts`: the per-key patches of `learn_recent` and `learn_buckets` and the split of a delta; `sync-runtime.ts`: the sync constants, the guards of the responses and `applyBatch`; ADR 078, 082, 085), /testing (a seeded generator of a year of learning and of sync batches, for tests and measurements only; `apps/web` imports it from test files)
-apps/api/          @nekotype/api: the Hono application behind /api/* (Pages Functions), D1 migrations (migrations/), API tests in the Workers runtime; routes: `/api/auth/*` and `/api/me` (P5 PR 3, ADR 084). functions/api/[[route]].ts mounts it; wrangler.toml at the root configures the Pages project
-apps/bench/        @nekotype/bench: the measurement of one sync on Cloudflare (CPU time and D1 rows), run by hand against the Pages project `nekotype-bench`; see its README
+packages/shared/   @nekotype/shared: /types (Clock, Rng, Scheduler, Valid* types, learning and typing data model), /runtime (type guards, learning merge rules, typing records and personal-best rules; `learn-state.ts`: `mergeLearn` and the patch of `learn`; `learn-patch.ts`: the per-key patches of `learn_recent` and `learn_buckets` and the split of a delta; `sync-runtime.ts`: the sync constants, the guards of the responses and `applyBatch`; ADR 078, 082, 085), /schemas (the valibot schemas of the API: batch, settings, result, report, results query; server only), /testing (a seeded generator of a year of learning and of sync batches, for tests and measurements only; `apps/web` imports it from test files)
+apps/api/          @nekotype/api: the Hono application behind /api/* (Pages Functions), D1 migrations (migrations/), API tests in the Workers runtime; routes: `/api/auth/*` and `/api/me` (P5 PR 3, ADR 084) and `/api/sync` (P5 PR 5: `routes/sync.ts`, the SQL in `db/sync.ts`, the merge in `sync/apply-batch.ts`; ADR 082). functions/api/[[route]].ts mounts it; wrangler.toml at the root configures the Pages project
+apps/bench/        @nekotype/bench: the measurement of the real `/api/sync` on Cloudflare (CPU time and D1 rows), run by hand against the Pages project `nekotype-bench`; see its README
 ```
 
 Packages are consumed as TypeScript source (no build step). Each package has its own `tsconfig.json`, ESLint config, scripts and tests; the root holds Prettier, `tsconfig.base.json`, `eslint.base.js` (`createBaseConfig`) and scripts that run `pnpm -r`. Enforced by lint:
 
 - `packages/engine/src` may use only relative imports and no browser globals (`window`, `document`, `localStorage`, …), so it runs in the browser and in a Worker.
-- `apps/web` must not import `@nekotype/shared/schemas`, `@nekotype/content` or `@nekotype/api`; `shared/runtime` must not import schemas or valibot. Of these only `@nekotype/content` exists (a build tool: the application reads the files it generates and never imports it); the rules for the others are in place for P5.
+- `apps/web` must not import `@nekotype/shared/schemas`, `@nekotype/content` or `@nekotype/api`; `shared/runtime` must not import schemas or valibot. `@nekotype/content` is a build tool: the application reads the files it generates and never imports it. `@nekotype/shared/schemas` is imported by `apps/api` only.
 
 ## Application layers (FSD)
 
