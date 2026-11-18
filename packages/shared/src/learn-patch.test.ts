@@ -7,9 +7,8 @@ import {
   splitLearnDelta,
   touchedKeys,
 } from './runtime';
-import { isObject } from './object';
 import { isLearnKanaKey } from './runtime';
-import { intIn, seededRng } from './testing';
+import { applyMergePatch, intIn, seededRng } from './testing';
 import type { DayBuckets, LearnDelta, LearnKanaKey, RecallAnswer, Rng } from './types';
 
 const CASES = 500;
@@ -23,17 +22,6 @@ const KANA: readonly LearnKanaKey[] = [
   'katakana:ウ',
   'katakana:エ',
 ];
-
-/** RFC 7396 (JSON Merge Patch), the reference for what SQLite's `json_patch` does. */
-function applyMergePatch(target: unknown, patch: unknown): unknown {
-  if (!isObject(patch)) return patch;
-  const result = new Map<string, unknown>(isObject(target) ? Object.entries(target) : []);
-  for (const [key, value] of Object.entries(patch)) {
-    if (value === null) result.delete(key);
-    else result.set(key, applyMergePatch(result.get(key), value));
-  }
-  return Object.fromEntries(result);
-}
 
 function pickKeys<T>(
   source: Readonly<Record<string, T>>,
@@ -100,6 +88,11 @@ function learnDelta(rng: Rng): LearnDelta {
   };
 }
 
+function newestOf(stored: DayBuckets): number | null {
+  const keys = Object.keys(stored).map(Number);
+  return keys.length === 0 ? null : Math.max(...keys);
+}
+
 function eachCase(check: (rng: Rng, seed: number) => void): void {
   for (let seed = 1; seed <= CASES; seed += 1) {
     try {
@@ -138,16 +131,24 @@ describe('patchRecent', () => {
 describe('patchBuckets', () => {
   it('applied as a merge patch gives addBuckets, drops included, over generated cases', () => {
     eachCase((rng) => {
-      const stored = days(rng, 0, 400, 0.4);
+      const stored = days(rng, 40, 400, 0.4); // a stored track holds no day older than 365 before its newest
       const delta = days(rng, 300, 520, 0.3);
-      const patch = patchBuckets(pickKeys(stored, Object.keys(delta)), Object.keys(stored), delta);
+      const { patch } = patchBuckets(pickKeys(stored, Object.keys(delta)), newestOf(stored), delta);
       expect(applyMergePatch(stored, patch)).toEqual(addBuckets(stored, delta));
     });
   });
 
   it('deletes with null the day that is 366 days behind and keeps the one 365 behind', () => {
-    const patch = patchBuckets({}, ['10', '11'], { '376': { '2': 2 } });
-    expect(patch).toEqual({ '10': null, '376': { '2': 2 } });
+    const { patch, newest } = patchBuckets({}, 11, { '376': { '2': 2 } });
+    expect(newest).toBe(376);
+    // The window of 376 starts at 11: day 11 stays, the days below it (stored: 11 - 365 and up) go.
+    expect(patch['376']).toEqual({ '2': 2 });
+    expect(patch['11']).toBeUndefined();
+    expect(patch['10']).toBeNull();
+    expect(Object.keys(patch)).toHaveLength(1 + 365);
+    // The patch never names more than 366 days of the stored window, however far the gap.
+    const far = patchBuckets({}, 11, { '5000': { '2': 2 } }).patch;
+    expect(Object.keys(far)).toHaveLength(1 + 366);
   });
 });
 

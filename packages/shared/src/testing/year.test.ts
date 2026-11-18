@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isCounters, isLearnState, isTestResult, isTypingRecords } from '../runtime';
-import { BATCH_CAPS, generateBatch, generateYear, KANA_KEYS } from './index';
+import { BATCH_CAPS } from '../runtime';
+import { generateBatch, generateYear, KANA_KEYS } from './index';
 
 const size = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).length;
 

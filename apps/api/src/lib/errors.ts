@@ -1,18 +1,7 @@
+import type { ApiErrorCode } from '@nekotype/shared/types';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 
-/** The error table of docs/spec/backend.md, plus `not_found` and `internal` (p5-plan.md, S3). */
-export type ApiErrorCode =
-  | 'invalid_body'
-  | 'unauthenticated'
-  | 'bad_origin'
-  | 'turnstile_failed'
-  | 'seq_gap'
-  | 'too_large'
-  | 'rate_limited'
-  | 'conflict'
-  | 'unavailable'
-  | 'not_found'
-  | 'internal';
+export type { ApiErrorCode };
 
 export const ERROR_STATUS: Readonly<Record<ApiErrorCode, ContentfulStatusCode>> = {
   invalid_body: 400,

@@ -1,4 +1,5 @@
 import { personalBestKey } from '../typing-runtime';
+import { BATCH_CAPS } from '../sync-runtime';
 import type {
   Counters,
   DayBuckets,
@@ -21,9 +22,6 @@ import type { Rng } from '../types';
 // A year of daily learning on both tracks, the data of ADR 078: 229 kana with 10 recall answers
 // each, 365 days of buckets per track with about 25 buckets a day, statistics for every kana,
 // records for 12 modes and three devices. For tests and measurements only.
-
-/** The caps on the learning part of a batch (p5-plan.md, Q1). */
-export const BATCH_CAPS = { kana: 60, days: 31 } as const;
 
 /** The first day of the year, as a day number. */
 export const YEAR_FIRST_DAY = 20_400;
@@ -77,7 +75,8 @@ function answers(rng: Rng, count: number, lastAt: number): RecallAnswer[] {
       ok: rng.next() > 0.12,
     });
   }
-  return list;
+  // Oldest first, as the client keeps them.
+  return list.sort((a, b) => a.at - b.at);
 }
 
 function learnStat(rng: Rng, all: readonly LearnKanaKey[], own: LearnKanaKey): LearnStat {
