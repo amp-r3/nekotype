@@ -14,8 +14,10 @@ export function startSyncBootstrap(database: Promise<Db>): void {
       await initUser(db);
       effect(() => {
         if (userId.value === null) return;
-        void import('@/features/sync').then(({ startSync }) => {
-          startSync(db);
+        // `m.startSync`, not a destructured parameter: Vite wraps a destructured dynamic import
+        // in a function of its own, which costs initial bytes.
+        void import('@/features/sync').then((m) => {
+          m.startSync(db);
         });
       });
     },
