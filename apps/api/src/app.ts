@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import type { AppBindings, AppDeps } from './env';
 import { authRoutes } from './routes/auth';
 import { meRoutes } from './routes/me';
+import { syncRoutes } from './routes/sync';
 import { limitBody } from './lib/body';
 import { ApiError, ERROR_STATUS, errorBody, isD1Failure } from './lib/errors';
 import { originCheck } from './lib/origin';
@@ -27,6 +28,7 @@ export function createApp(deps: AppDeps) {
 
   app.route('/auth', authRoutes(deps));
   app.route('/me', meRoutes(deps));
+  app.route('/sync', syncRoutes(deps));
 
   return app;
 }

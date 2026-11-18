@@ -42,7 +42,7 @@ export type Year = {
 export type BatchKind = 'learning' | 'capped' | 'results';
 
 /** The device that sends the generated batches; its `seq` in the year is `LAST_SEQ`. */
-export const DEVICE_ID = 'device-a';
+export const DEVICE_ID = '0a0a0a0a-0a0a-4a0a-8a0a-0a0a0a0a0a0a';
 export const LAST_SEQ = 400;
 
 function pickOne<T>(rng: Rng, items: readonly T[]): T {

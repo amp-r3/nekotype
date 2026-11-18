@@ -1,10 +1,10 @@
-// Deploys the bench to the Pages project `nekotype-bench`, tails it and measures one sync in a cold
-// and a warm isolate (p5-plan.md, PR 1). Usage: `pnpm --filter @nekotype/bench run measure [--out file.json] [--only name,name]`.
+// Deploys the bench to the Pages project `nekotype-bench`, tails it and measures one request of the
+// real `/api/sync` in a cold and a warm isolate (p5-plan.md, PR 1 and PR 5). Usage: `pnpm --filter @nekotype/bench run measure [--out file.json] [--only name,name]`.
 import { execFileSync, spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { KANA_KEYS, LAST_SEQ, generateBatch } from '@nekotype/shared/testing';
-import { seed } from './seed';
+import { DEVICE_ID, KANA_KEYS, LAST_SEQ, generateBatch } from '@nekotype/shared/testing';
+import { SESSION_TOKEN, seed } from './seed';
 
 const PROJECT = 'nekotype-bench';
 const DEPLOYMENTS = 5; // cold: the first request after each of 5 fresh deployments
@@ -12,25 +12,17 @@ const WARM_REQUESTS = 50;
 const TAIL_WARMUP_MS = 10_000;
 const EVENT_WAIT_MS = 30_000;
 type Batch = 'learning' | 'capped' | 'results';
-/** One row of the table: a batch sent to a variant of the endpoint, or a `GET` of a variant. */
-type Kind = { readonly name: string; readonly variant: string; readonly batch: Batch | null };
-// `base` is ADR 078 as built (the measurement of PR 1). The other variants are the candidates of
-// the follow-up to ADR 081; functions/api/sync.ts describes them.
+/** One row of the table: a batch sent to `POST /api/sync`, or a `GET` of it. */
+type Kind = { readonly name: string; readonly part: string | null; readonly batch: Batch | null };
+// The real endpoint of `apps/api` (PR 5), on the year-long row of ADR 078.
 const KINDS: readonly Kind[] = [
-  { name: 'learning', variant: 'base', batch: 'learning' },
-  { name: 'capped', variant: 'base', batch: 'capped' },
-  { name: 'results', variant: 'base', batch: 'results' },
-  { name: 'get', variant: 'base', batch: null },
-  { name: 'empty', variant: 'empty', batch: null },
-  { name: 'floor', variant: 'floor', batch: null },
-  { name: 'ack-learning', variant: 'ack', batch: 'learning' },
-  { name: 'ack-capped', variant: 'ack', batch: 'capped' },
-  { name: 'keyed-learning', variant: 'keyed', batch: 'learning' },
-  { name: 'keyed-capped', variant: 'keyed', batch: 'capped' },
-  { name: 'keyed-results', variant: 'keyed', batch: 'results' },
-  { name: 'get-recent', variant: 'recent', batch: null },
-  { name: 'get-buckets', variant: 'buckets', batch: null },
-  { name: 'get-rest', variant: 'rest', batch: null },
+  { name: 'learning', part: null, batch: 'learning' },
+  { name: 'capped', part: null, batch: 'capped' },
+  { name: 'results', part: null, batch: 'results' },
+  { name: 'get', part: null, batch: null },
+  { name: 'get-recent', part: 'recent', batch: null },
+  { name: 'get-buckets', part: 'buckets', batch: null },
+  { name: 'get-rest', part: 'rest', batch: null },
 ];
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -205,13 +197,16 @@ type Sample = {
 let nextSeq = LAST_SEQ + 1;
 
 async function send(kind: Kind, url: string, events: Map<string, TailEvent>): Promise<Sample> {
-  const address = `${url}/api/sync?variant=${kind.variant}&deviceId=device-a`;
+  const query = new URLSearchParams({ deviceId: DEVICE_ID });
+  if (kind.part !== null) query.set('part', kind.part);
+  const address = `${url}/api/sync?${query}`;
+  const signedIn = { cookie: `nt_session=${SESSION_TOKEN}`, origin: new URL(url).origin };
   const response =
     kind.batch === null
-      ? await fetch(address)
+      ? await fetch(address, { headers: signedIn })
       : await fetch(address, {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
+          headers: { ...signedIn, 'content-type': 'application/json' },
           body: JSON.stringify({
             ...generateBatch({ seed: 3, keys: KANA_KEYS, kind: kind.batch }),
             seq: nextSeq,

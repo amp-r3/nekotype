@@ -28,6 +28,7 @@ Start here. Each folder has its own `README.md` with an index.
 | How the current phase is being built, pull request by pull request | [../p5-plan.md](../p5-plan.md) (the working plan of the phase)                     |
 | What comes after the MVP?                                          | [spec/backlog.md](spec/backlog.md)                                                 |
 | What did a benchmark or investigation find? (P5 sync CPU)          | [research/2026-11-16-p5-sync-cpu.md](research/2026-11-16-p5-sync-cpu.md)           |
+| What does the real `/api/sync` cost on Cloudflare? (P5 PR 5)       | [research/2026-11-18-p5-sync-endpoint.md](research/2026-11-18-p5-sync-endpoint.md) |
 | Which variants of the sync were measured after ADR 081?            | [research/2026-11-16-p5-sync-variants.md](research/2026-11-16-p5-sync-variants.md) |
 | What does the interface look like? Tokens, components, logo        | [design/README.md](design/README.md)                                               |
 | Why was something decided?                                         | [spec/decisions.md](spec/decisions.md) (A-items), then [adr/](adr/README.md)       |
