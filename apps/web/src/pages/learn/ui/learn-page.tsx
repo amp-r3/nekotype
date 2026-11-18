@@ -19,6 +19,7 @@ import {
   localDay,
   retryLearn,
 } from '@/entities/learn';
+import { authError, signInCheck } from '@/entities/user';
 import type { LearnSession } from '../model/session';
 import { dueCount } from '../lib/review-queue';
 import { loadSessionRuntime } from '../session-loader';
@@ -38,7 +39,8 @@ export function LearnPage(): JSX.Element {
   const [loadFailed, setLoadFailed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
-  const status = learnStatus.value;
+  // Until a returning sign-in is settled nothing of either account is shown (design decision 118).
+  const status = signInCheck.value === 'idle' ? learnStatus.value : 'loading';
 
   useEffect(() => {
     void initLearn(() => learnTargetMs.value);
@@ -159,7 +161,11 @@ export function LearnPage(): JSX.Element {
           ? { text: t('learn.loading'), miss: false, retry: false }
           : databaseMode.value === 'memory'
             ? { text: t('learn.storage'), miss: false, retry: false }
-            : null;
+            : authError.value === 'denied'
+              ? { text: t('learn.authDenied'), miss: false, retry: false }
+              : authError.value === 'failed'
+                ? { text: t('learn.authFailed'), miss: true, retry: false }
+                : null;
 
   return (
     <>

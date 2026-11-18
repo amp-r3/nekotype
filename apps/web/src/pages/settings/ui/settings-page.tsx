@@ -6,7 +6,7 @@ import { Button, Dialog, ResetIcon, Segmented, Switch } from '@/shared/ui';
 import { Select } from '@/shared/ui/select';
 import { resetTyping } from '@/entities/stats';
 import { resetLearning } from '@/entities/learn';
-import { userId } from '@/entities/user';
+import { authAvailable, beginSignIn, userId } from '@/entities/user';
 import {
   showTranslationSetting,
   setShowTranslation,
@@ -56,7 +56,37 @@ function SettingRow({
   );
 }
 
-// The account section is a chunk of its own, loaded only for a signed-in user (D17).
+// A guest's account section: what signing in gives and the two buttons, which a preview does not
+// offer (p5-plan.md, D20). It imports `entities/user` only, so the sync chunk stays unloaded.
+function GuestAccount(): JSX.Element {
+  return (
+    <Section title={t('settings.account.title')}>
+      <p className="text-fur-dim text-ui-body">{t('settings.account.guest')}</p>
+      {authAvailable.value && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              void beginSignIn('google');
+            }}
+          >
+            {t('settings.account.google')}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              void beginSignIn('github');
+            }}
+          >
+            {t('settings.account.github')}
+          </Button>
+        </div>
+      )}
+    </Section>
+  );
+}
+
+// The account section of a signed-in user is a chunk of its own, with the sync engine (D17).
 function AccountSection(): JSX.Element | null {
   const [Panel, setPanel] = useState<ComponentType | null>(null);
   useEffect(() => {
@@ -70,6 +100,7 @@ function AccountSection(): JSX.Element | null {
 export function SettingsPage(): JSX.Element {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const cancelRef = useRef<HTMLButtonElement | null>(null);
+  const signedIn = userId.value !== null;
 
   const handleConfirmReset = () => {
     void resetTyping();
@@ -123,21 +154,24 @@ export function SettingsPage(): JSX.Element {
         />
       </Section>
 
-      {userId.value !== null && <AccountSection />}
+      {/* Reset progress is for guests only, an expired session included (A33). */}
+      {signedIn ? null : (
+        <Section title={t('settings.data.title')}>
+          <SettingRow label={t('settings.data.reset')} hint={t('settings.reset.description')}>
+            <Button
+              variant="danger"
+              onClick={() => {
+                setResetDialogOpen(true);
+              }}
+            >
+              <ResetIcon />
+              {t('settings.data.resetAction')}
+            </Button>
+          </SettingRow>
+        </Section>
+      )}
 
-      <Section title={t('settings.data.title')}>
-        <SettingRow label={t('settings.data.reset')} hint={t('settings.reset.description')}>
-          <Button
-            variant="danger"
-            onClick={() => {
-              setResetDialogOpen(true);
-            }}
-          >
-            <ResetIcon />
-            {t('settings.data.resetAction')}
-          </Button>
-        </SettingRow>
-      </Section>
+      {signedIn ? <AccountSection /> : <GuestAccount />}
 
       <Dialog
         open={resetDialogOpen}

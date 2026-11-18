@@ -119,11 +119,13 @@ function apply(saved: ValidSettings): void {
   _updatedAt.value = saved.updatedAt;
 }
 
-// Another tab wrote the document: take it.
+// Another tab wrote the document: take it. Sign-out deletes it: the defaults return (Q3).
 async function reread(): Promise<void> {
   try {
-    const saved = await boundDb?.get(SETTINGS_STORE, SETTINGS_KEY);
+    if (boundDb === null) return;
+    const saved = await boundDb.get(SETTINGS_STORE, SETTINGS_KEY);
     if (isSettings(saved)) apply(saved);
+    else if (saved === undefined) applyDefaults();
   } catch {
     // Unreadable: this tab's settings stand.
   }
