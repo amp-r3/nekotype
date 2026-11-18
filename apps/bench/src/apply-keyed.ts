@@ -261,7 +261,7 @@ export async function applyKeyed(
   for (const track of TRACKS) {
     if (touched.days[track].length === 0) continue;
     const stored: DayBuckets = storedBuckets[track];
-    const patch = patchBuckets(stored, [], delta.learn.recallBuckets[track]);
+    const { patch } = patchBuckets(stored, null, delta.learn.recallBuckets[track]);
     for (const day of touched.days[track]) {
       const expired = String(Number(day) - BUCKET_DAYS - 1);
       if (!(expired in patch)) patch[expired] = null;

@@ -62,6 +62,9 @@ export {
   isLearnEntry,
   isLearnStat,
   isActiveDays,
+  isLearnRest,
+  isRecentMap,
+  isRecallBuckets,
   isLearnState,
   isCounters,
   mergeUnlocked,
@@ -81,7 +84,22 @@ export {
   decayLearnStat,
 } from './learn-runtime';
 export { touchedKeys, patchRecent, patchBuckets, splitLearnDelta } from './learn-patch';
-export type { TouchedKeys } from './learn-patch';
+export type { BucketsPatch, TouchedKeys } from './learn-patch';
+export { emptyLearnState, mergeLearn, patchLearn } from './learn-state';
+export type { LearnPatch, StatPatch, StoredLearn } from './learn-state';
+export {
+  SYNC_FORMAT_VERSION,
+  MAX_RESULTS_PER_BATCH,
+  MAX_SYNC_BODY_BYTES,
+  BATCH_CAPS,
+  isSyncResponse,
+  isSnapshotRest,
+  isSnapshotRecent,
+  isSnapshotBuckets,
+  isSnapshot,
+  mergeSettings,
+  applyBatch,
+} from './sync-runtime';
 
 // Typing records, kana statistics and test results: rules shared with the server.
 export {
@@ -94,6 +112,10 @@ export {
   isBestEligible,
   averageKpm,
   applyResultToRecords,
+  applyResultsToRecords,
+  mergeTypingRecords,
+  mergeKanaStats,
+  isKanaStats,
   addKanaStats,
   decayKanaStat,
   isKanaStat,

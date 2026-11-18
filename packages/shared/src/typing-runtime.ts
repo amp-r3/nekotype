@@ -1,5 +1,6 @@
 import type { KanaStat, TestResult, TypingRecordEntry, TypingRecords } from './types';
 import { isObject } from './object';
+import { isLearnKanaKey } from './learn-runtime';
 
 // Typing: personal-best rules, records, kana statistics and guards. The client applies them to its
 // local view and the server applies the same ones (spec metrics.md, "Data model").
@@ -64,6 +65,15 @@ export type ResultApplied = {
 };
 
 type Recent = TypingRecordEntry['recent'][number];
+type Best = NonNullable<TypingRecordEntry['best']>;
+
+/** The higher KPM; with equal KPM the smaller result id (S7). */
+function betterBest(a: Best | null, b: Best | null): Best | null {
+  if (a === null) return b;
+  if (b === null) return a;
+  if (a.kpm !== b.kpm) return a.kpm > b.kpm ? a : b;
+  return a.resultId <= b.resultId ? a : b;
+}
 
 function oldestFirst(a: Recent, b: Recent): number {
   if (a.endedAt !== b.endedAt) return a.endedAt - b.endedAt;
@@ -85,9 +95,56 @@ export function applyResultToRecords(records: TypingRecords, result: TestResult)
   const recent = [...(entry?.recent ?? []).filter((r) => r.resultId !== result.id), joined]
     .sort(oldestFirst)
     .slice(-RECENT_RESULTS);
+  // `isBest` is what the results screen shows: strictly higher than the best before. The stored
+  // best also takes a tie by the smaller id, so it does not depend on the order of application.
   const isBest = isBestEligible(result) && (previousBest === null || result.kpm > previousBest);
-  const best = isBest ? { kpm: result.kpm, resultId: result.id } : (entry?.best ?? null);
+  const candidate = isBestEligible(result) ? { kpm: result.kpm, resultId: result.id } : null;
+  const best = betterBest(entry?.best ?? null, candidate);
   return { records: { ...records, [key]: { best, recent } }, average, previousBest, isBest };
+}
+
+/** Folds results into the records in the order of `endedAt`, then id, so the order given is free. */
+export function applyResultsToRecords(
+  records: TypingRecords,
+  results: readonly TestResult[],
+): TypingRecords {
+  const ordered = [...results].sort(
+    (a, b) => a.endedAt - b.endedAt || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  );
+  let folded = records;
+  for (const result of ordered) folded = applyResultToRecords(folded, result).records;
+  return folded;
+}
+
+/**
+ * Union of two sets of records: per key the better `best`, and the union by `resultId` of `recent`
+ * with the 10 latest kept. Idempotent, commutative and associative.
+ */
+export function mergeTypingRecords(a: TypingRecords, b: TypingRecords): TypingRecords {
+  const merged: Record<string, TypingRecordEntry> = { ...a };
+  for (const [key, theirs] of Object.entries(b)) {
+    const mine = merged[key];
+    if (mine === undefined) {
+      merged[key] = theirs;
+      continue;
+    }
+    const byId = new Map<string, Recent>();
+    for (const item of [...mine.recent, ...theirs.recent]) {
+      const known = byId.get(item.resultId);
+      if (
+        known === undefined ||
+        item.kpm < known.kpm ||
+        (item.kpm === known.kpm && item.endedAt < known.endedAt)
+      ) {
+        byId.set(item.resultId, item);
+      }
+    }
+    merged[key] = {
+      best: betterBest(mine.best, theirs.best),
+      recent: [...byId.values()].sort(oldestFirst).slice(-RECENT_RESULTS),
+    };
+  }
+  return merged;
 }
 
 export function addKanaStats(a: KanaStat | undefined, b: KanaStat): KanaStat {
@@ -104,6 +161,18 @@ export function decayKanaStat(stat: KanaStat): KanaStat {
     attempts: Math.floor(stat.attempts / 2),
     erroredAttempts: Math.floor(stat.erroredAttempts / 2),
   };
+}
+
+/** Per kana: the counters are added, then halved when the attempts pass 200. A kana only in `a` stays. */
+export function mergeKanaStats(
+  a: Readonly<Record<string, KanaStat>>,
+  b: Readonly<Record<string, KanaStat>>,
+): Record<string, KanaStat> {
+  const merged: Record<string, KanaStat> = { ...a };
+  for (const [key, stat] of Object.entries(b)) {
+    merged[key] = decayKanaStat(addKanaStats(merged[key], stat));
+  }
+  return merged;
 }
 
 function isCount(value: unknown): value is number {
@@ -128,6 +197,13 @@ function isResultConfig(value: unknown): value is TestResult['config'] {
   if (value['kind'] === 'time') return isCount(value['seconds']) && value['seconds'] > 0;
   if (value['kind'] === 'count') return isCount(value['prompts']) && value['prompts'] > 0;
   return value['kind'] === 'zen';
+}
+
+export function isKanaStats(value: unknown): value is Readonly<Record<string, KanaStat>> {
+  return (
+    isObject(value) &&
+    Object.keys(value).every((key) => isLearnKanaKey(key) && isKanaStat(value[key]))
+  );
 }
 
 export function isTestResult(value: unknown): value is TestResult {

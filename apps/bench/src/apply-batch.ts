@@ -268,7 +268,8 @@ export async function applyBatch(
     const read = dayBuckets(
       (bucketResults[index]?.results ?? []).filter((item): item is KeyValue => 'key' in item),
     );
-    bucketsPatch[track] = patchBuckets(read.stored, read.keys, delta.learn.recallBuckets[track]);
+    const newest = read.keys.length === 0 ? null : Math.max(...read.keys.map(Number));
+    bucketsPatch[track] = patchBuckets(read.stored, newest, delta.learn.recallBuckets[track]).patch;
   });
 
   const deviceSeqNext = {

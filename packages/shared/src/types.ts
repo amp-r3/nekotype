@@ -201,3 +201,74 @@ export type SyncRequest = {
   readonly delta: SyncDelta;
   readonly results: readonly TestResult[];
 };
+
+/** The server's view of one user: what a sync acknowledgement keeps in step (ADR 082). */
+export type Snapshot = {
+  readonly settings: ValidSettings | null;
+  readonly kanaStats: Readonly<Record<KanaKey, KanaStat>>;
+  readonly counters: Counters;
+  /** The client assembles it from the three parts. */
+  readonly learn: LearnState;
+  readonly typingRecords: TypingRecords;
+};
+
+/** `POST /api/sync`, and `GET /api/sync` without `part`. */
+export type SyncResponse = { readonly lastSeq: number; readonly version: number };
+
+/** `GET /api/sync?part=…`; the client stores the three parts only when `version` is the same. */
+export type SnapshotRest = SyncResponse & {
+  readonly part: 'rest';
+  readonly settings: ValidSettings | null;
+  readonly kanaStats: Readonly<Record<KanaKey, KanaStat>>;
+  readonly counters: Counters;
+  readonly learn: Omit<LearnState, 'recent' | 'recallBuckets'>;
+  readonly typingRecords: TypingRecords;
+};
+
+export type SnapshotRecent = {
+  readonly part: 'recent';
+  readonly version: number;
+  readonly recent: LearnState['recent'];
+};
+
+export type SnapshotBuckets = {
+  readonly part: 'buckets';
+  readonly version: number;
+  readonly recallBuckets: LearnState['recallBuckets'];
+};
+
+export type ResultsResponse = {
+  readonly results: readonly TestResult[];
+  /** The cursor for `before`; null on the last page. */
+  readonly next: string | null;
+};
+
+export type MeResponse = {
+  readonly id: string;
+  readonly email: string | null;
+  readonly displayName: string | null;
+  readonly avatarUrl: string | null;
+};
+
+export type ReportRequest = {
+  readonly itemId: string;
+  readonly contentVersion: string;
+  readonly reason: 'wrong_reading' | 'wrong_translation' | 'other';
+  /** At most 500 characters. */
+  readonly comment?: string;
+  readonly turnstileToken: string;
+};
+
+/** The error table of backend.md (with `not_found` and `internal`, p5-plan.md S3). */
+export type ApiErrorCode =
+  | 'invalid_body'
+  | 'unauthenticated'
+  | 'bad_origin'
+  | 'turnstile_failed'
+  | 'not_found'
+  | 'seq_gap'
+  | 'too_large'
+  | 'rate_limited'
+  | 'internal'
+  | 'conflict'
+  | 'unavailable';

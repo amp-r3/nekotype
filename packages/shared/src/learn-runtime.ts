@@ -109,11 +109,8 @@ function isDayBuckets(value: unknown): value is DayBuckets {
   });
 }
 
-function isRecallBuckets(value: unknown): value is LearnState['recallBuckets'] {
-  return isObject(value) && isDayBuckets(value['hiragana']) && isDayBuckets(value['katakana']);
-}
-
-export function isLearnState(value: unknown): value is LearnState {
+/** The parts of a learning state that `GET /api/sync?part=rest` carries (no type predicate: callers go on to look at `recent` and `recallBuckets`). */
+export function isLearnRest(value: unknown): boolean {
   if (!isObject(value)) return false;
   const unlocked = value['unlocked'];
   if (!isObject(unlocked)) return false;
@@ -121,9 +118,24 @@ export function isLearnState(value: unknown): value is LearnState {
     isKeyList(unlocked['hiragana']) &&
     isKeyList(unlocked['katakana']) &&
     isRecordOf(value['entries'], isLearnEntry) &&
-    isRecordOf(value['recent'], isRecallList) &&
     isRecordOf(value['stats'], isLearnStat) &&
-    isActiveDays(value['activeDays']) &&
+    isActiveDays(value['activeDays'])
+  );
+}
+
+export function isRecentMap(value: unknown): value is LearnState['recent'] {
+  return isRecordOf(value, isRecallList);
+}
+
+export function isRecallBuckets(value: unknown): value is LearnState['recallBuckets'] {
+  return isObject(value) && isDayBuckets(value['hiragana']) && isDayBuckets(value['katakana']);
+}
+
+export function isLearnState(value: unknown): value is LearnState {
+  return (
+    isObject(value) &&
+    isLearnRest(value) &&
+    isRecentMap(value['recent']) &&
     isRecallBuckets(value['recallBuckets'])
   );
 }

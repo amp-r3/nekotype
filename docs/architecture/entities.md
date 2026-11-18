@@ -33,7 +33,7 @@ Part of the [architecture description](README.md) of the current code.
   - Deviation from `storage-sync.md` until P5: the `delta` record `learn` holds the whole learning state and the counters (`{ learn, counters }`), not an accumulator of changes since the last batch, and its typing counters stay 0, since typing counts in the `delta` record `typing` (`entities/stats`). P5 replaces the format; before the release the schema can reset (ADR 061).
   - After a successful write the store posts on the `BroadcastChannel` `nekotype:learn`, and a message from another tab makes it read the record again (in the chain of its own writes); `reevaluate()` unlocks and moves boxes when `learnTargetMs` changes.
   - A failed write calls `reportWriteFailure()` (the "data will not be saved" notice).
-  - Merge functions for `delta` are in `packages/shared` (`learn-runtime.ts`); property tests for them come in P5.
+  - Merge functions for `delta` are in `packages/shared` (`learn-runtime.ts`, `learn-state.ts`: `mergeLearn`); their property tests are in `sync-properties.test.ts` (ADR 085). The store does not use `mergeLearn` yet.
 - Learning and typing data are separate: typing code does not import `entities/learn`, a learning session does not write the typing records, and no IndexedDB write happens inside a keystroke handler.
 - `packages/engine` also holds the table of visually similar kana and the track composition helpers (`kanaOf`, `kanaRows`) used for distractors and the chart.
 

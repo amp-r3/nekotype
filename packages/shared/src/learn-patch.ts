@@ -42,24 +42,34 @@ export function patchRecent(
   return patch;
 }
 
+export type BucketsPatch = {
+  /** The new buckets of every touched day, and `null` for every day that leaves the window. */
+  readonly patch: Record<string, Readonly<Record<string, number>> | null>;
+  /** The newest day of the track after the batch; `null` while the track has no day. */
+  readonly newest: number | null;
+};
+
 /**
- * One track. `storedDays`: the stored buckets of the touched days only; `allDayKeys`: every stored
- * day key of the track. Returns the new buckets of every touched day, and `null` for every day that
- * is more than 365 days behind the newest day of the stored and the touched days together.
+ * One track (ADR 082). `storedDays`: the stored buckets of the touched days only; `storedNewest`:
+ * the newest stored day, `bucket_newest`, `null` for a track without a day. The patch names with
+ * `null` every stored day that is more than 365 days behind the newest day of the stored and the
+ * touched days together: the days between the old and the new lower bound, at most 366.
  */
 export function patchBuckets(
   storedDays: DayBuckets,
-  allDayKeys: readonly string[],
+  storedNewest: number | null,
   delta: DayBuckets,
-): Record<string, Readonly<Record<string, number>> | null> {
-  let newest = -Infinity;
-  for (const day of allDayKeys) newest = Math.max(newest, Number(day));
+): BucketsPatch {
+  let newest = storedNewest ?? -Infinity;
   for (const day of Object.keys(delta)) newest = Math.max(newest, Number(day));
+  if (newest === -Infinity) return { patch: {}, newest: null };
   const oldest = newest - BUCKET_DAYS;
 
   const patch: Record<string, Readonly<Record<string, number>> | null> = {};
-  for (const day of allDayKeys) {
-    if (Number(day) < oldest) patch[day] = null;
+  if (storedNewest !== null) {
+    // Stored days lie in [storedNewest - 365, storedNewest]: those below `oldest` leave.
+    const last = Math.min(oldest - 1, storedNewest);
+    for (let day = storedNewest - BUCKET_DAYS; day <= last; day += 1) patch[String(day)] = null;
   }
   for (const [day, added] of Object.entries(delta)) {
     if (Number(day) < oldest) {
@@ -70,7 +80,7 @@ export function patchBuckets(
     for (const [bucket, count] of Object.entries(added)) sum[bucket] = (sum[bucket] ?? 0) + count;
     patch[day] = sum;
   }
-  return patch;
+  return { patch, newest };
 }
 
 function pick<T>(source: Readonly<Record<string, T>>, keys: ReadonlySet<string>, inside: boolean) {

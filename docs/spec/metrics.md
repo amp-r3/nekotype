@@ -143,7 +143,7 @@ type LearnStat = {
 };
 
 type LearnState = {
-  unlocked: Record<Track, KanaKey[]>; // in track order; starts with the vowels
+  unlocked: Record<Track, KanaKey[]>; // in track order on the client, sorted by key on the server; starts with the vowels
   entries: Record<KanaKey, LearnEntry>; // introduced kana
   recent: Record<KanaKey, RecallAnswer[]>; // the last 10 recall answers, oldest first
   stats: Record<KanaKey, LearnStat>;
@@ -159,7 +159,7 @@ type Counters = { started: Record<Mode, number>; finished: Record<Mode, number> 
 - **Decay:** when a kana's typing `attempts` exceeds 200, both its counters are halved and rounded down. When its learning `recognitions` exceeds 200, `recognitions`, `recognitionErrors` and every entry of `mixups` are halved and rounded down; map entries that reach 0 are removed. The same function runs on the client and on the server (see [Storage and sync](storage-sync.md)).
 - **Statistic keys:** a merged っX is recorded under the `KanaKey` of the following kana, as in the baseline. A standalone っ and ー have no `KanaKey`: they count in `tokens` and `erroredTokens` but not in `KanaStat`.
 - **Weakness** (typing): `weakness = (erroredAttempts + 1) / (attempts + 2)`; weight `1 + 4 × weakness`, bounded to 1–5. A word or phrase weighs the mean of its kana weights via `computeItemWeight` (D20). The weights serve `weakFocus` only.
-- **Personal best** — maximum KPM per `personalBestKey`, for a test with `endReason` = `complete`, `repeated` = false and kana accuracy ≥ 80% (A3). The eligibility rule and the key function live in `shared/runtime`, so the client and the server apply the same rule.
+- **Personal best** — maximum KPM per `personalBestKey`, for a test with `endReason` = `complete`, `repeated` = false and kana accuracy ≥ 80% (A3). With equal KPM the result with the smaller id is the best, so the best does not depend on the order in which results are applied (ADR 085); the "new best" of the results screen stays strictly higher than the best before. The eligibility rule and the key function live in `shared/runtime`, so the client and the server apply the same rule.
 - **`personalBestKey`** — `content|script|strictness|config`. `config` is `time:60`, `count:25` or `zen`. Example: `words|hiragana|learner|time:60`. `weakFocus` is not part of the key: it only makes a test harder.
 - **Average** — `recent` holds, per key, the last 10 saved results with `repeated` = false, whatever their `endReason`. The average shown with a result is the mean of `recent` before that result is added; with no earlier result nothing is compared. The difference to the personal best is to the best before the test; a new best shows the badge and the difference to the previous best. The first eligible result of a key is a new best, with no previous best to compare with.
 - **Typing record storage** is described in [Storage and sync](storage-sync.md). `celebratedPersonalBest` only records what was shown at completion.
