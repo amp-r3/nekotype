@@ -19,7 +19,7 @@ Not covered by the AGPL. Copyright (C) 2026 amp-r3. All rights reserved.
 - `apps/web/src/assets/logo/` (the lockup)
 - `docs/design/readme-banner.svg`
 - `docs/design/source/assets/` (logo, wordmark, marks, favicon and cat drawings)
-- The cat drawings in code: the shapes (the `path`, `circle` and `rect` geometry) in `apps/web/src/shared/ui/cat.tsx` and the `CAT` data in `docs/design/source/components/bundle.js`. The code around them is under the AGPL.
+- The cat drawings in code: the shapes (the `path`, `circle` and `rect` geometry) in `apps/web/src/shared/ui/cat.tsx` and `apps/web/src/shared/ui/cat-mark.tsx` and the `CAT` data in `docs/design/source/components/bundle.js`. The code around them is under the AGPL.
 - Any other drawing of the Nekotype cat or logo, in any style or format, including later versions of the files above.
 
 ## Fonts

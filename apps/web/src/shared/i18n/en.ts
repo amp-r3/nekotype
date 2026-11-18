@@ -10,6 +10,8 @@ export const en = {
   'nav.stats': 'stats',
   'nav.settings': 'settings',
   'nav.about': 'about',
+  'nav.signIn': 'sign in',
+  'nav.signInAgain': 'sign in again',
   'page.learn': 'Learn',
   'page.type': 'Type',
   'page.stats': 'Stats',
@@ -37,6 +39,9 @@ export const en = {
   'learn.loadError': 'failed to load your progress. check the connection and try again.',
   'learn.retry': 'retry',
   'learn.storage': 'progress cannot be saved in this browser',
+  'learn.authDenied': 'sign-in was cancelled',
+  'learn.authFailed': 'sign-in failed. try again in settings.',
+
   'learn.chart.label': 'kana table',
   'learn.chart.vowels': 'vowels',
   'learn.chart.block.basic': 'basic',

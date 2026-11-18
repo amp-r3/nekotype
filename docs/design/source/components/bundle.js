@@ -482,7 +482,7 @@
       h('div', { className: 'nk-dialog__head' }, h('h2', { id: tid, className: 'nk-dialog__title ui-heading' }, p.title),
         p.onClose && h('button', { type: 'button', className: 'nk-dialog__close mono-romaji', 'aria-label': p.closeLabel || 'close', onClick: p.onClose }, '✕')),
       h('div', { className: 'nk-dialog__body ui-body' }, p.children),
-      p.actions && h('div', { className: 'nk-dialog__actions' }, p.actions));
+      p.actions && h('div', { className: 'nk-dialog__actions' }, p.note !== undefined && h('div', { className: 'nk-dialog__note' }, p.note), p.actions));
   }
 
   /* ================= Kana data =================

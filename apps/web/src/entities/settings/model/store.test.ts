@@ -222,6 +222,21 @@ describe('settings across tabs and failed writes', () => {
     return { channel, posts, fire: () => listener?.('change') };
   }
 
+  it('returns to the defaults when sign-out deletes the document (Q3)', async () => {
+    const db = createMemoryDb();
+    await db.put('settings', 'current', savedDocument);
+    const fake = fakeChannel();
+    await initSettings(Promise.resolve(db), { now: () => 5 }, fake.channel);
+    expect(learnTrack.value).toBe('katakana');
+
+    await db.delete('settings', 'current');
+    fake.fire();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(learnTrack.value).toBe('hiragana');
+    expect(scriptSetting.value).toBe('both');
+    expect(learnTargetMs.value).toBe(1500);
+  });
+
   it('posts after a write and reads the document again when another tab posts', async () => {
     const db = createMemoryDb();
     const fake = fakeChannel();

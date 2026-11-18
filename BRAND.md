@@ -22,7 +22,7 @@ Before you publish a modified version — as a website, a build, a package or an
 
 1. The name "Nekotype" / "ねこタイプ" in the interface, the page title, the web manifest and the package names you publish, with a name of your own.
 2. `apps/web/public/favicon.svg` and `apps/web/src/assets/logo/` with your own icon and logo.
-3. The cat drawn by `apps/web/src/shared/ui/cat.tsx` with your own illustration, or remove it.
+3. The cat drawn by `apps/web/src/shared/ui/cat.tsx` and its mark in `apps/web/src/shared/ui/cat-mark.tsx` with your own illustration, or remove it.
 4. Any other file listed in [NOTICE.md](NOTICE.md) under "The brand and mascot" that your version uses.
 
 The AGPL obligations for the code (source offer, notices, attribution "Based on Nekotype by amp-r3") still apply to your version; see [NOTICE.md](NOTICE.md).

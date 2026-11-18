@@ -8,17 +8,17 @@ Nekotype is a high-performance, keyboard-first Japanese kana speed trainer engin
 
 ## Contents
 
-| File                                         | Covers                                                                                  |
-| -------------------------------------------- | --------------------------------------------------------------------------------------- |
-| [layout.md](layout.md)                       | Workspace, FSD layers, import rules, the IndexedDB layer, routing and the shell, styles |
-| [romaji-model.md](romaji-model.md)           | Strict IME and learner spellings, ー, っ, ん, skip tokens, reading hints                |
-| [engine.md](engine.md)                       | The matcher: positions, the public API of `packages/engine`                             |
-| [training-session.md](training-session.md)   | `createSession()` and `createTrainer()`: test end, saving, repeat, the stream windows   |
-| [input.md](input.md)                         | Input sources and `KeyIntent`s; adding an on-screen keyboard                            |
-| [entities.md](entities.md)                   | The stores of `entities/stats`, `settings`, `learn` and `prompt`                        |
-| [pages.md](pages.md)                         | The test, learning, statistics, about and settings screens; presentational `shared/ui`  |
-| [sync.md](sync.md)                           | The sync engine of `features/sync`, `entities/user`, `shared/api`, `requestSync`        |
-| [extension-recipes.md](extension-recipes.md) | Adding a kana row, changing the vocabulary, adding a locale or a test mode              |
-| [quality-gates.md](quality-gates.md)         | What `pnpm run verify` runs, the budgets as measured, the e2e tests                     |
+| File                                         | Covers                                                                                                 |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| [layout.md](layout.md)                       | Workspace, FSD layers, import rules, the IndexedDB layer, routing and the shell, styles                |
+| [romaji-model.md](romaji-model.md)           | Strict IME and learner spellings, ー, っ, ん, skip tokens, reading hints                               |
+| [engine.md](engine.md)                       | The matcher: positions, the public API of `packages/engine`                                            |
+| [training-session.md](training-session.md)   | `createSession()` and `createTrainer()`: test end, saving, repeat, the stream windows                  |
+| [input.md](input.md)                         | Input sources and `KeyIntent`s; adding an on-screen keyboard                                           |
+| [entities.md](entities.md)                   | The stores of `entities/stats`, `settings`, `learn` and `prompt`                                       |
+| [pages.md](pages.md)                         | The test, learning, statistics, about and settings screens; presentational `shared/ui`                 |
+| [sync.md](sync.md)                           | The sync engine and the account flows of `features/sync`, `entities/user`, `shared/api`, `requestSync` |
+| [extension-recipes.md](extension-recipes.md) | Adding a kana row, changing the vocabulary, adding a locale or a test mode                             |
+| [quality-gates.md](quality-gates.md)         | What `pnpm run verify` runs, the budgets as measured, the e2e tests                                    |
 
 Until November 2026 this was one file, `baseline-v1.md`; older ADRs and plans name it. "Baseline" in the [specification](../spec/README.md) means the v1 code at commit 0f4927d, not these files.

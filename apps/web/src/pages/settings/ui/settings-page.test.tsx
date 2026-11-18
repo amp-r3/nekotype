@@ -78,6 +78,7 @@ describe('settings page: Reset progress', () => {
       t('settings.learn.title'),
       t('settings.typing.title'),
       t('settings.data.title'),
+      t('settings.account.title'),
     ]);
     expect(container.textContent).toContain(t('settings.learn.strictnessHint'));
     expect(container.textContent).toContain(t('settings.learn.targetHint'));
@@ -96,14 +97,44 @@ describe('settings page: account section', () => {
     container.remove();
   });
 
-  it('shows no account section to a guest', async () => {
+  it('shows a guest what signing in gives, and the two buttons on the production host', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
-    await initUser(createMemoryDb());
+    await initUser(createMemoryDb(), 'nekotype.pages.dev');
     render(<SettingsPage />, container);
     await act(settle);
-    expect(container.textContent).not.toContain(t('settings.account.title'));
+    expect(container.textContent).toContain(t('settings.account.guest'));
+    button(container, t('settings.account.google'));
+    button(container, t('settings.account.github'));
+    expect(container.textContent).toContain(t('settings.data.reset'));
   });
+
+  it('offers nothing to press on a preview (D20)', async () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    await initUser(createMemoryDb(), 'abc123.nekotype.pages.dev');
+    render(<SettingsPage />, container);
+    await act(settle);
+    expect(container.textContent).toContain(t('settings.account.guest'));
+    expect(container.textContent).not.toContain(t('settings.account.google'));
+    expect(container.textContent).not.toContain(t('settings.account.github'));
+  });
+
+  it.each([false, true])(
+    'hides reset progress from a signed-in user (expired session: %s, A33)',
+    async (expired) => {
+      container = document.createElement('div');
+      document.body.appendChild(container);
+      const db = createMemoryDb();
+      await db.put('meta', 'userId', 'user-1');
+      if (expired) await db.put('meta', 'sessionExpired', true);
+      await initUser(db, 'nekotype.pages.dev');
+      render(<SettingsPage />, container);
+      await act(settle);
+      expect(container.textContent).not.toContain(t('settings.data.reset'));
+      expect(container.textContent).not.toContain(t('settings.account.guest'));
+    },
+  );
 
   it('loads the account section for a signed-in user', async () => {
     container = document.createElement('div');

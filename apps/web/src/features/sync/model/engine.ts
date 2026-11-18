@@ -31,7 +31,7 @@ import {
 } from '../lib/build-batch';
 import type { Batch } from '../lib/build-batch';
 import { readLearnChanges, readOutbox, readResultRow, readTypingChanges } from '../lib/stored';
-import { setSyncStatus } from './status';
+import { setSyncOnline, setSyncStatus } from './status';
 import type { SyncStatus } from './status';
 
 const SETTINGS_STORE = 'settings';
@@ -93,6 +93,11 @@ export interface SyncEngine {
   /** Starts triggering: at once on the application start, then on the events of the page. */
   start: () => void;
   stop: () => void;
+  /**
+   * Runs one cycle now, under the lock, regardless of the 10-second spacing (sign-out syncs first).
+   * Nothing is sent before the end of a `Retry-After` wait.
+   */
+  syncNow: () => Promise<void>;
   /** Resolves when the work in progress and the status computation are done (tests). */
   idle: () => Promise<void>;
 }
@@ -186,6 +191,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
   const refreshStatus = (): Promise<void> => {
     statusRun = statusRun
       .then(async () => {
+        setSyncOnline(deps.env.isOnline() && !networkFailed);
         setSyncStatus(await computeStatus());
       })
       .catch(() => {});
@@ -596,6 +602,15 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
       wantsPull = false;
       for (const remove of removers) remove();
       removers = [];
+    },
+
+    async syncNow() {
+      if (!running || clock.now() < notBefore) return;
+      working = deps.locks
+        .run(() => cycle(false))
+        .catch(() => {})
+        .then(refreshStatus);
+      await working;
     },
 
     async idle() {

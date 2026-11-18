@@ -13,7 +13,8 @@ const SRC = join(import.meta.dirname, '..', '..');
 const PARTS: readonly (readonly [string, Record<string, string>, RegExp])[] = [
   ['type', typeEn, /^(pages\/trainer|features\/training)\//],
   ['stats', statsEn, /^pages\/stats\//],
-  ['settings', settingsEn, /^pages\/settings\//],
+  // The "another account" dialog loads the settings part before it shows (design decision 118).
+  ['settings', settingsEn, /^(pages\/settings|features\/sync\/ui)\//],
   ['about', aboutEn, /^pages\/about\//],
 ];
 

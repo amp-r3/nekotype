@@ -12,6 +12,8 @@ export const ru = {
   'nav.stats': 'статистика',
   'nav.settings': 'настройки',
   'nav.about': 'о проекте',
+  'nav.signIn': 'войти',
+  'nav.signInAgain': 'войти снова',
   'page.learn': 'Обучение',
   'page.type': 'Набор',
   'page.stats': 'Статистика',
@@ -39,6 +41,9 @@ export const ru = {
   'learn.loadError': 'не удалось загрузить прогресс. проверьте соединение.',
   'learn.retry': 'ещё раз',
   'learn.storage': 'прогресс не сохраняется в этом браузере',
+  'learn.authDenied': 'вход отменён',
+  'learn.authFailed': 'вход не удался. повторите в настройках.',
+
   'learn.chart.label': 'таблица кан',
   'learn.chart.vowels': 'гласные',
   'learn.chart.block.basic': 'основные',

@@ -1,6 +1,8 @@
-import type { Db, SyncReason } from '@/shared/lib';
+import type { ChangeChannel, Db, SyncReason } from '@/shared/lib';
 import { changeChannel, defaultClock, defaultScheduler, onSyncRequest } from '@/shared/lib';
-import { refreshUser } from '@/entities/user';
+import { refreshUser, setSignInCheck } from '@/entities/user';
+import { createAccount } from './account';
+import type { Account, Unsent } from './account';
 import { createSyncEngine } from './engine';
 import type { SyncEngine, SyncEnv, SyncLocks } from './engine';
 
@@ -54,9 +56,61 @@ function createEnv(): SyncEnv {
 }
 
 let engine: SyncEngine | null = null;
+let channels: SyncEngineChannels | null = null;
+let account: Account | null = null;
+
+type SyncEngineChannels = {
+  readonly learn: ChangeChannel;
+  readonly typing: ChangeChannel;
+  readonly settings: ChangeChannel;
+};
+
+// One set of channel objects for the chunk: the stores of this tab receive their posts too (D17).
+function syncChannels(): SyncEngineChannels {
+  channels ??= {
+    learn: changeChannel('nekotype:learn'),
+    typing: changeChannel('nekotype:typing'),
+    settings: changeChannel('nekotype:settings'),
+  };
+  return channels;
+}
+
+function accountOf(db: Db): Account {
+  account ??= createAccount({
+    db,
+    clock: defaultClock,
+    fetch: (input, init) => fetch(input, init),
+    channels: syncChannels(),
+    refreshUser,
+    setSignInCheck,
+    engine: () => engine,
+  });
+  return account;
+}
+
+/** `GET /api/me` at the start, when a user is set or a sign-in redirect has just returned (D19). */
+export function checkAccount(db: Db): Promise<void> {
+  return accountOf(db).check();
+}
+
+/** The choice of the "another account" dialog. */
+export function resolveAnotherAccount(choice: 'cancel' | 'discard'): Promise<void> {
+  return account?.resolveAnotherAccount(choice) ?? Promise.resolve();
+}
+
+/** Syncs when it can, then says what sign-out would lose. */
+export function prepareSignOut(): Promise<Unsent> {
+  return account?.prepareSignOut() ?? Promise.resolve({ results: 0, other: false });
+}
+
+/** Signs out; false when the server could not be reached and nothing changed. */
+export function signOut(): Promise<boolean> {
+  return account?.signOut() ?? Promise.resolve(false);
+}
 
 /** Starts the engine of this tab on `db`; a second call does nothing. Called when a user is signed in. */
 export function startSync(db: Db): void {
+  accountOf(db);
   engine ??= createSyncEngine({
     db,
     clock: defaultClock,
@@ -65,11 +119,7 @@ export function startSync(db: Db): void {
     appVersion: __APP_VERSION__,
     locks: createLocks(),
     env: createEnv(),
-    channels: {
-      learn: changeChannel('nekotype:learn'),
-      typing: changeChannel('nekotype:typing'),
-      settings: changeChannel('nekotype:settings'),
-    },
+    channels: syncChannels(),
     refreshUser,
     onSyncRequest: (handler: (reason: SyncReason) => void) => onSyncRequest(handler),
   });

@@ -20,7 +20,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | 6   | `p5-06-local-view`       | done        | #169         |
 | 7   | `p5-07-sync-engine`      | done        | #170         |
 | D   | `docs/p5-design`         | done        | #157         |
-| 8   | `p5-08-account`          | not started |              |
+| 8   | `p5-08-account`          | done        | #171         |
 | 9   | `p5-09-sync-e2e`         | not started |              |
 | 10  | `p5-10-history`          | not started |              |
 | 11  | `p5-11-account-deletion` | not started |              |
@@ -341,7 +341,7 @@ The wrapper (`shared/lib/idb/idb.ts`) gets two methods, with the same behaviour 
 
 - `features/sync` has two consumers (`app` and `pages/settings`) and `entities/user` three, so both stay slices.
 - **A guest never loads the sync engine.** Every import of `@/features/sync` is dynamic and guarded by `userId`. `check-budget.mjs` gets a rule: the chunk that holds `src/features/sync/index.ts` is not the initial chunk and is not in the static imports of any route chunk; the idle prefetch does not fetch it.
-- **Budget.** Allowances for the initial JS: PR 6 at most +1.4 KB (the merge functions and the view), PR 7 at most +0.3 KB, PR 8 at most +0.4 KB (the navigation link, the sign-in notice, their strings). The phase ends at 33.5 KB or less. An executor who cannot stay inside an allowance stops and asks; moving code out of the initial chunk is not theirs to decide.
+- **Budget.** Allowances for the initial JS: PR 6 at most +1.4 KB (the merge functions and the view), PR 7 at most +0.3 KB, PR 8 at most +0.8 KB (the navigation link, the sign-in notice, their strings; raised from 0.4 KB by the maintainer on 2026-11-18, [ADR 090](docs/adr/090-sign-in-sign-out-and-the-account-section.md)). The phase ends at 33.5 KB or less. An executor who cannot stay inside an allowance stops and asks; moving code out of the initial chunk is not theirs to decide.
 - **Sync flow**, where the spec is silent:
   - A trigger with nothing to send does nothing, except `start` and `online`, which call `GET /api/sync` without `part` and read the three parts only when `version` differs from `meta.snapshotVersion` (ADR 082), so a device sees what the others did ([Q5](#q5-spec-amendments), S6).
   - The engine never reads the stores' memory. It works on IndexedDB and tells the stores to read again by posting on the channels they already listen to (`nekotype:learn`, `nekotype:typing`, `nekotype:settings`); a second channel object in the same tab receives the message too.
@@ -383,7 +383,7 @@ Replaces "Two tabs before P5" in [storage-sync.md](docs/spec/storage-sync.md).
 
 #### D21. Turnstile
 
-- The script `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit` is added to the page when the report dialog opens, never before. The widget is rendered explicitly in the 300 × 65 slot of the design with the dark theme and the interface language. A token is used once: after a failed submit the widget is reset.
+- The script `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit` is added to the page when the report dialog opens, never before. The widget is rendered explicitly in the full-width, 65 px high slot of the design (size `flexible`, [ADR 089](docs/adr/089-sign-out-text-and-dialog-fields.md)) with the dark theme and the interface language. A token is used once: after a failed submit the widget is reset.
 - Site keys are public constants in `pages/trainer/lib/turnstile.ts`, chosen by host: the production key on `nekotype.pages.dev`, the preview key on its subdomains, Cloudflare's always-passing test key elsewhere (`localhost`).
 - The server reads `TURNSTILE_SECRET_KEY`. Without it the endpoint answers `503 unavailable`. With `ENVIRONMENT` = `production` it refuses Cloudflare's published test secrets, so a wrong secret cannot open the endpoint.
 - `apps/web/public/_headers` needs no change: there is no Content-Security-Policy to extend.
@@ -683,7 +683,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Acceptance:** 8, 10, 11.
 - **Docs:** `frontend.md` (the account section as built); `storage-sync.md` (the `pendingSignIn` mechanism, Q3); `docs/architecture/`; `README.md` (the description of the application: accounts and sync exist).
 - **Preview URL:** no `sign in` link and no sign-in buttons; `/settings` shows the Account section with nothing to press; everything else unchanged. Locally with `.dev.vars`: the whole flow with both providers. After the merge the maintainer signs in on production from two browsers and checks that progress appears in the second.
-- **Done when:** `verify:quick` passes; the initial JS grew by at most 0.4 KB and is at most 33.5 KB.
+- **Done when:** `verify:quick` passes; the initial JS grew by at most 0.8 KB (D17) and is at most 33.5 KB.
 - **Size:** about 1,500 lines.
 
 ### PR 9 — Sync e2e
