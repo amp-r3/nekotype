@@ -6,7 +6,7 @@ Instructions for AI coding agents working in this repository. `CLAUDE.md` is a s
 
 Nekotype is a keyboard-first web app for learning hiragana and katakana from zero, with progress tracking; typing Japanese words and phrases in romaji is its second part (ADR 058). Production: <https://nekotype.pages.dev> (Cloudflare Pages).
 
-- **Current code** is the v1 baseline in a pnpm monorepo (ADR 027; phases P0–P4 done): a Preact SPA in `apps/web/` (learning on `/`, the typing trainer with words and phrases on `/type`), the stream input engine and kana tables in `packages/engine`, shared types, guards and merge functions in `packages/shared`, the content pipeline in `packages/content` (a build tool, run by hand; its generated chunks are committed). Settings, learning state and typing results, records and statistics are in IndexedDB, the language in localStorage; there is no backend.
+- **Current code** is the v1 baseline in a pnpm monorepo (ADR 027; phases P0–P4 done): a Preact SPA in `apps/web/` (learning on `/`, the typing trainer with words and phrases on `/type`), the stream input engine and kana tables in `packages/engine`, shared types, guards and merge functions in `packages/shared`, the content pipeline in `packages/content` (a build tool, run by hand; its generated chunks are committed), and, since P5 PR 2, an API scaffold in `apps/api` (Hono on Pages Functions with a D1 database; no routes yet). Settings, learning state and typing results, records and statistics are in IndexedDB, the language in localStorage; nothing is synced to a server yet.
 - **Target** is the learning-first MVP in `docs/spec/`, delivered in phases P0–P7: adaptive kana learning on `/` with IndexedDB (done in P3), words and phrases from the content pipeline (done in P4), Pages Functions + D1 sync (P5), kana audio (P6), polish and release (P7).
 - Where documents disagree, `docs/spec/` wins over everything else. `README.md` and `docs/architecture/` describe the code after the latest finished phase; when a phase changes the code, update them in the same PR.
 
@@ -30,6 +30,7 @@ The repository is a pnpm workspace (`apps/*`, `packages/*`; Node ≥ 24, pnpm �
 ```bash
 pnpm install        # install; also enables the git hooks (prepare script)
 pnpm run dev          # Vite dev server on http://localhost:5173
+pnpm run dev:api      # API on :8788 (wrangler pages dev, local D1); Vite proxies /api to it
 pnpm run typecheck    # tsc --noEmit
 pnpm run lint         # eslint . && steiger ./src, per package
 pnpm test             # vitest run in every package (engine: with a coverage threshold)

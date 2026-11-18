@@ -1,0 +1,15 @@
+# The Workers configuration of the API tests (p5-plan.md, D8). It is separate from the Pages
+# configuration at the repository root on purpose: the tests must not depend on how the plugin
+# reads a Pages file.
+name = "nekotype-api-test"
+compatibility_date = "2026-11-01"
+
+[vars]
+ENVIRONMENT = "test"
+APP_ORIGIN = "http://localhost:5173"
+SYNC_MIN_INTERVAL_MS = "5000"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nekotype-test"
+database_id = "00000000-0000-0000-0000-000000000001"

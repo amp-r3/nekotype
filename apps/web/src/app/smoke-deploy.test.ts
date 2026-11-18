@@ -17,6 +17,10 @@ function page(status: number, body: string, headers: Record<string, string> = {}
   return new Response(body, { status, headers: { 'content-type': 'text/html', ...headers } });
 }
 
+function apiNotFound(): Response {
+  return Response.json({ error: { code: 'not_found' } }, { status: 404 });
+}
+
 // A healthy deployment: the routes rewritten to the application, real 404s elsewhere.
 function healthy(overrides: Record<string, () => Response> = {}): FetchFn {
   const routes = new Set<string>(['/']);
@@ -28,6 +32,7 @@ function healthy(overrides: Record<string, () => Response> = {}): FetchFn {
     const path = url.pathname;
     const override = overrides[path];
     if (override) return Promise.resolve(override());
+    if (path === '/api/unknown') return Promise.resolve(apiNotFound());
     if (routes.has(path)) return Promise.resolve(page(200, HTML));
     if (path === '/assets/index-a1.js') {
       return Promise.resolve(page(200, 'console.log(1)', { 'content-type': 'text/javascript' }));
@@ -63,6 +68,20 @@ describe('smoke test of a deployment', () => {
     });
     const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn });
     expect(failures.map((f) => f.split(' ')[0])).toEqual(['/stats/', '/about']);
+  });
+
+  it('catches an API that is not deployed: the static 404 page answers /api/unknown', async () => {
+    const fetchFn = healthy({ '/api/unknown': () => page(404, NOT_FOUND) });
+    const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn });
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('/api/unknown should answer 404 with {"error"');
+  });
+
+  it('catches an API path that is served as the application', async () => {
+    const fetchFn = healthy({ '/api/unknown': () => page(200, HTML) });
+    const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn });
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('/api/unknown');
   });
 
   it('catches the retired /learn route still answering the application', async () => {

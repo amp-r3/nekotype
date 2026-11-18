@@ -6,7 +6,7 @@ The repository is a pnpm monorepo with two applications and three packages. The 
 nekotype/
 ├── apps/
 │   ├── web/        Preact + Vite + Tailwind v4, FSD: app → pages → features → entities → shared
-│   ├── api/        Hono app (OAuth, sync, reports), mounted by Pages Functions
+│   ├── api/        Hono app (OAuth, sync, reports), mounted by Pages Functions; its D1 migrations are in apps/api/migrations
 │   └── bench/      @nekotype/bench: the CPU and D1 measurement of one sync on Cloudflare (P5; a tool run by hand, never deployed to production)
 ├── functions/
 │   └── api/[[route]].ts   Pages Functions entry point; imports apps/api
@@ -15,6 +15,7 @@ nekotype/
 │   ├── content/    @nekotype/content: dictionary build scripts → JSON chunks; not part of the runtime
 │   └── shared/     @nekotype/shared; entry points: /types, /runtime (decay, merge rules, personal-best rule and key, constants), /schemas (valibot, server only), /testing (generated test data; for tests and measurements only)
 ├── docs/           spec/, adr/, architecture/, archive/ (index: docs/README.md)
+├── wrangler.toml   the Pages project's configuration: bindings, variables, D1 databases per environment
 ├── pnpm-workspace.yaml
 └── .github/workflows/
 ```

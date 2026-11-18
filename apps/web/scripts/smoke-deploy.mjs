@@ -73,6 +73,23 @@ export async function checkDeployment(baseUrl, { fetchFn = fetch } = {}) {
     return response;
   };
 
+  // The API answers where the static files do not: an unknown path under /api is a 404 with the
+  // JSON error body of the Functions, not the static 404 page (p5-plan.md, D22). A deployment
+  // without its Functions bundle, or without `_routes.json`, fails here.
+  {
+    const path = '/api/unknown';
+    const { response, body } = await get(fetchFn, baseUrl, path);
+    const ok =
+      response.status === 404 &&
+      header(response, 'content-type').includes('application/json') &&
+      body === JSON.stringify({ error: { code: 'not_found' } });
+    lines.push(`${ok ? 'ok  ' : 'FAIL'} api     ${path} ${describeResponse(response)}`);
+    if (!ok)
+      failures.push(
+        `${path} should answer 404 with {"error":{"code":"not_found"}} from the Functions, got ${describeResponse(response)}`,
+      );
+  }
+
   const missing = `/assets/smoke-missing-${Date.now()}.js`;
   const missingResponse = await expectNotFound(missing, 'missing ');
   if (header(missingResponse, 'cache-control').includes('immutable')) {

@@ -1,0 +1,27 @@
+{
+  "name": "@nekotype/api",
+  "version": "1.0.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "description": "The Hono application behind /api/*, mounted by functions/api/[[route]].ts as Cloudflare Pages Functions (p5-plan.md, D1).",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@nekotype/shared": "workspace:*",
+    "hono": "4.13.19"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.8.4",
+    "@cloudflare/workers-types": "5.20261118.1",
+    "@types/node": "^22.13.10",
+    "eslint": "^10.13.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
+}
