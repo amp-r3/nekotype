@@ -16,3 +16,5 @@ export function checkBudget(distDir: string): {
   readonly lines: readonly string[];
   readonly failures: readonly string[];
 };
+
+export const SYNC_ENTRY: string;

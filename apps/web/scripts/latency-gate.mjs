@@ -27,6 +27,7 @@ export const LATENCY_PATHS = [
   'apps/web/src/app/route-view.tsx',
   'apps/web/src/app/main.tsx',
   'apps/web/src/app/init.ts',
+  'apps/web/src/app/sync-bootstrap.ts',
   'apps/web/e2e/latency.spec.ts',
   'apps/web/e2e/lib/',
   'apps/web/playwright.latency.config.ts',

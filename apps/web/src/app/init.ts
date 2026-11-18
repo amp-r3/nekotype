@@ -3,6 +3,7 @@ import { LocalStorageStore, databaseMode, getDatabase, removeLegacyKeys } from '
 import { initLocale, locale, t } from '@/shared/i18n';
 import { currentPath } from '@/shared/lib';
 import { initSettings } from '@/entities/settings';
+import { startSyncBootstrap } from './sync-bootstrap';
 
 // The tab title follows the screen; `t()` reads the language, so it follows that too.
 function routeTitle(path: string): string {
@@ -29,6 +30,7 @@ export function initApp(): Promise<void> {
   // does not wait for it: a screen that needs the settings shows the loading line until they are in.
   const database = getDatabase();
   void initSettings(database);
+  startSyncBootstrap(database);
   void database.then(
     () => {
       if (databaseMode.value === 'indexeddb') {

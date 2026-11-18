@@ -11,6 +11,7 @@ import type {
   Track,
 } from '@nekotype/shared/types';
 import type { KeyIntent } from '@/shared/lib';
+import { requestSync } from '@/shared/lib';
 import { compile, isComplete, start, step } from '@/entities/prompt';
 import type { MatchState, Matcher, Strictness } from '@/entities/prompt';
 import type { Keystroke, LearnStore } from '@/entities/learn';
@@ -164,6 +165,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
   const finish = (): void => {
     clearTimer();
     store.countSession('finished');
+    requestSync('learn');
     summary.value = summarize({
       track,
       before,

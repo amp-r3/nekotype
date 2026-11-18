@@ -20,6 +20,13 @@ export const settingsEn = {
   'settings.data.reset': 'reset progress',
   'settings.data.resetAction': 'reset',
 
+  'settings.account.title': 'Account',
+  'settings.sync.synced': 'synced',
+  'settings.sync.pending': 'pending',
+  'settings.sync.offline': 'offline',
+  'settings.sync.expired': 'session expired',
+  'settings.sync.blocked': 'sync is paused until the next app update',
+
   'dialog.close': 'close',
   'reset.title': 'Reset progress?',
   'reset.confirm':

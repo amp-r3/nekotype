@@ -14,7 +14,7 @@ import {
   setTestConfig,
   strictnessSetting,
 } from '@/entities/settings';
-import { createMemoryDb, recordWrites } from '@/shared/lib';
+import { createMemoryDb, onSyncRequest, recordWrites } from '@/shared/lib';
 import { isTestResult } from '@nekotype/shared/runtime';
 
 const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
@@ -412,6 +412,20 @@ describe('trainer: saving the finished test (ADR 073)', () => {
     vi.restoreAllMocks();
     setContent('words');
     setScript('both');
+  });
+
+  it('asks for a sync once the finished test is saved', async () => {
+    const asked = vi.fn();
+    const off = onSyncRequest(asked);
+    const { clock, trainer } = setup();
+    trainer.start();
+    await flush();
+    trainer.session.handleIntent({ kind: 'char', char: 'a' });
+    clock.now.mockReturnValue(31000);
+    trainer.session.handleIntent({ kind: 'finish' });
+    await flush();
+    expect(asked).toHaveBeenCalledExactlyOnceWith('test');
+    off();
   });
 
   it('assembles the result from the report and the settings, and keeps what was compared', async () => {

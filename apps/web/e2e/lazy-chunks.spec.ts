@@ -107,3 +107,25 @@ test.describe('the Russian dictionary is a lazy chunk', () => {
     expect(await page.evaluate(() => localStorage.getItem('nekotype:locale'))).toBe('ru');
   });
 });
+
+test.describe('the sync engine is for signed-in users', () => {
+  test('a guest makes no request to /api and loads no sync chunk, also after the idle prefetch', async ({
+    page,
+  }) => {
+    const paths: string[] = [];
+    page.on('request', (request) => {
+      paths.push(new URL(request.url()).pathname);
+    });
+    await page.goto('/settings');
+    await finishZen(page);
+    await expect(page.getByTestId('results-panel')).toBeVisible();
+    // Past the idle prefetch (a 1.5 s timer where there is no requestIdleCallback) and the 10 s
+    // wait of a sync after a test would be much longer: the engine must not even be loaded.
+    await page.waitForTimeout(3000);
+
+    expect(paths.filter((path) => path.startsWith('/api'))).toEqual([]);
+    expect(
+      paths.filter((path) => /\/assets\/(sync-(?!request-)|account-panel-)/.test(path)),
+    ).toEqual([]);
+  });
+});

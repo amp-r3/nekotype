@@ -29,7 +29,7 @@ The baseline budgets are retained and extended with latency and lazy-chunk budge
 - **End of P2.** "End of P2" is commit e33484a: sizes from `check-budget.mjs`, the largest lazy chunk of each kind, and the latency from the CI run on that commit, the highest value of the three content kinds.
 - **Machines.** Latency depends on the machine: the same build measures roughly twice as slow on a slower developer machine, where the worst-keystroke ceilings can fail; the gate is defined by the CI run (ADR 048, ADR 052).
 
-Sign-in and sync do not count toward the initial budget: the sync client and account screens are lazy-loaded. Neither do kana sounds, which are loaded when a learning session starts.
+Sign-in and sync do not count toward the initial budget: the sync client and account screens are lazy-loaded. `check-budget.mjs` proves it for the sync engine: it fails when the chunk of `src/features/sync/index.ts` is missing from the manifest, is the initial chunk, or is a static import of a route chunk (ADR 088). The initial chunk keeps only the user's key, the bootstrap that starts the engine and `requestSync` (0.29 KB gzip in P5 PR 7). Neither do kana sounds, which are loaded when a learning session starts.
 
 **`check-budget.mjs` changes**: check HTML; read fonts from `dist` instead of `src`; detect lazy chunks from the Vite manifest instead of a filename substring; report brotli alongside gzip.
 
