@@ -513,6 +513,8 @@ The code and tests of PR 3 need none of this; the manual check after the merge d
 
 Check: `pnpm exec wrangler pages secret list --project-name nekotype` lists the four names. After PR 3 is merged and deployed: `https://nekotype.pages.dev/api/auth/google` redirects to Google and back to `/`, then `https://nekotype.pages.dev/api/me` shows the profile; the same for `/api/auth/github`; locally with `pnpm run dev` and `pnpm run dev:api`, `http://localhost:5173/api/auth/github` does the same. The CI smoke test checks the redirect on every deploy from then on.
 
+State on 2026-11-18: M3 is done and checked after the merge of PR 3 (#165). Locally, sign-in with Google and GitHub works (`pnpm run dev` and `pnpm run dev:api`). On production, `https://nekotype.pages.dev/api/auth/google` and `/api/auth/github` sign in and return to `/`, and `/api/me` shows the profile.
+
 ### M4. Design session — before PR 8 and PR 12
 
 [Q2](#q2-design-gaps) was answered with option A. An agent draws the items of Q2 in the design artifact from the proposals there; the maintainer reviews the previews and approves them, and only then pull request D exports them. The session does not depend on PR 1–7 and can run next to them.
