@@ -19,6 +19,13 @@ export const settingsRu = {
   'settings.data.reset': 'сбросить прогресс',
   'settings.data.resetAction': 'сбросить',
 
+  'settings.account.title': 'Аккаунт',
+  'settings.sync.synced': 'синхронизировано',
+  'settings.sync.pending': 'ждёт отправки',
+  'settings.sync.offline': 'нет сети',
+  'settings.sync.expired': 'сессия истекла',
+  'settings.sync.blocked': 'синхронизация приостановлена до обновления приложения',
+
   'dialog.close': 'закрыть',
   'reset.title': 'Сбросить прогресс?',
   'reset.confirm':

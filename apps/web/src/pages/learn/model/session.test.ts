@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { LearnKanaKey } from '@nekotype/shared/types';
-import { createMemoryDb } from '@/shared/lib';
+import { createMemoryDb, onSyncRequest } from '@/shared/lib';
 import { canonicalFor } from '@/entities/prompt';
 import { createLearnStore, keyOf } from '@/entities/learn';
 import { createLearnSession } from './session';
@@ -151,6 +151,18 @@ describe('learning session: flow', () => {
     expect(env.session.phase.value).toBe('summary');
     expect(env.store.counters.value.finished.learn).toBe(1);
     expect(env.session.summary.value).not.toBeNull();
+  });
+
+  it('asks for a sync when the session reaches its summary, and not before', () => {
+    const asked = vi.fn();
+    const off = onSyncRequest(asked);
+    const env = setup();
+    env.session.start();
+    answerRight(env);
+    expect(asked).not.toHaveBeenCalled();
+    while (env.session.phase.value === 'task') answerRight(env);
+    expect(asked).toHaveBeenCalledExactlyOnceWith('learn');
+    off();
   });
 
   it('never repeats the kana of the previous task', () => {

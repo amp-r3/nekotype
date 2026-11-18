@@ -16,7 +16,7 @@ import {
 import type { SavedTest, TypingStore } from '@/entities/stats';
 import { initTyping, recordDiscardedTest, saveTest, typingKanaStats } from '@/entities/stats';
 import type { Clock, Rng, Scheduler } from '@/shared/lib';
-import { defaultClock, defaultRng, defaultScheduler, uuidv7 } from '@/shared/lib';
+import { defaultClock, defaultRng, defaultScheduler, requestSync, uuidv7 } from '@/shared/lib';
 import { roundAccuracy, roundKpm } from '@nekotype/shared/runtime';
 import type { TestResult } from '@nekotype/shared/types';
 import type { EndedTest } from './types';
@@ -185,6 +185,7 @@ export function createTrainer(deps: TrainerDeps = {}): Trainer {
         .saveTest({ result: toResult(ended), kanaDelta: ended.kanaDelta, startedIncrement: 1 })
         .then((saved) => {
           if (mine === generation) lastSaved.value = { ...saved, kanaErrors: ended.kanaErrors };
+          requestSync('test');
         });
     },
     // A zen test ended with nothing to keep: a fresh prompt, as after a restart.

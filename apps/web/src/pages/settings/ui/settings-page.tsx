@@ -1,11 +1,12 @@
-import type { ComponentChildren, JSX } from 'preact';
-import { useRef, useState } from 'preact/hooks';
+import type { ComponentChildren, ComponentType, JSX } from 'preact';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import type { Strictness } from '@nekotype/engine';
 import { Button, Dialog, ResetIcon, Segmented, Switch } from '@/shared/ui';
 import { Select } from '@/shared/ui/select';
 import { resetTyping } from '@/entities/stats';
 import { resetLearning } from '@/entities/learn';
+import { userId } from '@/entities/user';
 import {
   showTranslationSetting,
   setShowTranslation,
@@ -53,6 +54,17 @@ function SettingRow({
       {children}
     </div>
   );
+}
+
+// The account section is a chunk of its own, loaded only for a signed-in user (D17).
+function AccountSection(): JSX.Element | null {
+  const [Panel, setPanel] = useState<ComponentType | null>(null);
+  useEffect(() => {
+    void import('./account-panel').then((m) => {
+      setPanel(() => m.AccountPanel);
+    });
+  }, []);
+  return Panel === null ? null : <Panel />;
 }
 
 export function SettingsPage(): JSX.Element {
@@ -110,6 +122,8 @@ export function SettingsPage(): JSX.Element {
           description={t('settings.showTranslationHint')}
         />
       </Section>
+
+      {userId.value !== null && <AccountSection />}
 
       <Section title={t('settings.data.title')}>
         <SettingRow label={t('settings.data.reset')} hint={t('settings.reset.description')}>

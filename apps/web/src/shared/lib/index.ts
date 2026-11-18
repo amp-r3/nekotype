@@ -62,3 +62,6 @@ export type { InputSource, InputSourceDeps } from './input/input-source';
 export { createInputSource } from './input/input-source';
 
 export { uuidv7 } from './uuid';
+
+export type { SyncReason } from './idb/sync-request';
+export { requestSync, onSyncRequest } from './idb/sync-request';

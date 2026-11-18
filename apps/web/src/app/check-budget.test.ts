@@ -3,7 +3,12 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { randomBytes } from 'node:crypto';
-import { checkBudget, PROBE_MARKER, SIGNALS_MARKER } from '../../scripts/check-budget.mjs';
+import {
+  checkBudget,
+  PROBE_MARKER,
+  SIGNALS_MARKER,
+  SYNC_ENTRY,
+} from '../../scripts/check-budget.mjs';
 
 // Random bytes do not compress, so a file of N KB is about N KB raw, gzip and brotli.
 const KB = 1024;
@@ -37,6 +42,10 @@ type Fixture = {
   signals?: boolean;
   // A dynamic import whose code was folded into the initial chunk.
   lazyInInitial?: boolean;
+  // Where the sync engine's chunk (`features/sync`) is: a chunk of its own that only the account
+  // panel imports (default), folded into the initial chunk, a static import of a route chunk, or
+  // missing from the manifest.
+  sync?: 'lazy' | 'initial' | 'route' | 'absent';
 };
 
 const dirs: string[] = [];
@@ -105,6 +114,29 @@ function makeDist(f: Fixture): string {
       file: 'assets/index.js',
       src: 'src/pages/stats/index.ts',
       isDynamicEntry: true,
+    };
+  }
+  const sync = f.sync ?? 'lazy';
+  if (sync !== 'absent') {
+    write(root, 'assets/sync.js', blob(2));
+    manifest[SYNC_ENTRY] = {
+      file: sync === 'initial' ? 'assets/index.js' : 'assets/sync.js',
+      src: SYNC_ENTRY,
+      isDynamicEntry: sync !== 'initial',
+    };
+    write(root, 'assets/panel.js', blob(1));
+    manifest['src/pages/settings/ui/account-panel.tsx'] = {
+      file: 'assets/panel.js',
+      src: 'src/pages/settings/ui/account-panel.tsx',
+      isDynamicEntry: true,
+      imports: [SYNC_ENTRY],
+    };
+    write(root, 'assets/settings.js', blob(1));
+    manifest['src/pages/settings/index.ts'] = {
+      file: 'assets/settings.js',
+      src: 'src/pages/settings/index.ts',
+      isDynamicEntry: true,
+      imports: sync === 'route' ? [SYNC_ENTRY] : [],
     };
   }
   if (f.manifest !== false) write(root, '.vite/manifest.json', JSON.stringify(manifest));
@@ -197,6 +229,29 @@ describe('check-budget', () => {
   it('fails when a lazily imported module is folded into the initial chunk', () => {
     expect(failuresFor({ lazyInInitial: true })).toEqual([
       expect.stringContaining('src/pages/stats/index.ts is imported lazily'),
+    ]);
+  });
+
+  it('passes when the sync engine is a chunk that only the account panel imports', () => {
+    expect(failuresFor({ sync: 'lazy' })).toEqual([]);
+  });
+
+  it('fails when the sync engine is in the initial chunk', () => {
+    const failures = failuresFor({ sync: 'initial' });
+    expect(failures.some((f) => f.includes('sync engine') && f.includes('initial chunk'))).toBe(
+      true,
+    );
+  });
+
+  it('fails when a route chunk imports the sync engine statically', () => {
+    expect(failuresFor({ sync: 'route' })).toEqual([
+      expect.stringContaining('static import of the route chunk assets/settings.js'),
+    ]);
+  });
+
+  it('fails when the sync engine is missing from the manifest', () => {
+    expect(failuresFor({ sync: 'absent' })).toEqual([
+      expect.stringContaining('lazy loading cannot be checked'),
     ]);
   });
 

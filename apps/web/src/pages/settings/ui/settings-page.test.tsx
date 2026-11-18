@@ -1,11 +1,13 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { SettingsPage } from './settings-page';
 import { introduce, keyOf, learnState } from '@/entities/learn';
 import { t, loadDictionaryPart } from '@/shared/i18n';
 import { learnTargetMs } from '@/entities/settings';
+import { initUser } from '@/entities/user';
+import { createMemoryDb } from '@/shared/lib';
 
 // The route brings the strings of the screen; here the test does.
 await loadDictionaryPart('settings');
@@ -83,5 +85,35 @@ describe('settings page: Reset progress', () => {
     // The labels are lower case.
     expect(t('settings.learn.strictness')).toBe('learning strictness');
     expect(t('settings.data.reset')).toBe('reset progress');
+  });
+});
+
+describe('settings page: account section', () => {
+  let container: HTMLDivElement;
+
+  afterEach(() => {
+    render(null, container);
+    container.remove();
+  });
+
+  it('shows no account section to a guest', async () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    await initUser(createMemoryDb());
+    render(<SettingsPage />, container);
+    await act(settle);
+    expect(container.textContent).not.toContain(t('settings.account.title'));
+  });
+
+  it('loads the account section for a signed-in user', async () => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    const db = createMemoryDb();
+    await db.put('meta', 'userId', 'user-1');
+    await initUser(db);
+    render(<SettingsPage />, container);
+    await vi.waitFor(() => {
+      expect(container.textContent).toContain(t('settings.account.title'));
+    });
   });
 });

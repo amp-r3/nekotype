@@ -17,8 +17,8 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | 3   | `p5-03-auth`             | done        | #165         |
 | 4   | `p5-04-merge-patch`      | done        | #167         |
 | 5   | `p5-05-api-sync`         | done        | #168         |
-| 6   | `p5-06-local-view`       | not started |              |
-| 7   | `p5-07-sync-engine`      | not started |              |
+| 6   | `p5-06-local-view`       | done        | #169         |
+| 7   | `p5-07-sync-engine`      | done        | #170         |
 | D   | `docs/p5-design`         | done        | #157         |
 | 8   | `p5-08-account`          | not started |              |
 | 9   | `p5-09-sync-e2e`         | not started |              |
