@@ -2,20 +2,26 @@ import { signal } from '@preact/signals';
 import type { ReadonlySignal } from '@preact/signals';
 import type { Counters, KanaStat, TestResult, TypingRecords } from '@nekotype/shared/types';
 import {
-  addKanaStats,
+  addCounters,
   applyResultToRecords,
-  decayKanaStat,
   isCounters,
   isKanaStat,
   isObject,
   isTestResult,
   isTypingRecords,
+  mergeKanaStats,
+  mergeTypingRecords,
 } from '@nekotype/shared/runtime';
-import type { ChangeChannel, Db } from '@/shared/lib';
-import { changeChannel, getDatabase, reportWriteFailure } from '@/shared/lib';
+import type { ChangeChannel, Db, Write } from '@/shared/lib';
+import {
+  DELTA_STORE,
+  changeChannel,
+  getDatabase,
+  readWithSyncBase,
+  reportWriteFailure,
+} from '@/shared/lib';
 import type { KanaStatMap } from './types';
 
-const DELTA_STORE = 'delta';
 const DELTA_KEY = 'typing';
 const RESULTS_STORE = 'results';
 const RECORDS_STORE = 'records';
@@ -85,6 +91,24 @@ function isKanaStatMap(value: unknown): value is KanaStatMap {
   return isObject(value) && Object.values(value).every(isKanaStat);
 }
 
+/** `delta/typing`: the changes since the last batch (D15); for a guest, the whole state. */
+type TypingChanges = { readonly kanaStats: KanaStatMap; readonly counters: Counters };
+
+const noChanges = (): TypingChanges => ({ kanaStats: {}, counters: initialCounters() });
+
+function readChanges(value: unknown): TypingChanges | null {
+  if (isObject(value) && isKanaStatMap(value['kanaStats']) && isCounters(value['counters'])) {
+    return { kanaStats: value['kanaStats'], counters: value['counters'] };
+  }
+  return null;
+}
+
+/** The records a value holds under `typingRecords` (the snapshot's), or none. */
+function readRecords(value: unknown): TypingRecords {
+  const records = isObject(value) ? value['typingRecords'] : undefined;
+  return isTypingRecords(records) ? records : {};
+}
+
 export function createTypingStore(deps: TypingStoreDeps): TypingStore {
   const kanaStats = signal<KanaStatMap>({});
   const counters = signal<Counters>(initialCounters());
@@ -94,22 +118,33 @@ export function createTypingStore(deps: TypingStoreDeps): TypingStore {
   let writing: Promise<void> = Promise.resolve();
   let loading: Promise<void> | null = null;
 
-  // Reads both records into the signals. Throws when the database cannot be read.
+  // Rebuilds the view from the snapshot, the outbox and the stored delta (D18), read in one
+  // transaction; the records are the snapshot's merged with the device's own. Throws when the
+  // database cannot be read. Every write of this store is complete when it returns, so nothing
+  // unwritten is left to put on top.
   const load = async (): Promise<void> => {
     const db = await deps.db();
-    const doc = await db.get(DELTA_STORE, DELTA_KEY);
-    if (doc === undefined) {
-      // No record: the progress was reset, perhaps by another tab, so nothing is held.
-      kanaStats.value = {};
-      counters.value = initialCounters();
-    } else if (isObject(doc) && isKanaStatMap(doc['kanaStats']) && isCounters(doc['counters'])) {
-      // A record that fails validation is not taken: the state held stands (ADR 061).
-      kanaStats.value = doc['kanaStats'];
-      counters.value = doc['counters'];
+    const { base, values } = await readWithSyncBase(db, [
+      { store: DELTA_STORE, key: DELTA_KEY },
+      { store: RECORDS_STORE, key: RECORDS_KEY },
+    ]);
+    // The snapshot and the outbox's delta hold `kanaStats` and `counters` as the delta record does.
+    const own = readChanges(values[0]) ?? noChanges();
+    const snapshot = readChanges(base.snapshot);
+    const sent = readChanges(base.outbox);
+    let stats: Readonly<Record<string, KanaStat>> = snapshot?.kanaStats ?? {};
+    let sum = snapshot?.counters ?? initialCounters();
+    if (sent !== null) {
+      stats = mergeKanaStats(stats, sent.kanaStats);
+      sum = addCounters(sum, sent.counters);
     }
-    const stored = await db.get(RECORDS_STORE, RECORDS_KEY);
-    if (stored === undefined) records.value = {};
-    else if (isTypingRecords(stored)) records.value = stored;
+    kanaStats.value = mergeKanaStats(stats, own.kanaStats);
+    counters.value = addCounters(sum, own.counters);
+    const stored = values[1];
+    records.value = mergeTypingRecords(
+      readRecords(base.snapshot),
+      isTypingRecords(stored) ? stored : {},
+    );
   };
 
   // Another tab wrote: take its state, in the chain of writes so that it is not read during our own.
@@ -139,8 +174,11 @@ export function createTypingStore(deps: TypingStoreDeps): TypingStore {
     return loading;
   };
 
-  // The delta record as it stands now, and the writes that go with it, queued in order.
-  const enqueue = (extra: (db: Db) => Parameters<Db['write']>[0]): Promise<void> => {
+  // A change to the stored delta and what goes with it, in one transaction that reads the stored
+  // records first, so another tab's tests count too. Queued in order.
+  const enqueue = (
+    change: (stored: TypingChanges, records: unknown) => { delta: TypingChanges; writes: Write[] },
+  ): Promise<void> => {
     // After a failed read the state in memory is not the stored one: writing it would replace the
     // stored record with the initial state.
     if (status.value === 'error') {
@@ -148,14 +186,23 @@ export function createTypingStore(deps: TypingStoreDeps): TypingStore {
       deps.onWriteFailed?.();
       return writing;
     }
-    const delta = { kanaStats: kanaStats.value, counters: counters.value };
     writing = writing
       .then(async () => {
         const db = await deps.db();
-        await db.write([
-          { op: 'put', store: DELTA_STORE, key: DELTA_KEY, value: delta },
-          ...extra(db),
-        ]);
+        await db.update(
+          [
+            { store: DELTA_STORE, key: DELTA_KEY },
+            { store: RECORDS_STORE, key: RECORDS_KEY },
+          ],
+          ([storedDelta, storedRecords]) => {
+            const { delta, writes } = change(
+              readChanges(storedDelta) ?? noChanges(),
+              storedRecords,
+            );
+            return [{ op: 'put', store: DELTA_STORE, key: DELTA_KEY, value: delta }, ...writes];
+          },
+          [RESULTS_STORE],
+        );
         deps.channel?.post();
       })
       .catch(() => {
@@ -182,23 +229,31 @@ export function createTypingStore(deps: TypingStoreDeps): TypingStore {
       const applied = applyResultToRecords(records.value, result);
       const saved: TestResult = { ...result, celebratedPersonalBest: applied.isBest };
 
-      const stats: Record<string, KanaStat> = { ...kanaStats.value };
-      for (const [key, delta] of Object.entries(kanaDelta)) {
-        stats[key] = decayKanaStat(addKanaStats(stats[key], delta));
-      }
-      const current = counters.value;
-      kanaStats.value = stats;
-      counters.value = {
-        started: { ...current.started, typing: current.started.typing + startedIncrement },
-        finished: { ...current.finished, typing: current.finished.typing + 1 },
+      // The view, incrementally.
+      kanaStats.value = mergeKanaStats(kanaStats.value, kanaDelta);
+      const increment: Counters = {
+        started: { typing: startedIncrement, learn: 0 },
+        finished: { typing: 1, learn: 0 },
       };
+      counters.value = addCounters(counters.value, increment);
       records.value = applied.records;
 
-      const recordsNow = applied.records;
-      await enqueue(() => [
-        { op: 'put', store: RESULTS_STORE, key: saved.id, value: { ...saved, synced: 0 } },
-        { op: 'put', store: RECORDS_STORE, key: RECORDS_KEY, value: recordsNow },
-      ]);
+      await enqueue((stored, storedRecords) => ({
+        delta: {
+          kanaStats: mergeKanaStats(stored.kanaStats, kanaDelta),
+          counters: addCounters(stored.counters, increment),
+        },
+        writes: [
+          { op: 'put', store: RESULTS_STORE, key: saved.id, value: { ...saved, synced: 0 } },
+          {
+            op: 'put',
+            store: RECORDS_STORE,
+            key: RECORDS_KEY,
+            value: applyResultToRecords(isTypingRecords(storedRecords) ? storedRecords : {}, result)
+              .records,
+          },
+        ],
+      }));
       return {
         result: saved,
         average: applied.average,
@@ -209,12 +264,15 @@ export function createTypingStore(deps: TypingStoreDeps): TypingStore {
 
     async recordDiscarded() {
       await init();
-      const current = counters.value;
-      counters.value = {
-        ...current,
-        started: { ...current.started, typing: current.started.typing + 1 },
+      const increment: Counters = {
+        started: { typing: 1, learn: 0 },
+        finished: { typing: 0, learn: 0 },
       };
-      await enqueue(() => []);
+      counters.value = addCounters(counters.value, increment);
+      await enqueue((stored) => ({
+        delta: { ...stored, counters: addCounters(stored.counters, increment) },
+        writes: [],
+      }));
     },
 
     flush() {
@@ -242,7 +300,7 @@ export function createTypingStore(deps: TypingStoreDeps): TypingStore {
           { op: 'delete', store: DELTA_STORE, key: DELTA_KEY },
           { op: 'delete', store: RECORDS_STORE, key: RECORDS_KEY },
         ]);
-        deps.channel?.post();
+        deps.channel?.post('reset');
         // The records are gone, so there is nothing a later write could replace.
         status.value = 'ready';
       } catch {

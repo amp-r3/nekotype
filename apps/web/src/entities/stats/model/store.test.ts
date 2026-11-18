@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { TestResult } from '@nekotype/shared/types';
-import { createMemoryDb } from '@/shared/lib';
-import type { ChangeChannel, Db, Write } from '@/shared/lib';
+import { createMemoryDb, recordWrites } from '@/shared/lib';
+import type { ChangeChannel, ChannelMessage, Db } from '@/shared/lib';
+import { addCounters, emptyLearnState } from '@nekotype/shared/runtime';
+import type { Outbox, Snapshot } from '@nekotype/shared/types';
 import { createTypingStore } from './store';
 import type { TypingStore } from './store';
 
@@ -42,21 +44,31 @@ function setup(db: Db = createMemoryDb(), channel?: ChangeChannel) {
   return { db, store };
 }
 
-function recordedWrites(db: Db): Write[][] {
-  const writes: Write[][] = [];
-  const original = db.write.bind(db);
-  db.write = (batch) => {
-    writes.push([...batch]);
-    return original(batch);
-  };
-  return writes;
-}
+const recordedWrites = recordWrites;
 
 const save = (
   store: TypingStore,
   r: TestResult,
   delta = { [A]: { attempts: 3, erroredAttempts: 1 } },
 ) => store.saveTest({ result: r, kanaDelta: delta, startedIncrement: 1 });
+
+/** A database whose reads work and whose writes fail (quota), through `update` as through `write`. */
+function failingWrites(db: Db): Db {
+  return {
+    ...db,
+    write: () => Promise.reject(new Error('quota')),
+    update: (reads, compute, scope) =>
+      db.update(
+        reads,
+        (values) => {
+          const writes = compute(values);
+          if (writes.length > 0) throw new Error('quota');
+          return writes;
+        },
+        scope,
+      ),
+  };
+}
 
 describe('typing store: saving a test (D23)', () => {
   it('writes the result, the delta and the records in one transaction', async () => {
@@ -156,7 +168,7 @@ describe('typing store: saving a test (D23)', () => {
 
   it('writes nothing after a failed read, so the stored record is not replaced', async () => {
     const db = createMemoryDb();
-    const failing: Db = { ...db, get: () => Promise.reject(new Error('closed')) };
+    const failing: Db = { ...db, update: () => Promise.reject(new Error('closed')) };
     const writes = recordedWrites(db);
     const store = createTypingStore({ db: () => Promise.resolve(failing) });
     await store.init();
@@ -167,7 +179,7 @@ describe('typing store: saving a test (D23)', () => {
 
   it('reports a failed write and keeps the state for the page load', async () => {
     const onWriteFailed = vi.fn();
-    const failing: Db = { ...createMemoryDb(), write: () => Promise.reject(new Error('quota')) };
+    const failing: Db = failingWrites(createMemoryDb());
     const store = createTypingStore({ db: () => Promise.resolve(failing), onWriteFailed });
     await save(store, result('r1'));
     expect(onWriteFailed).toHaveBeenCalledTimes(1);
@@ -196,13 +208,14 @@ describe('typing store: reset', () => {
 
 /** Two or more tabs: a post of one reaches the listeners of the others. */
 function channelBus(): () => ChangeChannel {
-  const members: { listener: (() => void) | null }[] = [];
+  type Member = { listener: ((message: ChannelMessage) => void) | null };
+  const members: Member[] = [];
   return () => {
-    const me: { listener: (() => void) | null } = { listener: null };
+    const me: Member = { listener: null };
     members.push(me);
     return {
-      post: () => {
-        for (const other of members) if (other !== me) other.listener?.();
+      post: (message = 'change') => {
+        for (const other of members) if (other !== me) other.listener?.(message);
       },
       listen: (onChange) => {
         me.listener = onChange;
@@ -260,7 +273,7 @@ describe('typing store: reset in another tab', () => {
 
 describe('typing store: a test after a failed read', () => {
   it('writes nothing and reports it, so the screen does not pretend it was kept', async () => {
-    const failing: Db = { ...createMemoryDb(), get: () => Promise.reject(new Error('closed')) };
+    const failing: Db = { ...createMemoryDb(), update: () => Promise.reject(new Error('closed')) };
     const onWriteFailed = vi.fn();
     const store = createTypingStore({ db: () => Promise.resolve(failing), onWriteFailed });
     const writes = recordedWrites(failing);
@@ -300,5 +313,113 @@ describe('typing store: reading saved results', () => {
   it('rejects when the database cannot be read', async () => {
     const store = createTypingStore({ db: () => Promise.reject(new Error('closed')) });
     await expect(store.allResults()).rejects.toThrow('closed');
+  });
+});
+
+describe('typing store: the view is snapshot, outbox and delta merged (D18)', () => {
+  const counters = (typing: number) => ({
+    started: { typing, learn: 0 },
+    finished: { typing, learn: 0 },
+  });
+  const entry = (id: string, kpm: number, endedAt: number) => ({
+    best: { kpm, resultId: id },
+    recent: [{ resultId: id, endedAt, kpm }],
+  });
+  const key = 'words|hiragana|learner|time:60';
+  const snapshot: Snapshot = {
+    settings: null,
+    kanaStats: { [A]: { attempts: 10, erroredAttempts: 2 } },
+    counters: counters(5),
+    learn: emptyLearnState(),
+    typingRecords: { [key]: entry('s', 90, 10) },
+  };
+  const outbox: Outbox = {
+    seq: 1,
+    resultIds: ['o'],
+    request: {
+      v: 1,
+      deviceId: 'd',
+      seq: 1,
+      results: [],
+      delta: {
+        kanaStats: { [A]: { attempts: 4, erroredAttempts: 1 } },
+        counters: counters(1),
+        learn: emptyLearnState(),
+        settings: null,
+      },
+    },
+  };
+
+  it('equals the merge of the three, the records included', async () => {
+    const db = createMemoryDb();
+    await db.put('snapshot', 'current', snapshot);
+    await db.put('outbox', 'current', outbox);
+    await db.put('delta', 'typing', {
+      kanaStats: { [A]: { attempts: 3, erroredAttempts: 0 } },
+      counters: counters(2),
+    });
+    await db.put('records', 'current', { [key]: entry('l', 110, 20) });
+    const { store } = setup(db);
+    await store.init();
+    expect(store.kanaStats.value[A]).toEqual({ attempts: 17, erroredAttempts: 3 });
+    expect(store.counters.value).toEqual(
+      addCounters(addCounters(counters(5), counters(1)), counters(2)),
+    );
+    expect(store.records.value[key]?.best).toEqual({ kpm: 110, resultId: 'l' });
+    expect(store.records.value[key]?.recent.map((r) => r.resultId)).toEqual(['s', 'l']);
+  });
+
+  it('keeps the statistics visible with only an outbox', async () => {
+    const db = createMemoryDb();
+    await db.put('outbox', 'current', outbox);
+    const { store } = setup(db);
+    await store.init();
+    expect(store.kanaStats.value[A]).toEqual({ attempts: 4, erroredAttempts: 1 });
+    expect(store.counters.value.finished.typing).toBe(1);
+  });
+
+  it('reads the records of a snapshot whose statistics are broken', async () => {
+    const db = createMemoryDb();
+    await db.put('snapshot', 'current', { ...snapshot, learn: 'broken', counters: {} });
+    const { store } = setup(db);
+    await store.init();
+    expect(store.kanaStats.value).toEqual({});
+    expect(store.counters.value.finished.typing).toBe(0);
+    expect(store.records.value[key]?.best).toEqual({ kpm: 90, resultId: 's' });
+  });
+
+  it('counts a test on top of the snapshot and writes only its own change to the delta', async () => {
+    const db = createMemoryDb();
+    await db.put('snapshot', 'current', snapshot);
+    const { store } = setup(db);
+    await store.init();
+    await save(store, result('t1', { kpm: 120 }));
+    expect(store.counters.value.finished.typing).toBe(6);
+    expect(store.kanaStats.value[A]).toEqual({ attempts: 13, erroredAttempts: 3 });
+    expect(await db.get('delta', 'typing')).toEqual({
+      kanaStats: { [A]: { attempts: 3, erroredAttempts: 1 } },
+      counters: { started: { typing: 1, learn: 0 }, finished: { typing: 1, learn: 0 } },
+    });
+    expect(await db.get('snapshot', 'current')).toEqual(snapshot);
+  });
+
+  it('counts the tests of two tabs that save at once', async () => {
+    const db = createMemoryDb();
+    const newChannel = channelBus();
+    const a = setup(db, newChannel()).store;
+    const b = setup(db, newChannel()).store;
+    await a.init();
+    await b.init();
+    await Promise.all([
+      save(a, result('a1', { endedAt: 1000 })),
+      save(b, result('b1', { endedAt: 2000 })),
+    ]);
+    await a.flush();
+    await b.flush();
+    for (const store of [a, b]) {
+      expect(store.counters.value.finished.typing).toBe(2);
+      expect(store.kanaStats.value[A]).toEqual({ attempts: 6, erroredAttempts: 2 });
+      expect(Object.values(store.records.value)[0]?.recent).toHaveLength(2);
+    }
   });
 });

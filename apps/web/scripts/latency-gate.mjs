@@ -17,6 +17,8 @@ export const LATENCY_PATHS = [
   'apps/web/src/pages/trainer/ui/live-line.tsx',
   'apps/web/src/pages/trainer/results-loader.ts',
   'apps/web/src/entities/prompt/',
+  'apps/web/src/entities/learn/model/',
+  'apps/web/src/shared/lib/idb/',
   'apps/web/src/shared/i18n/dictionary.ts',
   'apps/web/src/shared/i18n/translate.ts',
   'apps/web/src/shared/i18n/locale.ts',

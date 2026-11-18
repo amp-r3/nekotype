@@ -2,12 +2,14 @@ import {
   addCounters,
   isCounters,
   isLearnRest,
+  isLearnState,
   isRecallBuckets,
   isRecentMap,
 } from './learn-runtime';
 import { mergeLearn } from './learn-state';
 import { isObject } from './object';
-import { isSettings } from './runtime';
+import { isSettings } from './settings-runtime';
+import { isCount, outboxDelta } from './sync-format';
 import {
   applyResultsToRecords,
   isKanaStats,
@@ -15,6 +17,7 @@ import {
   mergeKanaStats,
 } from './typing-runtime';
 import type {
+  Outbox,
   Snapshot,
   SnapshotBuckets,
   SnapshotRecent,
@@ -27,18 +30,12 @@ import type {
 // Constants and guards of the sync, and the one function that applies a batch to a snapshot
 // (spec backend.md, "Applying a batch"; ADR 082).
 
-/** The version of the batch format (`SyncRequest.v`). */
-export const SYNC_FORMAT_VERSION = 1;
 /** Results in one batch (ADR 078). */
 export const MAX_RESULTS_PER_BATCH = 50;
 /** The body of a sync request, bytes (backend.md, "Sync request limits"). */
 export const MAX_SYNC_BODY_BYTES = 256 * 1024;
 /** The caps on the learning part of a batch (p5-plan.md, Q1; ADR 082): kana, and days per track. */
 export const BATCH_CAPS = { kana: 60, days: 31 } as const;
-
-function isCount(value: unknown): value is number {
-  return typeof value === 'number' && Number.isInteger(value) && value >= 0;
-}
 
 export function isSyncResponse(value: unknown): value is SyncResponse {
   return isObject(value) && isCount(value['lastSeq']) && isCount(value['version']);
@@ -120,4 +117,18 @@ export function applyBatch(snapshot: Snapshot, request: SyncRequest): Snapshot {
     learn: mergeLearn(snapshot.learn, delta.learn),
     typingRecords: applyResultsToRecords(snapshot.typingRecords, request.results),
   };
+}
+
+/**
+ * A stored batch, checked for what the stores read from it: the counters and the statistics of its
+ * delta. The sync engine, which sends it, checks the rest (`results`, `settings`) when it reads it.
+ */
+export function isOutbox(value: unknown): value is Outbox {
+  const delta = outboxDelta(value);
+  return (
+    delta !== null &&
+    isKanaStats(delta['kanaStats']) &&
+    isCounters(delta['counters']) &&
+    isLearnState(delta['learn'])
+  );
 }

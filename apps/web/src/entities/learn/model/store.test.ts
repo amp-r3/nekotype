@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { LearnKanaKey, LearnState, Track } from '@nekotype/shared/types';
-import { createMemoryDb } from '@/shared/lib';
-import type { ChangeChannel, Db, Write } from '@/shared/lib';
+import { createMemoryDb, recordWrites } from '@/shared/lib';
+import type { ChangeChannel, ChannelMessage, Db } from '@/shared/lib';
+import { addCounters, emptyLearnState } from '@nekotype/shared/runtime';
+import type { Outbox, Snapshot } from '@nekotype/shared/types';
 import { createLearnStore } from './store';
 import type { LearnStore } from './store';
 import { ManualScheduler, SeededRng, TestClock } from './test-util';
@@ -31,14 +33,24 @@ function answer(store: LearnStore, key: LearnKanaKey, ms = 800, ok = true): numb
   return store.recordRecall({ key, keystrokes: [{ t: ms, accepted: true }], ok });
 }
 
-function recordedWrites(db: Db): Write[][] {
-  const writes: Write[][] = [];
-  const original = db.write.bind(db);
-  db.write = (batch) => {
-    writes.push([...batch]);
-    return original(batch);
+const recordedWrites = recordWrites;
+
+/** A database whose reads work and whose writes fail (quota), through `update` as through `write`. */
+function failingWrites(db: Db): Db {
+  return {
+    ...db,
+    write: () => Promise.reject(new Error('quota')),
+    update: (reads, compute, scope) =>
+      db.update(
+        reads,
+        (values) => {
+          const writes = compute(values);
+          if (writes.length > 0) throw new Error('quota');
+          return writes;
+        },
+        scope,
+      ),
   };
-  return writes;
 }
 
 describe('learn store: recall answers', () => {
@@ -392,7 +404,8 @@ describe('learn store: persistence', () => {
     let failing = true;
     const flaky: Db = {
       ...db,
-      get: (store, key) => (failing ? Promise.reject(new Error('closed')) : db.get(store, key)),
+      update: (reads, compute, scope) =>
+        failing ? Promise.reject(new Error('closed')) : db.update(reads, compute, scope),
     };
     const writes = recordedWrites(flaky);
     const { store, scheduler } = setup({ db: flaky });
@@ -417,7 +430,7 @@ describe('learn store: persistence', () => {
   });
 
   it('stays in the error status when a retry fails too', async () => {
-    const failing: Db = { ...createMemoryDb(), get: () => Promise.reject(new Error('closed')) };
+    const failing: Db = { ...createMemoryDb(), update: () => Promise.reject(new Error('closed')) };
     const { store } = setup({ db: failing });
     await store.init();
     await store.retry();
@@ -425,7 +438,7 @@ describe('learn store: persistence', () => {
   });
 
   it('writes again after the stored record is reset', async () => {
-    const failing: Db = { ...createMemoryDb(), get: () => Promise.reject(new Error('closed')) };
+    const failing: Db = { ...createMemoryDb(), update: () => Promise.reject(new Error('closed')) };
     const { store } = setup({ db: failing });
     await store.init();
     expect(store.status.value).toBe('error');
@@ -531,13 +544,14 @@ describe('learn store: boxes, streak and buckets', () => {
 
 /** Two or more tabs: a post of one reaches the listeners of the others. */
 function channelBus(): () => ChangeChannel {
-  const members: { listener: (() => void) | null }[] = [];
+  type Member = { listener: ((message: ChannelMessage) => void) | null };
+  const members: Member[] = [];
   return () => {
-    const me: { listener: (() => void) | null } = { listener: null };
+    const me: Member = { listener: null };
     members.push(me);
     return {
-      post: () => {
-        for (const other of members) if (other !== me) other.listener?.();
+      post: (message = 'change') => {
+        for (const other of members) if (other !== me) other.listener?.(message);
       },
       listen: (onChange) => {
         me.listener = onChange;
@@ -549,14 +563,15 @@ function channelBus(): () => ChangeChannel {
 describe('learn store: two tabs', () => {
   function tab(db: Db, channel: ChangeChannel) {
     const scheduler = new ManualScheduler();
+    const clock = new TestClock();
     const store = createLearnStore({
       db: () => Promise.resolve(db),
-      clock: new TestClock(),
+      clock,
       scheduler,
       targetMs: () => 1500,
       channel,
     });
-    return { store, scheduler };
+    return { store, scheduler, clock };
   }
 
   it('reads the record another tab wrote, and writes both answers when it answers after', async () => {
@@ -573,6 +588,7 @@ describe('learn store: two tabs', () => {
     await b.store.flush();
     expect(b.store.state.value.recent[A]).toHaveLength(1);
 
+    b.clock.advance(1000);
     answer(b.store, A);
     b.scheduler.runAll();
     await b.store.flush();
@@ -581,7 +597,7 @@ describe('learn store: two tabs', () => {
     expect(b.store.state.value.recent[A]).toHaveLength(2);
   });
 
-  it('keeps a change of its own that is not written yet', async () => {
+  it("merges a change of its own that is not written yet with the other tab's (D18)", async () => {
     const db = createMemoryDb();
     const newChannel = channelBus();
     const a = tab(db, newChannel());
@@ -589,18 +605,57 @@ describe('learn store: two tabs', () => {
     await a.store.init();
     await b.store.init();
     answer(b.store, KA);
+    a.clock.advance(1000);
+    answer(a.store, A);
+    a.store.countSession('started');
+    b.store.countSession('started');
+    a.scheduler.runAll();
+    await a.store.flush();
+    await b.store.flush();
+    // b read a's record and kept its own answer on top.
+    expect(b.store.state.value.recent[KA]).toHaveLength(1);
+    expect(b.store.state.value.recent[A]).toHaveLength(1);
+    expect(b.store.counters.value.started.learn).toBe(2);
+    b.scheduler.runAll();
+    await b.store.flush();
+    await a.store.flush();
+    // Both ended with the union, in the view and in the stored delta.
+    for (const { store } of [a, b]) {
+      expect(store.state.value.recent[KA]).toHaveLength(1);
+      expect(store.state.value.recent[A]).toHaveLength(1);
+      expect(store.counters.value.started.learn).toBe(2);
+    }
+    const fresh = tab(db, newChannel());
+    await fresh.store.init();
+    expect(fresh.store.state.value.recent[KA]).toHaveLength(1);
+    expect(fresh.store.state.value.recent[A]).toHaveLength(1);
+    expect(fresh.store.counters.value.started.learn).toBe(2);
+  });
+
+  it('empties the other tab on a reset, with what it holds unwritten', async () => {
+    const db = createMemoryDb();
+    const newChannel = channelBus();
+    const a = tab(db, newChannel());
+    const b = tab(db, newChannel());
+    await a.store.init();
+    await b.store.init();
     answer(a.store, A);
     a.scheduler.runAll();
     await a.store.flush();
     await b.store.flush();
-    expect(b.store.state.value.recent[KA]).toHaveLength(1);
-    expect(b.store.state.value.recent[A]).toBeUndefined();
+    answer(b.store, KA);
+    await a.store.reset();
+    await b.store.flush();
+    expect(b.store.state.value.recent).toEqual({});
+    b.scheduler.runAll();
+    await b.store.flush();
+    expect(await db.get('delta', 'learn')).toMatchObject({ learn: { recent: {} } });
   });
 });
 
 describe('learn store: an answer after a failed read', () => {
   it('writes nothing and reports it, so the screen does not pretend it was kept', async () => {
-    const failing: Db = { ...createMemoryDb(), get: () => Promise.reject(new Error('closed')) };
+    const failing: Db = { ...createMemoryDb(), update: () => Promise.reject(new Error('closed')) };
     const onWriteFailed = vi.fn();
     const scheduler = new ManualScheduler();
     const store = createLearnStore({
@@ -671,7 +726,7 @@ describe('learn store: write failures and the target', () => {
     const onWriteFailed = vi.fn();
     const scheduler = new ManualScheduler();
     const again = createLearnStore({
-      db: () => Promise.resolve({ ...db, write: () => Promise.reject(new Error('quota')) }),
+      db: () => Promise.resolve(failingWrites(db)),
       clock: new TestClock(),
       scheduler,
       targetMs: () => 1500,
@@ -703,5 +758,140 @@ describe('learn store: write failures and the target', () => {
     expect(store.state.value.unlocked.hiragana).toHaveLength(6);
     expect(store.state.value.entries[A]?.box).toBe(1);
     expect(scheduler.pending).toBe(1);
+  });
+});
+
+describe('learn store: the view is snapshot, outbox and delta merged (D18)', () => {
+  const counters = (learn: number) => ({
+    started: { typing: 0, learn },
+    finished: { typing: 0, learn: 0 },
+  });
+  const answerAt = (at: number) => ({ at, ms: 900, ok: true });
+  const learnWith = (at: number, extra: Partial<LearnState> = {}): LearnState => ({
+    ...emptyLearnState(),
+    recent: { [A]: [answerAt(at)] },
+    stats: { [A]: { recognitions: 1, recognitionErrors: 0, mixups: {} } },
+    recallBuckets: { hiragana: { '19000': { '9': 1 } }, katakana: {} },
+    activeDays: [[19000, 19000]],
+    ...extra,
+  });
+  const snapshot: Snapshot = {
+    settings: null,
+    kanaStats: { [A]: { attempts: 10, erroredAttempts: 2 } },
+    counters: counters(5),
+    learn: learnWith(1, {
+      entries: { [A]: { box: 1 as const, dueAt: 9, updatedAt: 1 } },
+      unlocked: { hiragana: [KA], katakana: [] },
+    }),
+    typingRecords: {},
+  };
+  const outbox: Outbox = {
+    seq: 1,
+    resultIds: [],
+    request: {
+      v: 1,
+      deviceId: 'd',
+      seq: 1,
+      results: [],
+      delta: {
+        kanaStats: {},
+        counters: counters(1),
+        learn: learnWith(2),
+        settings: null,
+      },
+    },
+  };
+
+  async function seeded(parts: { snapshot?: boolean; outbox?: boolean; delta?: boolean }) {
+    const db = createMemoryDb();
+    if (parts.snapshot === true) await db.put('snapshot', 'current', snapshot);
+    if (parts.outbox === true) await db.put('outbox', 'current', outbox);
+    if (parts.delta === true) {
+      await db.put('delta', 'learn', { learn: learnWith(3), counters: counters(2) });
+    }
+    return db;
+  }
+
+  it('equals the merge of the three, the statistics of an unacknowledged batch included', async () => {
+    const db = await seeded({ snapshot: true, outbox: true, delta: true });
+    const { store } = setup({ db });
+    await store.init();
+    const state = store.state.value;
+    expect(state.recent[A]?.map((a) => a.at)).toEqual([1, 2, 3]);
+    expect(state.stats[A]).toEqual({ recognitions: 3, recognitionErrors: 0, mixups: {} });
+    expect(state.recallBuckets.hiragana['19000']).toEqual({ '9': 3 });
+    expect(state.entries[A]).toEqual({ box: 1, dueAt: 9, updatedAt: 1 });
+    expect(state.unlocked.hiragana).toContain(KA);
+    expect(state.unlocked.hiragana).toHaveLength(6);
+    expect(state.activeDays).toEqual([[19000, 19000]]);
+    expect(store.counters.value).toEqual(
+      addCounters(addCounters(counters(5), counters(1)), counters(2)),
+    );
+  });
+
+  it('keeps the statistics visible while the outbox holds a batch, without a snapshot', async () => {
+    const db = await seeded({ outbox: true });
+    const { store } = setup({ db });
+    await store.init();
+    expect(store.state.value.recent[A]?.map((a) => a.at)).toEqual([2]);
+    expect(store.counters.value.started.learn).toBe(1);
+  });
+
+  it('puts a new answer on the stored delta, not over the snapshot or the outbox', async () => {
+    const db = await seeded({ snapshot: true, outbox: true });
+    const { store, scheduler, clock } = setup({ db });
+    await store.init();
+    clock.advance(10);
+    answer(store, A);
+    store.countSession('started');
+    scheduler.runAll();
+    await store.flush();
+    const stored = await db.get('delta', 'learn');
+    expect(stored).toMatchObject({
+      learn: { recent: { [A]: [expect.objectContaining({ ok: true })] } },
+      counters: { started: { learn: 1 } },
+    });
+    expect(await db.get('snapshot', 'current')).toEqual(snapshot);
+    expect(await db.get('outbox', 'current')).toEqual(outbox);
+    expect(store.state.value.recent[A]).toHaveLength(3);
+    expect(store.counters.value.started.learn).toBe(5 + 1 + 1);
+  });
+
+  it('reads the learning part of the snapshot and the outbox when another part is broken', async () => {
+    const db = createMemoryDb();
+    await db.put('snapshot', 'current', { ...snapshot, typingRecords: { k: { best: 1 } } });
+    await db.put('outbox', 'current', {
+      ...outbox,
+      request: { ...outbox.request, delta: { ...outbox.request.delta, kanaStats: 'broken' } },
+    });
+    const { store } = setup({ db });
+    await store.init();
+    expect(store.state.value.recent[A]?.map((a) => a.at)).toEqual([1, 2]);
+    expect(store.counters.value.started.learn).toBe(5 + 1);
+  });
+
+  it('skips a broken learning part, and a batch of another format', async () => {
+    const db = createMemoryDb();
+    await db.put('snapshot', 'current', { ...snapshot, counters: {} });
+    await db.put('outbox', 'current', { ...outbox, request: { ...outbox.request, v: 2 } });
+    const { store } = setup({ db });
+    await store.init();
+    expect(store.state.value.recent[A]).toBeUndefined();
+    expect(store.counters.value.started.learn).toBe(0);
+  });
+
+  it('shows a rebuilt view after an acknowledgement moved the batch into the snapshot', async () => {
+    const db = await seeded({ snapshot: true, outbox: true });
+    const { store } = setup({ db });
+    await store.init();
+    const before = store.state.value;
+    // The acknowledgement: one transaction applies the batch to the snapshot and clears the outbox.
+    await db.write([
+      { op: 'put', store: 'snapshot', key: 'current', value: { ...snapshot, learn: before } },
+      { op: 'delete', store: 'outbox', key: 'current' },
+    ]);
+    const after = setup({ db }).store;
+    await after.init();
+    expect(after.state.value.recent[A]?.map((x) => x.at)).toEqual([1, 2]);
   });
 });

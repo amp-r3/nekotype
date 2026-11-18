@@ -3,8 +3,7 @@ import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, options, createRef, Fragment } from 'preact';
 import type { VNode } from 'preact';
 import { act } from 'preact/test-utils';
-import { createMemoryDb, immersive } from '@/shared/lib';
-import type { Db, Write } from '@/shared/lib';
+import { createMemoryDb, immersive, recordWrites } from '@/shared/lib';
 import { canonicalFor } from '@/entities/prompt';
 import { t } from '@/shared/i18n';
 import { createLearnStore } from '@/entities/learn';
@@ -19,16 +18,9 @@ function setup(seed: number, tasks?: number) {
   const clock = new Clock0();
   const timers = new Timers();
   const db = createMemoryDb();
-  const writes: Write[][] = [];
-  const spied: Db = {
-    ...db,
-    write: (batch) => {
-      writes.push([...batch]);
-      return db.write(batch);
-    },
-  };
+  const writes = recordWrites(db);
   const store = createLearnStore({
-    db: () => Promise.resolve(spied),
+    db: () => Promise.resolve(db),
     clock,
     scheduler: timers,
     targetMs: () => 1500,

@@ -209,7 +209,7 @@ describe('settings store: actions and persistence in IndexedDB', () => {
 
 describe('settings across tabs and failed writes', () => {
   function fakeChannel() {
-    let listener: (() => void) | null = null;
+    let listener: ((message: 'change' | 'reset') => void) | null = null;
     const posts = { count: 0 };
     const channel: ChangeChannel = {
       post: () => {
@@ -219,7 +219,7 @@ describe('settings across tabs and failed writes', () => {
         listener = onChange;
       },
     };
-    return { channel, posts, fire: () => listener?.() };
+    return { channel, posts, fire: () => listener?.('change') };
   }
 
   it('posts after a write and reads the document again when another tab posts', async () => {

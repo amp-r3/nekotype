@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { MockInstance } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
 import { createDatabaseProvider, openDatabase } from './database';
-import { createMemoryDb, openRaw, deleteRaw } from './idb';
+import { openRaw, deleteRaw } from './idb';
+import { createMemoryDb } from './memory-db';
 import { DATABASE_NAME, SCHEMA_VERSION, STORES, STORE_NAMES } from './schema';
 
 class FailingFactory extends IDBFactory {
@@ -77,7 +78,26 @@ describe('openDatabase', () => {
     const db = await openDatabase(factory);
     expect(db.hasStores(STORE_NAMES)).toBe(true);
     expect(await db.get('delta', 'current')).toBeUndefined();
-    expect(await db.get('meta', 'schemaVersion')).toBe(3);
+    expect(await db.get('meta', 'schemaVersion')).toBe(SCHEMA_VERSION);
+    expect(info).toHaveBeenCalledTimes(1);
+  });
+
+  it('resets a database left at schema 3 (no snapshot and outbox stores)', async () => {
+    const old = await openRaw(factory, DATABASE_NAME, [
+      'settings',
+      'delta',
+      'meta',
+      { name: 'results', indexes: ['endedAt', 'synced'] },
+      'records',
+    ]);
+    await old.db.put('meta', 'schemaVersion', 3);
+    await old.db.put('delta', 'learn', { learn: 1 });
+    old.db.close();
+    const db = await openDatabase(factory);
+    expect(db.hasStores(STORE_NAMES)).toBe(true);
+    expect(db.hasStores(['snapshot', 'outbox'])).toBe(true);
+    expect(await db.get('delta', 'learn')).toBeUndefined();
+    expect(await db.get('meta', 'schemaVersion')).toBe(SCHEMA_VERSION);
     expect(info).toHaveBeenCalledTimes(1);
   });
 

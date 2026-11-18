@@ -27,9 +27,10 @@ describe('learn page: the progress cannot be read', () => {
     };
     const db = await getDatabase();
     await db.put('delta', 'learn', stored);
-    const read = db.get.bind(db);
+    const read = db.update.bind(db);
     let failing = true;
-    db.get = (store, key) => (failing ? Promise.reject(new Error('closed')) : read(store, key));
+    db.update = (reads, compute, scope) =>
+      failing ? Promise.reject(new Error('closed')) : read(reads, compute, scope);
 
     container = document.createElement('div');
     document.body.appendChild(container);
