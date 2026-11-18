@@ -40,6 +40,9 @@ export async function checkDeployment(
   baseUrl,
   {
     fetchFn = fetch,
+    // The production deployment, where sign-in exists. Its address is a hash URL, so the host
+    // cannot tell it from a preview: the workflow says so.
+    production = false,
     apiAttempts = 10,
     apiDelayMs = 3000,
     sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
@@ -81,29 +84,54 @@ export async function checkDeployment(
     return response;
   };
 
-  // The API answers where the static files do not: an unknown path under /api is a 404 with the
-  // JSON error body of the Functions, not the static 404 page (p5-plan.md, D22). A deployment
-  // without its Functions bundle, or without `_routes.json`, fails here. The static files of a new
-  // deployment answer before its Functions do (seen in CI on 2026-11-18: the first request got the
-  // static 404 page, the same request a minute later the JSON), so it is asked again a few times.
-  {
-    const path = '/api/unknown';
+  // The API answers where the static files do not (p5-plan.md, D22). A deployment without its
+  // Functions bundle, or without `_routes.json`, answers the static 404 page and fails here. The
+  // static files of a new deployment answer before its Functions do (seen in CI on 2026-11-18: the
+  // first request got the static 404 page, the same request a minute later the JSON), so each
+  // check asks again a few times before it fails.
+  const expectApi = async (path, expectation, matches) => {
     let response;
     let body;
     let ok = false;
     for (let attempt = 1; attempt <= apiAttempts && !ok; attempt++) {
       if (attempt > 1) await sleep(apiDelayMs);
       ({ response, body } = await get(fetchFn, baseUrl, path));
-      ok =
-        response.status === 404 &&
-        header(response, 'content-type').includes('application/json') &&
-        body === JSON.stringify({ error: { code: 'not_found' } });
+      ok = matches(response, body);
     }
     lines.push(`${ok ? 'ok  ' : 'FAIL'} api     ${path} ${describeResponse(response)}`);
-    if (!ok)
+    if (!ok) {
       failures.push(
-        `${path} should answer 404 with {"error":{"code":"not_found"}} from the Functions, got ${describeResponse(response)}`,
+        `${path} should answer ${expectation} from the Functions, got ${describeResponse(response)}`,
       );
+    }
+  };
+  const isError = (response, body, status, code) =>
+    response.status === status &&
+    header(response, 'content-type').includes('application/json') &&
+    body === JSON.stringify({ error: { code } });
+
+  await expectApi('/api/unknown', '404 with {"error":{"code":"not_found"}}', (response, body) =>
+    isError(response, body, 404, 'not_found'),
+  );
+  await expectApi('/api/me', '401 with {"error":{"code":"unauthenticated"}}', (response, body) =>
+    isError(response, body, 401, 'unauthenticated'),
+  );
+  // Sign-in exists on production only (S3). This is the one automatic check of its secrets: a
+  // missing one answers 503 instead of the redirect.
+  if (production) {
+    await expectApi(
+      '/api/auth/google',
+      '302 to accounts.google.com',
+      (response) =>
+        response.status === 302 &&
+        header(response, 'location').startsWith('https://accounts.google.com/'),
+    );
+  } else {
+    await expectApi(
+      '/api/auth/google',
+      '404 with {"error":{"code":"not_found"}}',
+      (response, body) => isError(response, body, 404, 'not_found'),
+    );
   }
 
   const missing = `/assets/smoke-missing-${Date.now()}.js`;
@@ -181,7 +209,9 @@ async function main(argv) {
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
-    if (arg !== undefined && arg.startsWith('--')) {
+    if (arg === '--production') {
+      args.set('production', 'true');
+    } else if (arg !== undefined && arg.startsWith('--')) {
       args.set(arg.slice(2), argv[++i]);
     } else if (arg !== undefined) {
       positional.push(arg);
@@ -192,7 +222,9 @@ async function main(argv) {
     fallback: args.get('fallback') ?? positional[0],
   });
   if (target === undefined) {
-    console.error('usage: smoke-deploy.mjs <url> | --wrangler-output <file> --fallback <url>');
+    console.error(
+      'usage: smoke-deploy.mjs [--production] <url> | --wrangler-output <file> --fallback <url>',
+    );
     return 2;
   }
 
@@ -201,7 +233,9 @@ async function main(argv) {
     console.error(`${target} did not answer with the application in time`);
     return 1;
   }
-  const { lines, failures } = await checkDeployment(target);
+  const { lines, failures } = await checkDeployment(target, {
+    production: args.has('production'),
+  });
   for (const line of lines) console.log(line);
   if (failures.length > 0) {
     console.error(`\n${failures.length} problem(s):`);

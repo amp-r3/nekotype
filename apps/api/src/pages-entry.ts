@@ -1,3 +1,4 @@
+import { arcticProviders } from './auth/providers';
 import { createApp } from './app';
 import type { Env } from './env';
 
@@ -5,6 +6,7 @@ import type { Env } from './env';
 const app = createApp({
   clock: { now: () => Date.now() },
   randomBytes: (n) => crypto.getRandomValues(new Uint8Array(n)),
+  oauth: arcticProviders,
 });
 
 // What `handle` of `hono/cloudflare-pages` does, without it: that adapter is deprecated and goes in

@@ -1,14 +1,9 @@
 import { env } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
 import { createApp } from './app';
-import type { AppDeps } from './env';
+import { testDeps } from './test-deps';
 
-const deps: AppDeps = {
-  clock: { now: () => 1_700_000_000_000 },
-  randomBytes: (n) => new Uint8Array(n).fill(7),
-};
-
-const app = createApp(deps);
+const app = createApp(testDeps().deps);
 const call = (path: string, init?: RequestInit) => app.request(path, init, env);
 const origin = { Origin: 'http://localhost:5173' };
 

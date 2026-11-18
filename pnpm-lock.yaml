@@ -32,6 +32,9 @@ importers:
       '@nekotype/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      arctic:
+        specifier: 3.7.0
+        version: 3.7.0
       hono:
         specifier: 4.13.19
         version: 4.13.19
@@ -121,7 +124,7 @@ importers:
         version: 10.13.0(jiti@2.7.0)
       eslint-plugin-boundaries:
         specifier: ^7.4.0
-        version: 7.4.0(@typescript-eslint/parser@8.72.1(eslint@10.13.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.13.0(jiti@2.7.0))
+        version: 7.4.0(eslint@10.13.0(jiti@2.7.0))
       fake-indexeddb:
         specifier: ^6.2.7
         version: 6.2.7
@@ -846,6 +849,28 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
+  '@oslojs/asn1@1.0.0':
+    resolution: {integrity: sha512-zw/wn0sj0j0QKbIXfIlnEcTviaCzYOY3V5rAyjR6YtOByFtJiT574+8p9Wlach0lZH9fddD4yb9laEAIl4vXQA==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+
+  '@oslojs/binary@1.0.0':
+    resolution: {integrity: sha512-9RCU6OwXU6p67H4NODbuxv2S3eenuQ4/WFLrsq+K/k682xrznH5EVWA7N4VFk9VYVcbFtKqur5YQQZc0ySGhsQ==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+
+  '@oslojs/crypto@1.0.1':
+    resolution: {integrity: sha512-7n08G8nWjAr/Yu3vu9zzrd0L9XnrJfpMioQcvCMxBIiF5orECHe5/3J0jmXRVvgfqMm/+4oxlQ+Sq39COYLcNQ==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+
+  '@oslojs/encoding@0.4.1':
+    resolution: {integrity: sha512-hkjo6MuIK/kQR5CrGNdAPZhS01ZCXuWDRJ187zh6qqF2+yMHZpD9fAYpX8q2bOO6Ryhl3XpCT6kUX76N8hhm4Q==}
+
+  '@oslojs/encoding@1.1.0':
+    resolution: {integrity: sha512-70wQhgYmndg4GCPxPPxPGevRKqTIJ2Nh4OkiMWmDAVYsTQ+Ta7Sq+rPevXyXGdzr30/qZBnyOalCszoMxlyldQ==}
+
+  '@oslojs/jwt@0.2.0':
+    resolution: {integrity: sha512-bLE7BtHrURedCn4Mco3ma9L4Y1GR2SMBuIvjWr7rmQ4/W/4Jy70TIAgZ+0nIlk0xHz1vNP8x8DCns45Sb2XRbg==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+
   '@oxc-project/types@0.156.0':
     resolution: {integrity: sha512-1Duyg48TdJNdyhEB8Xn1L36bT9Pv6GUtlKjHxOys8xkaF/rQq3XJE+bAurSK/AgIz5mGFsb77cn9Pb20+WCScw==}
 
@@ -1256,6 +1281,10 @@ packages:
   ansi-styles@4.3.0:
     resolution: {integrity: sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==}
     engines: {node: '>=8'}
+
+  arctic@3.7.0:
+    resolution: {integrity: sha512-ZMQ+f6VazDgUJOd+qNV+H7GohNSYal1mVjm5kEaZfE2Ifb7Ss70w+Q7xpJC87qZDkMZIXYf0pTIYZA0OPasSbw==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
@@ -3085,6 +3114,25 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.3
 
+  '@oslojs/asn1@1.0.0':
+    dependencies:
+      '@oslojs/binary': 1.0.0
+
+  '@oslojs/binary@1.0.0': {}
+
+  '@oslojs/crypto@1.0.1':
+    dependencies:
+      '@oslojs/asn1': 1.0.0
+      '@oslojs/binary': 1.0.0
+
+  '@oslojs/encoding@0.4.1': {}
+
+  '@oslojs/encoding@1.1.0': {}
+
+  '@oslojs/jwt@0.2.0':
+    dependencies:
+      '@oslojs/encoding': 0.4.1
+
   '@oxc-project/types@0.156.0': {}
 
   '@playwright/test@1.64.1':
@@ -3455,6 +3503,12 @@ snapshots:
     dependencies:
       color-convert: 2.0.1
 
+  arctic@3.7.0:
+    dependencies:
+      '@oslojs/crypto': 1.0.1
+      '@oslojs/encoding': 1.1.0
+      '@oslojs/jwt': 0.2.0
+
   argparse@2.0.1: {}
 
   argparse@3.0.4: {}
@@ -3661,23 +3715,22 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.14.0(@typescript-eslint/parser@8.72.1(eslint@10.13.0(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.9)(eslint@10.13.0(jiti@2.7.0)):
+  eslint-module-utils@2.14.0(eslint-import-resolver-node@0.3.9)(eslint@10.13.0(jiti@2.7.0)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
-      '@typescript-eslint/parser': 8.72.1(eslint@10.13.0(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.13.0(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.9
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-boundaries@7.4.0(@typescript-eslint/parser@8.72.1(eslint@10.13.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.13.0(jiti@2.7.0)):
+  eslint-plugin-boundaries@7.4.0(eslint@10.13.0(jiti@2.7.0)):
     dependencies:
       '@boundaries/elements': 3.3.0
       chalk: 4.1.2
       eslint: 10.13.0(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.14.0(@typescript-eslint/parser@8.72.1(eslint@10.13.0(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.9)(eslint@10.13.0(jiti@2.7.0))
+      eslint-module-utils: 2.14.0(eslint-import-resolver-node@0.3.9)(eslint@10.13.0(jiti@2.7.0))
       handlebars: 4.7.10
     transitivePeerDependencies:
       - '@typescript-eslint/parser'

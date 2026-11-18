@@ -159,5 +159,6 @@ jobs:
           WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-output-production.ndjson
         run: |
           pnpm --filter @nekotype/web exec tsx scripts/smoke-deploy.mjs \
+            --production \
             --wrangler-output "$WRANGLER_OUTPUT_FILE_PATH" \
             --fallback "https://${CLOUDFLARE_PROJECT_NAME}.pages.dev"
