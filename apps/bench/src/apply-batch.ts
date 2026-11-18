@@ -70,12 +70,12 @@ export type Applied = {
   readonly status: 200 | 409 | 503;
 };
 
-function parseObject(text: string | null | undefined): Record<string, unknown> {
+export function parseObject(text: string | null | undefined): Record<string, unknown> {
   const value: unknown = JSON.parse(text ?? '{}');
   return isObject(value) ? value : {};
 }
 
-function recallList(value: unknown): readonly RecallAnswer[] {
+export function recallList(value: unknown): readonly RecallAnswer[] {
   return Array.isArray(value) ? value.filter(isObject).map(toAnswer) : [];
 }
 
@@ -135,6 +135,10 @@ function snapshotBody(lastSeq: number, row: Returned): string {
   );
 }
 
+export function ackBody(lastSeq: number, version: number): string {
+  return `{"lastSeq":${lastSeq},"version":${version}}`;
+}
+
 /** `GET /api/sync`: one `SELECT` of the whole row and one of the settings. */
 export async function readSnapshot(db: D1Database, deviceId: string): Promise<Applied> {
   const [rowResult, settings] = await db.batch<Returned & { device_seq: string }>([
@@ -158,6 +162,8 @@ export async function applyBatch(
   db: D1Database,
   request: SyncRequest,
   now: number,
+  /** `false`: the variant `ack`, whose response is `lastSeq` and `version` without the snapshot. */
+  snapshot = true,
 ): Promise<Applied> {
   const { delta } = request;
   const touched = touchedKeys(delta.learn);
@@ -272,7 +278,11 @@ export async function applyBatch(
   const writes = [
     db
       .prepare(
-        'UPDATE user_stats SET kana_stats = ?1, counters = ?2, learn = ?3, typing_records = ?4, device_seq = ?5, last_sync_at = ?6, learn_recent = json_patch(learn_recent, ?7), learn_buckets = json_patch(learn_buckets, ?8), version = version + 1 WHERE user_id = ?9 AND version = ?10 RETURNING kana_stats, counters, learn, learn_recent, learn_buckets, typing_records',
+        `UPDATE user_stats SET kana_stats = ?1, counters = ?2, learn = ?3, typing_records = ?4, device_seq = ?5, last_sync_at = ?6, learn_recent = json_patch(learn_recent, ?7), learn_buckets = json_patch(learn_buckets, ?8), version = version + 1 WHERE user_id = ?9 AND version = ?10 RETURNING ${
+          snapshot
+            ? 'kana_stats, counters, learn, learn_recent, learn_buckets, typing_records'
+            : 'version'
+        }`,
       )
       .bind(
         JSON.stringify(kanaStats),
@@ -309,7 +319,9 @@ export async function applyBatch(
     };
   }
   return {
-    body: snapshotBody(Math.max(lastSeq, request.seq), updated),
+    body: snapshot
+      ? snapshotBody(Math.max(lastSeq, request.seq), updated)
+      : ackBody(Math.max(lastSeq, request.seq), row.version + 1),
     metas: [...readMetas, ...writeMetas],
     status: 200,
   };

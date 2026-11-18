@@ -1,5 +1,5 @@
 // Deploys the bench to the Pages project `nekotype-bench`, tails it and measures one sync in a cold
-// and a warm isolate (p5-plan.md, PR 1). Usage: `pnpm --filter @nekotype/bench run measure [--out file.json]`.
+// and a warm isolate (p5-plan.md, PR 1). Usage: `pnpm --filter @nekotype/bench run measure [--out file.json] [--only name,name]`.
 import { execFileSync, spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -11,8 +11,27 @@ const DEPLOYMENTS = 5; // cold: the first request after each of 5 fresh deployme
 const WARM_REQUESTS = 50;
 const TAIL_WARMUP_MS = 10_000;
 const EVENT_WAIT_MS = 30_000;
-const KINDS = ['learning', 'capped', 'results', 'get'] as const;
-type Kind = (typeof KINDS)[number];
+type Batch = 'learning' | 'capped' | 'results';
+/** One row of the table: a batch sent to a variant of the endpoint, or a `GET` of a variant. */
+type Kind = { readonly name: string; readonly variant: string; readonly batch: Batch | null };
+// `base` is ADR 078 as built (the measurement of PR 1). The other variants are the candidates of
+// the follow-up to ADR 081; functions/api/sync.ts describes them.
+const KINDS: readonly Kind[] = [
+  { name: 'learning', variant: 'base', batch: 'learning' },
+  { name: 'capped', variant: 'base', batch: 'capped' },
+  { name: 'results', variant: 'base', batch: 'results' },
+  { name: 'get', variant: 'base', batch: null },
+  { name: 'empty', variant: 'empty', batch: null },
+  { name: 'floor', variant: 'floor', batch: null },
+  { name: 'ack-learning', variant: 'ack', batch: 'learning' },
+  { name: 'ack-capped', variant: 'ack', batch: 'capped' },
+  { name: 'keyed-learning', variant: 'keyed', batch: 'learning' },
+  { name: 'keyed-capped', variant: 'keyed', batch: 'capped' },
+  { name: 'keyed-results', variant: 'keyed', batch: 'results' },
+  { name: 'get-recent', variant: 'recent', batch: null },
+  { name: 'get-buckets', variant: 'buckets', batch: null },
+  { name: 'get-rest', variant: 'rest', batch: null },
+];
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 
@@ -186,19 +205,20 @@ type Sample = {
 let nextSeq = LAST_SEQ + 1;
 
 async function send(kind: Kind, url: string, events: Map<string, TailEvent>): Promise<Sample> {
+  const address = `${url}/api/sync?variant=${kind.variant}&deviceId=device-a`;
   const response =
-    kind === 'get'
-      ? await fetch(`${url}/api/sync?deviceId=device-a`)
-      : await fetch(`${url}/api/sync`, {
+    kind.batch === null
+      ? await fetch(address)
+      : await fetch(address, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            ...generateBatch({ seed: 3, keys: KANA_KEYS, kind }),
+            ...generateBatch({ seed: 3, keys: KANA_KEYS, kind: kind.batch }),
             seq: nextSeq,
           }),
         });
   const body = await response.arrayBuffer();
-  if (kind !== 'get' && response.status === 200) nextSeq += 1;
+  if (kind.batch !== null && response.status === 200) nextSeq += 1;
   const metas: unknown = JSON.parse(response.headers.get('x-bench-meta') ?? '[]');
   let rowsRead = 0;
   let rowsWritten = 0;
@@ -233,17 +253,18 @@ function percentile(values: readonly number[], p: number): number {
   return sorted[Math.min(sorted.length - 1, Math.ceil((p / 100) * sorted.length) - 1)] ?? NaN;
 }
 
-type KindResult = { kind: Kind; cold: Sample[]; warm: Sample[] };
+type KindResult = { kind: string; cold: Sample[]; warm: Sample[] };
 
 async function measureKind(kind: Kind): Promise<KindResult> {
-  console.log(`\n== ${kind}: seeding`);
+  const { name } = kind;
+  console.log(`\n== ${name}: seeding`);
   seed();
   nextSeq = LAST_SEQ + 1;
   const cold: Sample[] = [];
   const warm: Sample[] = [];
   for (let i = 1; i <= DEPLOYMENTS; i += 1) {
     const deployment = deploy();
-    console.log(`${kind}: deployment ${i}/${DEPLOYMENTS} ${deployment.url}`);
+    console.log(`${name}: deployment ${i}/${DEPLOYMENTS} ${deployment.url}`);
     const tail = startTail(deployment);
     await sleep(TAIL_WARMUP_MS);
     cold.push(await send(kind, deployment.url, tail.events));
@@ -253,7 +274,7 @@ async function measureKind(kind: Kind): Promise<KindResult> {
     }
     tail.stop();
   }
-  return { kind, cold, warm };
+  return { kind: name, cold, warm };
 }
 
 function cpu(samples: readonly Sample[]): number[] {
@@ -278,11 +299,19 @@ function report(results: readonly KindResult[]): string {
 async function main(): Promise<void> {
   const outIndex = process.argv.indexOf('--out');
   const out = outIndex >= 0 ? process.argv[outIndex + 1] : undefined;
+  const onlyIndex = process.argv.indexOf('--only');
+  const only = onlyIndex >= 0 ? (process.argv[onlyIndex + 1] ?? '').split(',') : undefined;
+  const kinds = only === undefined ? KINDS : KINDS.filter((kind) => only.includes(kind.name));
+  if (kinds.length === 0)
+    throw new Error(`--only names none of: ${KINDS.map((k) => k.name).join(', ')}`);
   assertProjectExists();
   const results: KindResult[] = [];
-  for (const kind of KINDS) results.push(await measureKind(kind));
+  for (const kind of kinds) {
+    results.push(await measureKind(kind));
+    // Written after every kind, so a run that stops half-way keeps what it measured.
+    if (out !== undefined) writeFileSync(out, JSON.stringify(results, null, 2));
+  }
   console.log(`\n${report(results)}`);
-  if (out !== undefined) writeFileSync(out, JSON.stringify(results, null, 2));
 }
 
 await main();

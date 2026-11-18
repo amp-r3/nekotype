@@ -4,13 +4,13 @@ The backend is a Hono application running as Cloudflare Pages Functions on the `
 
 ## Free-tier limits that constrain the design
 
-| Limit                                                                                                                  | Value                                     | Design response                                                                                              |
-| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| [CPU per Functions request](https://developers.cloudflare.com/workers/platform/limits)                                 | 10 ms                                     | OAuth only, no password hashing; the large parts of `user_stats` are updated per touched key in D1 (ADR 078) |
-| Functions requests                                                                                                     | 100,000 per day, shared with Workers Free | `_routes.json` limits Functions to `/api/*`; batched sync at most once per 10 s per device                   |
-| [D1 reads / writes](https://developers.cloudflare.com/d1/platform/limits)                                              | 5 million / 100,000 rows per day          | Statistics stored as one JSON document per user                                                              |
-| D1 database size                                                                                                       | 500 MB                                    | Sufficient for the MVP                                                                                       |
-| [D1 over-limit behaviour](https://developers.cloudflare.com/changelog/post/2026-09-01-d1-free-tier-limit-enforcement/) | Queries fail until midnight UTC           | The client keeps data in `outbox` and `delta` and retries later; the application keeps working locally       |
+| Limit                                                                                                                  | Value                                     | Design response                                                                                                                                             |
+| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [CPU per Functions request](https://developers.cloudflare.com/workers/platform/limits)                                 | 10 ms                                     | OAuth only, no password hashing; the learning state in `user_stats` is updated per touched key in D1 and a sync answers without the snapshot (ADR 078, 082) |
+| Functions requests                                                                                                     | 100,000 per day, shared with Workers Free | `_routes.json` limits Functions to `/api/*`; batched sync at most once per 10 s per device                                                                  |
+| [D1 reads / writes](https://developers.cloudflare.com/d1/platform/limits)                                              | 5 million / 100,000 rows per day          | Statistics stored as one JSON document per user                                                                                                             |
+| D1 database size                                                                                                       | 500 MB                                    | Sufficient for the MVP                                                                                                                                      |
+| [D1 over-limit behaviour](https://developers.cloudflare.com/changelog/post/2026-09-01-d1-free-tier-limit-enforcement/) | Queries fail until midnight UTC           | The client keeps data in `outbox` and `delta` and retries later; the application keeps working locally                                                      |
 
 **Row budget per finished test:** result row 1 + automatic primary-key index entry 1 (a `TEXT PRIMARY KEY` creates one) + `results_user_time` index entry 1 + `user_stats` 1 + `user_settings` 0–1 = 4–5 rows. The authoritative figure is `meta.rows_written` returned by D1; the acceptance limit is 6. At 6 rows the daily write limit allows about 16,000 tests.
 
@@ -36,13 +36,14 @@ CREATE TABLE user_settings (
   json TEXT NOT NULL, updated_at INTEGER NOT NULL
 );
 -- typing statistics, counters, learning state, typing records and last applied seq per device in one row;
--- the learning state is split so that its large parts are updated per key (ADR 078)
+-- the learning state is split so that its large parts are updated per key (ADR 078, 082)
 CREATE TABLE user_stats (
   user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   kana_stats TEXT NOT NULL, counters TEXT NOT NULL,
   learn TEXT NOT NULL,         -- unlocked, entries, stats, activeDays
   learn_recent TEXT NOT NULL,  -- kana → recent recall answers
   learn_buckets TEXT NOT NULL, -- track → day → bucket → count
+  bucket_newest TEXT NOT NULL, -- track → newest day of learn_buckets
   typing_records TEXT NOT NULL, device_seq TEXT NOT NULL, last_sync_at INTEGER NOT NULL,
   version INTEGER NOT NULL DEFAULT 0
 );
@@ -62,21 +63,21 @@ CREATE TABLE content_reports (
 
 `user_stats.learn`, `learn_recent` and `learn_buckets` hold the learning state ([Metrics](metrics.md#data-model)). For a learner with both tracks fully unlocked after a year of daily sessions it is about 300 KB: about 140 KB of answer-time buckets (365 days per track) and 95 KB of recent recall answers (10 for each of 229 kana). The whole row is about 350 KB, well below the 2 MB row limit.
 
-**CPU budget.** Parsing and serializing such a row costs 4–5 ms, half of the 10 ms limit, so a sync never handles `learn_recent` or `learn_buckets` whole: it reads and writes only the keys of the batch (see "Applying a batch"). The cost of a sync then depends on the batch, not on the history. Measured before P5, a learning sync that handled the whole row took 7.9 ms in the median and 15 ms in a cold isolate ([ADR 078](../adr/078-user-stats-targeted-updates.md)). The CPU cost of a sync on such a row is part of the P5 acceptance.
+**CPU budget.** Parsing and serializing such a row costs 4–5 ms, half of the 10 ms limit, so a sync never handles `learn`, `learn_recent` or `learn_buckets` whole: it reads and writes only the keys of the batch (see "Applying a batch"), and its response does not carry the snapshot. The cost of a sync then depends on the batch, not on the history. Measured before P5, a learning sync that handled the whole row took 7.9 ms in the median and 15 ms in a cold isolate ([ADR 078](../adr/078-user-stats-targeted-updates.md)). Measured on Cloudflare, this model takes 3 ms in the warm median for a learning sync and 6 ms for a batch at the caps; a cold request takes 9–23 ms, over the limit, and relies on the platform's tolerance for infrequent overruns ([ADR 082](../adr/082-sync-acknowledgement-without-snapshot.md)). The P5 acceptance is the line of that ADR for the real endpoint: a warm median of at most 5 ms for a learning sync and for 50 results and at most 8 ms at the caps, and no request answered with error 1102.
 
 ## API
 
-| Method and path                    | Purpose                                                                                                                                                          |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/auth/:provider`          | Start OAuth (`google` with PKCE, `github`): state cookie and redirect                                                                                            |
-| `GET /api/auth/:provider/callback` | Verify state, fetch profile, create or find user, set session, redirect to `/`                                                                                   |
-| `POST /api/auth/logout`            | Delete session and cookie                                                                                                                                        |
-| `GET /api/me`                      | Profile or 401                                                                                                                                                   |
-| `DELETE /api/me`                   | Delete the account and all its data; set `content_reports.user_id` to NULL for its reports                                                                       |
-| `POST /api/sync`                   | Body: `deviceId`, `seq`, batch. Response: snapshot of settings, statistics, counters, learning state, typing records, and the last applied seq for this deviceId |
-| `GET /api/sync`                    | Snapshot and the last applied seq for the deviceId query parameter, used after a `409`                                                                           |
-| `GET /api/results?before=&limit=`  | Paginated test history (at most 50 per request), newest first; `before` is the cursor `<endedAt>:<id>`                                                           |
-| `POST /api/reports`                | Content reports from guests and signed-in users; requires a valid Cloudflare Turnstile token; one report and at most 8 KB per request                            |
+| Method and path                    | Purpose                                                                                                                                                                                        |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/auth/:provider`          | Start OAuth (`google` with PKCE, `github`): state cookie and redirect                                                                                                                          |
+| `GET /api/auth/:provider/callback` | Verify state, fetch profile, create or find user, set session, redirect to `/`                                                                                                                 |
+| `POST /api/auth/logout`            | Delete session and cookie                                                                                                                                                                      |
+| `GET /api/me`                      | Profile or 401                                                                                                                                                                                 |
+| `DELETE /api/me`                   | Delete the account and all its data; set `content_reports.user_id` to NULL for its reports                                                                                                     |
+| `POST /api/sync`                   | Body: `deviceId`, `seq`, batch. Response: the last applied seq for this deviceId and the `version` of the user's data; no snapshot (ADR 082)                                                   |
+| `GET /api/sync?deviceId=&part=`    | Without `part`: the last applied seq and `version`, used after a `409` and to check for other devices' writes. `part` = `rest`, `recent` or `buckets`: one part of the snapshot with `version` |
+| `GET /api/results?before=&limit=`  | Paginated test history (at most 50 per request), newest first; `before` is the cursor `<endedAt>:<id>`                                                                                         |
+| `POST /api/reports`                | Content reports from guests and signed-in users; requires a valid Cloudflare Turnstile token; one report and at most 8 KB per request                                                          |
 
 ### Request and response bodies
 
@@ -108,10 +109,25 @@ type Snapshot = {
   settings: Settings | null;
   kanaStats: Record<KanaKey, KanaStat>;
   counters: Counters;
-  learn: LearnState; // assembled from learn, learn_recent and learn_buckets
+  learn: LearnState; // the client assembles it from the three parts
   typingRecords: TypingRecords;
 };
-type SyncResponse = { lastSeq: number; snapshot: Snapshot }; // POST and GET /api/sync
+type SyncResponse = { lastSeq: number; version: number }; // POST /api/sync, and GET without `part`
+// GET /api/sync?part=…; the client stores the three parts only when `version` is the same in all
+type SnapshotRest = SyncResponse & {
+  part: 'rest';
+  settings: Settings | null;
+  kanaStats: Record<KanaKey, KanaStat>;
+  counters: Counters;
+  learn: Omit<LearnState, 'recent' | 'recallBuckets'>;
+  typingRecords: TypingRecords;
+};
+type SnapshotRecent = { part: 'recent'; version: number; recent: LearnState['recent'] };
+type SnapshotBuckets = {
+  part: 'buckets';
+  version: number;
+  recallBuckets: LearnState['recallBuckets'];
+};
 type ResultsResponse = { results: TestResult[]; next: string | null }; // next: cursor for `before`
 type MeResponse = {
   id: string;
@@ -150,9 +166,9 @@ Every error body is `{ "error": { "code": string, "lastSeq"?: number } }`.
 
 Two devices of one user can sync at the same moment, and the update of `user_stats` is a read-modify-write of one JSON row. [`batch()`](https://developers.cloudflare.com/d1/worker-api/d1-database/) makes the write atomic but does not protect the earlier read, so writes use optimistic concurrency on `user_stats.version`:
 
-1. Read `user_stats` without `learn_recent` and `learn_buckets`, including `version`, and apply the `seq` rules. From those two columns read only the keys the batch touches: the kana of `delta.learn.recent` and the days of `delta.learn.recallBuckets`, through `json_each` filtered by one bound parameter holding the JSON array of keys (D1 allows 100 parameters per query), plus the day keys of each touched track.
-2. Compute the merged statistics, counters, learning state, typing records and `device_seq` by the rules in [Storage and sync](storage-sync.md#merge-rules). For `learn_recent` and `learn_buckets` the rules are applied to the touched keys only, which gives the same result as the full merge; the outcome is a JSON Merge Patch (RFC 7396) per column, with `null` for each bucket day that falls more than 365 days behind the newest day of its track.
-3. Run `batch()` with `UPDATE user_stats SET …, learn_recent = json_patch(learn_recent, ?), learn_buckets = json_patch(learn_buckets, ?), version = version + 1 WHERE user_id = ? AND version = ? RETURNING …`, one `INSERT OR IGNORE INTO results … SELECT … FROM json_each(?)` for all results of the batch (D1 allows 50 queries per invocation on Free, and every statement of `batch()` counts), and the `user_settings` upsert if settings changed. The response snapshot is assembled from the returned column strings and the settings without parsing them again.
+1. Read the small columns of `user_stats` (`kana_stats`, `counters`, `typing_records`, `device_seq`, `bucket_newest`, `version`) and apply the `seq` rules. From `learn`, `learn_recent` and `learn_buckets` read only what the batch touches, with `json_extract(column, ?, ?, …)` and one bound path per key: `unlocked` and `activeDays`, the kana of `delta.learn.entries`, `stats` and `recent`, and the days of `delta.learn.recallBuckets`. D1 allows 100 parameters per query, so a statement carries at most 98 paths. `json_each` is not used on a stored column: D1 counts every element it visits as a row read ([ADR 082](../adr/082-sync-acknowledgement-without-snapshot.md)).
+2. Compute the merged statistics, counters, learning state, typing records and `device_seq` by the rules in [Storage and sync](storage-sync.md#merge-rules). For the three learning columns the rules are applied to the touched keys only, which gives the same result as the full merge; the outcome is a JSON Merge Patch (RFC 7396) per column. A merge patch merges objects key by key, so it names with `null` what the merge removes: each bucket day that falls more than 365 days behind the newest day of its track (found from `bucket_newest`, without reading the day keys), and each `mixups` key of a touched kana that the decay drops.
+3. Run `batch()` with `UPDATE user_stats SET …, learn = json_patch(learn, ?), learn_recent = json_patch(learn_recent, ?), learn_buckets = json_patch(learn_buckets, ?), bucket_newest = ?, version = version + 1 WHERE user_id = ? AND version = ?`, one `INSERT OR IGNORE INTO results … SELECT … FROM json_each(?)` for all results of the batch (D1 allows 50 queries per invocation on Free, and every statement of `batch()` counts), and the `user_settings` upsert if settings changed. The response is the last applied `seq` and the new `version`; the stored columns are not returned.
 4. If the `UPDATE` reports `meta.changes` = 0, another request won: repeat from step 1 once. If it loses again, return `503 conflict`; the client keeps its batch and resends it.
 
 A batch that lost still inserts its results, because `batch()` runs every statement. This is harmless: inserts are idempotent by `id`, and typing records are computed from every result of the batch, not only newly inserted ones. A lost attempt spends extra rows, so the row budget above applies to the uncontended case.
