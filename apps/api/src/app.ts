@@ -1,14 +1,16 @@
 import { Hono } from 'hono';
 import type { AppBindings, AppDeps } from './env';
+import { authRoutes } from './routes/auth';
+import { meRoutes } from './routes/me';
 import { limitBody } from './lib/body';
 import { ApiError, ERROR_STATUS, errorBody, isD1Failure } from './lib/errors';
 import { originCheck } from './lib/origin';
 
 /**
  * The application behind `/api/*`: middleware and route mounting, with the outside world injected
- * (D2). There are no routes yet; the pull requests that follow mount theirs here.
+ * (D2). The pull requests that follow mount their routes here.
  */
-export function createApp(_deps: AppDeps) {
+export function createApp(deps: AppDeps) {
   const app = new Hono<AppBindings>().basePath('/api');
 
   app.onError((error, c) => {
@@ -22,6 +24,9 @@ export function createApp(_deps: AppDeps) {
 
   app.use(originCheck);
   app.use(limitBody());
+
+  app.route('/auth', authRoutes(deps));
+  app.route('/me', meRoutes(deps));
 
   return app;
 }

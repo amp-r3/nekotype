@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@nekotype/shared": "workspace:*",
+    "arctic": "3.7.0",
     "hono": "4.13.19"
   },
   "devDependencies": {

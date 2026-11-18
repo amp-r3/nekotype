@@ -24,6 +24,17 @@ function apiNotFound(): Response {
   return Response.json({ error: { code: 'not_found' } }, { status: 404 });
 }
 
+function apiUnauthenticated(): Response {
+  return Response.json({ error: { code: 'unauthenticated' } }, { status: 401 });
+}
+
+function toGoogle(): Response {
+  return new Response(null, {
+    status: 302,
+    headers: { location: 'https://accounts.google.com/o/oauth2/v2/auth?state=x' },
+  });
+}
+
 // A healthy deployment: the routes rewritten to the application, real 404s elsewhere.
 function healthy(overrides: Record<string, () => Response> = {}): FetchFn {
   const routes = new Set<string>(['/']);
@@ -36,6 +47,8 @@ function healthy(overrides: Record<string, () => Response> = {}): FetchFn {
     const override = overrides[path];
     if (override) return Promise.resolve(override());
     if (path === '/api/unknown') return Promise.resolve(apiNotFound());
+    if (path === '/api/me') return Promise.resolve(apiUnauthenticated());
+    if (path === '/api/auth/google') return Promise.resolve(apiNotFound());
     if (routes.has(path)) return Promise.resolve(page(200, HTML));
     if (path === '/assets/index-a1.js') {
       return Promise.resolve(page(200, 'console.log(1)', { 'content-type': 'text/javascript' }));
@@ -97,6 +110,43 @@ describe('smoke test of a deployment', () => {
     const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn, ...fastRetry });
     expect(failures).toHaveLength(1);
     expect(failures[0]).toContain('/api/unknown');
+  });
+
+  it('expects /api/me to answer 401 from the Functions', async () => {
+    const fetchFn = healthy({ '/api/me': () => page(200, HTML) });
+    const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn, ...fastRetry });
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('/api/me should answer 401');
+  });
+
+  it('expects sign-in to be hidden on a preview: /api/auth/google answers 404', async () => {
+    const fetchFn = healthy({ '/api/auth/google': toGoogle });
+    const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn, ...fastRetry });
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('/api/auth/google should answer 404');
+  });
+
+  it('expects production to redirect /api/auth/google to Google', async () => {
+    const ok = await checkDeployment('https://x.pages.dev', {
+      fetchFn: healthy({ '/api/auth/google': toGoogle }),
+      production: true,
+      ...fastRetry,
+    });
+    expect(ok.failures).toEqual([]);
+
+    // A missing secret answers 503 instead of the redirect; a preview-style 404 is as wrong.
+    for (const wrong of [
+      () => Response.json({ error: { code: 'unavailable' } }, { status: 503 }),
+      apiNotFound,
+    ]) {
+      const { failures } = await checkDeployment('https://x.pages.dev', {
+        fetchFn: healthy({ '/api/auth/google': wrong }),
+        production: true,
+        ...fastRetry,
+      });
+      expect(failures).toHaveLength(1);
+      expect(failures[0]).toContain('/api/auth/google should answer 302 to accounts.google.com');
+    }
   });
 
   it('catches the retired /learn route still answering the application', async () => {

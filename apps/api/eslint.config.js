@@ -28,7 +28,7 @@ export default [
   {
     files: ['src/**/*.ts'],
     rules: {
-      // `createApp(_deps)` takes its dependencies before the first route uses them (PR 3).
+      // The providers share one signature; GitHub has no use for the PKCE verifier (`_codeVerifier`).
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       'no-restricted-imports': [
         'error',

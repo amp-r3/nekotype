@@ -6,6 +6,7 @@ export function checkDeployment(
   baseUrl: string,
   options?: {
     readonly fetchFn?: FetchFn;
+    readonly production?: boolean;
     readonly apiAttempts?: number;
     readonly apiDelayMs?: number;
     readonly sleep?: (ms: number) => Promise<void>;

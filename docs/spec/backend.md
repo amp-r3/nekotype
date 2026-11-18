@@ -21,7 +21,7 @@ The backend is a Hono application running as Cloudflare Pages Functions on the `
 ```sql
 CREATE TABLE users (
   id TEXT PRIMARY KEY, email TEXT, display_name TEXT, avatar_url TEXT, created_at INTEGER NOT NULL
-);
+); -- `email`: a verified address in lower case, or NULL; an unverified address is never stored
 CREATE INDEX users_email ON users(email); -- linking by email must not scan `users`: D1 counts every scanned row as read
 CREATE TABLE oauth_accounts (
   provider TEXT NOT NULL, provider_user_id TEXT NOT NULL,
@@ -62,7 +62,7 @@ CREATE TABLE content_reports (
 
 **Migrations** are the files `apps/api/migrations/NNNN_title.sql`; `0001_init.sql` is the schema above. A merged migration is never edited, and each one works with the code deployed before it (new tables, new columns with defaults), because the preview database is shared by every pull request and production is migrated before its deploy. CI applies them with `wrangler d1 migrations apply`: to `nekotype-preview` before a preview deployment, and to `nekotype` after the release candidate's smoke test and before the production deploy ([ADR 083](../adr/083-api-package-and-pages-configuration.md)). Locally, `pnpm run db:migrate:local`.
 
-`user_stats.device_seq` maps `deviceId` → last applied `seq` (see [Batches](storage-sync.md#batches)). The `user_stats` row is created with the user in the OAuth callback, so a sync always finds it.
+`user_stats.device_seq` maps `deviceId` → last applied `seq` (see [Batches](storage-sync.md#batches)). The `user_stats` row is created with the user and its `oauth_accounts` row, in one `batch()`, in the OAuth callback, so a sync always finds it. It starts with empty documents (`bucket_newest` = `{}`: a track without a key has no days) and `last_sync_at` = 0.
 
 `user_stats.learn`, `learn_recent` and `learn_buckets` hold the learning state ([Metrics](metrics.md#data-model)). For a learner with both tracks fully unlocked after a year of daily sessions it is about 300 KB: about 140 KB of answer-time buckets (365 days per track) and 95 KB of recent recall answers (10 for each of 229 kana). The whole row is about 350 KB, well below the 2 MB row limit.
 
@@ -180,16 +180,17 @@ A batch that lost still inserts its results, because `batch()` runs every statem
 
 ## Authentication and security
 
-- **Session:** a random 32-byte token in cookie `nt_session` (`HttpOnly; Secure; SameSite=Lax; Path=/`); D1 stores only its SHA-256 hash. Lifetime 30 days, renewed when less than 15 days remain.
+- **Session:** a random 32-byte token in cookie `nt_session` (`HttpOnly; Secure; SameSite=Lax; Path=/`); D1 stores only its SHA-256 hash. Lifetime 30 days, renewed when less than 15 days remain. An expired row is deleted when it is seen, and a sign-in deletes the user's other expired rows. `Secure` is left off only when `APP_ORIGIN` is `http://…` (local development).
+- **OAuth state:** `GET /api/auth/:provider` sets cookie `nt_oauth` (the state and, for Google's PKCE, the code verifier; `HttpOnly; SameSite=Lax; Path=/api/auth; Max-Age=600`) and redirects to the provider; the callback compares the state, deletes the cookie, and redirects to `/` on success, to `/?auth_error=denied` when the user refused, and to `/?auth_error=failed` on a state mismatch or a failed exchange ([ADR 084](../adr/084-oauth-seam-state-cookie-verified-addresses.md)). A deployment without a provider's secrets answers `503 unavailable`.
 - **CSRF:** `SameSite=Lax` plus an `Origin` header check on every POST and DELETE.
-- **Accounts from different providers** are linked by verified email (Google `email_verified`, GitHub primary verified address). Without a verified email a separate account is created.
+- **Accounts from different providers** are linked by verified email (Google `email_verified`, GitHub primary verified address). Without a verified email a separate account is created, and no address is stored for it: `users.email` holds a verified address in lower case or `NULL`, so an unverified address can never link a later sign-in to another account.
 - **Sync request limits:** body at most 256 KB, at most 50 results per batch (ADR 078), at most one request per 5 s per user (checked against `last_sync_at`, no extra writes). Input is validated with valibot schemas from `shared`.
 - **Report abuse:** per-request caps above, plus a Cloudflare Turnstile token verified server-side on every request to `/api/reports`. WAF rate-limiting rules are not used: they require an own DNS zone, and \*.pages.dev is not one. The Turnstile script loads only when the report dialog opens, outside the initial budget.
 - Client-submitted results are accepted without server-side verification in the MVP; there are no leaderboards.
 - OAuth secrets are stored as Pages project secrets; schema changes are applied via `wrangler d1 migrations`.
 - **Local development:** `wrangler pages dev` with a local D1; Vite proxies `/api` to it.
 
-* **Environments:** production binds the production D1. Pages preview deployments bind a separate preview D1 and hide sign-in. OAuth clients:
+* **Environments:** production binds the production D1. Pages preview deployments bind a separate preview D1 and hide sign-in: every route under `/api/auth/` answers `404 not_found` when `ENVIRONMENT` is `preview`, while `/api/me` and the other routes work. OAuth clients:
   - Google: one OAuth client with two registered redirect URIs, for `nekotype.pages.dev` and for `localhost`. Google does not accept wildcard redirect URIs, so preview subdomains cannot sign in.
   - GitHub: two OAuth Apps, because an OAuth App has one callback URL: one for `nekotype.pages.dev` (production secrets) and one for `localhost` (development secrets in `.dev.vars`).
   - Turnstile uses separate site keys per environment.

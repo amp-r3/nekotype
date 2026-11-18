@@ -13,7 +13,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | PR  | Branch                   | Status      | Pull request |
 | --- | ------------------------ | ----------- | ------------ |
 | 1   | `p5-01-sync-measurement` | done        | #162         |
-| 2   | `p5-02-api-scaffold`     | in review   | #164         |
+| 2   | `p5-02-api-scaffold`     | done        | #164         |
 | 3   | `p5-03-auth`             | not started |              |
 | 4   | `p5-04-merge-patch`      | not started |              |
 | 5   | `p5-05-api-sync`         | not started |              |
@@ -497,7 +497,7 @@ Check: `pnpm dlx wrangler@4 pages project list` shows `nekotype-bench`; `pnpm dl
 
 State on 2026-11-18: M2 is done. `pnpm dlx wrangler@4 d1 create` made `nekotype` (`database_id` `b8a4a497-68e4-4d79-9477-4934a64b4436`) and `nekotype-preview` (`50ed211b-ca70-4ab4-b3f9-f184c57e4b8f`), both in region EEUR; the maintainer added the D1 — Edit permission to the CI token. The ids are in the root `wrangler.toml` (PR 2).
 
-Check: `pnpm dlx wrangler@4 d1 list` shows three databases; in the CI run of PR 2 the step "Apply D1 migrations (preview)" passes, and after the merge `pnpm exec wrangler d1 migrations list nekotype --remote` prints no unapplied migration.
+Check: `pnpm dlx wrangler@4 d1 list` shows three databases; in the CI run of PR 2 the step "Apply D1 migrations (preview)" passes, and after the merge `pnpm exec wrangler d1 migrations list DB --remote --env production` prints no unapplied migration (with the database name `nekotype` instead of `DB`, wrangler does not find the database).
 
 ### M3. OAuth clients — before PR 3 is merged
 
