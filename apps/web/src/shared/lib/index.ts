@@ -29,10 +29,20 @@ export {
   removeLegacyKeys,
 } from './storage';
 
-export type { ChangeChannel } from './idb/channel';
+export type { ChangeChannel, ChannelMessage } from './idb/channel';
 export { changeChannel } from './idb/channel';
-export type { Db, Write } from './idb/idb';
-export { createMemoryDb } from './idb/idb';
+export type { Db, Read, Write } from './idb/idb';
+export type { SyncBase } from './idb/local-sync';
+export {
+  DELTA_STORE,
+  META_STORE,
+  OUTBOX_STORE,
+  SNAPSHOT_STORE,
+  SYNC_KEY,
+  readWithSyncBase,
+} from './idb/local-sync';
+export { createMemoryDb } from './idb/memory-db';
+export { recordWrites } from './idb/record-writes';
 export type { DatabaseMode, DatabaseProvider } from './idb/database';
 export {
   getDatabase,

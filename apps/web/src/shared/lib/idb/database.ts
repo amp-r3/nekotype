@@ -1,6 +1,6 @@
 import { signal } from '@preact/signals';
 import type { ReadonlySignal } from '@preact/signals';
-import { createMemoryDb, deleteRaw, openRaw } from './idb';
+import { deleteRaw, openRaw } from './idb';
 import type { Db } from './idb';
 import { DATABASE_NAME, SCHEMA_VERSION, STORES, STORE_NAMES } from './schema';
 
@@ -39,7 +39,10 @@ export async function openDatabase(factory: IDBFactory): Promise<Db> {
 }
 
 export interface DatabaseProvider {
-  /** One promise per page load; it never rejects: a failure resolves to the memory store. */
+  /**
+   * One promise per page load. A failure to open resolves to the memory store; it rejects only when
+   * the memory store's chunk cannot be loaded either (offline after a deploy replaced it).
+   */
   getDatabase(): Promise<Db>;
   mode: ReadonlySignal<DatabaseMode>;
   /** A write failed after the database opened: what follows may not be saved. */
@@ -50,8 +53,10 @@ export function createDatabaseProvider(factory: IDBFactory | undefined): Databas
   const mode = signal<DatabaseMode>('pending');
   let opening: Promise<Db> | null = null;
 
-  const fallback = (): Db => {
+  // The memory store is a chunk of its own: almost every page load opens IndexedDB.
+  const fallback = async (): Promise<Db> => {
     mode.value = 'memory';
+    const { createMemoryDb } = await import('./memory-db');
     return createMemoryDb();
   };
 

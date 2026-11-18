@@ -10,6 +10,9 @@ export interface StoreDef {
   indexes?: readonly string[];
 }
 
+/** A record to read inside an `update` transaction. */
+export type Read = { store: string; key: string };
+
 export interface Db {
   get(store: string, key: string): Promise<unknown>;
   put(store: string, key: string, value: unknown): Promise<void>;
@@ -19,6 +22,25 @@ export interface Db {
   /** All values of `store`, ascending in the order of `index` (ties by key), in one transaction; records without an indexable value are left out. */
   getAll(store: string, index: string): Promise<unknown[]>;
   count(store: string): Promise<number>;
+  /**
+   * A read-modify-write in one `readwrite` transaction (D15): reads the records, hands their values
+   * (`undefined` for a missing one, in the order of `reads`) to the synchronous `compute` and
+   * applies the writes it returns. `scope` names stores the writes touch that are not read. A
+   * `compute` that throws, or a write outside the stores of `reads` and `scope`, aborts the
+   * transaction and rejects.
+   */
+  update(
+    reads: readonly Read[],
+    compute: (values: readonly unknown[]) => readonly Write[],
+    scope?: readonly string[],
+  ): Promise<void>;
+  /** The first `limit` values of `store` whose `index` property equals `value`, in key order. */
+  getByIndex(
+    store: string,
+    index: string,
+    value: number | string,
+    limit: number,
+  ): Promise<unknown[]>;
   hasStores(names: readonly string[]): boolean;
   close(): void;
 }
@@ -40,22 +62,26 @@ function request<T>(req: IDBRequest<T>): Promise<T> {
   });
 }
 
+function applyWrites(tx: IDBTransaction, writes: readonly Write[]): void {
+  for (const w of writes) {
+    const store = tx.objectStore(w.store);
+    if (w.op === 'put') {
+      store.put(w.value, w.key);
+    } else if (w.op === 'delete') {
+      store.delete(w.key);
+    } else {
+      store.clear();
+    }
+  }
+}
+
 function wrap(raw: IDBDatabase): Db {
   const run = (writes: readonly Write[]): Promise<void> => {
     const stores = [...new Set(writes.map((w) => w.store))];
     return new Promise((resolve, reject) => {
       // `transaction()` throws on a closed connection; the promise turns that into a rejection.
       const tx = raw.transaction(stores, 'readwrite');
-      for (const w of writes) {
-        const store = tx.objectStore(w.store);
-        if (w.op === 'put') {
-          store.put(w.value, w.key);
-        } else if (w.op === 'delete') {
-          store.delete(w.key);
-        } else {
-          store.clear();
-        }
-      }
+      applyWrites(tx, writes);
       tx.oncomplete = () => {
         resolve();
       };
@@ -79,6 +105,52 @@ function wrap(raw: IDBDatabase): Db {
         raw.transaction(store, 'readonly').objectStore(store).index(index).getAll(),
       ),
     count: (store) => request(raw.transaction(store, 'readonly').objectStore(store).count()),
+    update: (reads, compute, scope = []) =>
+      new Promise((resolve, reject) => {
+        const stores = [...new Set([...reads.map((r) => r.store), ...scope])];
+        if (stores.length === 0) {
+          // A transaction needs a store; with none, there is nothing to read or write.
+          resolve();
+          return;
+        }
+        const tx = raw.transaction(stores, 'readwrite');
+        tx.oncomplete = () => {
+          resolve();
+        };
+        tx.onerror = () => {
+          reject(tx.error ?? new Error('IndexedDB transaction failed'));
+        };
+        tx.onabort = () => {
+          reject(tx.error ?? new Error('IndexedDB transaction aborted'));
+        };
+        const values: unknown[] = new Array<unknown>(reads.length).fill(undefined);
+        let waiting = reads.length;
+        const finish = (): void => {
+          try {
+            applyWrites(tx, compute(values));
+          } catch (error) {
+            // `abort` fires `onabort`, which rejects with the transaction's error; keep ours.
+            reject(error instanceof Error ? error : new Error('IndexedDB update failed'));
+            tx.abort();
+          }
+        };
+        if (waiting === 0) {
+          finish();
+          return;
+        }
+        reads.forEach((read, i) => {
+          const req = tx.objectStore(read.store).get(read.key);
+          req.onsuccess = () => {
+            values[i] = req.result;
+            waiting -= 1;
+            if (waiting === 0) finish();
+          };
+        });
+      }),
+    getByIndex: (store, index, value, limit) =>
+      request<unknown[]>(
+        raw.transaction(store, 'readonly').objectStore(store).index(index).getAll(value, limit),
+      ),
     hasStores: (names) => names.every((n) => raw.objectStoreNames.contains(n)),
     close: () => {
       raw.close();
@@ -138,57 +210,4 @@ export function deleteRaw(factory: IDBFactory, name: string): Promise<void> {
       resolve();
     };
   });
-}
-
-/** The same interface over a Map: the fallback when IndexedDB is unavailable, and a test double. */
-export function createMemoryDb(): Db {
-  const data = new Map<string, unknown>();
-  const id = (store: string, key: string) => `${store}\u0000${key}`;
-  const indexable = (v: unknown): v is number | string =>
-    typeof v === 'number' || typeof v === 'string';
-  return {
-    get: (store, key) => Promise.resolve(data.get(id(store, key))),
-    put: (store, key, value) => {
-      data.set(id(store, key), value);
-      return Promise.resolve();
-    },
-    delete: (store, key) => {
-      data.delete(id(store, key));
-      return Promise.resolve();
-    },
-    write: (writes) => {
-      for (const w of writes) {
-        if (w.op === 'put') {
-          data.set(id(w.store, w.key), w.value);
-        } else if (w.op === 'delete') {
-          data.delete(id(w.store, w.key));
-        } else {
-          const prefix = id(w.store, '');
-          for (const k of [...data.keys()]) if (k.startsWith(prefix)) data.delete(k);
-        }
-      }
-      return Promise.resolve();
-    },
-    getAll: (store, index) => {
-      const prefix = id(store, '');
-      const rows: { key: string; at: number | string; value: unknown }[] = [];
-      for (const [k, value] of data) {
-        if (!k.startsWith(prefix) || typeof value !== 'object' || value === null) continue;
-        const at: unknown = Reflect.get(value, index);
-        if (indexable(at)) rows.push({ key: k, at, value });
-      }
-      const compare = (a: number | string, b: number | string): number =>
-        typeof a === typeof b ? (a < b ? -1 : a > b ? 1 : 0) : typeof a === 'number' ? -1 : 1;
-      rows.sort((a, b) => compare(a.at, b.at) || compare(a.key, b.key));
-      return Promise.resolve(rows.map((r) => r.value));
-    },
-    count: (store) => {
-      const prefix = id(store, '');
-      let n = 0;
-      for (const k of data.keys()) if (k.startsWith(prefix)) n += 1;
-      return Promise.resolve(n);
-    },
-    hasStores: () => true,
-    close: () => {},
-  };
 }

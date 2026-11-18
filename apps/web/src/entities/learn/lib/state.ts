@@ -1,4 +1,12 @@
-import type { Counters, LearnState, Track } from '@nekotype/shared/types';
+import type {
+  Counters,
+  LearnDelta,
+  LearnEntry,
+  LearnKanaKey,
+  LearnState,
+  Track,
+} from '@nekotype/shared/types';
+import { emptyLearnState } from '@nekotype/shared/runtime';
 import { initialUnlocked } from './tracks';
 import { isLearnKanaKey } from '@nekotype/shared/runtime';
 import { isConfident } from './confidence';
@@ -62,4 +70,30 @@ export function evaluateBoxes(state: LearnState, targetMs: number, now: number):
     if (settled !== entry) entries = { ...entries, [key]: settled };
   }
   return entries === state.entries ? state : { ...state, entries };
+}
+
+/** A delta that changes nothing. */
+export const emptyDelta = (): LearnDelta => emptyLearnState();
+
+/** The track order of the unlocked kana, for `mergeLearn`. */
+export function learnOrder(): Readonly<Record<Track, readonly LearnKanaKey[]>> {
+  return { hiragana: keysOfTrack('hiragana'), katakana: keysOfTrack('katakana') };
+}
+
+/**
+ * What unlocking and box evaluation changed between two states, as a delta: the kana unlocked and
+ * the entries that moved. Empty when `after` is `before`.
+ */
+export function unlockDelta(before: LearnState, after: LearnState): LearnDelta {
+  if (before === after) return emptyDelta();
+  const added = (track: Track): LearnKanaKey[] => {
+    const had = new Set(before.unlocked[track]);
+    return after.unlocked[track].filter((key) => !had.has(key));
+  };
+  const unlocked = { hiragana: added('hiragana'), katakana: added('katakana') };
+  const entries: Record<string, LearnEntry> = {};
+  for (const [key, entry] of Object.entries(after.entries)) {
+    if (isLearnKanaKey(key) && before.entries[key] !== entry) entries[key] = entry;
+  }
+  return { ...emptyDelta(), unlocked, entries };
 }

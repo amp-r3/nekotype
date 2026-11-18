@@ -202,6 +202,14 @@ export type SyncRequest = {
   readonly results: readonly TestResult[];
 };
 
+/** `outbox/current` on the device: the one batch awaiting acknowledgement (p5-plan.md, D15). */
+export type Outbox = {
+  readonly seq: number;
+  readonly request: SyncRequest;
+  /** The ids of the results the batch carries; marked `synced` on acknowledgement. */
+  readonly resultIds: readonly string[];
+};
+
 /** The server's view of one user: what a sync acknowledgement keeps in step (ADR 082). */
 export type Snapshot = {
   readonly settings: ValidSettings | null;

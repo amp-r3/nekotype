@@ -29,11 +29,15 @@ export function initApp(): Promise<void> {
   // does not wait for it: a screen that needs the settings shows the loading line until they are in.
   const database = getDatabase();
   void initSettings(database);
-  void database.then(() => {
-    if (databaseMode.value === 'indexeddb') {
-      removeLegacyKeys(store);
-    }
-  });
+  void database.then(
+    () => {
+      if (databaseMode.value === 'indexeddb') {
+        removeLegacyKeys(store);
+      }
+    },
+    // Neither IndexedDB nor the memory store's chunk: the stores report their own read errors.
+    () => {},
+  );
 
   // Sync documentElement.lang with active locale signal
   if (typeof document !== 'undefined') {

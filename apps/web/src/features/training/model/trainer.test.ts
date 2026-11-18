@@ -14,7 +14,7 @@ import {
   setTestConfig,
   strictnessSetting,
 } from '@/entities/settings';
-import { createMemoryDb } from '@/shared/lib';
+import { createMemoryDb, recordWrites } from '@/shared/lib';
 import { isTestResult } from '@nekotype/shared/runtime';
 
 const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
@@ -578,12 +578,7 @@ describe('trainer: saving the finished test (ADR 073)', () => {
   it('writes nothing inside the keystroke that ends a test', async () => {
     setTestConfig({ kind: 'count', prompts: 10 });
     const db = createMemoryDb();
-    const writes: unknown[] = [];
-    const original = db.write.bind(db);
-    db.write = (batch) => {
-      writes.push(batch);
-      return original(batch);
-    };
+    const writes = recordWrites(db);
     const store = createTypingStore({ db: () => Promise.resolve(db) });
     const trainer = createTrainer({ nextPrompt: () => a, typing: store });
     const stop = trainer.start();

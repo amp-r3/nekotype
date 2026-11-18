@@ -46,12 +46,17 @@ function setup(options: { tasks?: number; seed?: number } = {}) {
 }
 
 /** A session whose first task is the introduction of `kana`: it is the one unlocked kana without an entry. */
-async function introducing(kana: string, strictness: 'learner' | 'ime' = 'learner') {
+async function introducing(kana: string, strictness: 'learner' | 'ime' = 'learner', seed = 3) {
   const clock = new Clock0();
   const scheduler = new Timers();
   const db = createMemoryDb();
+  // The vowels are always unlocked (the view starts from the initial state), so they are
+  // introduced here and `kana` is the one unlocked kana left.
+  const vowels = Object.fromEntries(
+    ['あ', 'い', 'う', 'え', 'お'].map((v) => [v, { box: 5 as const, dueAt: 9e15 }]),
+  );
   await db.put('delta', 'learn', {
-    learn: stateWith({ unlocked: [kana] }),
+    learn: stateWith({ unlocked: [kana], entries: kana in vowels ? {} : vowels }),
     counters: initialCounters(),
   });
   const store = createLearnStore({
@@ -66,7 +71,7 @@ async function introducing(kana: string, strictness: 'learner' | 'ime' = 'learne
     store,
     clock,
     scheduler,
-    rng: seededRng(3),
+    rng: seededRng(seed),
     audio: { play: vi.fn() },
     strictness: () => strictness,
     targetMs: () => 1500,
@@ -203,6 +208,8 @@ describe('learning session: flow', () => {
   });
 });
 
+const VOWEL_ROMAJI: Record<string, string> = { あ: 'a', い: 'i', う: 'u', え: 'e', お: 'o' };
+
 describe('learning session: the introduction takes only the romaji it shows (ADR 062)', () => {
   it('rejects another spelling of the kana: hu for ふ, which shows fu', async () => {
     const env = await introducing('ふ');
@@ -242,20 +249,24 @@ describe('learning session: the introduction takes only the romaji it shows (ADR
 
   it('shows ん as n in a recognition prompt and as the answer after Esc, in both strictnesses', async () => {
     for (const strictness of ['learner', 'ime'] as const) {
-      const env = await introducing('ん', strictness);
+      const env = await introducing('ん', strictness, 1); // a seed under which ん gets a recognition task
       show(env.session);
       typeRomaji(env.session, 'n');
       env.scheduler.flush();
       let recognition = false;
       let revealed = false;
-      // Only ん is unlocked, so the tasks are about it; stop once both cases have been seen.
-      for (let guard = 0; guard < 24 && !(recognition && revealed); guard++) {
+      // The vowels are unlocked too: answer their tasks and watch the tasks of ん.
+      for (let guard = 0; guard < 200 && !(recognition && revealed); guard++) {
         const task = env.session.task.value;
         show(env.session);
         if (task?.kind === 'recognition') {
-          expect(task.romaji).toBe('n');
-          recognition = true;
+          if (task.key === hira('ん')) {
+            expect(task.romaji).toBe('n');
+            recognition = true;
+          }
           env.session.choose(task.options.indexOf(task.key));
+        } else if (task?.kind === 'recall' && task.kana !== 'ん') {
+          typeRomaji(env.session, VOWEL_ROMAJI[task.kana] ?? '');
         } else if (task?.kind === 'recall') {
           if (!revealed) {
             env.session.handleIntent({ kind: 'reveal' });

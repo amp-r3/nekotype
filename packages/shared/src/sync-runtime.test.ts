@@ -11,6 +11,7 @@ import {
   isSnapshotRest,
   isSyncResponse,
   mergeSettings,
+  outboxDelta,
 } from './runtime';
 import { KANA_KEYS, generateYear } from './testing';
 import type { Snapshot, SyncRequest, ValidSettings } from './types';
@@ -67,6 +68,22 @@ describe('guards', () => {
     expect(isSnapshot({ ...snapshot, learn: rest })).toBe(false);
     expect(isSnapshot({ ...snapshot, typingRecords: { k: { best: 1 } } })).toBe(false);
     expect(isSnapshot(emptyLearnState())).toBe(false);
+  });
+
+  it('outboxDelta takes the delta of a batch of this format, unchecked', () => {
+    const delta = { counters: 'not checked here' };
+    const batch = {
+      seq: 1,
+      resultIds: [],
+      request: { v: SYNC_FORMAT_VERSION, results: [], delta },
+    };
+    expect(outboxDelta(batch)).toBe(delta);
+    expect(outboxDelta(undefined)).toBeNull();
+    expect(outboxDelta({ ...batch, seq: -1 })).toBeNull();
+    expect(outboxDelta({ ...batch, resultIds: null })).toBeNull();
+    expect(outboxDelta({ ...batch, request: { ...batch.request, v: 2 } })).toBeNull();
+    expect(outboxDelta({ ...batch, request: { ...batch.request, results: {} } })).toBeNull();
+    expect(outboxDelta({ ...batch, request: { ...batch.request, delta: [] } })).toBeNull();
   });
 
   it('isSnapshotRest, isSnapshotRecent and isSnapshotBuckets check the part and the version', () => {
