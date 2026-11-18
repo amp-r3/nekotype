@@ -14,7 +14,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | --- | ------------------------ | ----------- | ------------ |
 | 1   | `p5-01-sync-measurement` | done        | #162         |
 | 2   | `p5-02-api-scaffold`     | done        | #164         |
-| 3   | `p5-03-auth`             | not started |              |
+| 3   | `p5-03-auth`             | done        | #165         |
 | 4   | `p5-04-merge-patch`      | not started |              |
 | 5   | `p5-05-api-sync`         | not started |              |
 | 6   | `p5-06-local-view`       | not started |              |
