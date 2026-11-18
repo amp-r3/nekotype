@@ -383,7 +383,7 @@ Replaces "Two tabs before P5" in [storage-sync.md](docs/spec/storage-sync.md).
 
 #### D21. Turnstile
 
-- The script `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit` is added to the page when the report dialog opens, never before. The widget is rendered explicitly in the 300 × 65 slot of the design with the dark theme and the interface language. A token is used once: after a failed submit the widget is reset.
+- The script `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit` is added to the page when the report dialog opens, never before. The widget is rendered explicitly in the full-width, 65 px high slot of the design (size `flexible`, [ADR 089](docs/adr/089-sign-out-text-and-dialog-fields.md)) with the dark theme and the interface language. A token is used once: after a failed submit the widget is reset.
 - Site keys are public constants in `pages/trainer/lib/turnstile.ts`, chosen by host: the production key on `nekotype.pages.dev`, the preview key on its subdomains, Cloudflare's always-passing test key elsewhere (`localhost`).
 - The server reads `TURNSTILE_SECRET_KEY`. Without it the endpoint answers `503 unavailable`. With `ENVIRONMENT` = `production` it refuses Cloudflare's published test secrets, so a wrong secret cannot open the endpoint.
 - `apps/web/public/_headers` needs no change: there is no Content-Security-Policy to extend.

@@ -141,6 +141,8 @@ export interface DialogProps {
   children?: React.ReactNode;
   /** Buttons, safe action first — it receives initial focus. */
   actions?: React.ReactNode[];
+  /** The reserved line of a dialog with a request (a `Notice` with `reserve`): in the actions row, left of the buttons; its own row below 640px (decision 127). */
+  note?: React.ReactNode;
   /** Render in place without a modal backdrop (docs only). */
   inline?: boolean;
   /** aria-label of the ✕ close button (shown when onClose is set). */
