@@ -62,6 +62,7 @@ A pnpm workspace ([ADR 027](docs/adr/027-pnpm-workspace-layout-for-the-monorepo.
 | Path                | Package             | Contents                                                                                                                                   |
 | ------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `apps/web/`         | `@nekotype/web`     | The Preact single-page app (Feature-Sliced Design), its tests, e2e tests, scripts, assets                                                  |
+| `apps/api/`         | `@nekotype/api`     | The Hono application behind `/api/*` (Pages Functions), its D1 migrations and its tests in the Workers runtime; `functions/` mounts it     |
 | `apps/bench/`       | `@nekotype/bench`   | The CPU and D1 measurement of one sync on a test Pages project (P5); a tool run by hand, never deployed to production                      |
 | `packages/engine/`  | `@nekotype/engine`  | The NFA romaji engine and the kana tables; imports nothing, runs in a browser or a Worker                                                  |
 | `packages/shared/`  | `@nekotype/shared`  | Types (`Clock`, `Rng`, `Scheduler`, …) and runtime type guards shared with a future server                                                 |
@@ -99,6 +100,14 @@ pnpm run dev
 ```
 
 Open your browser to `http://localhost:5173`.
+
+The learning and the trainer need nothing else. To work on the API (`/api/*`), run a second server next to the first; Vite proxies `/api` to it, so the browser stays on `http://localhost:5173`:
+
+```bash
+pnpm run dev:api   # applies the migrations to a local D1, then `wrangler pages dev` on http://localhost:8788
+```
+
+Secrets for sign-in and reports go into `.dev.vars` in the repository root, copied from `.dev.vars.example` (git ignores the real file). `pnpm run db:migrate:local` applies the migrations on their own; the local database is in `.wrangler/` and is safe to delete.
 
 ### Automated Verification Suite
 
@@ -169,7 +178,7 @@ Nekotype adheres to strict first-load asset caps, checked by `pnpm run budget` (
 
 ## ☁️ Deployment
 
-Nekotype is a fully static SPA (`apps/web/dist/`, no backend; settings, learning and typing progress in IndexedDB, the language in `localStorage`) and ships to **Cloudflare Pages** at the domain root, so `VITE_BASE` stays at its default `/`.
+Nekotype is a static SPA (`apps/web/dist/`; settings, learning and typing progress in IndexedDB, the language in `localStorage`) with an API behind `/api/*`: Pages Functions (`functions/api/[[route]].ts` mounts the Hono app of `apps/api`) and a D1 database. It ships to **Cloudflare Pages** at the domain root, so `VITE_BASE` stays at its default `/`. `wrangler.toml` in the repository root is the source of truth for the project's bindings, variables and databases (production, preview and local): change them there, not in the dashboard. Secrets are the exception and are set with `wrangler pages secret put`.
 
 **Production:** <https://nekotype.pages.dev> · **Previews:** one URL per pull request.
 
@@ -178,19 +187,20 @@ Nekotype is a fully static SPA (`apps/web/dist/`, no backend; settings, learning
 `.github/workflows/deploy.yml` runs on every push to `main` and on every pull request, in the Playwright image `mcr.microsoft.com/playwright:v<version>-noble` (its tag is the version of `@playwright/test` in the lockfile, which a unit test checks) with a 15-minute limit (ADR 054):
 
 1. `pnpm install --frozen-lockfile` → `pnpm run verify` (typecheck + lint + Prettier + unit tests with coverage + build + size budget + e2e on Chromium, and the `@mobile` ones on WebKit). Any failure blocks the deploy. On `main` and on a manual run, `pnpm run e2e:latency` follows (ADR 052); a pull request runs it when it changes a file on the list in `apps/web/scripts/latency-gate.mjs` (ADR 074).
-2. `wrangler pages deploy apps/web/dist` — PRs get a preview deployment; a push to `main` is deployed first to the preview branch `release-candidate`. Fork PRs verify but never deploy, since they cannot read secrets.
+2. `wrangler d1 migrations apply DB --env preview --remote` applies the migrations to the shared preview database, then `wrangler pages deploy apps/web/dist` — PRs get a preview deployment; a push to `main` is deployed first to the preview branch `release-candidate`. Fork PRs verify but never deploy, since they cannot read secrets.
 3. `scripts/smoke-deploy.mjs` requests the deployment that was just made (the address wrangler writes to `WRANGLER_OUTPUT_FILE_PATH`, else the branch alias): every route and its trailing-slash form must answer `200` with the application, a missing `/assets/*` file and an unknown path must answer `404` with the static not-found page and not the application, and the bundle named by the entry page must load. These are behaviours of Cloudflare Pages that the dev server and the unit tests cannot show (ADR 039). Run it by hand against any address: `pnpm --filter @nekotype/web exec tsx scripts/smoke-deploy.mjs https://nekotype.pages.dev`.
-4. On `main` only, after the candidate passes: the same build is deployed to production and the smoke test runs against production again. A failed candidate stops the workflow before production (ADR 045).
+4. On `main` only, after the candidate passes: the migrations are applied to the production database, then the same build is deployed to production and the smoke test runs against production again. A failed candidate stops the workflow before production (ADR 045).
 
 ### One-Time Setup
 
 1. Create the Pages project (the workflow also does this automatically on first run):
    ```bash
-   pnpm dlx wrangler pages project create nekotype --production-branch=main
+   pnpm exec wrangler pages project create nekotype --production-branch=main
    ```
-   Check that the project got exactly `nekotype.pages.dev` (no random suffix): `pnpm dlx wrangler pages project list`.
+   Check that the project got exactly `nekotype.pages.dev` (no random suffix): `pnpm exec wrangler pages project list`.
+   Create the two D1 databases, `pnpm exec wrangler d1 create nekotype` and `pnpm exec wrangler d1 create nekotype-preview`, and put their `database_id` values into `wrangler.toml` (they are not secrets).
 2. Copy **Account ID** from the Cloudflare dashboard → _Workers & Pages_ → _Overview_.
-3. Create an API token with the **Cloudflare Pages — Edit** permission (_My Profile_ → _API Tokens_).
+3. Create an API token with the **Cloudflare Pages — Edit** and **D1 — Edit** permissions (_My Profile_ → _API Tokens_).
 4. Add repository secrets under _Settings_ → _Secrets and variables_ → _Actions_:
    - `CLOUDFLARE_API_TOKEN`
    - `CLOUDFLARE_ACCOUNT_ID`
@@ -202,7 +212,8 @@ A custom domain can be attached later in _Workers & Pages_ → _nekotype_ → _C
 
 ```bash
 pnpm run verify                     # guarantees a passing build + budget
-pnpm dlx wrangler pages deploy apps/web/dist --project-name nekotype --branch=main
+pnpm exec wrangler d1 migrations apply DB --env production --remote
+pnpm exec wrangler pages deploy apps/web/dist --project-name nekotype --branch=main
 ```
 
 ### Caching & Headers

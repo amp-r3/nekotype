@@ -36,7 +36,15 @@ export function assetPaths(html) {
  * Requests the deployment and returns what is wrong with it; an empty list means it is fine.
  * `fetchFn` is injectable for tests.
  */
-export async function checkDeployment(baseUrl, { fetchFn = fetch } = {}) {
+export async function checkDeployment(
+  baseUrl,
+  {
+    fetchFn = fetch,
+    apiAttempts = 10,
+    apiDelayMs = 3000,
+    sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
+  } = {},
+) {
   const failures = [];
   const lines = [];
 
@@ -72,6 +80,31 @@ export async function checkDeployment(baseUrl, { fetchFn = fetch } = {}) {
       );
     return response;
   };
+
+  // The API answers where the static files do not: an unknown path under /api is a 404 with the
+  // JSON error body of the Functions, not the static 404 page (p5-plan.md, D22). A deployment
+  // without its Functions bundle, or without `_routes.json`, fails here. The static files of a new
+  // deployment answer before its Functions do (seen in CI on 2026-11-18: the first request got the
+  // static 404 page, the same request a minute later the JSON), so it is asked again a few times.
+  {
+    const path = '/api/unknown';
+    let response;
+    let body;
+    let ok = false;
+    for (let attempt = 1; attempt <= apiAttempts && !ok; attempt++) {
+      if (attempt > 1) await sleep(apiDelayMs);
+      ({ response, body } = await get(fetchFn, baseUrl, path));
+      ok =
+        response.status === 404 &&
+        header(response, 'content-type').includes('application/json') &&
+        body === JSON.stringify({ error: { code: 'not_found' } });
+    }
+    lines.push(`${ok ? 'ok  ' : 'FAIL'} api     ${path} ${describeResponse(response)}`);
+    if (!ok)
+      failures.push(
+        `${path} should answer 404 with {"error":{"code":"not_found"}} from the Functions, got ${describeResponse(response)}`,
+      );
+  }
 
   const missing = `/assets/smoke-missing-${Date.now()}.js`;
   const missingResponse = await expectNotFound(missing, 'missing ');

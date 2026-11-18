@@ -33,6 +33,11 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    // `pnpm run dev:api` serves the Functions on 8788 (wrangler pages dev); the browser keeps one
+    // origin, http://localhost:5173, which is also the APP_ORIGIN of the local configuration.
+    proxy: { '/api': 'http://localhost:8788' },
+  },
   build: {
     target: 'es2022',
     manifest: true,

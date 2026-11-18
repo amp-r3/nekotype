@@ -22,6 +22,7 @@ The backend is a Hono application running as Cloudflare Pages Functions on the `
 CREATE TABLE users (
   id TEXT PRIMARY KEY, email TEXT, display_name TEXT, avatar_url TEXT, created_at INTEGER NOT NULL
 );
+CREATE INDEX users_email ON users(email); -- linking by email must not scan `users`: D1 counts every scanned row as read
 CREATE TABLE oauth_accounts (
   provider TEXT NOT NULL, provider_user_id TEXT NOT NULL,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -58,6 +59,8 @@ CREATE TABLE content_reports (
   reason TEXT NOT NULL, comment TEXT, created_at INTEGER NOT NULL
 );
 ```
+
+**Migrations** are the files `apps/api/migrations/NNNN_title.sql`; `0001_init.sql` is the schema above. A merged migration is never edited, and each one works with the code deployed before it (new tables, new columns with defaults), because the preview database is shared by every pull request and production is migrated before its deploy. CI applies them with `wrangler d1 migrations apply`: to `nekotype-preview` before a preview deployment, and to `nekotype` after the release candidate's smoke test and before the production deploy ([ADR 083](../adr/083-api-package-and-pages-configuration.md)). Locally, `pnpm run db:migrate:local`.
 
 `user_stats.device_seq` maps `deviceId` → last applied `seq` (see [Batches](storage-sync.md#batches)). The `user_stats` row is created with the user in the OAuth callback, so a sync always finds it.
 
@@ -156,9 +159,11 @@ Every error body is `{ "error": { "code": string, "lastSeq"?: number } }`.
 | 401    | `unauthenticated`  | No valid session                                        |
 | 403    | `bad_origin`       | The `Origin` check failed                               |
 | 403    | `turnstile_failed` | The Turnstile token was rejected                        |
+| 404    | `not_found`        | No route matches the path                               |
 | 409    | `seq_gap`          | `seq` > last + 1; the body carries `lastSeq`            |
 | 413    | `too_large`        | The body exceeds the limit                              |
 | 429    | `rate_limited`     | Sync interval not elapsed; carries `Retry-After`        |
+| 500    | `internal`         | An unexpected failure in the handler                    |
 | 503    | `conflict`         | A concurrent update won twice; carries `Retry-After: 5` |
 | 503    | `unavailable`      | D1 failed or is over its limit                          |
 

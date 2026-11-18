@@ -1,0 +1,41 @@
+# The configuration of the Pages project `nekotype` and the source of truth for its bindings and
+# variables (p5-plan.md, D4): change them here, never in the dashboard. Secrets are not in this
+# file: `.dev.vars` locally (see `.dev.vars.example`), `wrangler pages secret put` on Cloudflare.
+name = "nekotype"
+pages_build_output_dir = "apps/web/dist"
+compatibility_date = "2026-11-01"
+
+# Top level: local development (`wrangler pages dev`).
+[vars]
+ENVIRONMENT = "development"
+APP_ORIGIN = "http://localhost:5173"
+SYNC_MIN_INTERVAL_MS = "5000"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nekotype-dev"
+database_id = "00000000-0000-0000-0000-000000000000" # local only, never created remotely
+migrations_dir = "apps/api/migrations"
+
+# Pull request previews and the `release-candidate` deployment. Variables and databases are not
+# inherited by an environment, so each one defines all of its own.
+[env.preview.vars]
+ENVIRONMENT = "preview"
+SYNC_MIN_INTERVAL_MS = "5000"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "nekotype-preview"
+database_id = "50ed211b-ca70-4ab4-b3f9-f184c57e4b8f"
+migrations_dir = "apps/api/migrations"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+APP_ORIGIN = "https://nekotype.pages.dev"
+SYNC_MIN_INTERVAL_MS = "5000"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "nekotype"
+database_id = "b8a4a497-68e4-4d79-9477-4934a64b4436"
+migrations_dir = "apps/api/migrations"

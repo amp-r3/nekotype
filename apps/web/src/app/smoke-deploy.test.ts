@@ -17,6 +17,13 @@ function page(status: number, body: string, headers: Record<string, string> = {}
   return new Response(body, { status, headers: { 'content-type': 'text/html', ...headers } });
 }
 
+// The API check asks again before it fails; a test does not wait for the real delay.
+const fastRetry = { apiAttempts: 3, sleep: () => Promise.resolve() };
+
+function apiNotFound(): Response {
+  return Response.json({ error: { code: 'not_found' } }, { status: 404 });
+}
+
 // A healthy deployment: the routes rewritten to the application, real 404s elsewhere.
 function healthy(overrides: Record<string, () => Response> = {}): FetchFn {
   const routes = new Set<string>(['/']);
@@ -28,6 +35,7 @@ function healthy(overrides: Record<string, () => Response> = {}): FetchFn {
     const path = url.pathname;
     const override = overrides[path];
     if (override) return Promise.resolve(override());
+    if (path === '/api/unknown') return Promise.resolve(apiNotFound());
     if (routes.has(path)) return Promise.resolve(page(200, HTML));
     if (path === '/assets/index-a1.js') {
       return Promise.resolve(page(200, 'console.log(1)', { 'content-type': 'text/javascript' }));
@@ -63,6 +71,32 @@ describe('smoke test of a deployment', () => {
     });
     const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn });
     expect(failures.map((f) => f.split(' ')[0])).toEqual(['/stats/', '/about']);
+  });
+
+  it('catches an API that is not deployed: the static 404 page answers /api/unknown', async () => {
+    const fetchFn = vi.fn(healthy({ '/api/unknown': () => page(404, NOT_FOUND) }));
+    const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn, ...fastRetry });
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('/api/unknown should answer 404 with {"error"');
+    const asked = fetchFn.mock.calls.filter(([url]) => url.pathname === '/api/unknown');
+    expect(asked).toHaveLength(3);
+  });
+
+  it('waits for the Functions of a new deployment, which go live after its static files', async () => {
+    let asked = 0;
+    const fetchFn = healthy({
+      '/api/unknown': () => (++asked < 3 ? page(404, NOT_FOUND) : apiNotFound()),
+    });
+    const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn, ...fastRetry });
+    expect(failures).toEqual([]);
+    expect(asked).toBe(3);
+  });
+
+  it('catches an API path that is served as the application', async () => {
+    const fetchFn = healthy({ '/api/unknown': () => page(200, HTML) });
+    const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn, ...fastRetry });
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('/api/unknown');
   });
 
   it('catches the retired /learn route still answering the application', async () => {

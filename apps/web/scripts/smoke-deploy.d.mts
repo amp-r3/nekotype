@@ -4,7 +4,12 @@ export type FetchFn = (url: URL, init: { redirect: 'manual' }) => Promise<Respon
 
 export function checkDeployment(
   baseUrl: string,
-  options?: { readonly fetchFn?: FetchFn },
+  options?: {
+    readonly fetchFn?: FetchFn;
+    readonly apiAttempts?: number;
+    readonly apiDelayMs?: number;
+    readonly sleep?: (ms: number) => Promise<void>;
+  },
 ): Promise<{ readonly lines: string[]; readonly failures: string[] }>;
 
 export function waitForDeployment(

@@ -19,6 +19,8 @@ Every commit and pull request must satisfy `pnpm run verify`, which CI also runs
    - Since ADR 067 (initial JS 28.24 KB) it also fails when the initial JS is more than one file, when a lazily imported module is folded into it, or when it lacks the Preact integration of `@preact/signals`.
 7. **`pnpm run e2e` (`playwright test`)**: Chromium and WebKit (iPhone 13 emulation) against the production bundle (`vite build` into `dist-e2e`, served by `vite preview` on a port of its own, 5273; ADR 045), then the latency test (`playwright.latency.config.ts`): it runs a probe build (`pnpm run build:probe`, `vite preview`) with 4× CPU throttling and checks, for Words and Phrases, the keystroke p95 budgets and a ceiling on the worst keystroke (ADR 043, 048). `check-budget` fails when `dist` contains the probe.
 
+`apps/api` takes part in every step that applies to it: its tests run in the Workers runtime on a local D1 (`@cloudflare/vitest-plugin`, [ADR 083](../adr/083-api-package-and-pages-configuration.md)), so `pnpm test` needs no network and no Cloudflare account. In CI, the migrations are applied to the preview database before a preview deployment and to production before the production deployment, and the smoke test requests `/api/unknown` on every deployment.
+
 Git hooks run the same checks earlier (`pre-commit`: staged formatting, typecheck, lint, unit tests; `pre-push`: `verify:quick`, which is `verify` without the browser tests).
 
 ## End-to-end tests (`e2e/`)
