@@ -12,22 +12,22 @@ Working file of phase P5 ([phases.md](../spec/phases.md), item 6). It tells the 
 
 The executor of a pull request fills its row (see [section 7](#7-instructions-for-executor-agents)).
 
-| PR  | Branch                   | Status      | Pull request |
-| --- | ------------------------ | ----------- | ------------ |
-| 1   | `p5-01-sync-measurement` | done        | #162         |
-| 2   | `p5-02-api-scaffold`     | done        | #164         |
-| 3   | `p5-03-auth`             | done        | #165         |
-| 4   | `p5-04-merge-patch`      | done        | #167         |
-| 5   | `p5-05-api-sync`         | done        | #168         |
-| 6   | `p5-06-local-view`       | done        | #169         |
-| 7   | `p5-07-sync-engine`      | done        | #170         |
-| D   | `docs/p5-design`         | done        | #157         |
-| 8   | `p5-08-account`          | done        | #171         |
-| 9   | `p5-09-sync-e2e`         | done        | #172         |
-| 10  | `p5-10-history`          | done        | #173         |
-| 11  | `p5-11-account-deletion` | done        | #174         |
-| 12  | `p5-12-report`           | done        | #175         |
-| 13  | `p5-13-acceptance`       | in progress |              |
+| PR  | Branch                   | Status | Pull request |
+| --- | ------------------------ | ------ | ------------ |
+| 1   | `p5-01-sync-measurement` | done   | #162         |
+| 2   | `p5-02-api-scaffold`     | done   | #164         |
+| 3   | `p5-03-auth`             | done   | #165         |
+| 4   | `p5-04-merge-patch`      | done   | #167         |
+| 5   | `p5-05-api-sync`         | done   | #168         |
+| 6   | `p5-06-local-view`       | done   | #169         |
+| 7   | `p5-07-sync-engine`      | done   | #170         |
+| D   | `docs/p5-design`         | done   | #157         |
+| 8   | `p5-08-account`          | done   | #171         |
+| 9   | `p5-09-sync-e2e`         | done   | #172         |
+| 10  | `p5-10-history`          | done   | #173         |
+| 11  | `p5-11-account-deletion` | done   | #174         |
+| 12  | `p5-12-report`           | done   | #175         |
+| 13  | `p5-13-acceptance`       | done   | #176         |
 
 **Amended on 2026-11-16 by [ADR 082](../adr/082-sync-acknowledgement-without-snapshot.md)** after PR 1 failed its limits: a sync is acknowledged without the snapshot, `GET /api/sync` answers by parts, the learning columns are read by `json_extract` paths, and the CPU line is the warm median. D7, D12, PR 4, PR 5, PR 7 and section 8 carry the changes; where another line of this plan still speaks of a snapshot in the response, the ADR wins.
 
