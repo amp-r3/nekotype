@@ -34,7 +34,7 @@
 
 .nk-rc__line {
   fill: none;
-  stroke: var(--chart-kpm);
+  stroke: var(--chart-median);
   stroke-width: var(--stroke-mark);
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -135,7 +135,7 @@
 }
 
 .nk-rc__mid {
-  fill: var(--chart-kpm);
+  fill: var(--chart-median);
 }
 
 /* The activity map: a week per column, a day per cell (design ActivityMap). `nk-am`. */

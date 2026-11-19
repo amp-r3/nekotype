@@ -38,7 +38,7 @@ function expectVar(name: string, value: string): void {
 describe('tokens.css matches docs/design/source/tokens.json', () => {
   it('colours', () => {
     const list = asList(section('color')['tokens']);
-    expect(list.length).toBeGreaterThan(30);
+    expect(list.length).toBeGreaterThan(25);
     for (const token of list) {
       if (!isObject(token) || !isObject(token['value'])) throw new Error('bad colour token');
       expectVar(str(token['name']), alias(str(token['value']['dark'])));
@@ -80,7 +80,7 @@ describe('tokens.css matches docs/design/source/tokens.json', () => {
         styles += 1;
       }
     }
-    expect(styles).toBe(18);
+    expect(styles).toBe(17);
   });
 });
 

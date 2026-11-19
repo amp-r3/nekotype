@@ -7,7 +7,5 @@ An empty state: cat, title, explanation, one action.
 
 | where | cat | title (en / ru) | text | action |
 | --- | --- | --- | --- | --- |
-| `/stats`, guest without data | `sleep` | `No statistics yet` / `Статистики пока нет` | `Learn your first kana: answer times, streaks and typing results will appear here.` / `Выучите первые каны: здесь появятся время ответа, серии и результаты набора.` | `to learning` / `к обучению` → `/` |
+| `/stats` without answers and without a started session (decision 130) | `sleep` | `No answers yet` / `Ответов пока нет` | `Finish a learning session: the streak, the activity and the answer times will appear here.` / `Закончите сессию обучения: здесь появятся серия, активность и время ответа.` | `to learning` / `к обучению` → `/` |
 | 404 | `neutral` | `Page not found` / `Страница не найдена` | `There is no such address.` | `go home` |
-
-A section of `/stats` without data, while the other section has some, is not an `EmptyState` and has no cat (decision 101): a `ui-heading` title, one `ui-body` `fur-dim` line and one `primary` action, left-aligned — `No answers yet` / `Ответов пока нет` → `to learning` / `к обучению`; `No finished tests yet` / `Тестов пока нет` → `to typing` / `к набору`.

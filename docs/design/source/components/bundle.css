@@ -9,43 +9,13 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-link:hover { color: var(--fur); text-decoration-color: var(--fur-dim); }
 .nk-link:disabled { color: var(--fur-faint); text-decoration-color: var(--line); cursor: default; }
 
-/* ---------- Test stream ---------- */
-.nk-test { position: relative; max-width: var(--layout-test); }
-.nk-test__bar { display: flex; align-items: baseline; gap: var(--space-4); min-height: 32px; margin-bottom: var(--space-4); }
-.nk-test__counter { color: var(--eye); font-variant-numeric: tabular-nums; }
-.nk-test__unit { color: var(--fur-dim); white-space: pre; }   /* ` s`, ` / 25` — static per test */
-.nk-test__live { color: var(--fur-dim); font-variant-numeric: tabular-nums; }
-.nk-test__repeat { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--space-2); border: var(--stroke-hair) solid var(--fur-dim); border-radius: var(--radius-xs); color: var(--fur-dim); white-space: nowrap; }
-.nk-test__text { position: relative; overflow: hidden; transition: opacity var(--dur-fade) var(--ease-out); }
-.nk-test__inner { position: relative; color: var(--untyped); word-break: keep-all; line-break: strict; will-change: transform; }
-.nk-prompt { white-space: nowrap; margin-inline-end: 0.35em; }   /* ADR 047: a prompt stays whole; the gap after it is a margin, not a space */
-.nk-prompt.is-long { white-space: normal; word-break: normal; }   /* ADR 047 change: only a prompt wider than the line breaks, between tokens */
-.nk-tok { white-space: nowrap; }   /* a token (きょ, っ + kana, kana + ー or punctuation) never breaks */
-.nk-test.is-snap .nk-caret, .nk-test.is-snap .nk-test__buffer { transition: none; }   /* relayout: the caret snaps into place */
-.nk-char { display: inline-block; }                          /* colour switches instantly: no transition (Q8) */
-.nk-char.is-untyped { color: var(--untyped); }
-.nk-char.is-correct { color: var(--fur); }
-.nk-char.is-miss { color: var(--miss); text-decoration: underline var(--stroke-mark) var(--miss-dim); text-underline-offset: 0.18em; }
-.nk-char.is-skip.is-done { color: var(--fur-dim); }          /* passed without input (Q2) */
+/* ---------- Caret (KanaTask) ---------- */
 .nk-caret {
   position: absolute; left: 0; top: 0; width: var(--stroke-mark); height: var(--caret-h);
   background: var(--eye); border-radius: var(--radius-xs);
   transition: transform var(--dur-caret) var(--ease-out);
 }
 .nk-caret__reject { position: absolute; inset: 0 -1px; border-radius: inherit; background: var(--miss); opacity: 0; }
-.nk-caret.is-idle { animation: nk-blink var(--dur-blink) var(--ease-inout) infinite; }
-@keyframes nk-blink { 0%, 45% { opacity: 1; } 55%, 100% { opacity: 0; } }
-.nk-test__buffer { position: absolute; left: 0; top: 0; color: var(--eye); white-space: nowrap; pointer-events: none; transition: transform var(--dur-caret) var(--ease-out); }
-.nk-test__blur { position: absolute; inset: 48px 0 0; display: flex; align-items: center; justify-content: center; color: var(--fur); opacity: 0; pointer-events: none; transition: opacity var(--dur-fade) var(--ease-out); }
-.nk-test.is-blurred .nk-test__text { opacity: .25; }
-.nk-test.is-blurred .nk-test__blur { opacity: 1; }
-.nk-test__foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2) var(--space-6); min-height: 20px; margin-top: var(--space-4); color: var(--fur-dim); }
-.nk-test__show { margin-left: calc(-1 * var(--space-2)); }
-.nk-test.is-coarse .nk-btn { min-height: var(--touch-min); }
-.nk-test__hint { display: inline-flex; align-items: center; gap: var(--space-2); }
-.nk-test__focus { opacity: 0; transition: opacity var(--dur-hover) var(--ease-out); }   /* reserved; appears when the hidden input loses focus but the window keeps it */
-.nk-test.is-input-blurred .nk-test__focus { opacity: 1; }
-.nk-test.is-blurred .nk-caret { opacity: 0; }
 
 /* ---------- Learning task (KanaTask, ADR 058) ---------- */
 .nk-task { position: relative; display: flex; flex-direction: column; gap: var(--space-6); width: 100%; max-width: 640px; margin: 0 auto; }
@@ -80,10 +50,7 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-task.is-blurred .nk-task__blur { opacity: 1; }
 .nk-task.is-blurred .nk-caret { opacity: 0; }
 
-/* ---------- Under the stream: translation, notices ---------- */
-.nk-trans { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-4); row-gap: var(--space-1); min-height: 48px; }
-.nk-trans__text { margin: 0; color: var(--fur-dim); flex: 1 1 320px; }
-.nk-trans__actions { display: flex; gap: var(--space-4); }
+/* ---------- Notices ---------- */
 .nk-notice { display: flex; align-items: baseline; gap: var(--space-3); min-height: 20px; color: var(--fur-dim); }
 .nk-notice.is-miss { color: var(--miss); }
 .nk-notice.is-reveal { color: var(--eye); }                  /* revealed romaji: the answer for the current position */
@@ -117,13 +84,8 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-btn--primary:disabled { background: var(--bg-hover); border-color: transparent; }
 .nk-btn--text:disabled { border-color: transparent; }
 .nk-btn:disabled .nk-kbd { color: var(--fur-faint); }
-/* Restart during a test: out of sight until it receives keyboard focus (Tab), then Enter presses it. */
-.nk-on-focus { opacity: 0; transition: opacity var(--dur-hover) var(--ease-out); }
-.nk-on-focus:focus-visible { opacity: 1; }
-@media (hover: hover) { .nk-on-focus:hover { opacity: 1; } }      /* ADR 055: also on pointer hover */
-@media (pointer: coarse) { .nk-on-focus { opacity: 1; } }         /* a phone has no Tab: always visible */
 
-/* ---------- Segmented, toggles, checks ---------- */
+/* ---------- Segmented ---------- */
 .nk-seg { display: inline-flex; flex-wrap: wrap; gap: var(--space-1); }
 .nk-seg__item {
   position: relative; height: var(--control-h-sm); padding: 0 var(--space-2); border: 0; border-radius: var(--radius-sm);
@@ -138,27 +100,7 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-seg__item.is-on::after { transform: scaleX(1); }
 .nk-seg__item.is-on:hover::after { background: var(--eye-bright); }
 .nk-seg__item:disabled { color: var(--fur-faint); cursor: default; }
-.nk-seg--lg { gap: var(--space-4); }                          /* the sections of a page (/stats): ui-heading items */
-.nk-seg--lg .nk-seg__item { height: var(--control-h); }
 
-/* ---------- Mode panel ---------- */
-.nk-modes { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); transition: opacity var(--dur-fade) var(--ease-out); }
-.nk-modes__row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; row-gap: var(--space-2); }
-.nk-modes__group { display: flex; align-items: center; }
-.nk-modes__group + .nk-modes__group { border-left: var(--stroke-hair) solid var(--line); margin-left: var(--space-4); padding-left: var(--space-4); }
-.nk-modes__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-.nk-modes__body { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
-.nk-modes__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-/* Phone: the panel collapses to the mode line (a button); a tap opens the groups under it */
-.nk-modes.is-compact { align-items: stretch; }
-.nk-modes__summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; min-height: var(--touch-min); padding: 0; border: 0; border-bottom: var(--stroke-hair) solid var(--line); background: none; color: var(--fur); text-align: left; cursor: pointer; }
-.nk-modes__chev { flex: none; width: 6px; height: 6px; margin: -3px var(--space-1) 0 0; border-right: var(--stroke-hair) solid var(--fur-dim); border-bottom: var(--stroke-hair) solid var(--fur-dim); transform: rotate(45deg); transition: transform var(--dur-hover) var(--ease-out); }
-.nk-modes__summary.is-open .nk-modes__chev { transform: translateY(3px) rotate(-135deg); }
-.nk-modes.is-compact .nk-modes__body { align-items: stretch; gap: var(--space-3); padding-top: var(--space-3); }
-.nk-modes.is-compact .nk-modes__row { flex-direction: column; align-items: stretch; gap: var(--space-3); }
-.nk-modes.is-compact .nk-modes__group { flex-direction: column; align-items: flex-start; gap: 0; }
-.nk-modes.is-compact .nk-modes__group + .nk-modes__group { border-left: 0; margin-left: 0; padding-left: 0; }
-.nk-modes.is-compact .nk-modes__label { position: static; width: auto; height: auto; overflow: visible; clip: auto; color: var(--fur-dim); }
 
 /* ---------- Switch ---------- */
 .nk-switch { display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); }
@@ -178,7 +120,6 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-input__label { color: var(--fur-dim); }
 .nk-input__field { box-sizing: border-box; width: 100%; height: var(--control-h); padding: 0 var(--space-3); border: 0; border-radius: var(--radius-sm); background: var(--bg-raised); color: var(--fur); caret-color: var(--eye); box-shadow: inset 0 calc(-1 * var(--stroke-mark)) 0 transparent; }
 .nk-input__field::placeholder { color: var(--fur-dim); }          /* Q25 */
-.nk-input__area { height: auto; min-height: 96px; padding: var(--space-2) var(--space-3); resize: vertical; }
 .nk-input__field:disabled { color: var(--fur-faint); background: transparent; box-shadow: inset 0 0 0 var(--stroke-hair) var(--line); }
 .nk-input__msg { color: var(--fur-dim); }
 .nk-input.is-error .nk-input__field { box-shadow: inset 0 calc(-1 * var(--stroke-mark)) 0 var(--miss); }
@@ -214,44 +155,34 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-dialog .nk-input__field:disabled { background: transparent; }
 @media (max-width: 639px) { .nk-dialog__note { flex-basis: 100%; margin-right: 0; } }
 
-/* ---------- Results ---------- */
+/* ---------- Stat and chart (/stats) ---------- */
 .nk-stat { display: flex; flex-direction: column; gap: var(--space-1); }
 .nk-stat__label { display: flex; align-items: center; gap: var(--space-2); color: var(--fur-dim); }
 .nk-stat__value { display: flex; align-items: baseline; gap: var(--space-1); color: var(--fur); font-variant-numeric: tabular-nums; }
 .nk-stat__unit, .nk-stat__note { color: var(--fur-dim); }
-.nk-stat__cmp { display: flex; flex-direction: column; gap: var(--space-1); margin: var(--space-2) 0 0; padding: 0; list-style: none; color: var(--fur-dim); }
-.nk-stat__delta { color: var(--fur); font-variant-numeric: tabular-nums; }   /* always fur: no colour judgement */
-.nk-badge { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--space-2); border: var(--stroke-hair) solid var(--eye); border-radius: var(--radius-xs); color: var(--eye); white-space: nowrap; }
 .nk-chart { position: relative; margin: 0; width: 100%; min-width: 0; }
 .nk-chart svg { display: block; overflow: visible; border-radius: var(--radius-xs); }
 .nk-chart__grid { stroke: var(--chart-grid); stroke-width: var(--stroke-hair); }
 .nk-chart__axis { fill: var(--fur-dim); }                   /* size and family from .mono-small */
-.nk-chart__val { fill: var(--fur); }                        /* the number on a mark while there are four tests or fewer */
-.nk-chart__band { fill: var(--heat-fur-1); animation: nk-chart-in var(--dur-draw) var(--ease-out) both; }   /* the middle half of the last tests */
 .nk-chart__range { fill: var(--heat-fur-3); }               /* one day: lo–hi */
-.nk-chart__mid { fill: var(--chart-kpm); }                  /* one day: the median tick */
-.nk-chart__line { fill: none; stroke: var(--chart-kpm); stroke-width: var(--stroke-mark); stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1; animation: nk-draw var(--dur-draw) var(--ease-out) both; }
+.nk-chart__mid { fill: var(--chart-median); }                  /* one day: the median tick */
 .nk-chart__cursor { stroke: var(--chart-cursor); stroke-width: var(--stroke-hair); }
 .nk-chart__ring { fill: none; stroke: var(--chart-cursor); stroke-width: var(--stroke-mark); }
 .nk-chart__ref line { stroke: var(--line-strong); stroke-width: var(--stroke-hair); stroke-dasharray: 4 4; }   /* target answer time */
-.nk-chart__pt { fill: var(--fur-dim); stroke: var(--bg); stroke-width: var(--stroke-hair); }                  /* one test; the bg ring keeps overlapping tests apart */
-.nk-chart__pt--best { fill: var(--bg); stroke: var(--eye); stroke-width: var(--stroke-mark); }                  /* personal best: a ring, like the badge outline */
-.nk-chart__pt--hollow { fill: var(--bg); stroke: var(--fur-dim); stroke-width: var(--stroke-hair); }           /* a repeat */
 .nk-chart__tip { position: absolute; z-index: 20; transform: translate(-50%, -100%); display: flex; flex-direction: column; padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); background: var(--fur); color: var(--on-fur); white-space: nowrap; pointer-events: none; }
 .nk-chart__tip.is-start { transform: translate(calc(-1 * var(--space-3)), -100%); }
 .nk-chart__tip.is-end { transform: translate(calc(-100% + var(--space-3)), -100%); }
-@keyframes nk-chart-in { from { opacity: 0; } }
 
 /* ---------- Activity map (/stats) ---------- */
-.nk-am { --nk-am-step: calc(var(--space-4) + var(--space-1)); display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-1) var(--space-2); margin: 0; width: max-content; max-width: 100%; }
-.nk-am__months { grid-column: 2; display: grid; grid-template-columns: repeat(var(--nk-am-weeks), var(--space-4)); column-gap: var(--space-1); height: var(--space-4); color: var(--fur-dim); white-space: nowrap; }
-.nk-am__wd { grid-column: 1; display: grid; grid-template-rows: repeat(7, var(--space-4)); row-gap: var(--space-1); align-items: center; color: var(--fur-dim); }
-.nk-am__grid { grid-column: 2; position: relative; display: grid; grid-template-rows: repeat(7, var(--space-4)); grid-auto-flow: column; grid-auto-columns: var(--space-4); gap: var(--space-1); }
-.nk-am__cell { position: relative; box-sizing: border-box; width: var(--space-4); height: var(--space-4); padding: 0; border: var(--stroke-hair) solid transparent; border-radius: var(--radius-xs); background: transparent; color: var(--fur-dim); cursor: default; }
+.nk-am { --nk-am-step: calc(var(--nk-am-cell, var(--space-4)) + var(--space-1)); display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: var(--space-1) var(--space-2); margin: 0; width: 100%; min-width: 0; }   /* fills its width: the cell size comes from the component (--nk-am-cell) */
+.nk-am__months { grid-column: 2; display: grid; grid-template-columns: repeat(var(--nk-am-weeks), var(--nk-am-cell)); column-gap: var(--space-1); height: var(--space-4); color: var(--fur-dim); white-space: nowrap; }
+.nk-am__wd { grid-column: 1; display: grid; grid-template-rows: repeat(7, var(--nk-am-cell)); row-gap: var(--space-1); align-items: center; color: var(--fur-dim); }
+.nk-am__grid { grid-column: 2; position: relative; display: grid; grid-template-rows: repeat(7, var(--nk-am-cell)); grid-auto-flow: column; grid-auto-columns: var(--nk-am-cell); gap: var(--space-1); }
+.nk-am__cell { position: relative; box-sizing: border-box; width: var(--nk-am-cell); height: var(--nk-am-cell); padding: 0; border: var(--stroke-hair) solid transparent; border-radius: var(--radius-xs); background: transparent; color: var(--fur-dim); cursor: default; }
 .nk-am__cell.is-l0 { border-color: var(--line); }           /* no answers: an outline, no fill */
 .nk-am__cell.is-l1 { background: var(--heat-fur-1); } .nk-am__cell.is-l2 { background: var(--heat-fur-2); } .nk-am__cell.is-l3 { background: var(--heat-fur-3); color: var(--fur); }
 .nk-am__cell.is-l4 { background: var(--heat-fur-4); color: var(--on-fur); } .nk-am__cell.is-l5 { background: var(--heat-fur-5); color: var(--on-fur); }
-.nk-am__cell.is-test::after { content: ''; position: absolute; left: 50%; top: 50%; width: var(--space-1); height: var(--space-1); margin: calc(var(--space-1) / -2); border-radius: var(--radius-xs); background: currentColor; }   /* a finished typing test that day */
+.nk-am__cell.is-run::after { content: ''; position: absolute; left: 50%; top: 50%; width: max(var(--space-1), calc(var(--nk-am-cell) / 4)); height: max(var(--space-1), calc(var(--nk-am-cell) / 4)); transform: translate(-50%, -50%); border-radius: var(--radius-xs); background: currentColor; }   /* a day of the current streak: a dot in the cell's ink */
 .nk-am__cell.is-today { border: var(--stroke-mark) solid var(--eye); }
 button.nk-am__cell:hover { border-color: var(--fur-dim); }
 button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
@@ -260,23 +191,7 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
 .nk-am__tip.is-end { left: calc((var(--c) + 1) * var(--nk-am-step)); right: auto; transform: translate(-100%, -100%); }
 .nk-am__legend { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin-top: var(--space-3); color: var(--fur-dim); }
 .nk-am__legend-item { display: inline-flex; align-items: center; gap: var(--space-1); }
-.nk-am__sw { flex: none; }
-@keyframes nk-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-
-.nk-weak, .nk-hist__table { border-collapse: collapse; width: 100%; }
-.nk-weak th, .nk-hist__table th { padding: 0 var(--space-3) var(--space-2) 0; color: var(--fur-dim); font-weight: 400; text-align: left; }
-.nk-weak td, .nk-hist__table td { padding: var(--space-2) var(--space-3) var(--space-2) 0; border-top: var(--stroke-hair) solid var(--line); vertical-align: baseline; }
-.nk-weak .num, .nk-hist__table .num { text-align: right; font-variant-numeric: tabular-nums; }
-.nk-hist__table td .nk-badge { margin-left: var(--space-2); }
-.nk-hist { container-type: inline-size; display: flex; flex-direction: column; gap: var(--space-4); }
-@container (max-width: 480px) {
-  .nk-hist__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .nk-hist__table tr { display: grid; grid-template-columns: 1fr auto auto; column-gap: var(--space-4); padding: var(--space-3) 0; border-top: var(--stroke-hair) solid var(--line); }
-  .nk-hist__table td { padding: 0; border: 0; }
-  .nk-hist__table td:nth-child(1) { grid-column: 1 / -1; }
-  .nk-hist__table td:nth-child(5) { display: none; }
-}
-.nk-pages { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
+.nk-am__sw { flex: none; --nk-am-cell: var(--space-4); }   /* legend swatches keep the base size */
 
 /* ---------- Kana chart ---------- */
 .nk-kc { display: flex; flex-direction: column; gap: var(--space-4); }
@@ -288,11 +203,7 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
 .nk-kc__gap { width: var(--touch-min); height: var(--touch-min); }
 .nk-kc__cell, .nk-kc__sw { position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; border: var(--stroke-hair) solid transparent; border-radius: var(--radius-xs); color: var(--fur); background: transparent; }
 .nk-kc__cell { width: var(--touch-min); height: var(--touch-min); padding: 0; cursor: pointer; }
-.nk-kc:not(.nk-kc--state) .nk-kc__cell:hover, .nk-kc:not(.nk-kc--state) .nk-kc__cell.is-active { border-color: var(--fur-dim); }
 .nk-kc__sw { width: 20px; height: 20px; line-height: 1; }     /* size and family from .mono-small */
-.nk-kc .is-empty { border-color: var(--line); color: var(--fur-dim); }
-.nk-kc .is-miss-1 { background: var(--heat-miss-1); } .nk-kc .is-miss-2 { background: var(--heat-miss-2); } .nk-kc .is-miss-3 { background: var(--heat-miss-3); }
-.nk-kc .is-miss-4 { background: var(--heat-miss-4); color: var(--on-fur); } .nk-kc .is-miss-5 { background: var(--heat-miss-5); color: var(--on-fur); }
 /* mastered: an eye mark under the cell, on bg — readable on any fill step */
 /* state mode (ADR 058): each state has a marker that does not depend on colour */
 .nk-kc .is-st-locked { color: var(--fur-faint); cursor: default; }                         /* no border, no fill, faint text */
@@ -339,8 +250,7 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
 .nk-task.is-coarse .nk-opt .nk-kbd { display: none; }
 
 /* ---------- Nav & footer ---------- */
-.nk-nav { display: flex; align-items: center; gap: var(--space-8); width: 100%; min-height: var(--layout-nav-h); max-width: var(--layout-max); margin: 0 auto; padding: 0 var(--space-8); box-sizing: border-box; transition: opacity var(--dur-fade) var(--ease-out), visibility 0s linear 0s; }
-.nk-nav.is-hidden, .nk-foot.is-hidden, .nk-modes.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity var(--dur-fade) var(--ease-in), visibility 0s linear var(--dur-fade); }
+.nk-nav { display: flex; align-items: center; gap: var(--space-8); width: 100%; min-height: var(--layout-nav-h); max-width: var(--layout-max); margin: 0 auto; padding: 0 var(--space-8); box-sizing: border-box; }
 .nk-nav__brand { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--fur); text-decoration: none; border-radius: var(--radius-sm); }
 .nk-nav__word { font-family: var(--font-mono); font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
 .nk-nav__word::after { content: ''; display: inline-block; width: var(--stroke-mark); height: 1.05em; margin-left: 3px; vertical-align: -0.2em; background: var(--eye); border-radius: var(--radius-xs); }
@@ -351,7 +261,7 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
 .nk-lang { display: inline-flex; gap: var(--space-1); }
 .nk-lang__btn { padding: 0 var(--space-1); border: 0; border-radius: var(--radius-xs); background: none; color: var(--fur-dim); cursor: pointer; }
 .nk-lang__btn.is-on { color: var(--fur); text-decoration: underline var(--stroke-mark) var(--eye); text-underline-offset: 5px; }
-.nk-foot { display: flex; justify-content: center; gap: var(--space-6); padding: var(--space-8) var(--space-4); transition: opacity var(--dur-fade) var(--ease-out); }
+.nk-foot { display: flex; justify-content: center; gap: var(--space-6); padding: var(--space-8) var(--space-4); }
 
 /* ---------- Cat & empty state ---------- */
 .nk-cat { display: block; flex: none; }
@@ -359,7 +269,7 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
 .nk-empty .nk-cat { margin-bottom: var(--space-4); }
 .nk-empty__text { margin: 0 0 var(--space-4); color: var(--fur-dim); }
 
-/* ---------- Results reveal ---------- */
+/* ---------- Reveal (dialog) ---------- */
 .nk-reveal { animation: nk-reveal var(--dur-reveal) var(--ease-out) both; }
 @keyframes nk-reveal { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
@@ -368,11 +278,6 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
   .nk-nav { flex-wrap: wrap; gap: 0 var(--space-4); padding: var(--space-2) var(--space-4) 0; }
   .nk-nav__side { margin-left: auto; gap: var(--space-4); }
   .nk-nav__links { order: 3; width: 100%; justify-content: space-between; gap: var(--space-2); }
-  .nk-modes { align-items: stretch; gap: var(--space-3); }
-  .nk-modes__row { flex-direction: column; align-items: stretch; gap: var(--space-3); }
-  .nk-modes__group { flex-direction: column; align-items: flex-start; gap: 0; }
-  .nk-modes__group + .nk-modes__group { border-left: 0; margin-left: 0; padding-left: 0; }
-  .nk-modes__label { position: static; width: auto; height: auto; overflow: visible; clip: auto; color: var(--fur-dim); }
   .nk-kc__grid { gap: var(--space-6); }
   .nk-dialog { padding: var(--space-4); }
 }
@@ -385,7 +290,6 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
-  .nk-caret.is-idle { animation: none; }
 }
 
 /* Learning task below 640px: everything fits above the on-screen keyboard (design height 280px, see README) */

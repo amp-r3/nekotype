@@ -1,23 +1,23 @@
-Nekotype teaches hiragana and katakana from scratch, one kana at a time, and shows how fast and how reliably you recall each one. Typing Japanese words and phrases in romaji is the second part of the product. There is no kanji in any form.
+Nekotype teaches hiragana and katakana from scratch, one kana at a time, and shows how fast and how reliably you recall each one. It is a learning app: the typing trainer is gone (ADR 093, decision 128), and words join learning in P10. There is no kanji in any form.
 
 The product's symbol is a white fluffy cat with blue eyes, and the palette comes from her: the fur is the text, the eyes are the only accent, the night around her is the background.
 
 ## Principles
 
-1. **The kana is the hero.** On any screen with kana, the largest and highest-contrast element is the kana of the task or of the text stream. During a typing test, navigation and the config bar step back (see "Test screen"). During a learning task, the screen holds only what the task needs (defined with the learning session).
-2. **One accent.** `eye` marks "where you are now": the caret, the romaji buffer, the counter, the selected item (segments, the track switch), focus, the revealed romaji, the personal best badge and the mastered-kana mark. It never fills an area larger than a switch knob. The due mark is not `eye`.
+1. **The kana is the hero.** On any screen with kana, the largest and highest-contrast element is the kana of the task. During a learning task, the screen holds only what the task needs: navigation and the footer are not rendered (see "Learning session").
+2. **One accent.** `eye` marks "where you are now": the caret, the romaji buffer, the counter, the selected item (segments, the track switch), focus, the revealed romaji and the mastered-kana mark. It never fills an area larger than a switch knob. The due mark is not `eye`.
 3. **Structure through spacing.** Blocks are separated by `space-12` or more, not by cards, borders or fills. A line appears only where groups would otherwise run together (table rows). Exceptions with a surface: fields, dialogs and the kana table's details panel (`bg-raised`, decision 94).
 4. **Nothing without a function.** Every element either shows a state or performs an action. There is no confetti, no colour-coded judgement of results, no praise for a correct answer, and unlocking a kana is not celebrated: progress shows as state, not as words.
 
 ## Tone and copy
 
-- The interface is in English and Russian. Every string, including `aria-label`, comes from i18n; components take strings through `labels`. Examples in this system come in pairs: `next test` / `новый тест`.
-- Lower case in buttons, segments, navigation and metric labels — in both languages: `continue` / `продолжить`, `kana accuracy` / `точность по кане`. Screen titles take a capital: `Settings` / `Настройки`.
+- The interface is in English and Russian. Every string, including `aria-label`, comes from i18n; components take strings through `labels`. Examples in this system come in pairs: `continue` / `продолжить`.
+- Lower case in buttons, segments, navigation and metric labels — in both languages: `continue` / `продолжить`, `answer time` / `время ответа`. Screen titles take a capital: `Settings` / `Настройки`.
 - Russian strings are 20–30% longer, so no width is ever fixed to fit text — only padding.
-- Calm and short, no exclamation marks, no praise: `No results yet` / `Пока нет результатов`, `test ended: 5 seconds without input` / `тест завершён: 5 секунд без ввода`. No emoji in the interface.
+- Calm and short, no exclamation marks, no praise: `No answers yet` / `Ответов пока нет`, `the task started over: the tab was hidden` / `задание заново: вкладка была скрыта`. No emoji in the interface.
 - Descriptions address the user politely (Russian «вы»); labels are impersonal.
 - Numbers up to 10 000 are written without a separator (`1050 ms` / `1050 мс`): the subsets have no non-breaking spaces.
-- Keys go through `Kbd`, in lower case: `tab`, `enter`, `esc`, `ctrl + enter`.
+- Keys go through `Kbd`, in lower case: `enter`, `esc`, `1`–`4`.
 
 ## Colour
 
@@ -25,22 +25,21 @@ One theme — dark (`dark`). Every colour is a token; pages define no colours of
 
 - Background: `bg` (page) → `bg-raised` (fields, dialogs, switch track, the kana details panel) → `bg-hover` (hover). `scrim` sits under a modal dialog.
 - Lines: `line` — decorative divider; `line-strong` — control boundary and learning kana (≥ 3:1).
-- Text: `fur` (main, correctly typed, the kana of a learning task) → `fur-dim` (secondary, translation, placeholders, live indicators, loading) → `untyped` (not typed yet, ghost hint — only ≥ 24px) → `fur-faint` (disabled and locked only).
+- Text: `fur` (main, the kana of a learning task, a typed letter) → `fur-dim` (secondary, placeholders, loading) → `untyped` (the ghost hint of an introduction task — only ≥ 24px) → `fur-faint` (disabled and locked only).
 - Error — `miss`, the underline under an error — `miss-dim`. `miss` means only an error or a blocked action. There is no green in the system.
 
-Character states in the text stream:
+States of a learning task (`KanaTask`):
 
 | what | token |
 | --- | --- |
-| not typed yet | `untyped` |
-| correct | `fur` |
-| error | `miss` + `miss-dim` underline |
-| current position | `eye` caret |
-| skip token (`、。` inside a phrase) once passed | `fur-dim` |
+| the kana of the task (introduction, recall) | `fur` |
+| ghost hint letter not typed yet (introduction) | `untyped`; typed — `fur` |
+| answer with an error, held 400ms | `miss` + `miss-dim` underline |
+| current position, romaji buffer | `eye` caret and buffer |
 | rejected key | caret flashes `miss` for `dur-reject` |
-| revealed romaji (line under the stream) | `eye` |
+| revealed romaji (the task's notice line) | `eye` |
 
-Kana table states (`KanaChart mode="state"`):
+Kana table states (`KanaChart`):
 
 | state | marker | contrast |
 | --- | --- | --- |
@@ -51,8 +50,8 @@ Kana table states (`KanaChart mode="state"`):
 
 Over confident or mastered a kana can carry the **review due** mark — a folded corner in the cell's ink (5.28:1 on confident, 6.10:1 on mastered). It is a mark, not a fifth state: learning and locked kana never carry it.
 
-- Charts (`/stats` only): test marks `fur-dim`, the median line and tick `chart-kpm`, the band `heat-fur-1`, day bars `heat-fur-3`, grid `chart-grid`, cursor `chart-cursor`; the personal best is a ring in `eye`. One y scale per chart.
-- Heat scales (`/stats` only, decisions 108, 110): `heat-fur-1…5` — answers of a day in the activity map; `heat-miss-1…5` — the share of typing attempts with an error in the weak kana table (text `fur` on steps 1–3, `on-fur` on 4–5). A value is never colour alone: an empty cell is an outline, and the number is in the tooltip and the `aria-label`.
+- The chart (`/stats` only): day bars `heat-fur-3`, the median tick `chart-median`, grid `chart-grid`, cursor `chart-cursor`. One y scale.
+- Heat scale (`/stats` only, decision 108): `heat-fur-1…5` — answers of a day in the activity map. A value is never colour alone: an empty cell is an outline, and the number is in the tooltip and the `aria-label`.
 - Hover lightens one step (`fur` → `fur-bright`, `eye` → `eye-bright`, transparent → `bg-hover`). Text on a `fur` fill is `on-fur`. Focus is a solid `stroke-mark` outline in `focus` with a 2px offset.
 
 ## Typography
@@ -69,24 +68,23 @@ Three families, set up as tokens — a font changes in one place (`type.families
 
 **Glyphs to add to the subsets** at implementation (decisions.md, "Glyphs to add to subsets"): `·` and `⌘` in Mono, `−` (U+2212), non-breaking spaces U+00A0 and U+202F. Until then they fall back to the system font; the system uses them as they are.
 
-**Other glyphs outside the subsets** — `↑ ↓ ✓ ≤ ≥ ± Δ`, `！ ？` (phrase skip tokens), curly quotes `“ ” ‘ ’`: avoid them in interface strings. Any new glyph is named in decisions.md (which glyph, which font, why).
+**Other glyphs outside the subsets** — `↑ ↓ ✓ ≤ ≥ ± Δ`, `！ ？`, curly quotes `“ ” ‘ ’`: avoid them in interface strings. Any new glyph is named in decisions.md (which glyph, which font, why).
 
 Styles:
 - Learning task: `jp-solo` 72/96; below 640px `jp-solo-sm` 48/72.
-- Typing stream: `jp-test` 48/72 (words, phrases); below 640px `jp-test-sm` 32/48.
-- Kana in the interface: `jp-cell` 22/28 (one kana in a table cell), `jp-cell-sm` 18/24 (two-character kana in a 44px cell: きゃ, ティ), `jp-body` 16/28 (lists, mixups).
-- Results: `mono-hero` 72 (KPM; `mono-hero-sm` 56 on a narrow screen) — one number per screen; `mono-stat` 32 — other metrics; `mono-counter` 24 — counter and ghost hint.
-- Romaji: `mono-romaji` 16 (buffer, revealed romaji, numbers inside labels), `mono-small` 12 (live indicators, keys, axes, session progress `7 of 25`).
+- Kana in the interface: `jp-test-sm` 32/48 (a recognition option, the kana table details panel), `jp-cell` 22/28 (one kana in a table cell), `jp-cell-sm` 18/24 (two-character kana in a 44px cell: きゃ, ティ), `jp-body` 16/28 (lists, mixups).
+- Numbers and prompts: `mono-hero` 72 (the romaji prompt of recognition, the current streak on `/stats`; `mono-hero-sm` 56 on a narrow screen) — one per screen; `mono-stat` 32 — the `Stat` numbers of `/stats`; `mono-counter` 24 — the ghost hint.
+- Romaji: `mono-romaji` 16 (buffer, revealed romaji, numbers inside labels), `mono-small` 12 (keys, axes, session progress `7 of 25`).
 - Interface: `ui-title` 24 → `ui-heading` 17 → `ui-body` 15 → `ui-label` 14 → `ui-caption` 12. Weights 400 and 500 only.
 
 ## Grid, spacing, shapes
 
-- 4px step: `space-1` … `space-24`. Around the text stream — `space-24` on desktop and `space-8` on a phone; between sections — `space-12`.
-- Centred column: content up to `layout-max` (1120), text stream `layout-test` (960). Page padding `space-8`, `space-4` on a narrow screen.
-- Narrow screen — below `bp-narrow` (640px): `*-sm` styles, 2 stream lines instead of 3, config bar groups in a column, navigation in two rows, the kana table in one column.
+- 4px step: `space-1` … `space-24`. Between the blocks of a screen — `space-12` (`space-8` below 640px).
+- Centred column: content up to `layout-max` (1120); a learning task up to 640px. Page padding `space-8`, `space-4` on a narrow screen.
+- Narrow screen — below `bp-narrow` (640px): `*-sm` styles, a settings control under its text, navigation in two rows, the kana table in one column.
 - Touch targets under `pointer: coarse` — at least `touch-min` (44px).
 - Radii: `radius-xs` (2) — caret, indicators, cells; `radius-sm` (4) — buttons, fields, tooltip; `radius-md` (6) — dialogs. Never more than 6px.
-- Lines: `stroke-hair` (1px) — dividers and borders; `stroke-mark` (2px) — caret, selection indicator, mastered-kana mark, focus, KPM line. The caret and the selection mark are one and the same shape: this is the system's signature.
+- Lines: `stroke-hair` (1px) — dividers and borders; `stroke-mark` (2px) — caret, selection indicator, mastered-kana mark, focus. The caret and the selection mark are one and the same shape: this is the system's signature.
 - No shadows. Layers differ by background lightness, the tooltip by inverted colour.
 - New sizes, colours and durations exist only as tokens: the code generates classes from tokens alone.
 
@@ -96,93 +94,56 @@ Micro-animations only, no springs or bounces. Only `transform` and `opacity` ani
 
 | what | duration | curve |
 | --- | --- | --- |
-| caret and buffer to the next character | `dur-caret` 90ms | `ease-out` |
+| caret to the next letter (introduction) | `dur-caret` 90ms | `ease-out` |
 | caret after a relayout (resize, fonts) | none — it snaps | — |
 | rejected key: caret flash | `dur-reject` 120ms | `ease-in` |
-| hover, focus, tooltip, Restart, `click to focus` | `dur-hover` 120ms | `ease-out` (leaving — `ease-in`) |
-| typing chrome leaves/returns | `dur-fade` 200ms | `ease-in` / `ease-out` |
-| result blocks, dialog | `dur-reveal` 240ms + `dur-stagger` 40ms | `ease-out`, 4px rise |
-| chart line and band (`/stats`) | `dur-draw` 320ms | `ease-out`; the line draws in, the band fades in |
-| caret blink while idle | `dur-blink` 1000ms | `ease-inout` |
+| hover, focus, tooltip, `click to focus` | `dur-hover` 120ms | `ease-out` (leaving — `ease-in`) |
+| a task dims when the window loses focus | `dur-fade` 200ms | `ease-out` |
+| dialog | `dur-reveal` 240ms | `ease-out`, 4px rise |
 
-The 400ms hold after an answer in a learning task is not motion: colours switch instantly and stay. Loading text does not pulse. Under `prefers-reduced-motion: reduce` there is no animation: durations are 0, the caret does not blink, the reject flash holds for 120ms without a transition. `/` has no animations, charts or new illustrations: it is in the initial JS chunk (32.67 of 35 KB gzip).
-
-## Text stream performance
-
-- A keystroke renders no components. `TestArea` renders once per prompt; the input engine calls the controller's methods (`createTestController`): `mark`, `moveTo`, `setBuffer`, `reject`, `setCounter`, `setLive`.
-- States switch through `className`, the caret position through `transform` from a position cache. Layout is never read on the hot path.
-- The cache is recalculated on `ResizeObserver` and `document.fonts.ready`. Porting to Preact: the controller moves as is, the component is rewritten in `shared/ui`.
-
-## Test screen (`/type`)
-
-| element | during a typing test |
-| --- | --- |
-| text stream, caret, counter | always; counter — time `42 s` / `42 с`, count `7 / 25`, zen the number of finished prompts |
-| KPM and accuracy | next to the counter: `92 kpm · 94%`, `mono-small`, `fur-dim` |
-| slot above the stream | reserved, one height: `loading vocabulary…` / `загрузка словаря…` or the load error with `retry`; hidden with the chrome during the test |
-| translation, `source`, `report a problem` | under the stream, `fur-dim` (`TranslationLine`); two lines reserved. Setting off (ADR 056): the translation and `report a problem` go, the phrase `source` (Tatoeba attribution, required by the licence) stays |
-| revealed romaji, layout and IME notices | one line under the stream, one at a time: `revealed: kotoba` / `ответ: kotoba` in `eye`, notices in `fur-dim` |
-| bottom line | always: `Kbd` `esc` + `show the romaji` / `показать ромадзи` (a text button under `pointer: coarse`); reserved `click to focus` / `нажмите для ввода` |
-| `finish` in zen | visible, after Restart in focus order, disabled until the first key, `ctrl + enter` / `⌘ + enter` |
-| Restart | appears on `Tab` focus, on hover (hover devices), always under `pointer: coarse`; stays in the layout |
-| repeat mark | only during a repeat: `repeat` / `повтор` in `fur-dim`, `mono-small`, `stroke-hair` outline, after KPM and accuracy |
-| navigation, config bar, footer | hidden (see below) |
-
-Chrome during a test (ADR 041, 055). Navigation, the config bar, the footer and the slot above the stream fade over `dur-fade`, then get `visibility: hidden` and leave the focus order. Their space is kept; nothing shifts. They return when the mouse moves more than 8px and stay until the next key. `Tab` and `Shift` do not hide them again, so navigation can be reached from the keyboard; any other key hides them. Every keystroke resets the mouse's reference point, so slow drift over a whole test shows nothing.
-
-The input field belongs to the page (ADR 055). Restart, finish, next test and, from P3, continue and review hand focus to the hidden input inside their click handler — the only way a phone keeps its keyboard open — so they are always real buttons. `Enter` on results is `next test` wherever focus is, except on a link, a control or in a dialog.
-
-Report a problem (decisions 23, 114–117). `report a problem` in the translation line opens a `Dialog` for the prompt on display: `Report a problem with this word` / `Ошибка в слове` or `Report a problem with this phrase` / `Ошибка во фразе`, the word or phrase itself, the reason (`Select`), an optional comment (`Textarea`), the Turnstile widget (full width × 65) and `cancel`, `send`; the fields take the full width (decision 127). One reserved `Notice` line in the actions row, left of the buttons, says, one at a time, that there is no connection, that the check failed, that the report was not sent, or that the check did not load (with `retry`). While the report is being sent the fields and both actions are disabled, `send` reads `sending…` / `отправка…` and the dialog cannot be closed; afterwards it holds one line, `Report sent.` / `Сообщение отправлено.`, and `close`. Opening the dialog does nothing to a running test: keys in a dialog are not input, so a time or count test ends by the 5-second idle rule and zen goes on. The strings are in the `Dialog` and `Notice` guidelines.
-
-Focus. When the hidden input loses focus but the window keeps it, `click to focus` appears in the bottom line (reserved space, `opacity` only). When the window loses focus, the stream dims and `return to the window to continue` / `вернитесь в окно` appears.
-
-Stream lines (ADR 047, as changed after the v10 review). A word or phrase that fits a line is never broken; a line breaks between prompts. Only a prompt wider than the whole line (a long phrase on a phone) breaks inside — and only between tokens: a token is a kana with what belongs to it (`きょ`, `っ` + the next kana, a kana + `ー`, a kana + the punctuation after it, an opening bracket + the next kana). After every prompt there is a 0.35em gap — a margin, not a space character. Text leaves by whole lines; the caret line stays second from the bottom. After a relayout the caret snaps into place without a transition.
-
-Loading and errors (ADR 046, 057). Typing results, the session summary and the phrase credits on `/about` are lazy chunks; `/type`, `/stats`, `/settings` and `/about` are lazy routes. While a chunk loads, its place shows `loading…` / `загрузка…`; on failure `failed to load. check the connection and try again.` / `не удалось загрузить. проверьте соединение.` with a `retry` button. The primary button (`next test` or `continue`) and `Enter` work in both states; a screen without a primary button (`/about`) keeps its other sections.
-
-## Typing results (lazy chunk)
-
-Top to bottom: the end reason, if any (`Notice`: `test ended: 5 seconds without input` / `тест завершён: 5 секунд без ввода`, `test ended: the tab was hidden` / `тест завершён: вкладка была скрыта`; none after a manual zen finish); the mode line (`ui-caption`, from i18n via `modeLine`: `words · hiragana · relaxed · 60 s`, `phrases · hiragana · relaxed · 25` / `фразы · хирагана · мягкая · 25`, `words · hiragana · relaxed · zen`; no Japanese label) and KPM (`Stat size="hero"`, label `kpm`) with the comparisons `+8 vs average (84)` / `−9 vs personal best (101)` — number always `fur`; kana accuracy and time; `mistyped kana` / `каны с ошибками` (`WeakKanaList`); `next test` / `новый тест` (`primary`, `lg`, `Kbd enter`) and `repeat` / `повторить` (`secondary`, `lg`, no key).
-
-A personal best adds `PersonalBestBadge`, the `content` cat and `+3 vs previous best (101)`. It is possible only for a test that ended normally (not by inactivity, a hidden tab or a manual zen finish), not a repeat, with kana accuracy ≥ 80%. The average: the last 10 tests with the same mode, repeats excluded, before this one; no earlier tests — no comparison. Not on the screen: per-second chart, IPM, keystroke accuracy, best streak, reaction time. Loading and error of the chunk — see "Loading and errors".
+The 400ms hold after an answer in a learning task is not motion: colours switch instantly and stay. Loading text does not pulse. Under `prefers-reduced-motion: reduce` there is no animation: durations are 0, the reject flash holds for 120ms without a transition. The caret does not blink (the idle blink was the typing stream's, decision 128). `/` has no animations, charts or new illustrations: it is in the initial JS chunk (32.67 of 35 KB gzip).
 
 ## Stats (`/stats`, lazy route)
 
-One section at a time (decision 100). Under the title `Stats` / `Статистика` stands a `Segmented size="lg"`: `learning` · `typing` / `обучение` · `набор`. It replaces the long column of two sections; the section that has data opens first, learning when both have. Levels: the screen title (`ui-title`), the section switch (`ui-heading` items), block titles (`ui-heading`), captions (`ui-caption`, `fur-dim`). Blocks are `space-12` apart (`space-8` below 640px); a block's title, caption, controls and content are `space-4` apart. No lines, no cards.
+One section: learning (decision 130). There is no section switch, and `/stats#typing` opens the same page. Levels: the screen title (`ui-title`), block titles (`ui-heading`), captions (`ui-caption`, `fur-dim`). Blocks are `space-12` apart (`space-8` below 640px); a block's title, caption, controls and content are `space-4` apart. No lines, no cards.
 
-**Learning.** A row of `Stat`: `current streak`, `best streak`, `mastered · hiragana` `7` `of 104`, `mastered · katakana` `0` `of 125` — both tracks always, nothing switches them. Then `activity` / `активность` (`ActivityMap`: answers by day, 12–26 weeks); `answer time` / `время ответа` (`ResultChart`: one bar per day, the target line, `lower is better`); the line `learning sessions: 41 started · 36 finished` / `сессии обучения: начато 41 · закончено 36`.
+**A fixed grid** (decision 137). The page stands on four equal columns across `layout-max` (two below 640px), `space-12` apart. Every block takes whole columns, so its width comes from the screen, never from the data: a short history leaves no unpredictable empty space, only empty cells inside a frame of fixed size.
+
+Under the title `Stats` / `Статистика`, top to bottom:
+
+1. **`streak and activity` / `серия и активность`**, caption `fill: answers of the day · dot: a day of the current streak` / `заливка: ответы за день · точка: день текущей серии`. Column 1 is the streak: `current streak` / `текущая серия` (`ui-caption`), the number in `mono-hero` (`mono-hero-sm` below 640px), `days in a row` / `дней подряд` (`ui-label`, `fur-dim`), then two `ui-label` lines with the numbers in `mono-romaji` `fur`: `best: 15 days` / `лучшая: 15 дней` and `active days in the last 30: 21` / `активных дней за последние 30: 21` (a fixed window, so the number never depends on how many weeks the map shows). Columns 2–4 hold the `ActivityMap`, which fills them: up to 26 weeks, cells up to 28px; the days of the current streak carry a dot. Below 640px the streak is one row — the number on the left, the two lines on the right — and the map takes the full width under it.
+2. **The totals:** four `Stat`s, one per column (two by two below 640px) — `mastered · hiragana` `7` `of 104`, `mastered · katakana` `0` `of 125`, `sessions started` / `сессий начато` `41`, `sessions finished` / `сессий закончено` `36`. Both tracks always, nothing switches them.
+3. **`answer time` / `время ответа`** across all four columns (`ResultChart`: one bar per day, the target line, `lower is better`).
 
 The track switch belongs to `answer time` only (decision 102): it is the first control under that block's title and caption, at the left, followed by the period (`7 days` · `30 days` · `all` / `7 дней` · `30 дней` · `всё`; 30 by default). It is drawn only when both tracks have answers; with one track the caption starts with its name (`hiragana · median recall answer time of a day, ms…`) and there is no switch. A period without answers: `no answers in this period` / `за этот период ответов нет` with `show all time` / `показать всё время`.
 
-**Typing.** Top to bottom:
+**Before the first answer** (decision 130). No answer and no started session: one `EmptyState` (`sleep`) under the title — `No answers yet` / `Ответов пока нет`, `Finish a learning session: the streak, the activity and the answer times will appear here.` / `Закончите сессию обучения: здесь появятся серия, активность и время ответа.`, one action `to learning` / `к обучению` (`primary`, to `/`). No zeros and no controls over nothing. While the data loads the place under the title holds `loading…` / `загрузка…`; on failure the error with `retry`.
 
-1. The filter row (decision 105): `mode` / `режим` — a `Select` of the modes that exist in the history (`words · hiragana · relaxed · 60 s`), most used first, plus `all modes` / `все режимы`; the period (`Segmented`, 30 days by default); `with repeats` / `с повторами` (`Toggle`, off by default). The mode of the latest test is selected when the screen opens. Below 640px the `Select` takes the full width and the period and the toggle go under it.
-2. Everything the filters change, right under them: a row of `Stat` — `tests`, `median kpm`, `best kpm`, `kana accuracy` (the two kpm figures only for one mode) / `тесты`, `медиана kpm`, `лучший kpm`, `точность по кане`; `trend` / `динамика` — a `Segmented` of the metric (`kpm` · `kana accuracy` · `rejected keys` · `hints` / `kpm` · `точность по кане` · `отброшенные нажатия` · `подсказки`), the `ResultChart` and its legend; `history` / `история` (`HistoryTable` + `Pagination`).
-3. `All time` / `За всё время` (`ui-title`, with the caption `every saved test · the filters above do not apply` / `все сохранённые тесты · фильтры выше не действуют`), `space-12` lower: `personal bests` / `личные рекорды` by "content · script · strictness · mode"; `weak kana in typing` / `слабые каны в наборе` (`KanaChart mode="miss"`); the line `typing tests: 29 started · 23 finished`.
-
-A selection without tests: `no tests in this selection` / `в этой выборке тестов нет` with `show all time`; the `All time` group stays.
-
-**Before the first answer or test** (decision 101). A section without data shows no zeros and no controls: a `ui-heading` title, one `ui-body` `fur-dim` line and one `primary` action — `No answers yet` / `Ответов пока нет`, `Finish a learning session: the streak, the activity and the answer times will appear here.` → `to learning` / `к обучению`; `No finished tests yet` / `Тестов пока нет`, `Finish a typing test: speed, accuracy and the history will appear here.` → `to typing` / `к набору`. No cat. A guest without any data sees no switch: `EmptyState` (`sleep`) with one action to `/`. While the data loads the switch is drawn and its place holds `loading…` / `загрузка…`; on failure the error with `retry`.
-
-Keyboard: `Tab` goes through the section switch (← → inside), the controls of the section, the chart (one stop: ← → `Home` `End` between marks, `Esc`), the activity map and the kana table (one stop each, arrows inside), the history pages. No global keys. No mixups on this screen.
+Keyboard: `Tab` goes through the activity map (one stop, arrows inside), the controls of `answer time` and the chart (one stop: ← → `Home` `End` between bars, `Esc`). No global keys. No mixups on this screen.
 
 ## Settings (`/settings`)
 
-Rows: label and consequence-description on the left, the control on the right (below 640px: the control under the text). **Learning:** `learning strictness` / `строгость в обучении` (`Segmented` relaxed / strict IME — a separate setting from the typing strictness in the `/type` config bar), target answer time (`Select`, 1000–3000 ms, step 250, default 1500). **Typing:** `show the translation under the text` (`Switch`, on). **Data:** a guest resets progress in this browser (`danger` → `Dialog`); a signed-in user resets learning on every device, typing statistics stay (`reset learning` / `сбросить обучение`, needs a connection — decision 91, deferred to v1.1 by spec decision A45). **Account:** Google and GitHub sign-in (hidden on preview), profile, sync status in a `Notice` (`synced`, `pending`, `offline`, `session expired` + `sign in again`, blocked in `miss`), sign out (a `Dialog` only with unsent data), delete account (`Dialog`, disabled until the word is typed). Sound appears in P6.
+Rows: label and consequence-description on the left, the control on the right (below 640px: the control under the text). Three sections (decision 131):
+
+- **Learning:** `learning strictness` / `строгость в обучении` (`Segmented` relaxed / strict IME; relaxed accepts `si` for し and `tu` for つ, strict IME accepts only what a Japanese IME accepts), target answer time (`Select`, 1000–3000 ms, step 250, default 1500). Sound appears in P8.
+- **Data:** a guest resets progress in this browser (`danger` → `Dialog`): the hint `Erases learning progress stored in this browser.` / `Стирает прогресс обучения в этом браузере.`; the dialog `Learning progress in this browser will be erased. This cannot be undone.` / `Прогресс обучения в этом браузере будет стёрт. Это нельзя отменить.` A signed-in user's `reset learning` on every device stays deferred to v1.1 (decision 91, spec decision A45).
+- **Account:** Google and GitHub sign-in (hidden on preview), profile, sync status in a `Notice` (`synced`, `pending`, `offline`, `session expired` + `sign in again`, blocked in `miss`), sign out (a `Dialog` only with unsent data: `Some progress has not been sent yet. If you sign out now, it will be lost.`, decision 133), delete account (`Dialog`, disabled until the word is typed; `Your account and learning progress will be deleted on every device.` / `Аккаунт и прогресс обучения будут удалены на всех устройствах.`).
 
 Account details (decisions 121–123). The profile is the cat mark, one name line and `via GitHub` / `через GitHub` or `via Google` / `через Google`; no avatar image. The name line is the display name; without one, the email (it wraps, it is never cut); without both, `account` / `аккаунт`. `sign out` and `delete account` need the server. Offline both are disabled and one `ui-caption` `fur-dim` line under them says `Needs a connection.` / `Нужна сеть.` With an expired session `sign out` works (the dialog about unsent data as usual) and `delete account` is disabled with `Sign in again to delete the account.` / `Войдите снова, чтобы удалить аккаунт.` The line's place is reserved. While the account is being deleted the dialog's field and both actions are disabled, the button reads `deleting…` / `удаление…` and the dialog cannot be closed; a failure shows in the dialog's reserved `Notice` line in `miss`. While the session is expired the navigation shows `sign in again` / `войти снова` on every screen (decision 120).
 
 ## About (`/about`, lazy route)
 
-Reached only from the `Footer` link `about` / `о проекте`. Title `About` / `О проекте`; sections through `space-12`, in this order (decision 99):
+Reached only from the `Footer` link `about` / `о проекте`. Title `About` / `О проекте`, then one section (decision 132):
 
-1. **Sources and licences** / **Источники и лицензии.** One row per source, rows separated by `line`: the name as a link to the source (`ui-label`) and what it gives (`· words` / `· слова`, `fur-dim`) on the left, the licence as a link to its text on the right, the holder under both (`ui-caption`, `fur-dim`). JMdict — Electronic Dictionary Research and Development Group (EDRDG), CC BY-SA 4.0; Tatoeba — sentences, translations and transcriptions by Tatoeba contributors, CC BY 2.0 FR; JLPT word lists — Jonathan Waller, tanos.co.uk, CC BY; JLPT → JMdict mapping — stephenmk/yomitan-jlpt-vocab, CC BY-SA 4.0. Under the rows (`ui-body`, `fur-dim`): `The generated word and phrase data is distributed under the licences of its sources.` / `Сгенерированные данные слов и фраз распространяются на условиях лицензий их источников.`
-2. *Kana audio* / *Звук каны* — reserved for P6 (the recordings, their author and licence); not rendered before P6. Same rows as section 1.
-3. **Nekotype**, the same rows: `code` / `код` — AGPL-3.0-only, under it `Copyright (C) 2026 amp-r3 · source code: github.com/amp-r3/nekotype` (the link is the offer of the source, AGPL section 13); `name, logos and cat` / `название, логотипы и кошка` — `all rights reserved` / `все права защищены` (plain text, `fur-dim`); `fonts` / `шрифты` — OFL-1.1, under it Golos Text, JetBrains Mono, Noto Sans JP.
-4. *Data on this device* / *Данные на устройстве* — reserved for P7 (what is stored in the browser and, after sign-in, on the server; how to erase it); not rendered before P7.
-5. **Phrase authors** / **Авторы фраз**, last, because it is long. Two `ui-body` `fur-dim` lines: every phrase comes from Tatoeba and each row names the authors of the sentence, its English translation and its transcription; a transcription without an author is machine-made and checked against kuromoji. Then the count `phrases 26–50 of 412` / `фразы 26–50 из 412` (`ui-caption`, `role="status"`), a table of 25 rows and `Pagination` (`← previous` / `← назад`, `next →` / `далее →`). Columns: phrase (`jp-body`, `fur`), sentence (`#4705112`, `mono-small` link to `https://tatoeba.org/sentences/{id}`, `aria-label` `sentence 4705112 on Tatoeba`), author, translation, transcription (usernames `mono-small`, `fur`). No transcription author: `machine · kuromoji` / `машинная · kuromoji`, `ui-caption`, `fur-dim`. Rows in ascending sentence id. Container ≤ 480px (a phone): the header is hidden and each row is a block — the phrase, the id under it, then three lines `label username` with the label in `ui-caption` `fur-dim`.
+**Nekotype**, rows separated by `line`: `code` / `код` — AGPL-3.0-only, under it `Copyright (C) 2026 amp-r3 · source code: github.com/amp-r3/nekotype` (the link is the offer of the source, AGPL section 13); `name, logos and cat` / `название, логотипы и кошка` — `all rights reserved` / `все права защищены` (plain text, `fur-dim`); `fonts` / `шрифты` — OFL-1.1, under it Golos Text, JetBrains Mono, Noto Sans JP. A row: the name (`ui-label`) on the left, the licence as a link to its text on the right, the holder under both (`ui-caption`, `fur-dim`).
 
-The list is a lazy content chunk: while it loads, the place of the table and pagination shows `loading…` / `загрузка…`; on failure the error with `retry` — sections 1–4 and the two lines above the list are in the route chunk and stay. The whole chunk is loaded at once, so a page change is instant and has no loading state. Route chunk ≤ 25 KB gzip; the list's data counts against the content chunk budget, not the route. Keyboard: `Tab` goes through the source and licence links, the source code link, the sentence links of the current page (25), the pages and the footer; after a page change focus stays on the pressed page and the count line announces the new range. No cat, no primary button, no global keys.
+Reserved, not rendered: *Kana audio* / *Звук каны* — P8 (the recordings, their author and licence); *Data on this device* / *Данные на устройстве* — P12 (what is stored in the browser and, after sign-in, on the server; how to erase it). Sources and licences of words and phrases, and the phrase authors, come back with the phase that ships content (P10). They use the same rows.
+
+No lazy content chunk, no cat, no primary button, no global keys. Keyboard: `Tab` goes through the licence links, the source code link and the footer.
+
+## Loading and errors
+
+Loading and errors (ADR 046, 057). The session summary is a lazy chunk; `/stats`, `/settings` and `/about` are lazy routes. While a chunk loads, its place shows `loading…` / `загрузка…`; on failure `failed to load. check the connection and try again.` / `не удалось загрузить. проверьте соединение.` with a `retry` button. The primary button (`continue`) and `Enter` work in both states; a screen without a primary button (`/about`) keeps its title.
 
 ## Learning home (`/`)
 
@@ -206,7 +167,7 @@ Keyboard: no global keys on `/` (`Enter` on a table cell opens its details). Whe
 - **Review session** — one recall task per due kana, at most 20, the most overdue first. Due means the table's due mark: confident or mastered and the review date has come; `review (N)` counts the marks (decision 95). Answers in a learning session move no boxes and no review dates.
 - No session timer: no clock, no countdown, no answer time during a task.
 - A session cannot be resumed. Leaving keeps every recorded answer (state is written after each answer) but loses the summary.
-- From P6 the kana sounds after each task. There is no sound UI on the task screen — no button, no indicator — only the setting in `/settings`. A task never waits for the sound.
+- From P8 the kana sounds after each task. There is no sound UI on the task screen — no button, no indicator — only the setting in `/settings`. A task never waits for the sound.
 
 Layout (`KanaTask`), top to bottom: the session line `learning · 7 of 25` / `обучение · 7 из 25` (`mono-small`; numbers `fur`) with `leave session` / `выйти` on the right (back to `/`, no confirmation); the prompt; four options (recognition); one reserved notice line; the hint line. Navigation and footer are not rendered during a session; they return on the summary. The tasks, their feedback and the phone layout over the on-screen keyboard are described in the `KanaTask` and `OptionCard` READMEs.
 
@@ -233,25 +194,22 @@ Actions: `continue` / `продолжить` — `primary`, `lg`, `Kbd enter`; s
 
 ## Keyboard
 
-Every screen can be completed with the keyboard alone (acceptance P7).
+Every screen can be completed with the keyboard alone.
 
-- `tab → enter` — restart (`Tab` is not intercepted).
-- `Esc` in a typing test — shows the romaji of the current prompt; counts as an error.
+- `Tab` is never intercepted.
 - `Esc` in recall — shows the romaji; counts as an error.
-- `Ctrl/⌘ + Enter` — finish zen.
-- `Enter` on typing results — next test, wherever focus is, except a link, a control or a dialog.
 - `1`–`4` — the option in recognition, from the number row and from the numeric keypad (`Digit1`–`4`, `Numpad1`–`4`).
 - `Enter` or `Space` after a wrong choice — on to the next task.
 - `Enter` on the session summary — `continue`, wherever focus is, except a link, a control or a dialog.
 - Keys pressed during the 400ms hold after an answer are ignored.
-- Under `pointer: coarse` the on-screen keyboard has no `Esc`: recall and `/type` show a `show the romaji` / `показать ромадзи` text button instead; the option cards show no key numbers.
-- Typing while focus is outside the field returns focus to the field and counts the character.
+- Under `pointer: coarse` the on-screen keyboard has no `Esc`: recall shows a `show the romaji` / `показать ромадзи` text button instead; the option cards show no key numbers.
+- Typing during a task while focus is outside the field returns focus to the field and counts the character.
 
 The interface labels every key in this list with `Kbd` or `hint`.
 
 ## Cat
 
-One style — `geometry`. She appears in four places: the logo and favicon; empty states (`sleep`); typing results — only on a personal best (`content` next to `PersonalBestBadge`); 404 (`neutral`; drawn twice: the app's screen and the static `404.html` that Pages serves for unknown paths, ADR 077). She is not on the typing test screen, not on a learning task, not on `/` and not on `/about`. A fifth mood, `grumpy` (half-closed eyes), is drawn and waits for a place — an error or a failure (decision 98).
+One style — `geometry`. She appears in three places: the logo and favicon; empty states (`sleep`); 404 (`neutral`; drawn twice: the app's screen and the static `404.html` that Pages serves for unknown paths, ADR 077). She is not on a learning task, not on `/` and not on `/about`. Two moods are drawn and wait for a place: `content` (closed, smiling eyes), whose only place was a typing personal best (decision 136), and `grumpy` (half-closed eyes) — an error or a failure (decision 98).
 
 ## Prohibitions
 
@@ -264,4 +222,4 @@ One style — `geometry`. She appears in four places: the logo and favicon; empt
 
 ## Iconography
 
-Two icons, both from the code (ADR 055): `restart` (Restart) and `reset` (reset progress). Linear SVG on a 24 grid, stroke 2, round caps, colour inherited from the text, drawn at `space-4` next to a label — never alone. Everything else is text: navigation and actions are words, keys are `Kbd`, pagination arrows are the characters `←` `→`. A new icon follows the same rules and is recorded in decisions.md.
+One icon, from the code (ADR 055): `reset` (reset progress); `restart` left with the typing trainer (decision 128). Linear SVG on a 24 grid, stroke 2, round caps, colour inherited from the text, drawn at `space-4` next to a label — never alone. Everything else is text: navigation and actions are words, keys are `Kbd`, pagination arrows are the characters `←` `→`. A new icon follows the same rules and is recorded in decisions.md.

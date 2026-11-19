@@ -1,6 +1,6 @@
 # KanaTask
 
-One task of a learning or review session on `/` (ADR 058): the session line, the prompt, the options (recognition), one reserved notice line and the key-hint line. Three kinds: `introduction`, `recall`, `recognition`. New in v10 — why not `TestArea`: see decisions.md, After ADR 058 · 41; recall colour — 58.
+One task of a learning or review session on `/` (ADR 058): the session line, the prompt, the options (recognition), one reserved notice line and the key-hint line. Three kinds: `introduction`, `recall`, `recognition`. New in v10 — why not the typing stream: see decisions.md, After ADR 058 · 41; recall colour — 58.
 
 **The consumer provides:** `kind`, `kana` (introduction, recall), `romaji` (introduction ghost hint, recognition prompt), `session` (`{ kind: 'learning' | 'review', n, total }`), `notice` (the content of the notice line), `children` (four `OptionCard`s in recognition), `onLeave`, `onShow`, `labels` from i18n. The input engine takes the controller from `onReady` and calls only its methods while the user answers.
 
@@ -17,17 +17,17 @@ One task of a learning or review session on `/` (ADR 058): the session line, the
 **After the answer** (`finish`):
 
 - Recall without an error: the kana stays `fur`, the caret moves past it and the buffer clears; held 400ms, then the next task. No words, no "correct" marks.
-- Recall with an error: when the kana is typed in full it turns `miss` with a `miss-dim` underline for 400ms (as a mistyped kana in the stream), then the next task.
+- Recall with an error: when the kana is typed in full it turns `miss` with a `miss-dim` underline for 400ms (the system's error look), then the next task.
 - Recognition — see `OptionCard`: correct holds 400ms; wrong waits for `Enter`, `Space` or a click, and the notice line shows `Kbd enter` + `next` / `дальше` (a `next` text button under `pointer: coarse`).
 - 400ms is a hold, not an animation: colours switch instantly; it is the engine's constant, not a token.
 - **Keys pressed before the next task appears are ignored.** This is behaviour, not a visual state: nothing on screen shows it.
 - No green, no praise. An unlocked kana is not celebrated: the signal is the next task — its introduction.
 
-**Notice line** (one at a time, reserved, `control-h-sm` high): the revealed romaji after `Esc` — `Notice reveal`, `revealed: nu` / `ответ: nu` (counts as an error); `Kbd enter` + `next`; layout and IME notices as on the test screen; `the task started over: the tab was hidden` / `задание заново: вкладка была скрыта`.
+**Notice line** (one at a time, reserved, `control-h-sm` high): the revealed romaji after `Esc` — `Notice reveal`, `revealed: nu` / `ответ: nu` (counts as an error); `Kbd enter` + `next`; the layout and IME notices of the input source; `the task started over: the tab was hidden` / `задание заново: вкладка была скрыта`.
 
 **Hint line:** recall — `Kbd esc` + `show the romaji` / `показать ромадзи`. Under `pointer: coarse` there is no Esc on the on-screen keyboard: the line holds a `show the romaji` text button instead — same effect, counts as an error. The same button replaces the `esc` hint on `/type`. On the right, reserved: `click to focus` / `нажмите для ввода`.
 
-**Focus and tabs** — as on the test screen: when the window loses focus the prompt dims to 25% and `return to the window to continue` appears; when the hidden input loses focus while the window keeps it, `click to focus` appears. If the tab is hidden during a task, the task starts over (`reset`): input cleared, time reset; an error made before stays recorded.
+**Focus and tabs:** when the window loses focus the prompt dims to 25% and `return to the window to continue` appears; when the hidden input loses focus while the window keeps it, `click to focus` appears. If the tab is hidden during a task, the task starts over (`reset`): input cleared, time reset; an error made before stays recorded.
 
 **Phone with the on-screen keyboard open** (360 × 640 → about 280–330px visible; designed for 280). `continue` and `review` hand focus to the hidden input in their click handler; it keeps focus for the whole session, so the keyboard stays open, recognition included. Below 640px everything fits above it: session line, prompt, four options in one row (76 × 56px), notice line, hint line — 236px for recall and 260px for recognition, measured with `pointer: coarse` targets (every target ≥ `touch-min`). See `ScreenLessonKeyboard`.
 
@@ -40,7 +40,7 @@ One task of a learning or review session on `/` (ADR 058): the session line, the
 | `reject()` | the 120ms `miss` flash of the caret (`dur-reject`, opacity layer, WAAPI) |
 | `finish('correct' \| 'miss')` | the answer is complete: kana colour, caret after the kana, buffer cleared |
 | `reset()` | the task starts over (hidden tab) |
-| `setWindowFocus(on)`, `setInputFocus(on)` | as `TestArea` |
+| `setWindowFocus(on)`, `setInputFocus(on)` | the window or the hidden input lost or regained focus (see Focus and tabs) |
 
 Only `transform` and `opacity` animate (caret move `dur-caret`, flash `dur-reject`, dimming `dur-fade`); no layout changes on a keystroke.
 

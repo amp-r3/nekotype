@@ -29,7 +29,7 @@
   --focus: var(--eye);
   --selection: #a5c8dd33;
   --scrim: #1c1e21cc;
-  --chart-kpm: var(--fur);
+  --chart-median: var(--fur);
   --chart-grid: var(--line);
   --chart-cursor: var(--eye);
   --heat-fur-1: #313234;
@@ -67,7 +67,7 @@
   --color-focus: var(--focus);
   --color-selection: var(--selection);
   --color-scrim: var(--scrim);
-  --color-chart-kpm: var(--chart-kpm);
+  --color-chart-median: var(--chart-median);
   --color-chart-grid: var(--chart-grid);
   --color-chart-cursor: var(--chart-cursor);
   --color-heat-fur-1: var(--heat-fur-1);

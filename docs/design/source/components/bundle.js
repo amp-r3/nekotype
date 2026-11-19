@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"namespace":"Nekotype","components":[{"name":"TestArea"},{"name":"Char"},{"name":"TranslationLine"},{"name":"Notice"},{"name":"Kbd"},{"name":"ModePanel"},{"name":"Dialog"},{"name":"Button"},{"name":"Segmented"},{"name":"Switch"},{"name":"Input"},{"name":"Textarea"},{"name":"Select"},{"name":"Tooltip"},{"name":"Stat"},{"name":"PersonalBestBadge"},{"name":"ResultChart"},{"name":"ActivityMap"},{"name":"WeakKanaList"},{"name":"KanaChart"},{"name":"HistoryTable"},{"name":"Pagination"},{"name":"OptionCard"},{"name":"Nav"},{"name":"Footer"},{"name":"Cat"},{"name":"EmptyState"}]} */
+/* @ds-bundle: {"format":4,"namespace":"Nekotype","components":[{"name":"Notice"},{"name":"Kbd"},{"name":"Dialog"},{"name":"Button"},{"name":"Segmented"},{"name":"Switch"},{"name":"Input"},{"name":"Select"},{"name":"Tooltip"},{"name":"Stat"},{"name":"ResultChart"},{"name":"ActivityMap"},{"name":"KanaChart"},{"name":"OptionCard"},{"name":"Nav"},{"name":"Footer"},{"name":"Cat"},{"name":"EmptyState"}]} */
 (function () {
   'use strict';
   var React = window.React;
@@ -50,186 +50,6 @@
         for (var k in e[1]) if (k !== 'fill') props[k] = e[1][k];
         return h(e[0], props);
       }));
-  }
-
-  /* ================= Test stream ================= */
-  var SKIP = /[\s、。，．・！？!?,.「」『』（）()ー〜…\-]/;
-  /* ADR 047 (as changed after the v10 review): a prompt is one unbreakable run and a line breaks between prompts;
-     the 0.35em gap after a prompt is a margin, not a space character. Only a prompt wider than the line (a long
-     phrase on a phone) may break inside — and only between tokens (`brk` starts a token; tokens render as .nk-tok, never broken).
-     Punctuation inside a phrase is a skip token: the caret passes it without input. */
-  var TAIL = /[ゃゅょぁぃぅぇぉゎャュョァィゥェォヮヵヶー、。，．・！？!?,.」』）)…〜]/;   /* stays with the kana before it */
-  var HEAD = /[っッ「『（(]/;                                                        /* stays with the kana after it */
-  function tokenize(words) {
-    var out = [], i = 0;
-    words.forEach(function (w) {
-      var prompt = [], prev = null;
-      Array.from(w).forEach(function (ch) {
-        prompt.push({ ch: ch, i: i++, skip: SKIP.test(ch) && ch !== 'ー', brk: prev !== null && !TAIL.test(ch) && !HEAD.test(prev) });
-        prev = ch;
-      });
-      out.push(prompt);
-    });
-    return out;
-  }
-
-  /*
-   * createTestController(root) — framework-free. All per-key work is classList / textContent / transform writes
-   * against positions cached after layout; it never reads layout on the hot path and never triggers a component render.
-   */
-  function createTestController(root, opts) {
-    opts = opts || {};
-    var inner = root.querySelector('.nk-test__inner');
-    var view = root.querySelector('.nk-test__text');
-    var chars = Array.prototype.slice.call(root.querySelectorAll('.nk-char'));
-    var prompts = Array.prototype.slice.call(root.querySelectorAll('.nk-prompt'));
-    var caret = root.querySelector('.nk-caret');
-    var flash = root.querySelector('.nk-caret__reject');
-    var buf = root.querySelector('.nk-test__buffer');
-    var slot = function (n) { return root.querySelector('[data-slot="' + n + '"]'); };
-    var counterEl = slot('counter'), kpmEl = slot('kpm'), accEl = slot('acc');
-    var skip = chars.map(function (c) { return c.hasAttribute('data-skip'); });
-    var st = chars.map(function () { return 'untyped'; });
-    var pos = [], lineH = 0, caretH = 0, viewW = 0, chW = 0, bufLift = 0, cur = 0, shift = 0;
-    var lines = opts.lines || 3;
-    var reduce = matchMedia('(prefers-reduced-motion: reduce)');
-    var rejectMs = ms(cssVar(root, '--dur-reject') || '120ms');
-
-    /* After a relayout (resize, fonts) the caret snaps into place without a transition (ADR 047). */
-    function measure() {
-      if (!chars.length) return;
-      root.classList.add('is-snap');
-      /* ADR 047 change: a prompt that cannot fit a line whole may break at token boundaries; all others stay whole. */
-      var lineW = inner.clientWidth;
-      prompts.forEach(function (el) { el.classList.remove('is-long'); });
-      prompts.filter(function (el) { return el.offsetWidth > lineW; }).forEach(function (el) { el.classList.add('is-long'); });
-      pos = chars.map(function (c) { return [c.offsetLeft, c.offsetTop]; });
-      lineH = chars[0].offsetHeight;
-      var fs = parseFloat(getComputedStyle(inner).fontSize);
-      caretH = Math.round(fs * 1.1);
-      viewW = view.clientWidth;
-      var bfs = parseFloat(getComputedStyle(buf).fontSize);
-      chW = bfs * 0.6;                      /* JetBrains Mono advance = 0.6em */
-      bufLift = Math.round(parseFloat(getComputedStyle(buf).lineHeight) / 2);
-      view.style.height = (lines * lineH + bufLift) + 'px';
-      place();
-      requestAnimationFrame(function () { requestAnimationFrame(function () { root.classList.remove('is-snap'); }); });
-    }
-    function line(i) { return pos[i] ? Math.round(pos[i][1] / lineH) : 0; }
-    function place() {
-      var p = pos[cur] || pos[pos.length - 1];
-      if (!p) return;
-      var x = cur < pos.length ? p[0] : p[0] + chars[chars.length - 1].offsetWidth;
-      var ln = line(Math.min(cur, pos.length - 1));
-      if (lines > 1 && ln > shift + lines - 2) shift = ln - (lines - 2);   /* whole lines leave; the caret line stays second from the bottom */
-      if (ln < shift) shift = ln;
-      inner.style.transform = 'translateY(' + (-shift * lineH) + 'px)';
-      caret.style.height = caretH + 'px';
-      caret.style.transform = 'translate3d(' + (x - 1) + 'px,' + (p[1] + (lineH - caretH) / 2) + 'px,0)';
-      var bw = buf.textContent.length * chW;
-      var bx = Math.max(0, Math.min(x, viewW - bw));                     /* clamp at the line end */
-      buf.style.transform = 'translate3d(' + bx + 'px,' + (p[1] + lineH - bufLift) + 'px,0)';
-    }
-    function paint(i) {
-      var c = chars[i]; if (!c) return;
-      c.className = 'nk-char is-' + st[i] + (skip[i] ? ' is-skip' : '');
-    }
-    var api = {
-      /** Mark char i as 'correct' | 'miss' | 'untyped'. Colour switches instantly (no transition). */
-      mark: function (i, state) { st[i] = state; paint(i); },
-      /** Move the caret to char i; skip tokens before it are marked done. */
-      moveTo: function (i) {
-        cur = i;
-        for (var k = i - 1; k >= 0 && skip[k] && st[k] !== 'done'; k--) { st[k] = 'done'; paint(k); }
-        place();
-      },
-      /** Advance past skip tokens from i; returns the next typeable index. */
-      nextTypeable: function (i) { while (i < chars.length && skip[i]) i++; return i; },
-      /** Pending romaji (engine.view() remainder). Never moves text. */
-      setBuffer: function (s) { if (buf.textContent !== s) { buf.textContent = s; place(); } },
-      /** Rejected key: 120ms miss flash on a separate opacity layer. */
-      reject: function () {
-        flash.getAnimations().forEach(function (a) { a.cancel(); });
-        flash.animate([{ opacity: 1 }, { opacity: 0 }], { duration: rejectMs, easing: reduce.matches ? 'step-end' : cssVar(root, '--ease-in') });
-      },
-      setCounter: function (v) { if (counterEl) counterEl.textContent = v; },
-      setLive: function (kpm, acc) { if (kpmEl) kpmEl.textContent = kpm; if (accEl) accEl.textContent = acc; },
-      idle: function (on) { caret.classList.toggle('is-idle', !!on); },
-      setWindowFocus: function (on) { root.classList.toggle('is-blurred', !on); },
-      /** The page's hidden input lost focus while the window kept it: show `click to focus` (opacity only, space reserved). */
-      setInputFocus: function (on) { root.classList.toggle('is-input-blurred', !on); },
-      reset: function () { st = st.map(function () { return 'untyped'; }); chars.forEach(function (_, i) { paint(i); }); cur = 0; shift = 0; buf.textContent = ''; place(); },
-      get length() { return chars.length; },
-      isSkip: function (i) { return skip[i]; },
-      measure: measure,
-      destroy: function () { ro.disconnect(); window.removeEventListener('blur', onBlur); window.removeEventListener('focus', onFocus); }
-    };
-    var ro = new ResizeObserver(measure); ro.observe(view);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
-    /* Blur only when the window loses focus — focus on Restart or a link does not blur the text. */
-    function onBlur() { api.setWindowFocus(false); }
-    function onFocus() { api.setWindowFocus(true); }
-    window.addEventListener('blur', onBlur); window.addEventListener('focus', onFocus);
-    chars.forEach(function (_, i) { paint(i); });
-    measure();
-    return api;
-  }
-
-  var TestArea = forwardRef(function TestArea(p, ref) {
-    var narrow = useNarrow(), touch = useCoarse();
-    var coarse = p.coarse != null ? p.coarse : touch;
-    var root = useRef(null), ctl = useRef(null);
-    var mode = p.mode || 'words';
-    /* words | phrase (ADR 058: no kana mode — jp-solo belongs to learning tasks) */
-    var typeCls = narrow ? 'jp-test-sm' : 'jp-test';
-    var lines = p.lines || (narrow ? 2 : 3);
-    var key = (p.words || []).join('\u0001') + '|' + mode + '|' + typeCls;
-    if (p.onRender) p.onRender();
-    useLayoutEffect(function () {
-      ctl.current = createTestController(root.current, { lines: lines });
-      if (p.onReady) p.onReady(ctl.current);
-      return function () { ctl.current.destroy(); };
-    }, [key, lines]);
-    useImperativeHandle(ref, function () { return { get current() { return ctl.current; } }; }, []);
-    var prompts = tokenize(p.words || []);
-    var L = Object.assign({ kpm: 'kpm', acc: '%', blur: 'return to the window to continue', repeat: 'repeat', reveal: 'show the romaji', focus: 'click to focus' }, p.labels);
-    return h('div', { className: cx('nk-test', coarse && 'is-coarse', p.className), ref: root },
-      h('div', { className: 'nk-test__bar' },
-        h('span', { className: 'nk-test__count mono-counter' },
-          h('span', { className: 'nk-test__counter', 'data-slot': 'counter' }, p.counter != null ? p.counter : ''),
-          /* static per test: time `42 s`, count `7 / 25`; zen shows the number of finished prompts alone */
-          p.counterSuffix && h('span', { className: 'nk-test__unit' }, p.counterSuffix)),
-        p.live !== false && h('span', { className: 'nk-test__live mono-small' },
-          h('span', { 'data-slot': 'kpm' }, '0'), ' ' + L.kpm + ' · ', h('span', { 'data-slot': 'acc' }, '100'), L.acc),
-        /* repeat mark: static, set once per test by props — no controller method, no per-key work */
-        p.repeat && h('span', { className: 'nk-test__repeat mono-small' }, L.repeat)),
-      h('div', { className: 'nk-test__text', lang: 'ja' },
-        h('div', { className: cx('nk-test__inner', typeCls) },
-          prompts.map(function (g, gi) {
-            /* chars grouped into tokens (.nk-tok, never broken); a long prompt may break only between tokens */
-            var toks = [];
-            g.forEach(function (c) { if (!toks.length || c.brk) toks.push([]); toks[toks.length - 1].push(c); });
-            return h('span', { key: gi, className: 'nk-prompt' }, toks.map(function (t) {
-              return h('span', { key: t[0].i, className: 'nk-tok' }, t.map(function (c) {
-                return h('span', { key: c.i, className: 'nk-char is-untyped' + (c.skip ? ' is-skip' : ''), 'data-skip': c.skip ? '' : undefined }, c.ch);
-              }));
-            }));
-          }),
-          h('span', { className: 'nk-caret', 'aria-hidden': true }, h('span', { className: 'nk-caret__reject' })),
-          h('span', { className: cx('nk-test__buffer', narrow ? 'mono-small' : 'mono-romaji'), 'aria-hidden': true }))),
-      h('div', { className: 'nk-test__blur ui-label', 'aria-hidden': true }, L.blur),
-      /* Bottom line: the permanent Esc hint and the reserved `click to focus` caption. */
-      p.hints !== false && h('div', { className: 'nk-test__foot' },
-        /* pointer: coarse — no Esc on an on-screen keyboard: a text button with the same effect (counts as an error) */
-        coarse ? h(Button, { variant: 'text', size: 'sm', className: 'nk-test__show', onClick: p.onShow }, L.reveal)
-          : h('span', { className: 'nk-test__hint ui-caption' }, h(Kbd, null, 'esc'), ' ', L.reveal),
-        h('span', { className: 'nk-test__focus ui-caption', 'aria-live': 'polite' }, L.focus)));
-  });
-
-  /* Single char for legends and docs (the stream itself uses classList via the controller). */
-  function Char(p) {
-    var state = p.state || 'untyped';
-    return h('span', { className: cx('nk-char', 'is-' + (state === 'current' ? 'untyped' : state), p.skip && 'is-skip') }, p.kana);
   }
 
   /* ================= KanaTask (ADR 058) =================
@@ -348,18 +168,6 @@
         h('span', { className: 'nk-task__focus', 'aria-live': 'polite' }, L.focus)));
   });
 
-  /* ================= Under-stream ================= */
-  /* `hidden` = the show-translation setting is off (ADR 056): the line keeps its two-line height and the text stays empty.
-     The phrase source (Tatoeba) is licence attribution: it shows whenever there is a `sourceHref`, translation on or off. */
-  function TranslationLine(p) {
-    var L = Object.assign({ source: 'source', report: 'report a problem', offline: 'available online only' }, p.labels);
-    return h('div', { className: cx('nk-trans', p.hidden && 'is-off', p.className) },
-      h('p', { className: 'nk-trans__text ui-body', 'aria-hidden': p.hidden || undefined }, p.hidden ? '\u00a0' : (p.text || '\u00a0')),
-      (p.sourceHref || !p.hidden) && h('div', { className: 'nk-trans__actions ui-caption' },
-        p.sourceHref && h('a', { className: 'nk-link', href: p.sourceHref, target: '_blank', rel: 'noopener' }, L.source),
-        !p.hidden && h('button', { type: 'button', className: 'nk-link', disabled: p.offline, title: p.offline ? L.offline : undefined, onClick: p.onReport }, L.report)));
-  }
-
   /*
    * Notice states: default (fur-dim), `tone="miss"` (blocks an action; pair with a retry `action`),
    * `loading` (static text, no animation), `reveal` (the revealed romaji: `lead` in fur-dim, romaji in eye).
@@ -376,9 +184,8 @@
   function Kbd(p) { return h('kbd', { className: cx('nk-kbd', 'mono-small', p.bare && 'is-bare', p.className) }, p.children); }
 
   /* ================= Icons =================
-   * The system's only icons (ADR 055): linear, 24-unit grid, stroke 2, colour from the text. Always next to a label. */
+   * The system's only icon (ADR 055; restart left with the typing trainer, decision 128): linear, 24-unit grid, stroke 2, colour from the text. Always next to a label. */
   var ICONS = {
-    restart: 'M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5',
     reset: 'M4 12a8 8 0 1 0 2.34-5.66M4 4v5h5'
   };
   function Icon(p) {
@@ -405,17 +212,13 @@
       e.preventDefault(); var j = (i + d + opts.length) % opts.length; pick(opts[j].value);
       var sib = e.currentTarget.parentNode.children[j]; if (sib) sib.focus();
     }
-    return h('div', { className: cx('nk-seg', p.size === 'lg' && 'nk-seg--lg', p.className), role: 'radiogroup', 'aria-label': p.label },
+    return h('div', { className: cx('nk-seg', p.className), role: 'radiogroup', 'aria-label': p.label },
       opts.map(function (o, i) {
         var on = o.value === value;
         return h('button', { key: String(o.value), type: 'button', role: 'radio', 'aria-checked': on, tabIndex: on ? 0 : -1, disabled: o.disabled,
-          className: cx('nk-seg__item', p.mono ? 'mono-romaji' : p.size === 'lg' ? 'ui-heading' : 'ui-label', on && 'is-on'),
+          className: cx('nk-seg__item', p.mono ? 'mono-romaji' : 'ui-label', on && 'is-on'),
           onClick: function () { pick(o.value); }, onKeyDown: function (e) { key(e, i); } }, o.label);
       }));
-  }
-
-  function Toggle(p) {
-    return h('button', { type: 'button', 'aria-pressed': !!p.pressed, className: cx('nk-seg__item', 'ui-label', p.pressed && 'is-on'), onClick: function () { p.onChange && p.onChange(!p.pressed); } }, p.children);
   }
 
   function Switch(p) {
@@ -444,7 +247,6 @@
     return rest;
   }
   function Input(p) { var id = useId(); return Field(p, h('input', fieldProps(p, id, cx('nk-input__field', p.mono ? 'mono-romaji' : 'ui-body'))), id); }
-  function Textarea(p) { var id = useId(); return Field(p, h('textarea', fieldProps(p, id, 'nk-input__field nk-input__area ui-body')), id); }
   function Select(p) {
     var id = useId();
     return Field(p, h('span', { id: id + '-w', className: 'nk-select' },
@@ -512,81 +314,22 @@
   /** Every kana of a track (gaps removed): hiragana 104, katakana 125. */
   function kanaOf(script) { var out = []; rowsFor(script).forEach(function (r) { cellsOf(r, script).forEach(function (c) { if (c) out.push(c); }); }); return out; }
 
-  /* ================= ModePanel ================= */
-  var MODE_LABELS = {
-    ru: { script: 'письмо', hiragana: 'хирагана', katakana: 'катакана', both: 'обе', content: 'материал', words: 'слова', phrases: 'фразы',
-      strict: 'строгость', relaxed: 'мягкая', strictIme: 'строгая IME', type: 'тест', time: 'время', count: 'количество', zen: 'zen', amount: 'длина',
-      weak: 'слабые каны', s: 'с', mode: 'режим' },
-    en: { script: 'script', hiragana: 'hiragana', katakana: 'katakana', both: 'both', content: 'content', words: 'words', phrases: 'phrases',
-      strict: 'strictness', relaxed: 'relaxed', strictIme: 'strict IME', type: 'test', time: 'time', count: 'count', zen: 'zen', amount: 'length',
-      weak: 'weak kana', s: 's', mode: 'mode' }
-  };
-  /* The mode line from i18n: `words · hiragana · relaxed · 60 s`, `phrases · hiragana · relaxed · 25`, `words · hiragana · relaxed · zen`
-     (+ ` · weak kana` when on). The same line sits above KPM on results and is the collapsed ModePanel on a phone. No Japanese. */
-  function modeLine(value, lang, labels) {
-    var T = Object.assign({}, MODE_LABELS[lang || 'en'], labels);
-    var v = Object.assign({ script: 'hiragana', content: 'words', strict: 'learner', type: 'time', amount: 30, weakFocus: false }, value);
-    var len = v.type === 'zen' ? T.zen : v.type === 'time' ? v.amount + ' ' + T.s : String(v.amount);
-    return [T[v.content], T[v.script], v.strict === 'ime' ? T.strictIme : T.relaxed, len].concat(v.weakFocus ? [T.weak] : []).join(' · ');
-  }
-  /*
-   * ModePanel — the config bar on /type (ADR 058: content "kana", rows and RowPicker are gone). Six groups in two rows on
-   * desktop: what you type (script, content, strictness) and how the test runs (test, length, weak kana). Below 640px
-   * every group is its own line with a ui-caption label. Hidden with the navigation during a test.
-   */
-  function ModePanel(p) {
-    var T = Object.assign({}, MODE_LABELS[p.lang || 'en'], p.labels);
-    var ref = useRef(null);
-    useEffect(function () { var n = ref.current; if (!n) return; if (p.hidden) n.setAttribute('inert', ''); else n.removeAttribute('inert'); }, [p.hidden]);
-    var v = Object.assign({ script: 'hiragana', content: 'words', strict: 'learner', type: 'time', amount: 30, weakFocus: false }, p.value);
-    function set(k) { return function (x) { var n = Object.assign({}, v); n[k] = x; if (k === 'type') n.amount = x === 'time' ? 30 : 25; p.onChange && p.onChange(n); }; }
-    function group(id, label, node) { return h('div', { key: id, className: 'nk-modes__group' }, label && h('span', { className: 'nk-modes__label ui-caption' }, label), node); }
-    var amounts = v.type === 'time' ? [15, 30, 60, 120] : [10, 25, 50, 100];
-    /* Phone (below 640px, or `compact`): collapsed to the mode line; a tap opens the full panel. */
-    var narrow = useNarrow(), compact = p.compact != null ? p.compact : narrow;
-    var os = useState(!!p.defaultOpen), open = p.open != null ? p.open : os[0];
-    var pid = useId();
-    function toggle() { if (p.open == null) os[1](!open); if (p.onToggle) p.onToggle(!open); }
-    var summary = compact && h('button', { type: 'button', className: cx('nk-modes__summary ui-label', open && 'is-open'), 'aria-expanded': open, 'aria-controls': pid, onClick: toggle },
-      h('span', { className: 'nk-modes__line' }, h('span', { className: 'nk-modes__sr' }, T.mode + ': '), modeLine(v, p.lang, p.labels)), h('span', { className: 'nk-modes__chev', 'aria-hidden': true }));
-    if (compact && !open) return h('div', { ref: ref, className: cx('nk-modes', 'is-compact', p.hidden && 'is-hidden', p.className) }, summary);
-    return h('div', { ref: ref, className: cx('nk-modes', compact && 'is-compact is-open', p.hidden && 'is-hidden', p.className) }, summary, h('div', { id: pid, className: 'nk-modes__body' },
-      h('div', { className: 'nk-modes__row' },
-        group('script', T.script, h(Segmented, { label: T.script, value: v.script, onChange: set('script'), options: [{ value: 'hiragana', label: T.hiragana }, { value: 'katakana', label: T.katakana }, { value: 'both', label: T.both }] })),
-        group('content', T.content, h(Segmented, { label: T.content, value: v.content, onChange: set('content'), options: [{ value: 'words', label: T.words }, { value: 'phrases', label: T.phrases }] })),
-        group('strict', T.strict, h(Segmented, { label: T.strict, value: v.strict, onChange: set('strict'), options: [{ value: 'learner', label: T.relaxed }, { value: 'ime', label: T.strictIme }] }))),
-      h('div', { className: 'nk-modes__row' },
-        group('type', T.type, h(Segmented, { label: T.type, value: v.type, onChange: set('type'), options: [{ value: 'time', label: T.time }, { value: 'count', label: T.count }, { value: 'zen', label: T.zen }] })),
-        v.type !== 'zen' && group('amount', T.amount, h(Segmented, { label: T.amount, mono: true, value: v.amount, onChange: set('amount'), options: amounts.map(function (a) { return { value: a, label: String(a) }; }) })),
-        group('weak', null, h('div', { className: 'nk-seg' }, h(Toggle, { pressed: v.weakFocus, onChange: set('weakFocus') }, T.weak))))));
-  }
-
-  /* ================= Results ================= */
+  /* ================= Stats ================= */
   function Stat(p) {
-    var narrow = useNarrow();
-    var hero = p.size === 'hero';
-    return h('div', { className: cx('nk-stat', hero && 'nk-stat--hero', p.className) },
-      h('div', { className: 'nk-stat__label ui-caption' }, p.label, p.badge),
+    return h('div', { className: cx('nk-stat', p.className) },
+      h('div', { className: 'nk-stat__label ui-caption' }, p.label),
       h('div', { className: 'nk-stat__value' },
-        h('span', { className: hero ? (narrow ? 'mono-hero-sm' : 'mono-hero') : 'mono-stat' }, p.value),
+        h('span', { className: 'mono-stat' }, p.value),
         p.unit && h('span', { className: 'nk-stat__unit mono-romaji' }, p.unit)),
-      p.note && h('div', { className: 'nk-stat__note ui-caption' }, p.note),
-      /* comparisons under the hero number: no colour judgement — the number is always fur; minus is U+2212 */
-      p.comparisons && h('ul', { className: 'nk-stat__cmp ui-label' }, p.comparisons.map(function (c, i) {
-        return h('li', { key: i }, h('span', { className: 'nk-stat__delta mono-romaji' }, (c.delta < 0 ? '\u2212' : '+') + Math.abs(c.delta)), ' ', c.label);
-      })));
+      p.note && h('div', { className: 'nk-stat__note ui-caption' }, p.note));
   }
 
-  function PersonalBestBadge(p) { return h('span', { className: 'nk-badge ui-caption' }, p.children || 'personal best'); }
-
   /*
-   * ResultChart — the chart of /stats (lazy chunk; decisions 100–112). It only draws: the page computes the series.
-   * Layers, back to front: grid · `band` (the middle half of the last tests) · `ranges` (one bar per day: lo–hi with a
-   * `mid` tick) · `line` (the rolling or daily median; null breaks it) · `reference` (one dashed hair line) · `points`
-   * (one mark per test). x is time (ms or a day number), never an index: a single test is one mark at its date inside
-   * the chosen period, not a dot at the edge of an empty axis. The y axis follows the data (`yDomain`, `yTicks`).
-   * State is never colour alone: a personal best is a ring, a repeat is hollow, every value is in the tooltip.
-   * Keyboard: one Tab stop; ← → step through the marks in time order, Home / End jump, Esc clears.
+   * ResultChart — the answer-time chart of /stats (lazy chunk; decisions 109, 130). It only draws: the page computes
+   * the series. Layers, back to front: grid · `ranges` (one bar per day or week: lo–hi with a `mid` tick) · `reference`
+   * (one dashed hair line, the target). x is time (ms or a day number), never an index. The y axis follows the data
+   * (`yDomain`, `yTicks`). Every value is in the tooltip.
+   * Keyboard: one Tab stop; ← → step through the bars in time order, Home / End jump, Esc clears.
    */
   function ResultChart(p) {
     var fig = useRef(null), ws = useState(0), tipId = useId();
@@ -598,9 +341,9 @@
     var xd = p.xDomain || [0, 1], yd = p.yDomain || [0, 1], yf = p.yFormat || String;
     var fx = function (v) { return padL + (v - xd[0]) / ((xd[1] - xd[0]) || 1) * (W - padL - padR); };
     var fy = function (v) { return padT + (1 - (v - yd[0]) / ((yd[1] - yd[0]) || 1)) * (H - padT - padB); };
-    var pts = p.points || [], rgs = p.ranges || [];
-    /* what the cursor walks: the tests if there are any, else the day bars */
-    var items = pts.length ? pts.map(function (d) { return { x: d.x, y: d.y, tip: d.tip }; }) : rgs.map(function (d) { return { x: d.x, y: d.mid, tip: d.tip }; });
+    var rgs = p.ranges || [];
+    /* what the cursor walks: the bars */
+    var items = rgs.map(function (d) { return { x: d.x, y: d.mid, tip: d.tip }; });
     var hov = useState(null);
     var show = p.cursor != null ? p.cursor : hov[0];
     if (show != null && !items[show]) show = null;
@@ -615,8 +358,6 @@
       else if (e.key === 'Home') t = 0; else if (e.key === 'End') t = n - 1; else if (e.key === 'Escape') { hov[1](null); return; } else return;
       e.preventDefault(); hov[1](t);
     }
-    function runs(arr) { var out = [], cur = []; (arr || []).forEach(function (d) { if (d == null) { if (cur.length) out.push(cur); cur = []; } else cur.push(d); }); if (cur.length) out.push(cur); return out; }
-    var f1 = function (n) { return n.toFixed(1); };
     var slot = rgs.length ? (W - padL - padR) / Math.max(1, p.slots || rgs.length) : 0, bw = Math.max(2, Math.min(8, Math.round(slot * 0.5)));
     var cur = show != null ? items[show] : null, cx0 = cur ? fx(cur.x) : 0;
     return h('figure', { className: cx('nk-chart', p.className), ref: fig, style: { minHeight: H } },
@@ -630,11 +371,6 @@
           var x = fx(t.x);
           return h('text', { key: 'x' + i, className: 'nk-chart__axis mono-small', x: x, y: H - 4, textAnchor: x < padL + 24 ? 'start' : x > W - 24 ? 'end' : 'middle' }, t.label);
         }),
-        runs(p.band).map(function (sg, k) {
-          if (sg.length < 2) return null;
-          var up = sg.map(function (d) { return f1(fx(d.x)) + ',' + f1(fy(d.hi)); }), dn = sg.slice().reverse().map(function (d) { return f1(fx(d.x)) + ',' + f1(fy(d.lo)); });
-          return h('polygon', { key: 'b' + k, className: 'nk-chart__band', points: up.concat(dn).join(' ') });
-        }),
         p.reference && h('g', { className: 'nk-chart__ref' },
           h('line', { x1: padL, x2: W, y1: fy(p.reference.value), y2: fy(p.reference.value) }),
           h('text', { className: 'nk-chart__axis mono-small', x: W - padR, y: fy(p.reference.value) - 6, textAnchor: 'end' }, p.reference.label)),
@@ -644,16 +380,6 @@
             y2 - y1 >= 2 && h('rect', { className: 'nk-chart__range', x: x - bw / 2, y: y1, width: bw, height: y2 - y1, rx: 2 }),
             h('rect', { className: 'nk-chart__mid', x: x - bw / 2 - 2, y: fy(d.mid) - 1, width: bw + 4, height: 2, rx: 1 }));
         }),
-        runs(p.line).map(function (sg, k) {
-          return sg.length > 1 ? h('polyline', { key: 'l' + k, className: 'nk-chart__line', points: sg.map(function (d) { return f1(fx(d.x)) + ',' + f1(fy(d.y)); }).join(' '), pathLength: 1 }) : null;
-        }),
-        pts.map(function (d, i) {
-          return h('circle', { key: 'p' + i, className: cx('nk-chart__pt', d.mark && 'nk-chart__pt--' + d.mark), cx: fx(d.x), cy: fy(d.y), r: (d.mark === 'best' ? 4 : 3) + (p.pointLabels ? 1 : 0) });
-        }),
-        /* a few tests: each one carries its number, so the picture needs no hover to be read */
-        p.pointLabels && pts.map(function (d, i) {
-          return h('text', { key: 't' + i, className: 'nk-chart__val mono-small', x: fx(d.x), y: fy(d.y) - 10, textAnchor: fx(d.x) > W - 28 ? 'end' : 'middle' }, yf(d.y));
-        }),
         cur && h('line', { className: 'nk-chart__cursor', x1: cx0, x2: cx0, y1: padT, y2: H - padB }),
         cur && h('circle', { className: 'nk-chart__ring', cx: cx0, cy: fy(cur.y), r: 7 })),
       W > 0 && cur && h('figcaption', { id: tipId, role: 'status', className: cx('nk-chart__tip ui-caption', cx0 < 150 && 'is-start', cx0 > W - 150 && 'is-end'), style: { left: cx0 + 'px', top: Math.max(0, fy(cur.y) - 12) + 'px' } },
@@ -661,33 +387,41 @@
   }
 
   /*
-   * ActivityMap — activity by day on /stats (decision 108): a calendar grid, one column per week (Monday first), one
-   * cell per day, the last cell is today. Fill = recall answers of the day on `heat-fur-1…5`; a day without answers is
-   * an outlined empty cell; a square in the cell's ink marks a day with a finished typing test; today has an `eye`
-   * border. Nothing is colour alone: the numbers are in the tooltip and in every cell's `aria-label`.
+   * ActivityMap — activity by day on /stats (decisions 108, 137): a calendar grid, one column per week (Monday first),
+   * one cell per day, the last cell is today. It always fills the width it is given: as many weeks as fit at `minCell`
+   * (at most `maxWeeks`), and the cells grow to the edge (at most `maxCell`). The layout never depends on the history. Fill = recall answers of the day on `heat-fur-1…5`; a day without answers is
+   * an outlined empty cell; a day of the current streak (`run`) carries a dot in the cell's ink; today has an `eye` border (the typing-test square left with decision 130). Nothing is colour alone: the numbers are in the tooltip and in every cell's `aria-label`.
    * One Tab stop; ← → move by a week, ↑ ↓ by a day, Home / End to the first and the last day.
    */
   var AM_LABELS = {
-    label: 'activity by day', less: 'fewer', more: 'more answers', test: 'typing test that day', today: 'today',
+    label: 'activity by day', less: 'fewer', more: 'more answers', today: 'today', run: 'current streak',
     months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    tip: function (d, date) { return [date, d.answers || d.tests ? [d.answers ? d.answers + ' answers' : '', d.tests ? d.tests + ' tests' : ''].filter(Boolean).join(' · ') : 'no activity']; }
+    tip: function (d, date) { return [date, d.answers ? d.answers + ' answers' : 'no answers']; }
   };
   function ActivityMap(p) {
-    var L = Object.assign({}, AM_LABELS, p.labels), narrow = useNarrow();
-    var weeks = narrow ? (p.weeksNarrow || 13) : (p.weeks || 26), th = p.thresholds || [1, 10, 25, 50, 100];
+    var L = Object.assign({}, AM_LABELS, p.labels), fig = useRef(null), ws = useState(0);
+    useLayoutEffect(function () {
+      var ro = new ResizeObserver(function (e) { var w = Math.round(e[0].contentRect.width); if (w) ws[1](w); });
+      ro.observe(fig.current); return function () { ro.disconnect(); };
+    }, []);
+    /* 40px: the weekday column and its gap; 4px: the gap between cells (space-1) */
+    var W = ws[0], room = Math.max(0, W - 40), minCell = p.minCell || 16, maxCell = p.maxCell || 28, maxWeeks = p.maxWeeks || 26;
+    var weeks = W ? Math.max(4, Math.min(maxWeeks, Math.floor(room / (minCell + 4)))) : maxWeeks;
+    var size = W ? Math.min(maxCell, Math.floor(room / weeks) - 4) : minCell, th = p.thresholds || [1, 10, 25, 50, 100];
     var by = {}; (p.days || []).forEach(function (d) { by[d.day] = d; });
     var iso = function (d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
     var end = new Date(p.today + 'T00:00:00'), wd = (end.getDay() + 6) % 7, n = (weeks - 1) * 7 + wd + 1;
     var cells = [];
     for (var i = 0; i < n; i++) {
       var dt = new Date(end); dt.setDate(end.getDate() - (n - 1 - i));
-      var k = iso(dt), d = by[k] || { day: k, answers: 0, tests: 0 }, lv = 0;
+      var k = iso(dt), d = by[k] || { day: k, answers: 0 }, lv = 0;
       if (d.answers > 0) { for (var j = 0; j < th.length; j++) if (d.answers >= th[j]) lv = j + 1; } else if (d.active) lv = 1;
       cells.push({ d: d, date: dt, lv: lv, col: Math.floor(i / 7), row: i % 7 });
     }
     var months = [], lastCol = -9;
     cells.forEach(function (c) { if (c.date.getDate() === 1 && c.col - lastCol >= 3 && c.col < weeks - 1) { months.push({ col: c.col, m: c.date.getMonth() }); lastCol = c.col; } });
-    var act = useState(null), foc = useState(n - 1), grid = useRef(null);
+    var act = useState(null), focS = useState(null), grid = useRef(null);
+    var foc = [focS[0] == null ? n - 1 : Math.min(focS[0], n - 1), focS[1]];   /* today until the user moves; the column count follows the width */
     var dateOf = function (c) { return c.date.getDate() + ' ' + L.months[c.date.getMonth()]; };
     function key(e, i) {
       var t = e.key === 'ArrowRight' ? i + 7 : e.key === 'ArrowLeft' ? i - 7 : e.key === 'ArrowDown' ? i + 1 : e.key === 'ArrowUp' ? i - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : null;
@@ -696,46 +430,27 @@
     }
     var a = act[0] != null ? cells[act[0]] : null;
     var sw = function (cls, key) { return h('span', { key: key, className: 'nk-am__cell nk-am__sw ' + cls, 'aria-hidden': true }); };
-    return h('figure', { className: cx('nk-am', p.className), style: { '--nk-am-weeks': weeks } },
+    return h('figure', { className: cx('nk-am', p.className), ref: fig, style: { '--nk-am-weeks': weeks, '--nk-am-cell': size + 'px', visibility: W ? null : 'hidden' } },
       h('div', { className: 'nk-am__months mono-small', 'aria-hidden': true }, months.map(function (m) { return h('span', { key: m.col, style: { gridColumn: m.col + 1 } }, L.months[m.m]); })),
       h('div', { className: 'nk-am__wd mono-small', 'aria-hidden': true }, [0, 2, 4].map(function (r) { return h('span', { key: r, style: { gridRow: r + 1 } }, L.weekdays[r]); })),
       h('div', { className: 'nk-am__grid', ref: grid, role: 'group', 'aria-label': L.label, onMouseLeave: function () { act[1](null); } },
         cells.map(function (c, i) {
           var today = i === n - 1;
-          return h('button', { key: c.d.day, type: 'button', tabIndex: i === foc[0] ? 0 : -1, 'aria-label': L.tip(c.d, dateOf(c)).concat(today ? [L.today] : []).join(', '),
-            className: cx('nk-am__cell', 'is-l' + c.lv, c.d.tests > 0 && 'is-test', today && 'is-today'),
+          return h('button', { key: c.d.day, type: 'button', tabIndex: i === foc[0] ? 0 : -1, 'aria-label': L.tip(c.d, dateOf(c)).concat(c.d.run ? [L.run] : [], today ? [L.today] : []).join(', '),
+            className: cx('nk-am__cell', 'is-l' + c.lv, c.d.run && 'is-run', today && 'is-today'),
             onMouseEnter: function () { act[1](i); }, onFocus: function () { act[1](i); foc[1](i); }, onBlur: function () { act[1](null); }, onKeyDown: function (e) { key(e, i); } });
         }),
         a && h('div', { className: cx('nk-am__tip nk-kc__tip ui-caption', a.col < 4 && 'is-start', a.col > weeks - 5 && 'is-end'), role: 'tooltip', style: { '--c': a.col, '--r': a.row } },
-          L.tip(a.d, dateOf(a)).concat(act[0] === n - 1 ? [L.today] : []).map(function (t, i) { return h('span', { key: i, className: 'nk-kc__tip-line' }, t); }))),
+          L.tip(a.d, dateOf(a)).concat(a.d.run ? [L.run] : [], act[0] === n - 1 ? [L.today] : []).map(function (t, i) { return h('span', { key: i, className: 'nk-kc__tip-line' }, t); }))),
       h('div', { className: 'nk-am__legend ui-caption' },
         h('span', { className: 'nk-am__legend-item' }, L.less, [0, 1, 2, 3, 4, 5].map(function (s) { return sw('is-l' + s, s); }), L.more),
-        h('span', { className: 'nk-am__legend-item' }, sw('is-l2 is-test', 't'), L.test),
+        cells.some(function (c) { return c.d.run; }) && h('span', { className: 'nk-am__legend-item' }, sw('is-l3 is-run', 'r'), L.run),
         h('span', { className: 'nk-am__legend-item' }, sw('is-l0 is-today', 'n'), L.today)));
   }
 
-  /* Mistyped kana on typing results: up to 5, most errors first. Spellings joined with " · " (Mono; U+00B7 is on the
-     subset list). No reaction-time column (ADR 058). */
-  function WeakKanaList(p) {
-    var L = Object.assign({ kana: 'kana', typed: 'romaji', misses: 'errors' }, p.labels);
-    return h('table', { className: 'nk-weak' },
-      h('thead', null, h('tr', { className: 'ui-caption' }, h('th', null, L.kana), h('th', null, L.typed), h('th', { className: 'num' }, L.misses))),
-      h('tbody', null, (p.items || []).slice(0, 5).map(function (it) {
-        return h('tr', { key: it.kana },
-          h('td', { className: 'jp-cell', lang: 'ja' }, it.kana),
-          h('td', { className: 'mono-small nk-dim' }, it.spellings.join(' · ')),
-          h('td', { className: 'num mono-romaji' }, it.misses));
-      })));
-  }
-
   /* ================= KanaChart ================= */
-  function stepFor(mode, v) {
-    if (v == null) return null;
-    if (mode === 'miss') { var t = [0, 0.03, 0.07, 0.12, 0.2]; if (v <= 0) return 0; for (var i = 4; i >= 0; i--) if (v > t[i]) return i + 1; return 1; }
-    return v;
-  }
   /*
-   * KanaChart. `state` (ADR 058) — the learning table on `/`; `miss` — weak kana in typing on `/stats` (decision 110).
+   * KanaChart — the learning table on `/` (ADR 058; one mode since decision 128).
    * state data per kana: { state: 'learning'|'confident'|'mastered', box, due, next (ISO date), median (ms), acc (%),
    *   answers (recall answers counted, ≤ 10), mixups: [[kana, n]], recog: [correct, total] }. A kana without data is locked.
    * `due` is a mark over confident or mastered, not a state: it is ignored on learning.
@@ -743,16 +458,14 @@
    */
   var KC_LABELS = {
     base: 'basic', voiced: 'voiced', combo: 'combinations', ext: 'extended',
-    none: 'no data', locked: 'locked', mastered: 'mastered',
+    locked: 'locked', mastered: 'mastered',
     learning: 'learning', confident: 'confident', due: 'review due', notIntroduced: 'not introduced yet', opensNext: 'opens next', vowels: 'vowels',
     next: function (d) { return 'next review: ' + d; },
     stats: function (m, a) { return 'median ' + m + ' ms · accuracy ' + a + '%'; },
     answers: function (n) { return n + ' of 10 answers'; },
     date: function (iso) { var d = new Date(iso + 'T00:00:00'); return d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; },
     mixedWith: 'mixed up with', noMixups: 'no mixups yet', noRecog: 'no recognition answers yet',
-    recog: function (p, a, b) { return 'recognition accuracy ' + p + '% (' + a + ' of ' + b + ')'; }, close: 'close',
-    missFmt: function (v, n) { return 'errors ' + Math.round(v * 100) + '% · attempts ' + n; },
-    lowMiss: 'fewer errors', highMiss: 'more errors'
+    recog: function (p, a, b) { return 'recognition accuracy ' + p + '% (' + a + ' of ' + b + ')'; }, close: 'close'
   };
   /* Tooltip / aria-label lines of a kana in the state mode (exception to Tooltip's one-line rule). */
   /* Due = the mark: a confident or mastered kana whose review date has come. Review (N) counts exactly these kana and the
@@ -788,30 +501,19 @@
         h('div', { className: 'nk-dim' }, rc[1] ? L.recog(Math.round(rc[0] / rc[1] * 100), rc[0], rc[1]) : L.noRecog)));
   }
   function KanaChart(p) {
-    var mode = p.mode || 'state', script = p.script || 'hiragana', data = p.data || {};
+    var script = p.script || 'hiragana', data = p.data || {};
     var L = Object.assign({}, KC_LABELS, p.labels);
     var romaji = p.romaji || function () { return ''; };
     var act = useState(null), active = act[0];
     var det = useState(null), open = det[0];
     var grid = useRef(null);
     var rows = rowsFor(script), first = cellsOf(rows[0], script)[0];
-    function isLocked(k) { return mode === 'state' && !data[k]; }
+    function isLocked(k) { return !data[k]; }
     function stateLines(k) { return kanaStateLines(k, data[k], L, romaji, p.nextUnlock); }
-    function describe(k) {
-      var d = data[k];
-      if (mode === 'state') return stateLines(k);
-      if (d == null) return [L.none];
-      return [L.missFmt(d.v, d.n)];
-    }
     function cellCls(k) {
       var d = data[k];
-      if (mode === 'state') {
-        if (!d) return 'is-st-locked';
-        return 'is-st-' + d.state + (d.state === 'mastered' ? ' is-mastered' : '') + (isDue(d) ? ' is-due' : '');
-      }
-      if (d == null) return 'is-empty';
-      var s = stepFor(mode, d.v); if (!s) return 'is-zero';
-      return 'is-miss-' + s;
+      if (!d) return 'is-st-locked';
+      return 'is-st-' + d.state + (d.state === 'mastered' ? ' is-mastered' : '') + (isDue(d) ? ' is-due' : '');
     }
     /* Arrows: ← → along the row (then the next row), ↑ ↓ to the nearest column of the row above / below, across blocks. Esc closes the details. */
     function nav(e) {
@@ -833,7 +535,7 @@
     }
     function activate(k) {
       if (p.onSelect) p.onSelect(k);
-      if (mode !== 'state' || isLocked(k)) return;
+      if (isLocked(k)) return;
       det[1](open === k ? null : k);
     }
     function details(k) {
@@ -854,9 +556,9 @@
             h('span', { className: 'nk-kc__head mono-small', role: 'rowheader', 'aria-label': r.id === 'vowels' ? L.vowels : undefined }, r.head),
             cells.map(function (k, ci) {
               if (!k) return h('span', { key: ci, className: 'nk-kc__gap', role: 'gridcell' });
-              var lines = describe(k);
+              var lines = stateLines(k);
               return h('button', { key: ci, type: 'button', role: 'gridcell', 'data-k': k, 'data-r': rIndex, 'data-c': ci, lang: 'ja', 'aria-label': lines.join(', '),
-                'aria-disabled': isLocked(k) || undefined, 'aria-expanded': mode === 'state' && !isLocked(k) ? open === k : undefined,
+                'aria-disabled': isLocked(k) || undefined, 'aria-expanded': !isLocked(k) ? open === k : undefined,
                 tabIndex: active === k || (!active && k === first) ? 0 : -1,
                 className: cx('nk-kc__cell', k.length > 1 ? 'jp-cell-sm' : 'jp-cell', cellCls(k), active === k && 'is-active'),
                 onFocus: function () { act[1](k); }, onMouseEnter: function () { act[1](k); }, onClick: function () { activate(k); } },
@@ -868,49 +570,11 @@
     }
     var sample = script === 'hiragana' ? 'あ' : 'ア';
     function sw(cls, label) { return [h('span', { key: cls, className: 'nk-kc__sw nk-kc__sw--state jp-body ' + cls, 'aria-hidden': true }, sample), h('span', { key: cls + 'l' }, label)]; }
-    return h('div', { className: cx('nk-kc', 'nk-kc--' + mode, p.className) },
+    return h('div', { className: cx('nk-kc', 'nk-kc--state', p.className) },
       h('div', { className: 'nk-kc__grid', role: 'grid', 'aria-label': p.label, ref: grid, onKeyDown: nav, onMouseLeave: function () { act[1](null); } },
         GROUPS.map(block)),
-      mode === 'state'
-        ? h('div', { className: 'nk-kc__legend ui-caption' }, sw('is-st-locked', L.locked), sw('is-st-learning', L.learning), sw('is-st-confident', L.confident), sw('is-st-mastered is-mastered', L.mastered),
-            h('span', { key: 'sep', className: 'nk-kc__legend-sep', 'aria-hidden': true }), sw('is-st-confident is-due', L.due))
-        : h('div', { className: 'nk-kc__legend ui-caption' },
-          h('span', null, L.lowMiss),
-          [1, 2, 3, 4, 5].map(function (s) { return h('span', { key: s, className: 'nk-kc__sw mono-small is-miss-' + s }); }),
-          h('span', null, L.highMiss),
-          h('span', { className: 'nk-kc__sw mono-small is-empty' }), h('span', null, L.none)));
-  }
-
-  /* ================= History ================= */
-  function HistoryTable(p) {
-    var L = Object.assign({ date: 'date', mode: 'mode', kpm: 'kpm', acc: 'accuracy', time: 'time', loading: 'loading history…' }, p.labels);
-    return h('div', { className: 'nk-hist' },
-      h('table', { className: 'nk-hist__table' },
-        h('thead', null, h('tr', { className: 'ui-caption' }, h('th', null, L.date), h('th', null, L.mode), h('th', { className: 'num' }, L.kpm), h('th', { className: 'num' }, L.acc), h('th', { className: 'num' }, L.time))),
-        h('tbody', null, (p.rows || []).map(function (r, i) {
-          return h('tr', { key: i },
-            h('td', { className: 'mono-small nk-dim', 'data-l': L.date }, r.date),
-            h('td', { className: 'ui-label', 'data-l': L.mode }, r.mode, r.best && h(PersonalBestBadge, null, p.bestLabel)),
-            h('td', { className: 'num mono-romaji', 'data-l': L.kpm }, r.kpm),
-            h('td', { className: 'num mono-romaji', 'data-l': L.acc }, r.acc + '%'),
-            h('td', { className: 'num mono-romaji nk-dim', 'data-l': L.time }, r.time));
-        }))),
-      p.loading && h(Notice, null, L.loading));
-  }
-
-  function Pagination(p) {
-    var L = Object.assign({ prev: '← newer', next: 'older →', label: 'history pages' }, p.labels);
-    var page = p.page || 1, pages = p.pages || 1;
-    var list = [];
-    for (var i = 1; i <= pages; i++) if (i === 1 || i === pages || Math.abs(i - page) <= 1) list.push(i); else if (list[list.length - 1] !== '…') list.push('…');
-    function go(n) { p.onPage && p.onPage(n); }
-    return h('nav', { className: 'nk-pages', 'aria-label': L.label },
-      h('button', { type: 'button', className: 'nk-seg__item ui-label', disabled: page <= 1, onClick: function () { go(page - 1); } }, L.prev),
-      list.map(function (n, i) {
-        return n === '…' ? h('span', { key: 'g' + i, className: 'nk-dim ui-label' }, '…')
-          : h('button', { key: n, type: 'button', className: cx('nk-seg__item mono-romaji', n === page && 'is-on'), 'aria-current': n === page ? 'page' : undefined, onClick: function () { go(n); } }, n);
-      }),
-      h('button', { type: 'button', className: 'nk-seg__item ui-label', disabled: page >= pages, onClick: function () { go(page + 1); } }, L.next));
+      h('div', { className: 'nk-kc__legend ui-caption' }, sw('is-st-locked', L.locked), sw('is-st-learning', L.learning), sw('is-st-confident', L.confident), sw('is-st-mastered is-mastered', L.mastered),
+        h('span', { key: 'sep', className: 'nk-kc__legend-sep', 'aria-hidden': true }), sw('is-st-confident is-due', L.due)));
   }
 
   /* ================= Lesson ================= */
@@ -924,10 +588,8 @@
 
   /* ================= Nav & footer ================= */
   function Nav(p) {
-    var ref = useRef(null);
-    useEffect(function () { var n = ref.current; if (!n) return; if (p.hidden) n.setAttribute('inert', ''); else n.removeAttribute('inert'); }, [p.hidden]);
     var items = p.items || [];
-    return h('header', { ref: ref, className: cx('nk-nav', p.hidden && 'is-hidden', p.className) },
+    return h('header', { className: cx('nk-nav', p.className) },
       h('a', { className: 'nk-nav__brand', href: p.homeHref || '#', 'aria-label': p.homeLabel || 'Nekotype' },
         h(Cat, { mark: true, size: 28 }), h('span', { className: 'nk-nav__word' }, 'nekotype')),
       h('nav', { className: 'nk-nav__links', 'aria-label': p.label },
@@ -944,9 +606,7 @@
   }
 
   function Footer(p) {
-    var ref = useRef(null);
-    useEffect(function () { var n = ref.current; if (!n) return; if (p.hidden) n.setAttribute('inert', ''); else n.removeAttribute('inert'); }, [p.hidden]);
-    return h('footer', { ref: ref, className: cx('nk-foot', p.hidden && 'is-hidden') },
+    return h('footer', { className: 'nk-foot' },
       (p.links || []).map(function (l) { return h('a', { key: l.id, href: l.href || '#', className: 'nk-link ui-caption', onClick: l.onClick }, l.label); }));
   }
 
@@ -961,11 +621,11 @@
 
   var C = window;
   C.Nekotype = Object.assign(C.Nekotype || {}, {
-    TestArea: TestArea, Char: Char, TranslationLine: TranslationLine, Notice: Notice, Kbd: Kbd, ModePanel: ModePanel, Dialog: Dialog,
-    Button: Button, Segmented: Segmented, Toggle: Toggle, Switch: Switch, Input: Input, Textarea: Textarea, Select: Select, Tooltip: Tooltip,
-    Stat: Stat, PersonalBestBadge: PersonalBestBadge, ResultChart: ResultChart, ActivityMap: ActivityMap, WeakKanaList: WeakKanaList, KanaChart: KanaChart,
-    HistoryTable: HistoryTable, Pagination: Pagination, OptionCard: OptionCard, Nav: Nav, Footer: Footer,
+    Notice: Notice, Kbd: Kbd, Dialog: Dialog,
+    Button: Button, Segmented: Segmented, Switch: Switch, Input: Input, Select: Select, Tooltip: Tooltip,
+    Stat: Stat, ResultChart: ResultChart, ActivityMap: ActivityMap, KanaChart: KanaChart,
+    OptionCard: OptionCard, Nav: Nav, Footer: Footer,
     Cat: Cat, EmptyState: EmptyState, Icon: Icon, KanaTask: KanaTask, KanaChartDetails: KanaChartDetails, kanaStateLines: kanaStateLines, isDue: isDue, KC_LABELS: KC_LABELS,
-    /* not components: */ createTestController: createTestController, createTaskController: createTaskController, useNarrow: useNarrow, useCoarse: useCoarse, TASK_LABELS: TASK_LABELS, MODE_LABELS: MODE_LABELS, modeLine: modeLine, KANA_ROWS: ROWS, kanaRows: rowsFor, kanaOf: kanaOf
+    /* not components: */ createTaskController: createTaskController, useNarrow: useNarrow, useCoarse: useCoarse, TASK_LABELS: TASK_LABELS, KANA_ROWS: ROWS, kanaRows: rowsFor, kanaOf: kanaOf
   });
 })();
