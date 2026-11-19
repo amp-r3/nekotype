@@ -9,6 +9,7 @@ import type { Session } from '@/features/training';
 import { TextStream, useTestChrome, useFinishButton } from '@/features/training';
 import type { TestInput } from '@/features/training';
 import { LiveLine } from './live-line';
+import { ReportAction } from './report-action';
 
 export type TestStageProps = {
   readonly session: Session;
@@ -64,6 +65,10 @@ export function TestStage({ session, repeating, input, onRestart }: TestStagePro
     return id === undefined ? '' : `https://tatoeba.org/sentences/${id}`;
   });
   const sourceHidden = useComputed(() => sourceHref.value === '');
+  // `report a problem` goes with the translation (decision 35); the source link stays.
+  const reportHidden = useComputed(
+    () => session.currentPrompt.value === null || !showTranslationSetting.value,
+  );
 
   return (
     <div
@@ -166,6 +171,11 @@ export function TestStage({ session, repeating, input, onRestart }: TestStagePro
         >
           {t('stage.source')}
         </a>
+        <ReportAction
+          currentPrompt={session.currentPrompt}
+          hidden={reportHidden}
+          onClosed={focusInput}
+        />
       </div>
 
       <div className="flex min-h-5 w-full items-baseline gap-3">

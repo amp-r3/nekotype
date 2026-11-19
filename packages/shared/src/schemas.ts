@@ -262,6 +262,11 @@ export function parseSyncRequest(input: unknown): SyncRequest | null {
   return parsed.success ? parsed.output : null;
 }
 
+export function parseReportRequest(input: unknown): ReportRequest | null {
+  const parsed = v.safeParse(reportRequestSchema, input);
+  return parsed.success ? parsed.output : null;
+}
+
 export function parseDeviceId(input: unknown): string | null {
   const parsed = v.safeParse(deviceIdSchema, input);
   return parsed.success ? parsed.output : null;

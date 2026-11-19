@@ -1,0 +1,18 @@
+# ADR 092: The Report Dialog Is a Lazy Chunk of the Trainer Page, Site Keys Are Chosen by Host, and a Missing or Test Secret Closes the Endpoint
+
+- **Context:** P5 PR 12 ([p5-plan.md](../../p5-plan.md), D21) adds `POST /api/reports` and the dialog on `/type`. Reports are open to guests, so the only abuse control is Cloudflare Turnstile ([backend.md](../spec/backend.md)). One build is deployed to a preview and then to production, and the Turnstile script is not allowed in the initial load.
+- **Decision:**
+  1. **The dialog sits in the page.** `frontend.md` names a slice `features/report-content`; it has one consumer, so [ADR 015](015-merging-widgets-layer-into-pages-trainer-ui.md) merges it into `pages/trainer`: `ui/report-dialog.tsx`, `ui/report-action.tsx`, `lib/turnstile.ts`, `api/reports.ts`, `report-loader.ts`. The dialog is a chunk of its own (about 2 KB gzip) loaded when `report a problem` is pressed; the action itself is a button in the translation line that reads no signal a keystroke changes, so typing renders nothing there.
+  2. **Cloudflare's script is added when the dialog opens**, never earlier, and kept once loaded; a failed load is not remembered, so `retry` tries again. The widget is rendered explicitly (`flexible`, dark, the interface language), removed when the dialog closes, and `reset` after any failed submit, because a token is used once.
+  3. **Site keys are public constants chosen by host** (`siteKeyFor`): `nekotype.pages.dev` the production key, its subdomains the preview key, anything else (`localhost`) Cloudflare's always-passing test key. A look-alike host (`evilnekotype.pages.dev`) gets the test key and its tokens are refused by the real secret.
+  4. **The endpoint fails closed.** Order of checks: `Origin`, body at most 8 KB (`413`), the secret, the schema (`400`), the token. Without `TURNSTILE_SECRET_KEY` the answer is `503 unavailable`; with `ENVIRONMENT` = `production` and one of Cloudflare's published test secrets it is `503` too, so a wrong secret cannot open the endpoint to anyone. If Cloudflare cannot be asked, the answer is `503` and the client says "failed to send"; a token that fails is `403 turnstile_failed`.
+  5. **A session is optional.** A valid session cookie sets `user_id`; a missing, unknown or expired one makes the report anonymous (an expired row is deleted, as everywhere). `requireSession` and the new `optionalUserId` share one resolver.
+  6. **`verifyTurnstile` is a dependency of the application** (`AppDeps`, D2): the real one posts to `siteverify` with the client's `CF-Connecting-IP`; tests pass a fake, and the sync e2e server passes one that always fails, because Turnstile is not part of any e2e.
+- **Justification:**
+  - _Host, not build flag._ The same bundle goes to the preview and to production, so only the host can tell them apart ([ADR 079](079-account-and-report-states.md) does the same for sign-in).
+  - _Fail closed._ An unset or test secret would turn the one abuse control into a no-op without any visible sign.
+- **Rejected alternatives:**
+  - _The script in `index.html`_ costs a request to a third party on every load and counts against the budget.
+  - _A WAF rate limit_ needs an own DNS zone, which `*.pages.dev` is not.
+- **Consequences:** `backend.md` states the secret rule; `README.md` lists the Turnstile secret in the one-time setup; the production check is a report from the preview URL and `SELECT count(*) FROM content_reports` (M5).
+- **Status:** In force.

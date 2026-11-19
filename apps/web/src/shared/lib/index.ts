@@ -9,7 +9,7 @@ export { cx } from './cx';
 
 export { useMediaQuery } from './use-media-query';
 
-export { isApplePlatform } from './platform';
+export { isApplePlatform, useOnline } from './platform';
 
 export {
   currentPath,

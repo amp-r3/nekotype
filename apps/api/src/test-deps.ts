@@ -22,6 +22,12 @@ export function fakeOAuth(profiles: Readonly<Record<string, OAuthProfile>>): OAu
   return { google: provider('google'), github: provider('github') };
 }
 
+/** The fake of Turnstile: the token `pass` passes, any other fails, `down` cannot be checked. */
+export function fakeTurnstile(token: string): Promise<boolean> {
+  if (token === 'down') return Promise.reject(new Error('siteverify unreachable'));
+  return Promise.resolve(token === 'pass');
+}
+
 /** A clock a test moves by hand, and deterministic bytes that differ per call. */
 export function testDeps(
   profiles: Readonly<Record<string, OAuthProfile>> = {},
@@ -35,6 +41,7 @@ export function testDeps(
       clock: { now: () => clock.time },
       randomBytes: (n) => new Uint8Array(n).fill(++calls),
       oauth: fakeOAuth(profiles),
+      verifyTurnstile: fakeTurnstile,
     },
   };
 }

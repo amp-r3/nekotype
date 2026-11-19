@@ -14,6 +14,7 @@ export interface Env {
   GOOGLE_CLIENT_SECRET?: string;
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;
+  TURNSTILE_SECRET_KEY?: string;
 }
 
 export const OAUTH_PROVIDER_NAMES = ['google', 'github'] as const;
@@ -65,6 +66,8 @@ export interface AppDeps {
   clock: Clock;
   randomBytes: (n: number) => Uint8Array;
   oauth: OAuthProviders;
+  /** Cloudflare's siteverify: whether the token passed. Rejects when Cloudflare cannot be reached. */
+  verifyTurnstile: (token: string, ip: string | null, secret: string) => Promise<boolean>;
 }
 
 export type AppBindings = { Bindings: Env; Variables: { userId: string } };
