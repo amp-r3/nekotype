@@ -15,4 +15,4 @@
   - _The script in `index.html`_ costs a request to a third party on every load and counts against the budget.
   - _A WAF rate limit_ needs an own DNS zone, which `*.pages.dev` is not.
 - **Consequences:** `backend.md` states the secret rule; `README.md` lists the Turnstile secret in the one-time setup; the production check is a report from the preview URL and `SELECT count(*) FROM content_reports` (M5).
-- **Status:** In force.
+- **Status:** In force; point 1 amended by [ADR 093](093-learning-only-words-in-learning.md): the dialog leaves with `/type` in P6 and returns with word tasks.
