@@ -50,7 +50,7 @@ type Settings = {
     strictness: Strictness;
     track: 'hiragana' | 'katakana';
     targetMs: number; // target answer time of confidence: 1000–3000 in steps of 250, default 1500
-    sound: boolean; // play the kana sound after each task (P11), default true
+    sound: boolean; // play the kana sound after each task (P8), default true
   };
   updatedAt: number;
 };
