@@ -423,3 +423,137 @@ describe('typing store: the view is snapshot, outbox and delta merged (D18)', ()
     }
   });
 });
+
+describe('typing store: older results from the server', () => {
+  /** A fake `GET /api/results`: the server's history, newest first, with the cursor rules of the API. */
+  function fakeServer(history: readonly TestResult[], pageSize = 50) {
+    const sorted = history.slice().sort((a, b) => b.endedAt - a.endedAt || (a.id < b.id ? 1 : -1));
+    const cursors: (string | null)[] = [];
+    const fetchOlder = (before: string | null) => {
+      cursors.push(before);
+      const start =
+        before === null
+          ? 0
+          : sorted.findIndex((item) => `${item.endedAt}:${item.id}` === before) + 1;
+      const results = sorted.slice(start, start + pageSize);
+      const last = results.at(-1);
+      const more = start + pageSize < sorted.length;
+      return Promise.resolve({
+        kind: 'ok' as const,
+        results,
+        next: more && last !== undefined ? `${last.endedAt}:${last.id}` : null,
+      });
+    };
+    return { fetchOlder, cursors };
+  }
+
+  const history = (count: number): TestResult[] =>
+    Array.from({ length: count }, (_, index) =>
+      // Four results share each time, so the cursor has to break ties by id.
+      result(`r-${String(index).padStart(3, '0')}`, {
+        endedAt: 10_000 + Math.floor(index / 4) * 1000,
+      }),
+    );
+
+  function withServer(server: ReturnType<typeof fakeServer>, db: Db = createMemoryDb()) {
+    const store = createTypingStore({
+      db: () => Promise.resolve(db),
+      fetchOlder: server.fetchOlder,
+    });
+    return { db, store };
+  }
+
+  it('fills an empty device page by page, with synced = 1, until the server has no more', async () => {
+    const server = fakeServer(history(120));
+    const { store } = withServer(server);
+    expect(store.older.value).toBe('unknown');
+
+    expect(await store.loadOlder()).toBe(true);
+    expect(store.older.value).toBe('unknown');
+    expect(await store.loadOlder()).toBe(true);
+    expect(await store.loadOlder()).toBe(true);
+    expect(store.older.value).toBe('exhausted');
+    // Nothing is asked for again once the server has said it has no more.
+    expect(await store.loadOlder()).toBe(false);
+    expect(server.cursors).toHaveLength(3);
+    expect(server.cursors[0]).toBeNull();
+
+    const all = await store.allResults();
+    expect(all).toHaveLength(120);
+    expect(new Set(all.map((item) => item.id)).size).toBe(120);
+  });
+
+  it('asks with the oldest result held as the cursor and stores the page as synced', async () => {
+    const server = fakeServer(history(10));
+    const db = createMemoryDb();
+    await db.put('results', 'r-009', { ...result('r-009', { endedAt: 12_000 }), synced: 1 });
+    const { store } = withServer(server, db);
+    await store.init();
+    await store.loadOlder();
+    expect(server.cursors).toEqual(['12000:r-009']);
+    const stored = await db.getAll('results', 'endedAt');
+    expect(stored).toHaveLength(10);
+    expect(
+      stored.every(
+        (row) => typeof row === 'object' && row !== null && 'synced' in row && row.synced === 1,
+      ),
+    ).toBe(true);
+  });
+
+  it('inserting twice changes nothing, and an unsent result stays unsent', async () => {
+    const server = fakeServer(history(6));
+    const db = createMemoryDb();
+    const { store } = withServer(server, db);
+    await store.init();
+    // An unsent result the server also lists (a resent batch, a lost acknowledgement).
+    await db.put('results', 'r-005', { ...result('r-005', { endedAt: 11_000 }), synced: 0 });
+    await store.loadOlder();
+    const before = await db.getAll('results', 'endedAt');
+    // The same page again, as another tab's request or a retry would deliver it.
+    const again = await server.fetchOlder(null);
+    await db.update(
+      again.results.map((item) => ({ store: 'results', key: item.id })),
+      () => [],
+    );
+    await store.loadOlder();
+    expect(await db.getAll('results', 'endedAt')).toEqual(before);
+    expect(await db.get('results', 'r-005')).toMatchObject({ synced: 0 });
+  });
+
+  it('a failed request is remembered and changes nothing', async () => {
+    const db = createMemoryDb();
+    const store = createTypingStore({
+      db: () => Promise.resolve(db),
+      fetchOlder: () => Promise.resolve({ kind: 'failed' }),
+    });
+    expect(await store.loadOlder()).toBe(false);
+    expect(store.older.value).toBe('failed');
+    expect(await store.allResults()).toEqual([]);
+    // A later call tries again.
+    expect(await store.loadOlder()).toBe(false);
+  });
+
+  it('a failed write is a failed request, not an exception', async () => {
+    const server = fakeServer(history(3));
+    const { store } = withServer(server, failingWrites(createMemoryDb()));
+    expect(await store.loadOlder()).toBe(false);
+    expect(store.older.value).toBe('failed');
+  });
+
+  it('does not run two requests at once', async () => {
+    const server = fakeServer(history(3));
+    const { store } = withServer(server);
+    const [first, second] = await Promise.all([store.loadOlder(), store.loadOlder()]);
+    expect([first, second]).toEqual([true, false]);
+    expect(server.cursors).toHaveLength(1);
+  });
+
+  it('reset forgets that the server had no more', async () => {
+    const server = fakeServer(history(3));
+    const { store } = withServer(server);
+    await store.loadOlder();
+    expect(store.older.value).toBe('exhausted');
+    await store.reset();
+    expect(store.older.value).toBe('unknown');
+  });
+});

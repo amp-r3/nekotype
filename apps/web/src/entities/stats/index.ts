@@ -11,6 +11,7 @@ export type {
   SaveTestInput,
   SavedTest,
   TypingStoreDeps,
+  OlderResults,
 } from './model/store';
 export {
   createTypingStore,
@@ -24,4 +25,6 @@ export {
   resetTyping,
   retryTyping,
   readAllResults,
+  olderResults,
+  loadOlderResults,
 } from './model/store';

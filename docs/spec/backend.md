@@ -182,6 +182,10 @@ A sync of a batch within the caps uses at most 16 of the 50 statements D1 allows
 
 A batch that lost still inserts its results, because `batch()` runs every statement. This is harmless: inserts are idempotent by `id`, and typing records are computed from every result of the batch, not only newly inserted ones. A lost attempt spends extra rows, so the row budget above applies to the uncontended case.
 
+### Reading the history
+
+`GET /api/results?before=&limit=` (a session is required) answers with the session user's results, newest first, ties broken by `id` descending, so the order is total. `limit` is an integer from 1 to 50 and defaults to 50; anything else is `400`. `before` is the cursor `<endedAt>:<id>` of a result the client already holds; the response then starts after it, and without `before` it starts with the newest result. A malformed cursor is `400`. `next` is the cursor of the last result of the page when older results remain, otherwise `null`. A request is one statement over `results_user_time` (`user_id`, `ended_at`), reading at most `limit + 1` rows, and the `json` column is the result as the client sent it. The client's side is in [Storage and sync](storage-sync.md#history).
+
 ## Authentication and security
 
 - **Session:** a random 32-byte token in cookie `nt_session` (`HttpOnly; Secure; SameSite=Lax; Path=/`); D1 stores only its SHA-256 hash. Lifetime 30 days, renewed when less than 15 days remain. An expired row is deleted when it is seen, and a sign-in deletes the user's other expired rows. `Secure` is left off only when `APP_ORIGIN` is `http://…` (local development).

@@ -13,6 +13,8 @@ import {
   mergeTypingRecords,
 } from '@nekotype/shared/runtime';
 import type { ChangeChannel, Db, Write } from '@/shared/lib';
+import type { HistoryPage } from '../api/history';
+import { fetchHistoryPage, historyCursor } from '../api/history';
 import {
   DELTA_STORE,
   changeChannel,
@@ -29,6 +31,12 @@ const RECORDS_KEY = 'current';
 
 export type TypingStatus = 'loading' | 'ready' | 'error';
 
+/**
+ * What this page load knows of the server's older results: nothing yet, a request in flight, no
+ * more (the last page was stored) or a failed request or write.
+ */
+export type OlderResults = 'unknown' | 'loading' | 'exhausted' | 'failed';
+
 export type TypingStoreDeps = {
   /** The database; asked for when needed, so a reset works before the store is loaded. */
   readonly db: () => Promise<Db>;
@@ -36,6 +44,8 @@ export type TypingStoreDeps = {
   readonly channel?: ChangeChannel;
   /** A write failed (quota, a closed connection). */
   readonly onWriteFailed?: () => void;
+  /** The server's page of results older than a cursor; `GET /api/results`. */
+  readonly fetchOlder?: (before: string | null) => Promise<HistoryPage>;
 };
 
 export type SaveTestInput = {
@@ -79,6 +89,15 @@ export interface TypingStore {
    * be read.
    */
   allResults: () => Promise<TestResult[]>;
+  /** The state of `loadOlder`; `exhausted` holds until the page is loaded again. */
+  readonly older: ReadonlySignal<OlderResults>;
+  /**
+   * Asks the server for the page of results older than the oldest one held and stores it with
+   * `synced` = 1, keeping any result already held. Resolves to whether the store gained results.
+   * The caller checks that the user is signed in and online; a guest has nothing to ask for. Never
+   * rejects.
+   */
+  loadOlder: () => Promise<boolean>;
   /** "Reset progress": clears results, records and the typing delta. */
   reset: () => Promise<void>;
 }
@@ -114,6 +133,8 @@ export function createTypingStore(deps: TypingStoreDeps): TypingStore {
   const counters = signal<Counters>(initialCounters());
   const records = signal<TypingRecords>({});
   const status = signal<TypingStatus>('loading');
+  const older = signal<OlderResults>('unknown');
+  const fetchOlder = deps.fetchOlder ?? ((before) => fetchHistoryPage(before));
 
   let writing: Promise<void> = Promise.resolve();
   let loading: Promise<void> | null = null;
@@ -288,7 +309,52 @@ export function createTypingStore(deps: TypingStoreDeps): TypingStore {
       return rows.filter(isTestResult);
     },
 
+    older,
+
+    async loadOlder() {
+      if (older.value === 'loading' || older.value === 'exhausted') return false;
+      older.value = 'loading';
+      try {
+        await init();
+        await writing;
+        const db = await deps.db();
+        // The oldest result held is the cursor: the order of the index (`endedAt`, then `id`) is
+        // the server's, reversed. Without one the newest page is asked for.
+        const oldest = (await db.getAll(RESULTS_STORE, 'endedAt')).find(isTestResult);
+        const page = await fetchOlder(oldest === undefined ? null : historyCursor(oldest));
+        if (page.kind !== 'ok') {
+          older.value = 'failed';
+          return false;
+        }
+        // Inserting by `id`: a result the device already holds, unsent ones included, stays as it is.
+        let added = 0;
+        await db.update(
+          page.results.map((result) => ({ store: RESULTS_STORE, key: result.id })),
+          (held) => {
+            const writes: Write[] = [];
+            page.results.forEach((result, index) => {
+              if (held[index] !== undefined) return;
+              added += 1;
+              writes.push({
+                op: 'put',
+                store: RESULTS_STORE,
+                key: result.id,
+                value: { ...result, synced: 1 },
+              });
+            });
+            return writes;
+          },
+        );
+        older.value = page.next === null ? 'exhausted' : 'unknown';
+        return added > 0;
+      } catch {
+        older.value = 'failed';
+        return false;
+      }
+    },
+
     async reset() {
+      older.value = 'unknown';
       kanaStats.value = {};
       counters.value = initialCounters();
       records.value = {};
@@ -326,3 +392,5 @@ export const recordDiscardedTest = store.recordDiscarded;
 export const resetTyping = store.reset;
 export const retryTyping = store.retry;
 export const readAllResults = store.allResults;
+export const olderResults: ReadonlySignal<OlderResults> = store.older;
+export const loadOlderResults = store.loadOlder;

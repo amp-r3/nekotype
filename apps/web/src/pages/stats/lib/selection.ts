@@ -40,6 +40,20 @@ export function defaultMode(results: readonly TestResult[]): string {
 
 const PERIOD_DAYS: Record<Period, number | null> = { '7': 7, '30': 30, all: null };
 
+/**
+ * The results held reach back past the start of the period, so older ones from the server could not
+ * show in it. Never for all time, and never for an empty history. `results` is oldest first.
+ */
+export function periodCovered(
+  results: readonly TestResult[],
+  period: Period,
+  today: number,
+): boolean {
+  const days = PERIOD_DAYS[period];
+  const oldest = results[0];
+  return days !== null && oldest !== undefined && localDay(oldest.endedAt) <= today - days;
+}
+
 /** The results the filters let through; `results` is oldest first and so is the answer. Periods are whole local days (S4). */
 export function select(
   results: readonly TestResult[],

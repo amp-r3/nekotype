@@ -1,5 +1,5 @@
 import type { JSX } from 'preact';
-import { useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useState } from 'preact/hooks';
 import type { TestResult } from '@nekotype/shared/types';
 import { locale, t, tParts } from '@/shared/i18n';
 import { Button, Notice, Parts, Segmented } from '@/shared/ui';
@@ -20,6 +20,7 @@ import {
   figures,
   modesOf,
   oneMode,
+  periodCovered,
   select,
   type Filters,
   type ModeOption,
@@ -59,10 +60,21 @@ type TypingProps = {
   readonly today: number;
   readonly failed: boolean;
   readonly onRetry: () => void;
+  /** The last page of the history is on show; the page may ask for older results (S2, T12). */
+  readonly onReachedEnd?: () => void;
+  /** Older results are being requested from the server. */
+  readonly loadingOlder?: boolean;
 };
 
 /** Typing on `/stats`: the filters and what they select, then everything that is not filtered. */
-export function TypingSection({ results, today, failed, onRetry }: TypingProps): JSX.Element {
+export function TypingSection({
+  results,
+  today,
+  failed,
+  onRetry,
+  onReachedEnd,
+  loadingOlder = false,
+}: TypingProps): JSX.Element {
   const [filters, setFilters] = useState<Filters | null>(null);
   const [page, setPage] = useState(1);
   const [metric, setMetric] = useState<Metric>('kpm');
@@ -89,6 +101,14 @@ export function TypingSection({ results, today, failed, onRetry }: TypingProps):
 
   const bests = bestRows(records, modeLine);
   const pages = historyPages(shown.length);
+  // On the last page the local store has run out: more may wait on the server. A selection whose
+  // period the local results already span cannot gain from it. After every answer `results`
+  // changes and this runs again, until a page brings something or there is no more.
+  const wantsOlder =
+    results !== null && !failed && page >= pages && !periodCovered(loaded, active.period, today);
+  useEffect(() => {
+    if (wantsOlder) onReachedEnd?.();
+  }, [wantsOlder, results, onReachedEnd]);
   const pageRows = shown.slice((page - 1) * HISTORY_PAGE_SIZE, page * HISTORY_PAGE_SIZE);
   const narrow = useNarrow();
   const { dateFormat, timeFormat } = useMemo(
@@ -269,6 +289,7 @@ export function TypingSection({ results, today, failed, onRetry }: TypingProps):
               <div className={`flex ${BLOCK} flex-col gap-4`}>
                 <h2 className={HEADING}>{t('stats.typing.history')}</h2>
                 <HistoryTable rows={pageRows.map((result) => historyRow(result, records))} />
+                {loadingOlder && <Notice loading>{t('stats.history.loading')}</Notice>}
                 {pages > 1 && (
                   <Pagination
                     page={page}

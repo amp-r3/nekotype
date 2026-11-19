@@ -1,13 +1,16 @@
 import './stats.css';
 import type { JSX } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import { useCallback, useEffect, useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import { Button, Notice, Segmented } from '@/shared/ui';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { defaultClock, navigate } from '@/shared/lib';
 import { learnTargetMs } from '@/entities/settings';
+import { sessionExpired, userId } from '@/entities/user';
 import {
   initTyping,
+  loadOlderResults,
+  olderResults,
   readAllResults,
   retryTyping,
   typingCounters,
@@ -58,6 +61,23 @@ function Pending({
   return <Notice loading>{t('route.loading')}</Notice>;
 }
 
+/** `navigator.onLine`, kept current. */
+function useOnline(): boolean {
+  const [online, setOnline] = useState(() => navigator.onLine);
+  useEffect(() => {
+    const update = (): void => {
+      setOnline(navigator.onLine);
+    };
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    return () => {
+      window.removeEventListener('online', update);
+      window.removeEventListener('offline', update);
+    };
+  }, []);
+  return online;
+}
+
 // Statistics: one section at a time, `learning` or `typing`; the section is in the URL hash (S10).
 export function StatsPage(): JSX.Element {
   const [chosen, setChosen] = useState<Section | null>(() => parseSection(window.location.hash));
@@ -87,6 +107,18 @@ export function StatsPage(): JSX.Element {
       current = false;
     };
   }, [finished, attempt]);
+
+  // The history of a signed-in user continues on the server: the last page asks for the next one
+  // and the list is read again (storage-sync.md, "History"). A guest, an expired session and
+  // being offline ask for nothing.
+  const online = useOnline();
+  const canAskServer = userId.value !== null && !sessionExpired.value && online;
+  const reachedEnd = useCallback(() => {
+    if (!canAskServer || olderResults.value !== 'unknown') return;
+    void loadOlderResults().then((added) => {
+      if (added) setAttempt((count) => count + 1);
+    });
+  }, [canAskServer]);
 
   useEffect(() => {
     void initLearn(() => learnTargetMs.value);
@@ -187,6 +219,8 @@ export function StatsPage(): JSX.Element {
           results={results}
           today={today}
           failed={failed}
+          onReachedEnd={reachedEnd}
+          loadingOlder={olderResults.value === 'loading'}
           onRetry={() => {
             setFailed(false);
             setAttempt(attempt + 1);
