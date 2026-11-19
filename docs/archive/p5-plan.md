@@ -535,6 +535,8 @@ Check: the secret is listed for both environments (`pages secret list`, with and
 
 Delete the Pages project `nekotype-bench` and the database `nekotype-bench` (dashboard, or `wrangler pages project delete` and `wrangler d1 delete`).
 
+State on 2026-11-19: M6 is done. The database was deleted with `wrangler d1 delete`; the project could be deleted only after its deployments (`wrangler pages deployment delete`, every one but the active one), because Cloudflare refuses to delete a project with too many deployments.
+
 ## 6. Pull requests
 
 Common to all: the branch is cut from fresh `main`; the acceptance items are those of [phases.md](../spec/phases.md), numbered in the [table at the end](#acceptance-items-and-pull-requests); sizes are changed lines including tests, a rough guide to how much one executor session holds. ADR numbers are the next free ones when the pull request is opened (the last one today is 083, from this pull request's ADR; check `docs/adr/` when opening yours).
