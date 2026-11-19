@@ -10,11 +10,13 @@ describe('latency gate on pull requests (ADR 074)', () => {
   it('is needed for what can move keystroke latency', () => {
     for (const file of [
       'apps/web/src/shared/lib/input/input-source.ts',
-      'apps/web/src/features/training/model/session.ts',
+      'apps/web/src/pages/learn/model/session.ts',
+      'apps/web/src/pages/learn/ui/session-screen.tsx',
+      'apps/web/src/shared/ui/kana-task.tsx',
+      'apps/web/src/shared/ui/task-controller.ts',
       'apps/web/src/entities/prompt/api/content-loader.ts',
       'apps/web/src/entities/prompt/content/words-hiragana.json',
       'apps/web/src/shared/i18n/dictionary.ts',
-      'apps/web/src/pages/trainer/ui/test-stage.tsx',
       'apps/web/src/app/prefetch.ts',
       'apps/web/vite.config.ts',
       'apps/web/e2e/latency.spec.ts',
@@ -27,18 +29,17 @@ describe('latency gate on pull requests (ADR 074)', () => {
     }
   });
 
-  it('is not needed for screens off the typing path, translations, shared UI, tests, styles or documents', () => {
+  it('is not needed for screens off the recall path, translations, shared UI, tests, styles or documents', () => {
     expect(
       latencyRelevant([
-        'apps/web/src/pages/learn/ui/session-screen.tsx',
-        'apps/web/src/pages/trainer/ui/results-panel.tsx',
+        'apps/web/src/pages/learn/ui/session-screen.test.tsx',
+        'apps/web/src/pages/learn/ui/session-screen.css',
         'apps/web/src/shared/ui/button.tsx',
-        'apps/web/src/shared/i18n/parts/type/en.ts',
+        'apps/web/src/shared/i18n/parts/stats/en.ts',
         'apps/web/src/shared/i18n/en.ts',
         'apps/web/src/app/styles/index.css',
         'apps/web/src/app/App.test.tsx',
-        'apps/web/src/features/training/model/session.test.ts',
-        'apps/web/src/entities/prompt/lib/picker.test.ts',
+        'apps/web/src/entities/prompt/lib/canonical.test.ts',
         'packages/engine/README.md',
         'apps/web/src/pages/stats/ui/stats-page.tsx',
         'apps/web/src/pages/about/ui/about-page.tsx',
@@ -53,9 +54,9 @@ describe('latency gate on pull requests (ADR 074)', () => {
   });
 
   it('is needed when any one file of a mixed change is relevant', () => {
-    expect(latencyRelevant(['docs/a.md', 'apps/web/src/pages/trainer/ui/live-line.tsx'])).toEqual([
-      'apps/web/src/pages/trainer/ui/live-line.tsx',
-    ]);
+    expect(
+      latencyRelevant(['docs/a.md', 'apps/web/src/pages/learn/ui/session-screen.tsx']),
+    ).toEqual(['apps/web/src/pages/learn/ui/session-screen.tsx']);
   });
 
   it('lists only paths that exist', () => {

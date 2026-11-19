@@ -1,14 +1,15 @@
 import { useLayoutEffect } from 'preact/hooks';
 
-// A control that handles Enter itself: Enter there is its own, not "Next test".
+// A control that handles Enter itself: Enter there is its own, not the screen's action.
 const OWN_ENTER =
   'a, button, input, select, textarea, summary, dialog, [contenteditable], [role=button], [role=link]';
 
 /**
- * Enter on the results screen starts the next test wherever the focus is, as long as it is not on
- * a control, a link or a dialog, which handle Enter themselves (docs/spec/frontend.md, "Keyboard").
- * The button holds the focus when the screen opens, but a click beside it moves the focus to the
- * page, and Enter must still work then. Modifiers and a held key are not "Enter".
+ * Enter runs the screen's main action (`go home` on the not-found screen) wherever the focus is, as
+ * long as it is not on a control, a link or a dialog, which handle Enter themselves
+ * (docs/spec/frontend.md, "Keyboard"). The button holds the focus when the screen opens, but a
+ * click beside it moves the focus to the page, and Enter must still work then. Modifiers and a held
+ * key are not "Enter".
  */
 export function useEnterForNext(onNext: () => void): void {
   useLayoutEffect(() => {

@@ -15,22 +15,10 @@ function LearnRoute(): JSX.Element {
   return <LearnPage />;
 }
 
-// The typing screen is a lazy route; it takes no props here.
-async function loadTrainer(): Promise<ComponentType> {
-  const [{ TrainerPage }] = await Promise.all([
-    import('@/pages/trainer'),
-    loadDictionaryPart('type'),
-  ]);
-  return function TrainerRoute(): JSX.Element {
-    return <TrainerPage />;
-  };
-}
-
 export const EAGER_ROUTES: readonly (readonly [RoutePath, ComponentType])[] = [['/', LearnRoute]];
 
 export const routes: Readonly<Record<RoutePath, Route>> = {
   '/': { load: () => Promise.resolve(LearnRoute) },
-  '/type': { load: loadTrainer },
   '/stats': {
     load: () =>
       Promise.all([import('@/pages/stats'), loadDictionaryPart('stats')]).then(

@@ -4,7 +4,7 @@ import type * as I18n from './index';
 import { ru } from './ru';
 import { statsEn } from './parts/stats/en';
 import { settingsRu } from './parts/settings/ru';
-import { typeRu } from './parts/type/ru';
+import { statsRu } from './parts/stats/ru';
 import { aboutEn } from './parts/about/en';
 import { aboutRu } from './parts/about/ru';
 import { MemoryKeyValueStore, STORAGE_KEYS } from '@/shared/lib';
@@ -51,11 +51,11 @@ describe('locale: the parts of the dictionary that belong to one screen', () => 
   it('a part asked for while a switch loads ends in the new language', async () => {
     const i18n = await freshI18n();
     const toRussian = i18n.setLocale('ru', new MemoryKeyValueStore());
-    const part = i18n.loadDictionaryPart('type');
+    const part = i18n.loadDictionaryPart('stats');
     await Promise.all([toRussian, part]);
 
     expect(i18n.locale.value).toBe('ru');
-    expect(i18n.t('results.accuracy')).toBe(typeRu['results.accuracy']);
+    expect(i18n.t('stats.learn.streakCurrent')).toBe(statsRu['stats.learn.streakCurrent']);
   });
 
   it('a part loaded in Russian is loaded again in English after a switch back', async () => {

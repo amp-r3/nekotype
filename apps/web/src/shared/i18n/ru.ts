@@ -7,7 +7,6 @@ export const ru = {
 
   // Navigation and routes
   'nav.label': 'Основная навигация',
-  'nav.type': 'набор',
   'nav.learn': 'обучение',
   'nav.stats': 'статистика',
   'nav.settings': 'настройки',
@@ -15,7 +14,6 @@ export const ru = {
   'nav.signIn': 'войти',
   'nav.signInAgain': 'войти снова',
   'page.learn': 'Обучение',
-  'page.type': 'Набор',
   'page.stats': 'Статистика',
   'page.settings': 'Настройки',
   'page.about': 'О проекте',

@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, options, Fragment } from 'preact';
-import type { VNode } from 'preact';
+import { render } from 'preact';
 import { App } from './App';
 import { createMemoryDb, currentPath, navigate, startRouter } from '@/shared/lib';
 import { initSettings } from '@/entities/settings';
@@ -33,7 +32,7 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
     const nav = container.querySelector('nav');
     expect(nav?.getAttribute('aria-label')).toBe(t('nav.label'));
     expect(Array.from(nav?.querySelectorAll('a') ?? []).map((a) => a.getAttribute('href'))).toEqual(
-      ['/', '/type', '/stats', '/settings'],
+      ['/', '/stats', '/settings'],
     );
     expect(nav?.querySelector('[aria-current="page"]')?.getAttribute('href')).toBe('/');
     expect(container.querySelector('footer a')?.getAttribute('href')).toBe('/about');
@@ -47,16 +46,16 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
     render(<App />, container);
     const marker = window.history.length;
 
-    const type = container.querySelector<HTMLAnchorElement>('nav a[href="/type"]');
-    type?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
+    const stats = container.querySelector<HTMLAnchorElement>('nav a[href="/stats"]');
+    stats?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
     await vi.waitFor(() => {
-      expect(container.querySelector('[data-testid="prompt-arena"]')).not.toBeNull();
+      expect(container.querySelector('h1')?.textContent).toBe(t('page.stats'));
     });
 
-    expect(window.location.pathname).toBe('/type');
+    expect(window.location.pathname).toBe('/stats');
     expect(window.history.length).toBe(marker + 1);
     expect(container.querySelector('nav [aria-current="page"]')?.getAttribute('href')).toBe(
-      '/type',
+      '/stats',
     );
 
     window.history.replaceState(null, '', '/');
@@ -114,6 +113,15 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
     expect(container.querySelector('h1')?.textContent).toBe(t('page.learn'));
   });
 
+  it('/type is gone: it shows the not-found screen, and the navigation has no link to it', () => {
+    window.history.replaceState(null, '', '/type');
+    stopRouter();
+    stopRouter = startRouter();
+    render(<App />, container);
+    expect(container.querySelector('h1')?.textContent).toBe(t('notFound.title'));
+    expect(container.querySelector('nav a[href="/type"]')).toBeNull();
+  });
+
   it('Enter on the not-found screen goes home', async () => {
     window.history.replaceState(null, '', '/nope');
     stopRouter();
@@ -145,56 +153,5 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
     await setLocale('ru');
     await settle();
     expect(container.querySelector('nav a[href="/"]')?.textContent).toBe('обучение');
-  });
-});
-
-describe('App shell: a keystroke renders nothing but the stream', () => {
-  let container: HTMLDivElement;
-  let stopRouter: () => void;
-  let prevDiffed: ((vnode: VNode) => void) | undefined;
-
-  beforeEach(async () => {
-    await setLocale('en');
-    window.history.replaceState(null, '', '/type');
-    stopRouter = startRouter();
-    container = document.createElement('div');
-    document.body.appendChild(container);
-    prevDiffed = options.diffed?.bind(options);
-  });
-
-  afterEach(() => {
-    if (prevDiffed) {
-      options.diffed = prevDiffed;
-    } else {
-      delete options.diffed;
-    }
-    render(null, container);
-    container.remove();
-    stopRouter();
-  });
-
-  it('with the navigation, the mode panel and the route in the page, only the stream renders', async () => {
-    render(<App />, container);
-    await vi.waitFor(() => {
-      expect(container.querySelector('input')).not.toBeNull();
-    });
-    await settle();
-
-    const rendered = new Set<string>();
-    options.diffed = (vnode: VNode) => {
-      // A Fragment wraps a list of children; it is Preact's, not a component of ours.
-      if (typeof vnode.type === 'function' && vnode.type !== Fragment) {
-        rendered.add(vnode.type.name);
-      }
-      if (prevDiffed) prevDiffed(vnode);
-    };
-
-    // Whatever the prompts are, some of these keys complete one and the stream renders.
-    const input = container.querySelector('input');
-    for (const key of 'kakikukekokakikuke') {
-      input?.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    }
-    expect([...rendered].filter((name) => name !== 'TextStream')).toEqual([]);
   });
 });

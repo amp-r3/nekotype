@@ -9,8 +9,6 @@ import {
 } from '@/entities/settings';
 import { learnCounters, learnReady, learnState } from '@/entities/learn';
 import { typingKanaStats } from '@/entities/stats';
-import { createSession } from '@/features/training';
-import type { Session } from '@/features/training';
 import { locale } from '@/shared/i18n';
 
 // Compile-checked type helper: verifies property 'value' is readonly without @ts-expect-error
@@ -36,29 +34,8 @@ export type _CheckLearnCounters = AssertFalse<IsWritable<typeof learnCounters, '
 export type _CheckLearnReady = AssertFalse<IsWritable<typeof learnReady, 'value'>>;
 export type _CheckLocale = AssertFalse<IsWritable<typeof locale, 'value'>>;
 
-// Controller signal checks:
-export type _CheckCtrlIsAssisted = AssertFalse<IsWritable<Session['isAssisted'], 'value'>>;
-export type _CheckCtrlCurrentPrompt = AssertFalse<IsWritable<Session['currentPrompt'], 'value'>>;
-export type _CheckCtrlCanonicalRomaji = AssertFalse<
-  IsWritable<Session['canonicalRomaji'], 'value'>
->;
-export type _CheckCtrlTickerNow = AssertFalse<IsWritable<Session['tickerNow'], 'value'>>;
-export type _CheckStream = AssertFalse<IsWritable<Session['stream'], 'value'>>;
-export type _CheckCaret = AssertFalse<IsWritable<Session['caret'], 'value'>>;
-export type _CheckRomajiBuffer = AssertFalse<IsWritable<Session['romajiBuffer'], 'value'>>;
-export type _CheckMistake = AssertFalse<IsWritable<Session['mistake'], 'value'>>;
-export type _CheckPhase = AssertFalse<IsWritable<Session['phase'], 'value'>>;
-export type _CheckMetrics = AssertFalse<IsWritable<Session['metrics'], 'value'>>;
-export type _CheckPromptResults = AssertFalse<IsWritable<Session['promptResults'], 'value'>>;
-export type _CheckCorrectKeystrokes = AssertFalse<
-  IsWritable<Session['correctKeystrokes'], 'value'>
->;
-export type _CheckSessionStartedAt = AssertFalse<IsWritable<Session['sessionStartedAt'], 'value'>>;
-export type _CheckLiveKpm = AssertFalse<IsWritable<Session['liveKpm'], 'value'>>;
-export type _CheckLiveAccuracy = AssertFalse<IsWritable<Session['liveAccuracy'], 'value'>>;
-
 describe('store state: ReadonlySignal guarantees', () => {
-  it('all store signals and controller signals are exposed as ReadonlySignal', () => {
+  it('all store signals are exposed as ReadonlySignal', () => {
     // Runtime confirmation that signals are defined and readable
     expect(scriptSetting.value).toBeDefined();
     expect(contentSetting.value).toBeDefined();
@@ -71,25 +48,5 @@ describe('store state: ReadonlySignal guarantees', () => {
     expect(learnState.value.unlocked.hiragana).toHaveLength(5);
     expect(learnCounters.value.started.learn).toBe(0);
     expect(learnReady.value).toBe(false);
-
-    const dummyController = createSession({
-      nextPrompt: () => ({ key: 'basic:a', text: 'あ' }),
-      config: () => testConfig.value,
-    });
-    expect(dummyController.stream.value.prompts).toEqual([]);
-    expect(dummyController.caret.value).toBe(0);
-    expect(dummyController.romajiBuffer.value).toBe('');
-    expect(dummyController.mistake.value).toBeNull();
-    expect(dummyController.isAssisted.value).toBeDefined();
-    expect(dummyController.currentPrompt.value).toBeNull();
-    expect(dummyController.canonicalRomaji.value).toBeDefined();
-    expect(dummyController.tickerNow.value).toBeDefined();
-    expect(dummyController.phase.value).toBe('idle');
-    expect(dummyController.metrics.value).toBeNull();
-    expect(dummyController.promptResults.value).toEqual([]);
-    expect(dummyController.correctKeystrokes.value).toBe(0);
-    expect(dummyController.sessionStartedAt.value).toBe(0);
-    expect(dummyController.liveKpm.value).toBe(0);
-    expect(dummyController.liveAccuracy.value).toBe(100);
   });
 });

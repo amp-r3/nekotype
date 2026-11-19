@@ -9,6 +9,8 @@ export { cx } from './cx';
 
 export { useMediaQuery } from './use-media-query';
 
+export { useEnterForNext } from './input/use-enter-for-next';
+
 export { isApplePlatform, useOnline } from './platform';
 
 export {

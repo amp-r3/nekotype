@@ -5,7 +5,6 @@ export const en = {
 
   // Navigation and routes
   'nav.label': 'Main navigation',
-  'nav.type': 'type',
   'nav.learn': 'learn',
   'nav.stats': 'stats',
   'nav.settings': 'settings',
@@ -13,7 +12,6 @@ export const en = {
   'nav.signIn': 'sign in',
   'nav.signInAgain': 'sign in again',
   'page.learn': 'Learn',
-  'page.type': 'Type',
   'page.stats': 'Stats',
   'page.settings': 'Settings',
   'page.about': 'About',

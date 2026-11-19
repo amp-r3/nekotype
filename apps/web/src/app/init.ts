@@ -8,8 +8,6 @@ import { startSyncBootstrap } from './sync-bootstrap';
 // The tab title follows the screen; `t()` reads the language, so it follows that too.
 function routeTitle(path: string): string {
   switch (path) {
-    case '/type':
-      return `${t('page.type')} — ${t('app.title')}`;
     case '/stats':
       return `${t('page.stats')} — ${t('app.title')}`;
     case '/settings':
