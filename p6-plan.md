@@ -13,7 +13,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 
 | PR  | Branch                      | Status | Pull request |
 | --- | --------------------------- | ------ | ------------ |
-| D   | `docs/p6-design`            | —      | —            |
+| D   | `docs/p6-design`            | done   | #181         |
 | 1   | `p6-01-remove-type`         | —      | —            |
 | 2   | `p6-02-content-out`         | —      | —            |
 | 3   | `p6-03-stats-settings`      | —      | —            |
