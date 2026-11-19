@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-// D20: `animate-fadeIn` was used but never defined, so the results panel did not animate. The results
-// blocks now rise in turn with `animate-reveal` (D14).
+// D20: `animate-fadeIn` was used but never defined, so a panel did not animate. Blocks rise with
+// `animate-reveal` (D14).
 describe('animation classes', () => {
   const srcDir = join(process.cwd(), 'src');
   const css = readFileSync(join(srcDir, 'app/styles/index.css'), 'utf-8');
@@ -37,6 +37,5 @@ describe('animation classes', () => {
   it('prefers-reduced-motion switches off the reveal', () => {
     const reduced = css.slice(css.indexOf('prefers-reduced-motion'));
     expect(reduced).toContain('.animate-reveal');
-    expect(reduced).toContain('.nk-caret.is-idle');
   });
 });

@@ -92,19 +92,15 @@ describe('input source: the hybrid of keydown, beforeinput and input', () => {
       expect(onIntent).not.toHaveBeenCalled();
     });
 
-    it('Ctrl+Enter and Cmd+Enter are the finish intent, and are cancelled', () => {
-      const ctrl = keydown(input, 'Enter', { ctrlKey: true });
-      const meta = keydown(input, 'Enter', { metaKey: true });
-      expect(ctrl.defaultPrevented).toBe(true);
-      expect(meta.defaultPrevented).toBe(true);
-      expect(intents()).toEqual([{ kind: 'finish' }, { kind: 'finish' }]);
-    });
-
-    it('Ctrl+Enter pressed on a button is also the finish intent', () => {
+    it('Ctrl+Enter and Cmd+Enter are left to the browser, on the field and on a button', () => {
       button.focus();
-      const event = keydown(button, 'Enter', { ctrlKey: true });
-      expect(event.defaultPrevented).toBe(true);
-      expect(intents()).toEqual([{ kind: 'finish' }]);
+      for (const target of [input, button]) {
+        for (const modifier of ['ctrlKey', 'metaKey'] as const) {
+          expect(keydown(target, 'Enter', { [modifier]: true }).defaultPrevented).toBe(false);
+        }
+      }
+      expect(document.activeElement).toBe(button);
+      expect(onIntent).not.toHaveBeenCalled();
     });
 
     it('Alt+Enter and Ctrl+Alt+Enter are not ours', () => {
@@ -463,88 +459,7 @@ describe('input source: the hybrid of keydown, beforeinput and input', () => {
     });
   });
 
-  describe('activity that is not input (idle wait, metrics.md)', () => {
-    let onActivity: ReturnType<typeof vi.fn<() => void>>;
-
-    beforeEach(() => {
-      unbind();
-      onActivity = vi.fn<() => void>();
-      source = createInputSource({ onIntent, onActivity });
-      unbind = source.bind(input);
-    });
-
-    it('a digit, a space and a mark are activity, and are left to the browser', () => {
-      for (const key of ['1', ' ', '.']) {
-        const event = keydown(input, key);
-        expect(event.defaultPrevented).toBe(false);
-      }
-      expect(onActivity).toHaveBeenCalledTimes(3);
-      expect(onIntent).not.toHaveBeenCalled();
-    });
-
-    it('a letter of another layout and kana are activity too', () => {
-      keydown(input, 'ф');
-      keydown(input, 'あ');
-      expect(onActivity).toHaveBeenCalledTimes(2);
-      expect(onIntent).not.toHaveBeenCalled();
-    });
-
-    it('characters that arrive as text (mobile keyboards) are activity', () => {
-      beforeInput('1', true);
-      beforeInput('ф', true);
-      expect(onActivity).toHaveBeenCalledTimes(2);
-    });
-
-    it('a Latin letter is input, not activity', () => {
-      keydown(input, 'a');
-      expect(onActivity).not.toHaveBeenCalled();
-      expect(chars()).toEqual(['a']);
-    });
-
-    it('a modifier alone, a shortcut, a named key and a held key are not activity', () => {
-      keydown(input, 'Shift');
-      keydown(input, 'Tab');
-      keydown(input, 'ArrowLeft');
-      keydown(input, 'Control', { ctrlKey: true });
-      keydown(input, '1', { ctrlKey: true });
-      keydown(input, '1', { metaKey: true });
-      keydown(input, '1', { repeat: true });
-      expect(onActivity).not.toHaveBeenCalled();
-    });
-
-    it('a key in a dialog or in another text field is not activity', () => {
-      const field = document.createElement('textarea');
-      document.body.append(field);
-      keydown(field, '1');
-      const dialog = document.createElement('dialog');
-      dialog.setAttribute('open', '');
-      document.body.append(dialog);
-      keydown(input, '1');
-      expect(onActivity).not.toHaveBeenCalled();
-    });
-  });
-
   describe('keys the browser keeps', () => {
-    it('Ctrl+Enter is left alone when there is nothing to finish', () => {
-      unbind();
-      source = createInputSource({ onIntent, canFinish: () => false });
-      unbind = source.bind(input);
-      button.focus();
-      const event = keydown(button, 'Enter', { ctrlKey: true });
-      expect(event.defaultPrevented).toBe(false);
-      expect(document.activeElement).toBe(button);
-      expect(onIntent).not.toHaveBeenCalled();
-    });
-
-    it('Ctrl+Enter finishes when it can', () => {
-      unbind();
-      source = createInputSource({ onIntent, canFinish: () => true });
-      unbind = source.bind(input);
-      const event = keydown(input, 'Enter', { ctrlKey: true });
-      expect(event.defaultPrevented).toBe(true);
-      expect(intents()).toEqual([{ kind: 'finish' }]);
-    });
-
     it('a held key is cancelled and is not input', () => {
       const event = keydown(input, 'a', { repeat: true });
       expect(event.defaultPrevented).toBe(true);

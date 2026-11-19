@@ -29,9 +29,3 @@ export type ContentItem = {
   readonly readingHints?: readonly ReadingHint[];
   readonly tatoebaId?: number;
 };
-
-// What the pool builder reads from the user's settings; the settings slice is not imported here.
-export type PoolSettings = {
-  readonly script: ScriptMode;
-  readonly content: ContentKind;
-};

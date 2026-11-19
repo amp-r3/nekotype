@@ -81,9 +81,7 @@ function installInPage(): KeystrokeProbe {
       channel.port2.postMessage(null);
     },
     forceLayout: () => {
-      document
-        .querySelector('[data-testid="prompt-arena"] .nk-test__buffer, [data-task-buffer]')
-        ?.getBoundingClientRect();
+      document.querySelector('[data-task-buffer]')?.getBoundingClientRect();
     },
   });
   // The latency test reads the samples from here.

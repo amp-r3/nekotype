@@ -31,7 +31,7 @@ export type { NoticeProps } from './notice';
 export { Kbd } from './kbd';
 export type { KbdProps } from './kbd';
 
-export { ResetIcon, RestartIcon } from './icons';
+export { ResetIcon } from './icons';
 export type { IconProps } from './icons';
 
 // `KanaChart`, `KanaTask`, `OptionCard` and `createTaskController` are not exported here: this barrel

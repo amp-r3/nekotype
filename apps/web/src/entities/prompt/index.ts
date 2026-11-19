@@ -15,7 +15,6 @@ export type {
   ReadingHint,
   PromptItem,
   Strictness,
-  PoolSettings,
 } from './model/types';
 
 export { basicRows, dakutenRows, yoonRows, extendedRows, allKanaRows } from './model/data';
@@ -49,8 +48,6 @@ export {
 } from './lib/engine';
 
 export { canonicalFor } from './lib/canonical';
-
-export { buildPool, pickPrompt } from './lib/picker';
 
 export { loadContent, loadChunk, chunksFor } from './api/content-loader';
 export { CONTENT_VERSION } from './api/content-version';

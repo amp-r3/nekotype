@@ -9,12 +9,6 @@ export type InputSourceDeps = {
   // Where keydown is listened to; the document, unless a test passes another.
   readonly target?: EventTarget;
   readonly isDialogOpen?: () => boolean;
-  // Whether Ctrl/Cmd+Enter would end a test now. When it would not, the key is left to the browser.
-  readonly canFinish?: () => boolean;
-  // A key was handled that is not input: a character outside the alphabet of input (a digit, a
-  // space, a mark), a letter of another layout or IME text. The typing test counts it as activity
-  // for its idle wait and nothing else (metrics.md, "Idle end").
-  readonly onActivity?: () => void;
 };
 
 export type InputSource = {
@@ -37,12 +31,6 @@ function isOtherTextField(target: EventTarget | null, input: HTMLInputElement): 
     target instanceof HTMLSelectElement ||
     target.isContentEditable
   );
-}
-
-// One printable character without Ctrl, Cmd or Alt: a key that types something, as opposed to a
-// modifier or a named key.
-function isCharacterKey(event: KeyboardEvent): boolean {
-  return !event.ctrlKey && !event.metaKey && !event.altKey && Array.from(event.key).length === 1;
 }
 
 /**
@@ -92,12 +80,10 @@ export function createInputSource(deps: InputSourceDeps): InputSource {
     const dispatch = (cls: InputClass, typed: boolean): void => {
       if (cls.kind === 'foreign') {
         layoutNotice.value = true;
-        deps.onActivity?.();
         return;
       }
       if (cls.kind === 'japanese') {
         imeIsOn();
-        deps.onActivity?.();
         return;
       }
       if (cls.kind === 'char') {
@@ -113,8 +99,7 @@ export function createInputSource(deps: InputSourceDeps): InputSource {
           return;
         }
       }
-      if (cls.kind === 'ignore') deps.onActivity?.();
-      else deps.onIntent(cls);
+      if (cls.kind !== 'ignore') deps.onIntent(cls);
     };
 
     const dispatchText = (text: string, typed: boolean): void => {
@@ -123,24 +108,15 @@ export function createInputSource(deps: InputSourceDeps): InputSource {
 
     const onKeyDown = (event: Event): void => {
       if (!(event instanceof KeyboardEvent)) return;
-      // Modifier combinations (Ctrl, Meta, Alt) belong to the browser. The classification lets
-      // only Ctrl/Cmd+Enter through, and only while it would end a test.
+      // Modifier combinations (Ctrl, Meta, Alt), named keys (Tab, an arrow) and characters that are
+      // not input (a digit, a space) belong to the browser.
       const cls = classifyKeyDown(event);
-      // A character that is not input (a digit, a space) is not ours either: it is left to the
-      // browser, and only tells the test that somebody is there. A modifier, a combination and a
-      // named key (Tab, an arrow) are not even that.
-      const stray = cls.kind === 'ignore' && isCharacterKey(event);
-      if (cls.kind === 'ignore' && !stray) return;
+      if (cls.kind === 'ignore') return;
       if (dialogOpen()) return;
       if (isOtherTextField(event.target, input)) return;
-      if (cls.kind === 'finish' && deps.canFinish && !deps.canFinish()) return;
       // A held key is not input: cancelled, so it types nothing and counts nothing.
       if (event.repeat) {
-        if (!stray) event.preventDefault();
-        return;
-      }
-      if (stray) {
-        deps.onActivity?.();
+        event.preventDefault();
         return;
       }
 

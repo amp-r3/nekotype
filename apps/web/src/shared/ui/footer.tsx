@@ -15,7 +15,7 @@ export function Footer({
   onNavigate,
 }: FooterProps): JSX.Element {
   return (
-    <footer data-chrome className="flex w-full justify-center pt-8">
+    <footer className="flex w-full justify-center pt-8">
       <Link
         href={aboutHref}
         onNavigate={onNavigate}

@@ -34,23 +34,6 @@ html {
   outline-offset: 2px;
 }
 
-/* A screen that takes the focus itself so that Enter and Tab work (results, learning home) is not a
-   control: it shows no ring. This rule is outside the Tailwind layers, so `outline-none` cannot do it. */
-.nk-holds-focus:focus-visible {
-  outline: none;
-}
-
-@keyframes blink {
-  0%,
-  45% {
-    opacity: 1;
-  }
-  55%,
-  100% {
-    opacity: 0;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -60,74 +43,13 @@ html {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .animate-reveal,
-  .nk-caret.is-idle {
+  .animate-reveal {
     animation: none !important;
   }
 }
 
-/* ---- The test screen ------------------------------------------------------------------------
-   The text stream, its caret and buffer, and the interface that steps aside while a test runs.
-   A state class switches a colour at once (no transition); only the caret moves, and only with
-   transform and opacity. The DOM contract is in features/training/lib/stream-dom.ts. */
-
-.nk-test {
-  position: relative;
-  width: 100%;
-}
-
-.nk-test__text {
-  position: relative;
-  overflow: hidden;
-  transition: opacity var(--dur-fade) var(--ease-out);
-}
-
-.nk-test__inner {
-  position: relative;
-  color: var(--untyped);
-  word-break: keep-all;
-  line-break: strict;
-  will-change: transform;
-}
-
-/* A prompt does not break across lines; the gap after it is where a line may end. */
-.nk-word {
-  white-space: nowrap;
-  margin-inline-end: 0.35em;
-}
-
-/* A prompt wider than the line (marked when the stream is measured, ADR 060) may break, but only
-   between groups: a group is read as one unit. */
-.nk-word.is-long {
-  white-space: normal;
-}
-
-.nk-group {
-  white-space: nowrap;
-}
-
-.nk-char {
-  display: inline-block;
-}
-
-.nk-char.is-untyped {
-  color: var(--untyped);
-}
-
-.nk-char.is-correct {
-  color: var(--fur);
-}
-
-.nk-char.is-miss {
-  color: var(--miss);
-  text-decoration: underline var(--stroke-mark) var(--miss-dim);
-  text-underline-offset: 0.18em;
-}
-
-/* A space or punctuation passed without input. */
-.nk-char.is-skip.is-done {
-  color: var(--fur-dim);
-}
+/* ---- The caret -------------------------------------------------------------------------------
+   Placed by createTaskController (shared/ui/task-controller.ts) with transform and opacity only. */
 
 .nk-caret {
   position: absolute;
@@ -149,100 +71,8 @@ html {
   opacity: 0;
 }
 
-.nk-caret.is-idle {
-  animation: blink var(--dur-blink) var(--ease-inout) infinite;
-}
-
-.nk-test.is-placing .nk-caret,
-.nk-test.is-placing .nk-test__buffer {
-  transition: none;
-}
-
-.nk-test__buffer {
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: var(--eye);
-  white-space: nowrap;
-  pointer-events: none;
-  transition: transform var(--dur-caret) var(--ease-out);
-}
-
-/* The text blurs only when the window loses focus; focus on Restart or a link does not. */
-.nk-test__blur {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--fur);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--dur-fade) var(--ease-out);
-}
-
-.nk-test.is-blurred .nk-test__text {
-  opacity: 0.25;
-}
-
-.nk-test.is-blurred .nk-test__blur {
-  opacity: 1;
-}
-
-.nk-test.is-blurred .nk-caret {
-  opacity: 0;
-}
-
-/* "Click to focus": there from the start so the line does not change height. */
-.nk-focus-hint {
-  opacity: 0;
-  transition: opacity var(--dur-hover) var(--ease-out);
-}
-
-.nk-stage[data-input-focused='false'] .nk-focus-hint {
-  opacity: 1;
-}
-
-/* Restart shows when it has the focus (Tab) or the mouse is over it, and always on a touch screen,
-   which has neither. */
-.nk-on-focus {
-  transition: opacity var(--dur-hover) var(--ease-out);
-}
-
-.nk-on-focus:not(:focus-visible) {
-  opacity: 0;
-}
-
-@media (hover: hover) {
-  .nk-on-focus:hover {
-    opacity: 1;
-  }
-}
-
-@media (pointer: coarse) {
-  .nk-on-focus:not(:focus-visible) {
-    opacity: 1;
-  }
-}
-
-/* While a test runs the navigation, the mode panel and the footer fade out, then leave the tab
-   order (visibility), so the first Tab reaches Restart. They keep their place: nothing moves. */
-[data-chrome] {
-  transition:
-    opacity var(--dur-fade) var(--ease-out),
-    visibility 0s linear 0s;
-}
-
-html[data-testing] [data-chrome] {
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity var(--dur-fade) var(--ease-in),
-    visibility 0s linear var(--dur-fade);
-}
-
 /* ---- A task of a learning session ------------------------------------------------------------
-   KanaTask and OptionCard (shared/ui). The caret is the one of the test screen; its position and
+   KanaTask and OptionCard (shared/ui). The caret is the one above; its position and
    the state classes are written by createTaskController (shared/ui/task-controller.ts). */
 
 .nk-task {
@@ -767,23 +597,6 @@ button.nk-cell.is-locked {
   width: 28px;
   height: 28px;
   font-size: var(--text-jp-body);
-}
-
-/* ---- The result chart on /stats ----------------------------------------------------------------- */
-
-@keyframes nk-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-/* Drawn in once when the screen appears (`pathLength` is 1, so the dash is the whole line). */
-.nk-rchart__line {
-  stroke-dasharray: 1;
-  animation: nk-draw var(--dur-draw) var(--ease-out) both;
 }
 
 /* ---- The history table on /stats ----------------------------------------------------------------

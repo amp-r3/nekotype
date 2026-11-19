@@ -33,10 +33,7 @@ export function Nav({
   trailing,
 }: NavProps): JSX.Element {
   return (
-    <header
-      data-chrome
-      className="min-h-nav flex w-full flex-wrap items-center gap-x-8 select-none max-sm:gap-x-4 max-sm:pt-2"
-    >
+    <header className="min-h-nav flex w-full flex-wrap items-center gap-x-8 select-none max-sm:gap-x-4 max-sm:pt-2">
       <Link href={brandHref} onNavigate={onNavigate} className="order-1 flex items-center">
         {brand}
       </Link>
