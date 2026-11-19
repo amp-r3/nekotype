@@ -687,6 +687,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 - **Preview URL:** no `sign in` link and no sign-in buttons; `/settings` shows the Account section with nothing to press; everything else unchanged. Locally with `.dev.vars`: the whole flow with both providers. After the merge the maintainer signs in on production from two browsers and checks that progress appears in the second.
 - **Done when:** `verify:quick` passes; the initial JS grew by at most 0.8 KB (D17) and is at most 33.5 KB.
 - **Size:** about 1,500 lines.
+- **Production check (2026-11-19):** done by the maintainer: signed in, signed out, and saw the account section of `/settings` on `nekotype.pages.dev`.
 
 ### PR 9 — Sync e2e
 
