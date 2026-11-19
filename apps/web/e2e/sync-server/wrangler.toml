@@ -1,0 +1,23 @@
+# The Pages project of the sync e2e tests (p5-plan.md, D9): served by `wrangler pages dev` from this
+# directory, with a local D1 and the fake OAuth provider of `functions/api/[[route]].ts`. Nothing
+# here is deployed: the production bundle is built from `functions/` at the repository root.
+name = "nekotype-e2e-sync"
+pages_build_output_dir = "../../dist-e2e-sync"
+compatibility_date = "2026-11-01"
+
+[vars]
+ENVIRONMENT = "test"
+APP_ORIGIN = "http://localhost:5274"
+# No spacing between two syncs of a user, so a test does not wait for it.
+SYNC_MIN_INTERVAL_MS = "0"
+# The fake provider ignores the client, but the routes refuse to start a sign-in without one.
+GOOGLE_CLIENT_ID = "e2e"
+GOOGLE_CLIENT_SECRET = "e2e"
+GITHUB_CLIENT_ID = "e2e"
+GITHUB_CLIENT_SECRET = "e2e"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nekotype-e2e"
+database_id = "00000000-0000-0000-0000-000000000002" # local only
+migrations_dir = "../../../api/migrations"

@@ -40,6 +40,7 @@ pnpm run verify:quick # typecheck + lint + format:check + docs:check + test (cov
 pnpm run verify       # verify:quick + e2e (what CI runs on a pull request)
 pnpm run docs:check   # relative links and anchors in Markdown; lists files over the size rule
 pnpm run e2e          # Playwright; one-time: pnpm --filter @nekotype/web exec playwright install --with-deps chromium webkit
+pnpm run e2e:sync     # the sync e2e only: wrangler pages dev, local D1, fake OAuth (ADR 091); `e2e` runs it too
 pnpm run e2e:latency  # keystroke latency test (about 2 min); CI runs it on main, by hand and on pull requests that touch input or loading code (ADR 052, 074)
 ```
 

@@ -7,6 +7,7 @@ export function createBaseConfig(tsconfigRootDir) {
         'dist/**',
         'dist-probe/**',
         'dist-e2e/**',
+        'dist-e2e-sync/**',
         'node_modules/**',
         'coverage/**',
         'scripts/font-src/**',
