@@ -99,7 +99,7 @@ export const en = {
   'learn.summary.failed': 'failed to load. check the connection and try again.',
   'learn.summary.retry': 'retry',
 
-  // Typing input, shared by a learning session and the typing screen
+  // Input of a learning session: the layout and IME notices
   'stage.turnImeOff': 'turn off the Japanese IME: Nekotype converts romaji itself',
   'stage.switchLayout': 'switch your keyboard layout to English',
   'key.esc': 'esc',

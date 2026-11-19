@@ -195,7 +195,7 @@ export function setShowTranslation(show: boolean): void {
   persist();
 }
 
-// Changing the test length or kind restarts the session; features/training watches this signal.
+// The test length and kind.
 export function setTestConfig(config: TestConfig): void {
   _testConfig.value = config;
   persist();

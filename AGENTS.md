@@ -4,9 +4,9 @@ Instructions for AI coding agents working in this repository. `CLAUDE.md` is a s
 
 ## Project
 
-Nekotype is a keyboard-first web app for learning Japanese, starting with hiragana and katakana from zero, with progress tracking (ADR 058, ADR 093). The typing trainer on `/type` is being removed (P6); words join learning instead. Production: <https://nekotype.pages.dev> (Cloudflare Pages).
+Nekotype is a keyboard-first web app for learning Japanese, starting with hiragana and katakana from zero, with progress tracking (ADR 058, ADR 093). The typing trainer is being removed (P6): `/type` is gone and answers 404, its data goes in the next pull requests of the phase; words join learning instead. Production: <https://nekotype.pages.dev> (Cloudflare Pages).
 
-- **Current code** is the v1 baseline in a pnpm monorepo (ADR 027; phases P0–P5 done): a Preact SPA in `apps/web/` (learning on `/`, the typing trainer with words and phrases on `/type`), the stream input engine and kana tables in `packages/engine`, shared types, guards, merge and patch functions and the API schemas in `packages/shared`, the content pipeline in `packages/content` (a build tool, run by hand; its generated chunks are committed), the API in `apps/api` (Hono on Pages Functions with a D1 database: sign-in with Google and GitHub, sessions, `/api/sync`, `/api/results`, account deletion, `/api/reports` with Turnstile), and `apps/bench`, the sync measurement on a test Pages project. Settings, learning state and typing results, records and statistics are in IndexedDB, the language in localStorage; for a signed-in user a lazy sync engine sends them to D1 and merges what other devices sent.
+- **Current code** is the v1 baseline in a pnpm monorepo (ADR 027; phases P0–P5 done): a Preact SPA in `apps/web/` (learning on `/`), the stream input engine and kana tables in `packages/engine`, shared types, guards, merge and patch functions and the API schemas in `packages/shared`, the content pipeline in `packages/content` (a build tool, run by hand; its generated chunks are committed), the API in `apps/api` (Hono on Pages Functions with a D1 database: sign-in with Google and GitHub, sessions, `/api/sync`, `/api/results`, account deletion, `/api/reports` with Turnstile), and `apps/bench`, the sync measurement on a test Pages project. Settings, learning state and typing results, records and statistics are in IndexedDB, the language in localStorage; for a signed-in user a lazy sync engine sends them to D1 and merges what other devices sent.
 - **Target** is the learning MVP in `docs/spec/`, delivered in phases P0–P12 (ADR 093): kana learning on `/` with IndexedDB (done in P3), the content pipeline (done in P4), Pages Functions + D1 sync (done in P5); still to come: removing the typing trainer (P6), an adaptive knowledge model (P7), kana audio with listening tasks (P8), a placement test and kana mnemonics (P9), words in learning (P10), vocabulary with English meanings (P11), polish and release (P12).
 - Where documents disagree, `docs/spec/` wins over everything else. `README.md` and `docs/architecture/` describe the code after the latest finished phase; when a phase changes the code, update them in the same PR.
 
@@ -41,7 +41,7 @@ pnpm run verify       # verify:quick + e2e (what CI runs on a pull request)
 pnpm run docs:check   # relative links and anchors in Markdown; lists files over the size rule
 pnpm run e2e          # Playwright; one-time: pnpm --filter @nekotype/web exec playwright install --with-deps chromium webkit
 pnpm run e2e:sync     # the sync e2e only: wrangler pages dev, local D1, fake OAuth (ADR 091); `e2e` runs it too
-pnpm run e2e:latency  # keystroke latency test (about 2 min); CI runs it on main, by hand and on pull requests that touch input or loading code (ADR 052, 074)
+pnpm run e2e:latency  # keystroke latency test on recall (about 1 min); CI runs it on main, by hand and on pull requests that touch input, the learning session or loading code (ADR 052, 074, 095)
 ```
 
 Run a single test file from its package: `cd apps/web && pnpm exec vitest run src/path/file.test.ts`. Run one e2e file on Chromium: `cd apps/web && pnpm exec playwright test e2e/<file>.spec.ts --project=chromium`. Do it when a change touches browser behaviour (focus, IME, layout); CI runs the whole suite.
@@ -91,8 +91,8 @@ Run a single test file from its package: `cd apps/web && pnpm exec vitest run sr
 
 ## Performance
 
-- Hot path: a keystroke MUST NOT trigger a component render (0 renders; at most 1 on prompt completion). Update the DOM through signals as text nodes, `useSignalEffect` and refs. A render-isolation test enforces it.
-- No IndexedDB writes during a test.
+- Hot path: a keystroke of a recall task MUST NOT trigger a component render (0 renders; at most 1 when the answer is finished). Update the DOM through signals as text nodes, `useSignalEffect` and refs. A render-isolation test (`session-screen.test.tsx`) enforces it.
+- No IndexedDB writes inside a keystroke handler.
 - Budgets: HTML ≤ 5 KB; initial JS ≤ 35 KB gzip; CSS ≤ 10 KB gzip; each font ≤ 45 KB; first load ≤ 160 KB. `pnpm run budget` fails the build when exceeded.
 
 ## Testing

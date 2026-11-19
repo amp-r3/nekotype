@@ -1,5 +1,6 @@
 # ADR 092: The Report Dialog Is a Lazy Chunk of the Trainer Page, Site Keys Are Chosen by Host, and a Missing or Test Secret Closes the Endpoint
 
+- **Status:** In force for the endpoint, the secrets and the keys by host. The dialog and the Turnstile loader left the client with the trainer ([ADR 095](095-remove-type-route-and-move-browser-tests-to-recall.md), item 8); P10 brings the dialog back for word tasks.
 - **Context:** P5 PR 12 ([p5-plan.md](../archive/p5-plan.md), D21) adds `POST /api/reports` and the dialog on `/type`. Reports are open to guests, so the only abuse control is Cloudflare Turnstile ([backend.md](../spec/backend.md)). One build is deployed to a preview and then to production, and the Turnstile script is not allowed in the initial load.
 - **Decision:**
   1. **The dialog sits in the page.** `frontend.md` names a slice `features/report-content`; it has one consumer, so [ADR 015](015-merging-widgets-layer-into-pages-trainer-ui.md) merges it into `pages/trainer`: `ui/report-dialog.tsx`, `ui/report-action.tsx`, `lib/turnstile.ts`, `api/reports.ts`, `report-loader.ts`. The dialog is a chunk of its own (about 2 KB gzip) loaded when `report a problem` is pressed; the action itself is a button in the translation line that reads no signal a keystroke changes, so typing renders nothing there.

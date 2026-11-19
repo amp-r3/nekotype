@@ -101,7 +101,7 @@ export const ru = {
   'learn.summary.failed': 'не удалось загрузить. проверьте соединение.',
   'learn.summary.retry': 'ещё раз',
 
-  // Typing input, shared by a learning session and the typing screen
+  // Input of a learning session: the layout and IME notices
   'stage.turnImeOff': 'выключите японский IME: Nekotype сам превращает ромадзи в кану',
   'stage.switchLayout': 'переключите раскладку на английскую',
   'key.esc': 'esc',

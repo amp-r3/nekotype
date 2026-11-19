@@ -16,7 +16,7 @@ Part of the [architecture description](README.md) of the current code.
   - `lib/mode-line.ts` has `modeLabel(config)` and `modeLine(parts)` (`words · hiragana · relaxed · 60 s`), used by the typing results and by `/stats`; their strings (`mode.*`) are in the core dictionary because two lazy screens use them.
   - The store never touches `delta/learn` (A39).
 - `KanaStatMap`: `Readonly<Record<string, KanaStat>>`, the form `weakFocus` consumes. A kana's weakness is `(erroredAttempts + 1) / (attempts + 2)` and its weight `1 + 4 × weakness`.
-- `computeItemWeight(tokenKeys: readonly string[], weights: ReadonlyMap<string, number>): number`: Evaluates prompt weight for words/phrases by computing the arithmetic mean over all constituent token kana keys (unseen keys defaulting to weight 3.0, per section 8 of the [archived v1 plan](../archive/v1-implementation-plan.md)). Since D20 it is used: `createPromptWeights()` in `features/training` maps each word or phrase to the `KanaKey`s of its tokens and weighs it by their mean; a single kana key weighs what it did before.
+- `computeItemWeight(tokenKeys: readonly string[], weights: ReadonlyMap<string, number>): number`: the arithmetic mean of the weights of the kana keys of a word or phrase, unseen keys weighing 3.0. Nothing calls it since the trainer was removed; it goes with the rest of `entities/stats`.
 
 ## `entities/settings`
 
@@ -25,7 +25,6 @@ Part of the [architecture description](README.md) of the current code.
   - Each action writes the whole `Settings` document at once (no debounce, nothing waits for `pagehide`) and sets `updatedAt` from the `Clock`, then posts on the `BroadcastChannel` `nekotype:settings` (another tab reads the document again); a failed write calls `reportWriteFailure()`.
   - It does not import `entities/prompt`: its `ScriptMode` and `ContentKind` derive from `ValidSettings`.
 - `content` defaults to `words`. A saved value that fails validation (for example the removed `single`) is replaced by the defaults, with no conversion (ADR 061); a stored `rowIds` is ignored.
-- Changing a setting does not reset the session here (a slice cannot import another); `setupSettingsResetWatcher` in `features/training` does.
 
 ## `entities/learn`
 
@@ -40,5 +39,5 @@ Part of the [architecture description](README.md) of the current code.
 
 ## `entities/prompt`
 
-- `buildPool(settings: PoolSettings, content?: readonly ContentItem[]): readonly PromptItem[]`: Builds the prompt pool from the loaded words or phrases, filtered by the script mode (`mixed` phrases only for `both`; a phrase keeps its `tatoebaId`). It is empty while the vocabulary is not loaded or when nothing matches the script; the trainer then shows no prompt and blocks input (a loading notice, or the load error with Retry). There is no kana fallback pool since P3 (ADR 019, 028 are superseded).
-- `pickPrompt(pool: readonly PromptItem[], weights: ReadonlyMap<string, number>, rng: Rng, previousKey: string | null): PromptItem`: Selects the next prompt using weighted distribution. Throws an invariant Error on an empty pool, which `buildPool` no longer produces.
+- The kana table of the application (`model/data`: `basicRows`, `dakutenRows`, `yoonRows`, `extendedRows`, `allKanaRows`) and the binding of `packages/engine` to it (`lib/engine.ts`: `compile`, `start`, `step`, `isComplete`, `spellingsFor`, `canonical` and the rest of the matcher API; `lib/canonical.ts`: `canonicalFor`). A recall task and an introduction compile their kana with this binding.
+- `api/` holds the loaders of the generated word and phrase chunks (`content-loader.ts`, `credits-loader.ts`) and `content/` the chunks themselves. Nothing in the screens reads them since the typing trainer was removed (ADR 093); they go out of the build in a pull request of their own.

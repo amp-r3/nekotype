@@ -1,6 +1,6 @@
 # Learning
 
-Learning is the core of the product ([ADR 058](../adr/058-learning-first.md)): it teaches hiragana and katakana from zero on `/`. Kana unlock one at a time as the learner becomes confident with the ones already unlocked; a learning session mixes recall and recognition tasks and favours weak kana; Leitner boxes schedule reviews once a kana is confident. Learning uses the same engine and romaji buffer as typing, with a session of its own and no timer. Answer time, errors, confidence and the streak are defined in [Metrics](metrics.md#learning-metrics); the data model is in [Metrics](metrics.md#data-model).
+Learning is the core of the product ([ADR 058](../adr/058-learning-first.md)): it teaches hiragana and katakana from zero on `/`. Kana unlock one at a time as the learner becomes confident with the ones already unlocked; a learning session mixes recall and recognition tasks and favours weak kana; Leitner boxes schedule reviews once a kana is confident. Learning uses the input engine and a romaji buffer of its own, with a session and no timer. Answer time, errors, confidence and the streak are defined in [Metrics](metrics.md#learning-metrics); the data model is in [Metrics](metrics.md#data-model).
 
 ## Tracks
 
@@ -31,7 +31,7 @@ Learning is the core of the product ([ADR 058](../adr/058-learning-first.md)): i
   2. Kana with fewer than 10 recall answers, and kana that are not confident, are **in focus** (ADR 063). A kana that lost its confidence holds back the next unlock, so it is trained like a new one until it is confident again. The task takes a kana in focus with probability `FOCUS_SHARE` = 0.5 when there are kana both in and out of focus, with probability 1 when every candidate is in focus, and 0 when none is (A40). Kana in focus are equally likely; a kana out of focus is chosen with probability proportional to its weight.
   3. The **weight** of a kana out of focus is `1 + 4 × min(1, slow + err)`, with `slow = clamp((m − T) / T, 0, 1)` and `err = clamp((1 − a) / 0.5, 0, 1)`, where `m` is the median answer time and `a` the accuracy of its last 10 recall answers, and `T` is the target answer time. A confident kana without errors weighs 1; a kana twice as slow as the target, or wrong in half its answers, weighs 5.
   4. The task is a recognition task with probability `RECOGNITION_SHARE` = 1/3, and a recall task otherwise.
-- **Recall.** The kana is shown; the user types its romaji in the learning strictness (`settings.learn.strictness`, relaxed by default), with the romaji buffer as on the typing screen. A rejected key flashes the caret; Esc shows the displayed romaji, and on a touch screen, which has no Esc, a "Show the romaji" button does the same; either counts as an error. The answer ends when the kana is typed in full.
+- **Recall.** The kana is shown; the user types its romaji in the learning strictness (`settings.learn.strictness`, relaxed by default), with the romaji buffer next to the kana. A rejected key flashes the caret; Esc shows the displayed romaji, and on a touch screen, which has no Esc, a "Show the romaji" button does the same; either counts as an error. The answer ends when the kana is typed in full.
 - **Recognition.** The displayed romaji is shown; the user picks the kana from 4 numbered options by click, tap or keys 1–4. A wrong choice is recorded in the kana's `mixups` and reveals the right option.
 - **After an answer** the result stays on screen for `ANSWER_PAUSE_MS` = 400 and the next task follows. After a wrong recognition choice the next task waits for Enter, Space or a click, so the right option can be read. Keys pressed before the next task is shown are ignored.
 - **Displayed romaji.** Wherever learning shows a kana's romaji (the introduction, the recognition prompt, the romaji revealed by Esc, the chart's tooltip and details), it is `canonicalFor`, except ん and ン, shown as `n`: one `n` completes them at the end of a task, so `nn` would teach a keystroke the learner does not need (ADR 062). Recall accepts every spelling of the learning strictness.
@@ -94,7 +94,7 @@ A distractor MUST be of the same script and MUST NOT share any accepted spelling
 
 ## Session summary
 
-Shown at the end of a learning or review session; a chunk of its own, like the results screen of typing:
+Shown at the end of a learning or review session; a chunk of its own:
 
 - kana unlocked during the session;
 - kana that became confident: not confident at the start, confident at the end;

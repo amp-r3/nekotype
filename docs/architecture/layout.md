@@ -25,8 +25,8 @@ Packages are consumed as TypeScript source (no build step). Each package has its
 ```
 apps/web/src/
 ├── app/                  # Application root: shell (navigation, footer), routes, initialization, styles
-├── pages/                # Full-page views: trainer, learn, stats, settings, about
-├── features/             # User interaction workflows (training)
+├── pages/                # Full-page views: learn, stats, settings, about
+├── features/             # User interaction workflows (sync)
 ├── entities/             # Core domain models and business state (kana, session, stats, learn)
 └── shared/               # Reusable primitives, UI components, i18n, storage, and utility libraries
 ```
@@ -56,13 +56,13 @@ Under standard FSD, the `widgets/` layer hosts multi-slice compositional blocks.
 ## Routing and the application shell (ADR 037)
 
 - `shared/lib/router.ts` is a router on the History API: `currentPath` (a signal), `navigate()`, `startRouter()` for the back button. It knows paths only.
-- `app/route-paths.ts` lists the screens (`/`, `/type`, `/stats`, `/settings`, `/about`); `app/routes.tsx` maps each to a loader. `/` is the learning screen and is in the initial chunk; the typing trainer is the lazy route `/type`; `/learn` answers 404 (P3 PR 14); the others are dynamic imports (separate chunks, checked by `check-budget.mjs` as route chunks). A lazy route loads its page chunk and its dictionary part together (`loadDictionaryPart`, ADR 067), so a screen never renders before its strings. `app/route-state.ts` holds the loaded screens and the failed ones; `RouteView` renders the screen, a loading line, a retry notice or the not-found screen.
+- `app/route-paths.ts` lists the screens (`/`, `/stats`, `/settings`, `/about`); `app/routes.tsx` maps each to a loader. `/` is the learning screen and is in the initial chunk; `/learn` and `/type` answer 404 (P3 PR 14, P6 PR 1); the others are dynamic imports (separate chunks, checked by `check-budget.mjs` as route chunks). A lazy route loads its page chunk and its dictionary part together (`loadDictionaryPart`, ADR 067), so a screen never renders before its strings. `app/route-state.ts` holds the loaded screens and the failed ones; `RouteView` renders the screen, a loading line, a retry notice or the not-found screen.
 - `app/App.tsx` is the shell: `Nav` and `Footer` from `shared/ui` (they take their strings and the navigation handler as props), the language switch, `<main>`. The pages carry no frame of their own.
-- `public/_redirects` rewrites the four non-root routes (with and without a trailing slash) to `/` with status 200 (not `/index.html`, ADR 039); `redirects.test.ts` keeps it equal to `ROUTE_PATHS`. There is no catch-all, so `404.html` still answers unknown paths and missing assets; it is a static twin of the app's not-found screen (ADR 077).
-- `app/prefetch.ts` fetches the lazy screens and the content chunks of the selected content and script (`chunksFor`) on `requestIdleCallback` (a timer where it is missing) after the first render. The same pass loads the results screen and both whole dictionaries (core and every screen part, en and ru), which are chunks of their own (ADR 057, ADR 067). The tab title follows the screen and the language (`initApp`).
+- `public/_redirects` rewrites the three non-root routes (with and without a trailing slash) to `/` with status 200 (not `/index.html`, ADR 039); `redirects.test.ts` keeps it equal to `ROUTE_PATHS`. There is no catch-all, so `404.html` still answers unknown paths and missing assets; it is a static twin of the app's not-found screen (ADR 077).
+- `app/prefetch.ts` fetches the lazy screens on `requestIdleCallback` (a timer where it is missing) after the first render. The same pass loads the session runtime, the session summary and both whole dictionaries (core and every screen part, en and ru), which are chunks of their own (ADR 057, ADR 067). The tab title follows the screen and the language (`initApp`).
 
 ## Styles and design tokens (ADR 034)
 
 - `shared/styles/tokens.css` holds the design-system tokens by hand (colours under `[data-theme='dark']`, scales and text styles in `@theme`); `tokens.test.ts` compares it with `docs/design/source/tokens.json`. The Tailwind default scales are cleared, so only token-based classes (`text-fur`, `text-ui-label`, `font-jp`, `h-control`, …) produce CSS.
 - `shared/styles/fonts.css` declares the five faces (Golos Text 400/500, JetBrains Mono 400/500, Noto Sans JP 400); `font-synthesis: none`.
-- E2E and DOM tests select by `data-testid` and by the attributes the stream keeps on `prompt-arena` (`data-phase`, `data-rejected`), not by class. `prompt-text` is a visually hidden element with the text of the prompt on display, which is also what assistive technology reads; e2e tests work out the canonical answer from it with the engine (`e2e/lib/prompt.ts`, ADR 045).
+- E2E and DOM tests select by role, label or `data-testid`, not by class. The DOM carries no answers: an e2e test works out the romaji of a task from the kana on screen with the kana table (`e2e/lib/learn.ts`, ADR 045).
