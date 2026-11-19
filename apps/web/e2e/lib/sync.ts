@@ -1,7 +1,6 @@
 import { expect } from '@playwright/test';
-import type { BrowserContext, Page } from '@playwright/test';
+import type { BrowserContext, Locator, Page } from '@playwright/test';
 import { answer } from './learn';
-import { canonicalOfPrompt } from './prompt';
 
 /** A name no other test of the run uses: the database of the sync server lives for the whole run. */
 export function uniqueUser(prefix: string): string {
@@ -34,11 +33,8 @@ export async function expectSyncStatus(page: Page, status: string): Promise<void
   ).toHaveText(status);
 }
 
-/** One learning session of 25 tasks on `/`, played correctly. */
-export async function playLearningSession(page: Page): Promise<void> {
-  await page.goto('/');
-  await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
-  await page.getByRole('button', { name: 'continue' }).click();
+/** Plays the 25 tasks of the learning session on screen, correctly, up to its summary. */
+export async function answerSession(page: Page): Promise<void> {
   for (let n = 1; n <= 25; n++) {
     await expect(page.getByTestId('task-session')).toHaveText(`learning · ${String(n)} of 25`);
     await answer(page, false);
@@ -46,15 +42,15 @@ export async function playLearningSession(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'session summary' })).toBeVisible();
 }
 
-/** Types the prompts of a count test on `/type`, one after another, until the results show. */
-export async function typeCountTest(page: Page, prompts: number): Promise<void> {
-  for (let i = 0; i < prompts; i++) {
-    const canonical = await canonicalOfPrompt(page);
-    const glyph = await page.getByTestId('prompt-text').innerText();
-    await page.keyboard.type(canonical, { delay: 10 });
-    if (i < prompts - 1) {
-      await expect(page.getByTestId('prompt-text')).not.toHaveText(glyph, { timeout: 2000 });
-    }
-  }
-  await expect(page.getByTestId('results-panel').getByTestId('mode-line')).toBeVisible();
+/** One learning session of 25 tasks on `/`, started from the table and played correctly. */
+export async function playLearningSession(page: Page): Promise<void> {
+  await page.goto('/');
+  await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
+  await page.getByRole('button', { name: 'continue' }).click();
+  await answerSession(page);
+}
+
+/** The sessions line of `/stats`, which the other device reads (`learning sessions: …`). */
+export function sessionsLine(page: Page): Locator {
+  return page.getByTestId('stats-sessions');
 }

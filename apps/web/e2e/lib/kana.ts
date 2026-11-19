@@ -38,3 +38,23 @@ export function learnStateWith(kana: readonly string[]): Record<string, unknown>
     recallBuckets: { hiragana: {}, katakana: {} },
   };
 }
+
+/**
+ * A learning state in which the five vowels and `kana` are unlocked and `kana` alone is due and
+ * confident, so a review session of one task opens on its recall (ADR 062).
+ */
+export function reviewState(kana: string): Record<string, unknown> {
+  const vowels = ['あ', 'い', 'う', 'え', 'お'].map((v) => `hiragana:${v}`);
+  const key = `hiragana:${kana}`;
+  return {
+    unlocked: {
+      hiragana: [...vowels, key],
+      katakana: ['katakana:ア', 'katakana:イ', 'katakana:ウ', 'katakana:エ', 'katakana:オ'],
+    },
+    entries: { [key]: { box: 2, dueAt: 1, updatedAt: 1 } },
+    recent: { [key]: Array.from({ length: 10 }, (_, i) => ({ at: i + 1, ms: 900, ok: true })) },
+    stats: {},
+    activeDays: [],
+    recallBuckets: { hiragana: {}, katakana: {} },
+  };
+}
