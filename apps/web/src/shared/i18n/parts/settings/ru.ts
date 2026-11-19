@@ -44,6 +44,15 @@ export const settingsRu = {
   'signOut.progress': 'Часть прогресса ещё не отправлена. Если выйти сейчас, она пропадёт.',
   'signOut.cancel': 'отмена',
   'signOut.action': 'выйти',
+  'settings.account.delete': 'удалить аккаунт',
+  'settings.account.signInToDelete': 'Войдите снова, чтобы удалить аккаунт.',
+  'delete.title': 'Удалить аккаунт?',
+  'delete.label': 'Введите «удалить»',
+  'delete.word': 'удалить',
+  'delete.cancel': 'отмена',
+  'delete.action': 'удалить',
+  'delete.busy': 'удаление…',
+  'delete.failed': 'не удалось удалить. проверьте соединение.',
 
   'account.other.title': 'Войти в другой аккаунт?',
   'account.other.text':

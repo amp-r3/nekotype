@@ -119,3 +119,14 @@ export async function findUserProfile(db: D1Database, userId: string): Promise<U
     avatarUrl: textOf(row, 'avatar_url'),
   };
 }
+
+/**
+ * Deletes the account in one `batch()` (one transaction): its reports keep their row with no user,
+ * then the `users` row goes and the foreign keys cascade over every other table (D1 enforces them).
+ */
+export async function deleteUser(db: D1Database, userId: string): Promise<void> {
+  await db.batch([
+    db.prepare('UPDATE content_reports SET user_id = NULL WHERE user_id = ?').bind(userId),
+    db.prepare('DELETE FROM users WHERE id = ?').bind(userId),
+  ]);
+}

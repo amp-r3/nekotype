@@ -4,13 +4,17 @@ import { cx } from '../lib';
 
 export type DialogProps = {
   readonly open: boolean;
-  readonly onClose: () => void;
+  // Omitted while a request runs (design decisions 115, 122): no `✕`, `Esc` and the backdrop do nothing.
+  readonly onClose?: (() => void) | undefined;
   readonly title: string;
   readonly closeLabel: string;
   // The safe action comes first and receives the initial focus (design Dialog); without it the
   // dialog's own first control, `✕`, gets it.
   readonly initialFocusRef?: { readonly current: HTMLElement | null };
   readonly children: ComponentChildren;
+  // One reserved line (a `Notice`) in the actions row, left of the buttons (decision 127).
+  readonly note?: ComponentChildren;
+  readonly actions?: ComponentChildren;
   readonly className?: string;
 };
 
@@ -21,6 +25,8 @@ export function Dialog({
   closeLabel,
   initialFocusRef,
   children,
+  note,
+  actions,
   className = '',
 }: DialogProps): JSX.Element {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
@@ -58,18 +64,24 @@ export function Dialog({
         previouslyFocusedElementRef.current.focus();
         previouslyFocusedElementRef.current = null;
       }
-      onClose();
+      onClose?.();
+    };
+    // `Esc` cannot close a dialog whose request is running.
+    const handleCancel = (event: Event) => {
+      if (onClose === undefined) event.preventDefault();
     };
 
     dialog.addEventListener('close', handleClose);
+    dialog.addEventListener('cancel', handleCancel);
     return () => {
       dialog.removeEventListener('close', handleClose);
+      dialog.removeEventListener('cancel', handleCancel);
     };
   }, [onClose]);
 
   const handleBackdropClick = (e: MouseEvent) => {
     if (e.target === dialogRef.current) {
-      onClose();
+      onClose?.();
     }
   };
 
@@ -88,16 +100,28 @@ export function Dialog({
           <h2 id="dialog-title" className="text-ui-heading text-fur">
             {title}
           </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-fur-dim hover:text-fur hover:bg-bg-hover pointer-coarse:min-h-touch-min pointer-coarse:min-w-touch-min h-control-sm w-control-sm -mt-1 -mr-2 inline-flex shrink-0 cursor-pointer items-center justify-center rounded-sm font-mono transition-colors"
-            aria-label={closeLabel}
-          >
-            ✕
-          </button>
+          {onClose !== undefined && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-fur-dim hover:text-fur hover:bg-bg-hover pointer-coarse:min-h-touch-min pointer-coarse:min-w-touch-min h-control-sm w-control-sm -mt-1 -mr-2 inline-flex shrink-0 cursor-pointer items-center justify-center rounded-sm font-mono transition-colors"
+              aria-label={closeLabel}
+            >
+              ✕
+            </button>
+          )}
         </div>
         <div className="flex flex-col gap-4">{children}</div>
+        {actions !== undefined && (
+          <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
+            {note !== undefined && (
+              <div className="flex min-h-10 min-w-0 flex-[1_1_0] items-center max-sm:basis-full">
+                {note}
+              </div>
+            )}
+            {actions}
+          </div>
+        )}
       </div>
     </dialog>
   );

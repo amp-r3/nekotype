@@ -8,7 +8,7 @@ import { createMemoryDb } from '@/shared/lib';
 import { initUser } from '@/entities/user';
 import type * as UserModule from '@/entities/user';
 import type * as SyncModule from '@/features/sync';
-import { prepareSignOut, signOut, syncOnline, syncStatus } from '@/features/sync';
+import { deleteAccount, prepareSignOut, signOut, syncOnline, syncStatus } from '@/features/sync';
 import type { SyncStatus, Unsent } from '@/features/sync';
 import { AccountPanel } from './account-panel';
 
@@ -20,6 +20,7 @@ vi.mock('@/features/sync', async (original) => {
     syncOnline: signal(true),
     prepareSignOut: vi.fn(),
     signOut: vi.fn(),
+    deleteAccount: vi.fn(),
     readProfile: (await original<typeof SyncModule>()).readProfile,
   };
 });
@@ -75,6 +76,7 @@ describe('AccountPanel', () => {
     setOnline(true);
     vi.mocked(prepareSignOut).mockReset();
     vi.mocked(signOut).mockReset();
+    vi.mocked(deleteAccount).mockReset();
     beginSignIn.mockReset();
     await signIn();
   });
@@ -231,5 +233,128 @@ describe('AccountPanel', () => {
       await settle();
     });
     expect(button(container, t('settings.account.signOut')).disabled).toBe(false);
+  });
+  describe('delete account', () => {
+    const deleteDialog = (): HTMLDialogElement => {
+      const found = Array.from(container.querySelectorAll('dialog')).find((el) =>
+        el.textContent.includes(t('delete.title')),
+      );
+      if (found === undefined) throw new Error('no delete dialog');
+      return found;
+    };
+    const type = async (dialog: HTMLElement, value: string): Promise<void> => {
+      const field = dialog.querySelector('input');
+      if (field === null) throw new Error('no field');
+      await act(() => {
+        field.value = value;
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    };
+    const openDialog = async (): Promise<HTMLDialogElement> => {
+      await show();
+      await act(() => {
+        button(container, t('settings.account.delete')).click();
+      });
+      return deleteDialog();
+    };
+
+    it('disables the button offline and with an expired session, and says why', async () => {
+      setOnline(false);
+      setStatus('offline');
+      await show();
+      expect(button(container, t('settings.account.delete')).disabled).toBe(true);
+      expect(container.textContent).toContain(t('settings.account.needsConnection'));
+
+      await signIn({ expired: true });
+      setOnline(false);
+      setStatus('expired');
+      await show();
+      expect(button(container, t('settings.account.delete')).disabled).toBe(true);
+      expect(container.textContent).toContain(t('settings.account.signInToDelete'));
+      expect(container.textContent).not.toContain(t('settings.account.needsConnection'));
+    });
+
+    it('keeps the action disabled until the word is typed', async () => {
+      const dialog = await openDialog();
+      const action = button(dialog, t('delete.action'));
+      expect(dialog.open).toBe(true);
+      expect(action.disabled).toBe(true);
+
+      await type(dialog, 'delet');
+      expect(action.disabled).toBe(true);
+      await type(dialog, ' Delete ');
+      expect(action.disabled).toBe(false);
+      expect(deleteAccount).not.toHaveBeenCalled();
+    });
+
+    it('asks for the word of the current language', async () => {
+      await setLocale('ru');
+      await loadDictionaryPart('settings');
+      const dialog = await openDialog();
+      await type(dialog, 'delete');
+      expect(button(dialog, t('delete.action')).disabled).toBe(true);
+      await type(dialog, 'удалить');
+      expect(button(dialog, t('delete.action')).disabled).toBe(false);
+    });
+
+    it('cancels without a request', async () => {
+      const dialog = await openDialog();
+      await type(dialog, 'delete');
+      await act(() => {
+        button(dialog, t('delete.cancel')).click();
+      });
+      expect(dialog.open).toBe(false);
+      expect(deleteAccount).not.toHaveBeenCalled();
+    });
+
+    it('cannot be closed while the request runs and shows the progress', async () => {
+      let finish: (done: boolean) => void = () => {};
+      vi.mocked(deleteAccount).mockReturnValue(
+        new Promise<boolean>((resolve) => {
+          finish = resolve;
+        }),
+      );
+      const dialog = await openDialog();
+      await type(dialog, 'delete');
+      await act(() => {
+        button(dialog, t('delete.action')).click();
+      });
+
+      expect(button(dialog, t('delete.busy')).disabled).toBe(true);
+      expect(button(dialog, t('delete.cancel')).disabled).toBe(true);
+      expect(dialog.querySelector('input')?.disabled).toBe(true);
+      expect(dialog.querySelector(`[aria-label="${t('signOut.cancel')}"]`)).toBeNull();
+      const escape = new Event('cancel', { cancelable: true });
+      dialog.dispatchEvent(escape);
+      expect(escape.defaultPrevented).toBe(true);
+
+      await act(async () => {
+        finish(true);
+        await settle();
+      });
+    });
+
+    it('shows the failure, keeps the word and lets the user try again', async () => {
+      vi.mocked(deleteAccount).mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+      const dialog = await openDialog();
+      await type(dialog, 'delete');
+      await act(async () => {
+        button(dialog, t('delete.action')).click();
+        await settle();
+      });
+
+      expect(dialog.open).toBe(true);
+      expect(dialog.textContent).toContain(t('delete.failed'));
+      expect(dialog.querySelector('input')?.value).toBe('delete');
+      const again = button(dialog, t('delete.action'));
+      expect(again.disabled).toBe(false);
+
+      await act(async () => {
+        again.click();
+        await settle();
+      });
+      expect(deleteAccount).toHaveBeenCalledTimes(2);
+      expect(dialog.open).toBe(false);
+    });
   });
 });
