@@ -22,7 +22,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | D   | `docs/p5-design`         | done        | #157         |
 | 8   | `p5-08-account`          | done        | #171         |
 | 9   | `p5-09-sync-e2e`         | done        | #172         |
-| 10  | `p5-10-history`          | not started |              |
+| 10  | `p5-10-history`          | done        | #173         |
 | 11  | `p5-11-account-deletion` | not started |              |
 | 12  | `p5-12-report`           | not started |              |
 | 13  | `p5-13-acceptance`       | not started |              |

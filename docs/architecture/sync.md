@@ -25,7 +25,7 @@ The client side of [Storage and sync](../spec/storage-sync.md) and [backend.md](
 - **Failures** follow the table of "Failed requests": a `409` rewrites the outbox's `seq` to `lastSeq + 1` and resends (three times at most per cycle); `401` writes `meta.sessionExpired` and calls `refreshUser`; `400` and `413` write `meta.syncBlockedAtVersion`; a `429` or a `503` with `Retry-After` sets `notBefore` and a timer; anything else leaves the data where it is.
 - **Triggers:** `start` (at once, with a pull), `online` (with a pull), `requestSync` (10 s later, coalesced), `visibilitychange` to `hidden` (a `keepalive` request within 60 KB, only when the lock is free, no results). Spacing: 10 s between requests, 5 s between catch-up batches.
 - **Status** (`model/status.ts`, first match wins): `blocked`, `expired`, `offline`, `pending`, `synced`; it is computed from the database after each cycle and when `requestSync` is called, and shown by the account panel.
-- **Retention** after an acknowledgement: above 1,000 results the oldest synced ones are deleted.
+- **Retention** after an acknowledgement: above 1,000 results the oldest synced ones are deleted. Older results the history of `/stats` fetched (`loadOlderResults()` of `entities/stats`, `synced` = 1) are synced results like any other: the next retention removes the ones above the limit, and the page asks for them again when it is opened.
 
 ## Accounts (`model/account.ts`)
 

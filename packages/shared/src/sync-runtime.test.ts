@@ -10,6 +10,7 @@ import {
   isSnapshotRecent,
   isSnapshotRest,
   isSyncResponse,
+  isResultsResponse,
   mergeSettings,
   outboxDelta,
 } from './runtime';
@@ -50,6 +51,16 @@ describe('constants', () => {
 
 describe('guards', () => {
   const { recent, recallBuckets, ...rest } = snapshot.learn;
+
+  it('isResultsResponse', () => {
+    expect(isResultsResponse({ results: [], next: null })).toBe(true);
+    expect(isResultsResponse({ results: [], next: '1:a' })).toBe(true);
+    expect(isResultsResponse({ results: [], next: '' })).toBe(false);
+    expect(isResultsResponse({ results: [], next: 5 })).toBe(false);
+    expect(isResultsResponse({ results: [{ id: 'x' }], next: null })).toBe(false);
+    expect(isResultsResponse({ next: null })).toBe(false);
+    expect(isResultsResponse(null)).toBe(false);
+  });
 
   it('isSyncResponse', () => {
     expect(isSyncResponse({ lastSeq: 0, version: 3 })).toBe(true);

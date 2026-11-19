@@ -13,11 +13,13 @@ import { isCount, outboxDelta } from './sync-format';
 import {
   applyResultsToRecords,
   isKanaStats,
+  isTestResult,
   isTypingRecords,
   mergeKanaStats,
 } from './typing-runtime';
 import type {
   Outbox,
+  ResultsResponse,
   Snapshot,
   SnapshotBuckets,
   SnapshotRecent,
@@ -39,6 +41,16 @@ export const BATCH_CAPS = { kana: 60, days: 31 } as const;
 
 export function isSyncResponse(value: unknown): value is SyncResponse {
   return isObject(value) && isCount(value['lastSeq']) && isCount(value['version']);
+}
+
+/** `GET /api/results`: a page of results and the cursor of the next one (`null` on the last). */
+export function isResultsResponse(value: unknown): value is ResultsResponse {
+  return (
+    isObject(value) &&
+    Array.isArray(value['results']) &&
+    value['results'].every(isTestResult) &&
+    (value['next'] === null || (typeof value['next'] === 'string' && value['next'] !== ''))
+  );
 }
 
 function isSettingsOrNull(value: unknown): value is ValidSettings | null {
