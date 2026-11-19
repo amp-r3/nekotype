@@ -1,9 +1,11 @@
 // Deploys the bench to the Pages project `nekotype-bench`, tails it and measures one request of the
-// real `/api/sync` in a cold and a warm isolate (p5-plan.md, PR 1 and PR 5). Usage: `pnpm --filter @nekotype/bench run measure [--out file.json] [--only name,name]`.
+// real `/api/sync` in a cold and a warm isolate (p5-plan.md, PR 1, PR 5 and PR 13). Usage: `pnpm --filter @nekotype/bench run measure [--out file.json] [--only name,name]`.
 import { execFileSync, spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { DEVICE_ID, KANA_KEYS, LAST_SEQ, generateBatch } from '@nekotype/shared/testing';
+import { DEVICE_ID, LAST_SEQ } from '@nekotype/shared/testing';
+import { batchBody } from './batches';
+import type { Batch } from './batches';
 import { SESSION_TOKEN, seed } from './seed';
 
 const PROJECT = 'nekotype-bench';
@@ -11,7 +13,6 @@ const DEPLOYMENTS = 5; // cold: the first request after each of 5 fresh deployme
 const WARM_REQUESTS = 50;
 const TAIL_WARMUP_MS = 10_000;
 const EVENT_WAIT_MS = 30_000;
-type Batch = 'learning' | 'capped' | 'results';
 /** One row of the table: a batch sent to `POST /api/sync`, or a `GET` of it. */
 type Kind = { readonly name: string; readonly part: string | null; readonly batch: Batch | null };
 // The real endpoint of `apps/api` (PR 5), on the year-long row of ADR 078.
@@ -19,6 +20,8 @@ const KINDS: readonly Kind[] = [
   { name: 'learning', part: null, batch: 'learning' },
   { name: 'capped', part: null, batch: 'capped' },
   { name: 'results', part: null, batch: 'results' },
+  { name: 'finished', part: null, batch: 'finished' },
+  { name: 'largest', part: null, batch: 'largest' },
   { name: 'get', part: null, batch: null },
   { name: 'get-recent', part: 'recent', batch: null },
   { name: 'get-buckets', part: 'buckets', batch: null },
@@ -207,25 +210,17 @@ async function send(kind: Kind, url: string, events: Map<string, TailEvent>): Pr
       : await fetch(address, {
           method: 'POST',
           headers: { ...signedIn, 'content-type': 'application/json' },
-          body: JSON.stringify({
-            ...generateBatch({ seed: 3, keys: KANA_KEYS, kind: kind.batch }),
-            seq: nextSeq,
-          }),
+          body: JSON.stringify(batchBody(kind.batch, nextSeq)),
         });
   const body = await response.arrayBuffer();
   if (kind.batch !== null && response.status === 200) nextSeq += 1;
-  const metas: unknown = JSON.parse(response.headers.get('x-bench-meta') ?? '[]');
-  let rowsRead = 0;
-  let rowsWritten = 0;
-  let statements = 0;
-  if (Array.isArray(metas)) {
-    for (const meta of metas) {
-      if (typeof meta !== 'object' || meta === null) continue;
-      statements += 1;
-      if ('rows_read' in meta) rowsRead += Number(meta.rows_read);
-      if ('rows_written' in meta) rowsWritten += Number(meta.rows_written);
-    }
-  }
+  // Every statement of the request, the session lookup included (`countingDb` of `apps/api`).
+  const log: unknown = JSON.parse(response.headers.get('x-bench-meta') ?? '{}');
+  const field = (name: string): number =>
+    typeof log === 'object' && log !== null && name in log ? Number(Reflect.get(log, name)) : NaN;
+  const rowsRead = field('rowsRead');
+  const rowsWritten = field('rowsWritten');
+  const statements = field('statements');
   // The response header has the data centre after a dash (`…b614-WAW`); the tail event has not.
   const ray = (response.headers.get('cf-ray') ?? '').split('-')[0] ?? '';
   const deadline = Date.now() + EVENT_WAIT_MS;
@@ -278,14 +273,25 @@ function cpu(samples: readonly Sample[]): number[] {
 
 function report(results: readonly KindResult[]): string {
   const lines = [
-    '| request | cold cpuTime (ms, 5 deployments) | warm median | warm p95 | warm max | statements | rows_read | rows_written | response |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| request | cold cpuTime (ms, 5 deployments) | warm median | warm p95 | warm max | statements | rows_read | rows_written | response | not ok |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
   ];
   for (const { kind, cold, warm } of results) {
     const w = cpu(warm);
-    const first = warm[0] ?? cold[0];
+    const all = [...cold, ...warm];
+    // The first request after the seed; the maximum over all requests in brackets when it differs.
+    const first = cold[0];
+    const counted = (pick: (sample: Sample) => number): string => {
+      const value = first === undefined ? NaN : pick(first);
+      const max = Math.max(...all.map(pick));
+      return max === value ? String(value) : `${value} (max ${max})`;
+    };
+    const notOk = all.filter(
+      (sample) => sample.status !== 200 || (sample.outcome !== null && sample.outcome !== 'ok'),
+    ).length;
+    const noEvent = all.filter((sample) => sample.cpuTime === null).length;
     lines.push(
-      `| ${kind} | ${cold.map((s) => s.cpuTime ?? '?').join(', ')} | ${percentile(w, 50)} | ${percentile(w, 95)} | ${Math.max(...w)} | ${first?.statements ?? '?'} | ${first?.rowsRead ?? '?'} | ${first?.rowsWritten ?? '?'} | ${first?.responseBytes ?? '?'} B |`,
+      `| ${kind} | ${cold.map((s) => s.cpuTime ?? '?').join(', ')} | ${percentile(w, 50)} | ${percentile(w, 95)} | ${Math.max(...w)} | ${counted((s) => s.statements)} | ${counted((s) => s.rowsRead)} | ${counted((s) => s.rowsWritten)} | ${first?.responseBytes ?? '?'} B | ${notOk} of ${all.length}, ${noEvent} without event |`,
     );
   }
   return lines.join('\n');
