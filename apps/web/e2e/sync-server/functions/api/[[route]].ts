@@ -33,6 +33,8 @@ const app = createApp({
   clock: { now: () => Date.now() },
   randomBytes: (n) => crypto.getRandomValues(new Uint8Array(n)),
   oauth,
+  // The e2e never sends a report (Turnstile needs Cloudflare's network, p5-plan.md).
+  verifyTurnstile: () => Promise.resolve(false),
 });
 
 function cookieValue(header: string | null, name: string): string | null {

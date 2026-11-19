@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import { Button, Notice, Segmented } from '@/shared/ui';
 import { EmptyState } from '@/shared/ui/empty-state';
-import { defaultClock, navigate } from '@/shared/lib';
+import { defaultClock, navigate, useOnline } from '@/shared/lib';
 import { learnTargetMs } from '@/entities/settings';
 import { sessionExpired, userId } from '@/entities/user';
 import {
@@ -59,23 +59,6 @@ function Pending({
     );
   }
   return <Notice loading>{t('route.loading')}</Notice>;
-}
-
-/** `navigator.onLine`, kept current. */
-function useOnline(): boolean {
-  const [online, setOnline] = useState(() => navigator.onLine);
-  useEffect(() => {
-    const update = (): void => {
-      setOnline(navigator.onLine);
-    };
-    window.addEventListener('online', update);
-    window.addEventListener('offline', update);
-    return () => {
-      window.removeEventListener('online', update);
-      window.removeEventListener('offline', update);
-    };
-  }, []);
-  return online;
 }
 
 // Statistics: one section at a time, `learning` or `typing`; the section is in the URL hash (S10).

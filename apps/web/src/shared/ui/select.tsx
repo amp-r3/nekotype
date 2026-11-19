@@ -17,6 +17,8 @@ export type SelectProps = {
   readonly value: string;
   readonly onChange: (value: string) => void;
   readonly disabled?: boolean;
+  // In a dialog the field is filled with `bg`: the dialog itself is `bg-raised` (decision 127).
+  readonly inDialog?: boolean;
   readonly testId?: string;
 } & SelectName;
 
@@ -31,6 +33,7 @@ export function Select({
   ariaLabel,
   label,
   disabled = false,
+  inDialog = false,
   testId,
 }: SelectProps): JSX.Element {
   const selectId = useId();
@@ -46,7 +49,9 @@ export function Select({
           onChange(event.currentTarget.value);
         }}
         className={cx(
-          'bg-bg-raised text-ui-body h-control pointer-coarse:min-h-touch-min w-full cursor-pointer appearance-none rounded-sm border-0 pr-8 pl-3',
+          inDialog ? (disabled ? 'bg-transparent' : 'bg-bg') : 'bg-bg-raised',
+          inDialog && disabled ? 'border-line border' : 'border-0',
+          'text-ui-body h-control pointer-coarse:min-h-touch-min w-full cursor-pointer appearance-none rounded-sm pr-8 pl-3',
           disabled ? 'text-fur-faint cursor-default' : 'text-fur',
         )}
       >

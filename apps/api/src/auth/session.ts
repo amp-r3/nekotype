@@ -66,27 +66,48 @@ export async function endSession(c: Context<AppBindings>): Promise<void> {
 }
 
 /**
+ * The user of the request's cookie, or `null`: no cookie, an unknown session or an expired one (its
+ * row is deleted when it is seen, D6). A session in its last 15 days is renewed.
+ */
+async function resolveUserId(
+  c: Context<AppBindings>,
+  clock: { now(): number },
+): Promise<string | null> {
+  const token = getCookie(c, SESSION_COOKIE);
+  if (token === undefined) return null;
+  const idHash = await hashToken(token);
+  const session = await findSession(c.env.DB, idHash);
+  if (session === null) return null;
+  const now = clock.now();
+  if (session.expiresAt <= now) {
+    await deleteSession(c.env.DB, idHash);
+    return null;
+  }
+  if (session.expiresAt - now < RENEW_BELOW_MS) {
+    const expiresAt = now + SESSION_LIFETIME_MS;
+    await extendSession(c.env.DB, idHash, expiresAt);
+    writeSessionCookie(c, token);
+  }
+  return session.userId;
+}
+
+/**
  * Puts `userId` into the context or answers `401`. One query for a valid session, one more when it
- * is renewed; an expired row is deleted when it is seen (D6).
+ * is renewed.
  */
 export function requireSession(clock: { now(): number }) {
   return createMiddleware<AppBindings>(async (c, next) => {
-    const token = getCookie(c, SESSION_COOKIE);
-    if (token === undefined) throw new ApiError('unauthenticated');
-    const idHash = await hashToken(token);
-    const session = await findSession(c.env.DB, idHash);
-    if (session === null) throw new ApiError('unauthenticated');
-    const now = clock.now();
-    if (session.expiresAt <= now) {
-      await deleteSession(c.env.DB, idHash);
-      throw new ApiError('unauthenticated');
-    }
-    if (session.expiresAt - now < RENEW_BELOW_MS) {
-      const expiresAt = now + SESSION_LIFETIME_MS;
-      await extendSession(c.env.DB, idHash, expiresAt);
-      writeSessionCookie(c, token);
-    }
-    c.set('userId', session.userId);
+    const userId = await resolveUserId(c, clock);
+    if (userId === null) throw new ApiError('unauthenticated');
+    c.set('userId', userId);
     await next();
   });
+}
+
+/** For a route open to guests: the signed-in user's id, or `null` for anyone else. */
+export function optionalUserId(
+  c: Context<AppBindings>,
+  clock: { now(): number },
+): Promise<string | null> {
+  return resolveUserId(c, clock);
 }
