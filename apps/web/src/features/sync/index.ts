@@ -10,5 +10,6 @@ export {
   resolveAnotherAccount,
   prepareSignOut,
   signOut,
+  deleteAccount,
 } from './model/runtime';
 export { AnotherAccountDialog } from './ui/another-account-dialog';

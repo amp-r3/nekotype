@@ -108,6 +108,11 @@ export function signOut(): Promise<boolean> {
   return account?.signOut() ?? Promise.resolve(false);
 }
 
+/** Deletes the account on the server and clears the device; false when nothing changed. */
+export function deleteAccount(): Promise<boolean> {
+  return account?.deleteAccount() ?? Promise.resolve(false);
+}
+
 /** Starts the engine of this tab on `db`; a second call does nothing. Called when a user is signed in. */
 export function startSync(db: Db): void {
   accountOf(db);

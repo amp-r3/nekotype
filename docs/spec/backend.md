@@ -70,17 +70,17 @@ CREATE TABLE content_reports (
 
 ## API
 
-| Method and path                    | Purpose                                                                                                                                                                                        |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/auth/:provider`          | Start OAuth (`google` with PKCE, `github`): state cookie and redirect                                                                                                                          |
-| `GET /api/auth/:provider/callback` | Verify state, fetch profile, create or find user, set session, redirect to `/`                                                                                                                 |
-| `POST /api/auth/logout`            | Delete session and cookie                                                                                                                                                                      |
-| `GET /api/me`                      | Profile or 401                                                                                                                                                                                 |
-| `DELETE /api/me`                   | Delete the account and all its data; set `content_reports.user_id` to NULL for its reports                                                                                                     |
-| `POST /api/sync`                   | Body: `deviceId`, `seq`, batch. Response: the last applied seq for this deviceId and the `version` of the user's data; no snapshot (ADR 082)                                                   |
-| `GET /api/sync?deviceId=&part=`    | Without `part`: the last applied seq and `version`, used after a `409` and to check for other devices' writes. `part` = `rest`, `recent` or `buckets`: one part of the snapshot with `version` |
-| `GET /api/results?before=&limit=`  | Paginated test history (at most 50 per request), newest first; `before` is the cursor `<endedAt>:<id>`                                                                                         |
-| `POST /api/reports`                | Content reports from guests and signed-in users; requires a valid Cloudflare Turnstile token; one report and at most 8 KB per request                                                          |
+| Method and path                    | Purpose                                                                                                                                                                                                   |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/auth/:provider`          | Start OAuth (`google` with PKCE, `github`): state cookie and redirect                                                                                                                                     |
+| `GET /api/auth/:provider/callback` | Verify state, fetch profile, create or find user, set session, redirect to `/`                                                                                                                            |
+| `POST /api/auth/logout`            | Delete session and cookie                                                                                                                                                                                 |
+| `GET /api/me`                      | Profile or 401                                                                                                                                                                                            |
+| `DELETE /api/me`                   | Delete the account and all its data; one `batch()`: `content_reports.user_id` is set to NULL for its reports, then the `users` row is deleted and the foreign keys cascade; the session cookie is cleared |
+| `POST /api/sync`                   | Body: `deviceId`, `seq`, batch. Response: the last applied seq for this deviceId and the `version` of the user's data; no snapshot (ADR 082)                                                              |
+| `GET /api/sync?deviceId=&part=`    | Without `part`: the last applied seq and `version`, used after a `409` and to check for other devices' writes. `part` = `rest`, `recent` or `buckets`: one part of the snapshot with `version`            |
+| `GET /api/results?before=&limit=`  | Paginated test history (at most 50 per request), newest first; `before` is the cursor `<endedAt>:<id>`                                                                                                    |
+| `POST /api/reports`                | Content reports from guests and signed-in users; requires a valid Cloudflare Turnstile token; one report and at most 8 KB per request                                                                     |
 
 ### Request and response bodies
 

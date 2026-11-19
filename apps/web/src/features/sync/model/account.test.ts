@@ -467,3 +467,67 @@ describe('sign-out', () => {
     expect(await db.get('meta', 'deviceId')).not.toBe('dev-a');
   });
 });
+
+describe('deleteAccount', () => {
+  const setup = async (answer: () => Promise<Response>) => {
+    const db = await signedInDb();
+    await db.put('meta', 'profile', { displayName: 'a', email: null, provider: 'github' });
+    await db.put('meta', 'typingIntervals', [100]);
+    await db.put('settings', 'current', settingsAt(500));
+    await db.put('delta', 'learn', learnChanges());
+    await putResults(db, 2, 0);
+    const requests: { input: string; method: string | undefined }[] = [];
+    const channels = {
+      learn: createTestChannel(),
+      typing: createTestChannel(),
+      settings: createTestChannel(),
+    };
+    const account = createAccount({
+      db,
+      clock: new TestClock(),
+      fetch: ((input, init) => {
+        requests.push({ input, method: init.method });
+        return answer();
+      }) satisfies FetchLike,
+      channels,
+      refreshUser: () => Promise.resolve(),
+      setSignInCheck: () => {},
+      engine: () => null,
+    });
+    return { db, account, requests, channels };
+  };
+
+  it('clears the user stores and the settings after a 204 and leaves a guest', async () => {
+    const { db, account, requests, channels } = await setup(() =>
+      Promise.resolve(new Response(null, { status: 204 })),
+    );
+
+    expect(await account.deleteAccount()).toBe(true);
+
+    expect(requests).toEqual([{ input: '/api/me', method: 'DELETE' }]);
+    for (const key of ['userId', 'deviceId', 'lastSeq', 'profile']) {
+      expect(await db.get('meta', key)).toBeUndefined();
+    }
+    expect(await db.get('meta', 'typingIntervals')).toEqual([100]);
+    expect(await db.get('settings', 'current')).toBeUndefined();
+    expect(await db.get('delta', 'learn')).toBeUndefined();
+    expect(await db.count('results')).toBe(0);
+    expect(channels.learn.posts).toEqual(['reset']);
+    expect(channels.settings.posts).toEqual(['reset']);
+  });
+
+  it.each([
+    ['a network failure', () => Promise.reject(new TypeError('Failed to fetch'))],
+    ['a 401', () => Promise.resolve(errorResponse(401, 'unauthenticated'))],
+    ['a 503', () => Promise.resolve(errorResponse(503, 'unavailable'))],
+  ])('keeps everything after %s', async (_name, answer) => {
+    const { db, account } = await setup(answer);
+
+    expect(await account.deleteAccount()).toBe(false);
+
+    expect(await db.get('meta', 'userId')).toBe('user-1');
+    expect(await db.get('settings', 'current')).toEqual(settingsAt(500));
+    expect(await db.get('delta', 'learn')).toBeDefined();
+    expect(await db.count('results')).toBe(2);
+  });
+});

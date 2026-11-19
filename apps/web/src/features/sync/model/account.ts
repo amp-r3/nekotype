@@ -95,6 +95,11 @@ export interface Account {
    * user's data. False when the server could not be reached: nothing is cleared.
    */
   signOut: () => Promise<boolean>;
+  /**
+   * `DELETE /api/me`, then the same clearing as sign-out. False when the server did not confirm
+   * (offline, `401`, a failure): nothing is cleared (ADR 079).
+   */
+  deleteAccount: () => Promise<boolean>;
 }
 
 function isMeResponse(value: unknown): value is MeResponse {
@@ -254,6 +259,17 @@ export function createAccount(deps: AccountDeps): Account {
           return false;
         }
       }
+      const engine = deps.engine();
+      engine?.stop();
+      await engine?.idle();
+      await clearUserData([]);
+      return true;
+    },
+
+    async deleteAccount() {
+      const result = await apiFetch('/api/me', { method: 'DELETE' }, deps.fetch);
+      // Only the server's `204` counts: the account is gone there, and so is the session.
+      if (result.kind !== 'ok') return false;
       const engine = deps.engine();
       engine?.stop();
       await engine?.idle();

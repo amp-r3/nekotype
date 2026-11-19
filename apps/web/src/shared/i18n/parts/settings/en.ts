@@ -49,6 +49,16 @@ export const settingsEn = {
   'signOut.progress': 'Some progress has not been sent yet. If you sign out now, it will be lost.',
   'signOut.cancel': 'cancel',
   'signOut.action': 'sign out',
+  'settings.account.delete': 'delete account',
+  'settings.account.signInToDelete': 'Sign in again to delete the account.',
+  'delete.title': 'Delete account?',
+  'delete.label': 'Type "delete" to confirm',
+  // The word to type; compared without case and surrounding spaces.
+  'delete.word': 'delete',
+  'delete.cancel': 'cancel',
+  'delete.action': 'delete forever',
+  'delete.busy': 'deleting…',
+  'delete.failed': 'failed to delete. check the connection and try again.',
 
   // The "another account" dialog of the sync chunk (design decision 118), shown on `/`: it
   // loads this part first.
