@@ -1,6 +1,6 @@
 # ADR 087: The Local View Is Snapshot, Outbox and Delta Merged; Every Write Is a Read-Modify-Write Transaction; Two Tabs Merge
 
-- **Context:** P5 PR 6 ([p5-plan.md](../../p5-plan.md), D15, D18) prepares the client's data layer for sync. Until now `delta/learn` held the whole learning state and a tab wrote its state over the other tab's ("Two tabs before P5"). The spec says `delta` holds the changes since the last batch, and a signed-in device also holds a snapshot and an outbox.
+- **Context:** P5 PR 6 ([p5-plan.md](../archive/p5-plan.md), D15, D18) prepares the client's data layer for sync. Until now `delta/learn` held the whole learning state and a tab wrote its state over the other tab's ("Two tabs before P5"). The spec says `delta` holds the changes since the last batch, and a signed-in device also holds a snapshot and an outbox.
 - **Decision:**
   1. **Schema 4.** `SCHEMA_VERSION` is 4 and two stores are new: `snapshot` and `outbox`, both with the key `current` (S8). The local data resets once ([ADR 061](061-schema-reset-before-release.md)). The `meta` keys that sync adds (`settingsSyncedAt`, `profile`, `pendingSignIn`, S9, and those the spec already names) are written first in PR 7; the spec lists them now.
   2. **`delta` is a delta.** `delta/learn` is `{ learn: LearnDelta, counters }` and `delta/typing` is `{ kanaStats, counters }`: increments and changed entries since the last batch. For a guest, who never syncs, that is the whole state, so what a guest sees does not change.

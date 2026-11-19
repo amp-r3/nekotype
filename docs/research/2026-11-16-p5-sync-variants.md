@@ -6,13 +6,13 @@ Measured on 2026-11-16 by `apps/bench` ([README](../../apps/bench/README.md)) ag
 
 **The per-key variant removes the row cost and two thirds of the warm CPU time, and still fails the pass line of the plan.** No variant brings a cold request under 8 ms, and the warm p95 stays above it. The line itself is not reachable at the warm p95 with a margin: a handler that does nothing reads 0 ms in the median, 3 ms at p95 and 5 ms at the maximum.
 
-| Condition of [p5-plan.md](../../p5-plan.md) | ADR 078 as built (this run) | `keyed`                  |
-| ------------------------------------------- | --------------------------- | ------------------------ |
-| Every cold request at most 8 ms             | Failed: 15–50 ms            | Failed: 9–23 ms          |
-| Warm p95 at most 8 ms                       | Failed: 16, 31 and 14 ms    | Failed: 11, 15 and 10 ms |
-| A learning sync reads at most 250 rows      | Failed: 630                 | Passed: 6                |
-| Warm median (learning, capped, results), ms | 9, 14, 8                    | 3, 6, 4                  |
-| A request cut off with error 1102           | None                        | None                     |
+| Condition of [p5-plan.md](../archive/p5-plan.md) | ADR 078 as built (this run) | `keyed`                  |
+| ------------------------------------------------ | --------------------------- | ------------------------ |
+| Every cold request at most 8 ms                  | Failed: 15–50 ms            | Failed: 9–23 ms          |
+| Warm p95 at most 8 ms                            | Failed: 16, 31 and 14 ms    | Failed: 11, 15 and 10 ms |
+| A learning sync reads at most 250 rows           | Failed: 630                 | Passed: 6                |
+| Warm median (learning, capped, results), ms      | 9, 14, 8                    | 3, 6, 4                  |
+| A request cut off with error 1102                | None                        | None                     |
 
 ## Variants
 

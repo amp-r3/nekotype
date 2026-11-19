@@ -1,7 +1,7 @@
 # ADR 090: Sign-In Returns Through `pendingSignIn`, Sign-Out Waits for the Server, and the Account Code Lives in the Sync Chunk
 
 - **Status:** In force.
-- **Context:** P5 PR 8 ([p5-plan.md](../../p5-plan.md), D19, D20, Q3) lets a user sign in, see the sync status, sign out and continue after an expired session. The plan fixes the flow; a few points it leaves open had to be settled in code, and the initial JavaScript grew past the allowance of D17.
+- **Context:** P5 PR 8 ([p5-plan.md](../archive/p5-plan.md), D19, D20, Q3) lets a user sign in, see the sync status, sign out and continue after an expired session. The plan fixes the flow; a few points it leaves open had to be settled in code, and the initial JavaScript grew past the allowance of D17.
 - **Decision:**
   1. **The start.** `app/sync-bootstrap.ts` reads `auth_error` from the address, removes it with `history.replaceState` and keeps the notice until the next navigation. `initUser` reads `userId`, `sessionExpired`, `profile` and whether `pendingSignIn` is present. With a user or a pending sign-in it loads `features/sync` and awaits `checkAccount(db)` (`GET /api/me`, the four outcomes of D19) before the engine may start; the engine starts once a user is set and `signInCheck` is `idle`.
   2. **`signInCheck`** (`entities/user`): `checking` while a returning sign-in is checked, `choice` while the "another account" dialog waits, `idle` otherwise. `/` shows its loading state while it is not `idle`, so nothing of either account is shown before the choice (design decision 118). `App` renders the dialog from the sync chunk when it is `choice`.

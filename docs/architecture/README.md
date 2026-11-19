@@ -2,9 +2,9 @@
 
 Nekotype is a high-performance, keyboard-first Japanese kana speed trainer engineered around a Non-deterministic Finite Automaton (NFA) romaji engine, fine-grained Preact signals, and strict Feature-Sliced Design (FSD) architecture.
 
-> **Scope.** Describes the code as it stands after phase P4 (words and phrases): the application in `apps/web/src/`, the two packages it uses, `packages/engine` and `packages/shared`, and the content pipeline `packages/content`, whose generated files the application reads. Where it disagrees with the [MVP specification](../spec/README.md), the specification applies. These files are updated in the pull request that changes the code they describe.
+> **Scope.** Describes the code as it stands after phase P5 (backend and sync): the application in `apps/web/src/`, the two packages it uses, `packages/engine` and `packages/shared`, the content pipeline `packages/content`, whose generated files the application reads, and the API in `apps/api` with its measurement tool `apps/bench`. Where it disagrees with the [MVP specification](../spec/README.md), the specification applies. These files are updated in the pull request that changes the code they describe.
 
-> **Direction.** [ADR 058](../adr/058-learning-first.md) made learning the core of the MVP. Since P3, `/` is the learning screen and the typing trainer (words and phrases) lives on `/type`; single kana and the row selection were removed. Since P4 the typing screen reads the generated words and phrases and saves its results, records and statistics in IndexedDB; sync comes in P5.
+> **Direction.** [ADR 058](../adr/058-learning-first.md) made learning the core of the MVP. Since P3, `/` is the learning screen and the typing trainer (words and phrases) lives on `/type`; single kana and the row selection were removed. Since P4 the typing screen reads the generated words and phrases and saves its results, records and statistics in IndexedDB. Since P5 a signed-in user's data syncs through Pages Functions and D1 ([sync.md](sync.md)).
 
 ## Contents
 

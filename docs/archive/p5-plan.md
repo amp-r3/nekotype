@@ -1,6 +1,8 @@
+> **Archived.** The working plan of phase P5 (backend and sync), moved here by its last pull request, PR 13, when the phase was closed. It is no longer maintained. What it decided now lives in the [specification](../spec/README.md), the ADRs 081–092 in [docs/adr/](../adr/README.md) and the [architecture description](../architecture/README.md); the closing line of P5 is in [phases.md](../spec/phases.md). Paths in the text are relative to the repository root, where the file lived.
+
 # P5 plan: backend and sync
 
-Working file of phase P5 ([phases.md](docs/spec/phases.md), item 6). It tells the executor of each pull request what to build, in which order, and which decisions are already made. It is not part of `docs/`: the last pull request of the phase moves it to `docs/archive/`.
+Working file of phase P5 ([phases.md](../spec/phases.md), item 6). It tells the executor of each pull request what to build, in which order, and which decisions are already made. It is not part of `docs/`: the last pull request of the phase moves it to `docs/archive/`.
 
 - Written on 2026-11-15 against `main` at d70c954 (PR 154 merged).
 - Where this plan and `docs/spec/` disagree, the spec wins until the pull request named here changes the spec. Every such change is listed under [Q5](#q5-spec-amendments); the maintainer approved the list on 2026-11-15.
@@ -10,24 +12,24 @@ Working file of phase P5 ([phases.md](docs/spec/phases.md), item 6). It tells th
 
 The executor of a pull request fills its row (see [section 7](#7-instructions-for-executor-agents)).
 
-| PR  | Branch                   | Status      | Pull request |
-| --- | ------------------------ | ----------- | ------------ |
-| 1   | `p5-01-sync-measurement` | done        | #162         |
-| 2   | `p5-02-api-scaffold`     | done        | #164         |
-| 3   | `p5-03-auth`             | done        | #165         |
-| 4   | `p5-04-merge-patch`      | done        | #167         |
-| 5   | `p5-05-api-sync`         | done        | #168         |
-| 6   | `p5-06-local-view`       | done        | #169         |
-| 7   | `p5-07-sync-engine`      | done        | #170         |
-| D   | `docs/p5-design`         | done        | #157         |
-| 8   | `p5-08-account`          | done        | #171         |
-| 9   | `p5-09-sync-e2e`         | done        | #172         |
-| 10  | `p5-10-history`          | done        | #173         |
-| 11  | `p5-11-account-deletion` | done        | #174         |
-| 12  | `p5-12-report`           | done        | #175         |
-| 13  | `p5-13-acceptance`       | not started |              |
+| PR  | Branch                   | Status | Pull request |
+| --- | ------------------------ | ------ | ------------ |
+| 1   | `p5-01-sync-measurement` | done   | #162         |
+| 2   | `p5-02-api-scaffold`     | done   | #164         |
+| 3   | `p5-03-auth`             | done   | #165         |
+| 4   | `p5-04-merge-patch`      | done   | #167         |
+| 5   | `p5-05-api-sync`         | done   | #168         |
+| 6   | `p5-06-local-view`       | done   | #169         |
+| 7   | `p5-07-sync-engine`      | done   | #170         |
+| D   | `docs/p5-design`         | done   | #157         |
+| 8   | `p5-08-account`          | done   | #171         |
+| 9   | `p5-09-sync-e2e`         | done   | #172         |
+| 10  | `p5-10-history`          | done   | #173         |
+| 11  | `p5-11-account-deletion` | done   | #174         |
+| 12  | `p5-12-report`           | done   | #175         |
+| 13  | `p5-13-acceptance`       | done   | #176         |
 
-**Amended on 2026-11-16 by [ADR 082](docs/adr/082-sync-acknowledgement-without-snapshot.md)** after PR 1 failed its limits: a sync is acknowledged without the snapshot, `GET /api/sync` answers by parts, the learning columns are read by `json_extract` paths, and the CPU line is the warm median. D7, D12, PR 4, PR 5, PR 7 and section 8 carry the changes; where another line of this plan still speaks of a snapshot in the response, the ADR wins.
+**Amended on 2026-11-16 by [ADR 082](../adr/082-sync-acknowledgement-without-snapshot.md)** after PR 1 failed its limits: a sync is acknowledged without the snapshot, `GET /api/sync` answers by parts, the learning columns are read by `json_extract` paths, and the CPU line is the warm median. D7, D12, PR 4, PR 5, PR 7 and section 8 carry the changes; where another line of this plan still speaks of a snapshot in the response, the ADR wins.
 
 The maintainer answered every question of [section 4](#4-questions-for-the-maintainer) on 2026-11-15: the recommended option each time. The answers are on the **Answer** line of each question; a later question is answered the same way.
 
@@ -35,16 +37,16 @@ The maintainer answered every question of [section 4](#4-questions-for-the-maint
 
 **What the user gets.** A learner signs in with Google or GitHub and their learning progress, typing statistics, records and settings follow them to every device. Guest data is merged into the account at the first sign-in. The application keeps working offline and sends what it has when the network returns. A signed-in user can sign out, delete the account, and read older test history from the server. Anyone, guest or not, can report a wrong reading or translation of a word or phrase.
 
-**In scope** ([phases.md](docs/spec/phases.md), P5): Pages Functions with Hono, `_routes.json`, D1 migrations, Google and GitHub OAuth, sessions, `POST` and `GET /api/sync` with `seq` handling, the merge rules and optimistic concurrency, the Web Lock, guest merge, sign-out, the expired session, failed requests, server history, the account section of `/settings`, account deletion, the report dialog with Turnstile and `POST /api/reports`.
+**In scope** ([phases.md](../spec/phases.md), P5): Pages Functions with Hono, `_routes.json`, D1 migrations, Google and GitHub OAuth, sessions, `POST` and `GET /api/sync` with `seq` handling, the merge rules and optimistic concurrency, the Web Lock, guest merge, sign-out, the expired session, failed requests, server history, the account section of `/settings`, account deletion, the report dialog with Turnstile and `POST /api/reports`.
 
 **Out of scope:**
 
-- Reset for a signed-in user, "Reset learning" included: v1.1 (A33, A45, [backlog.md](docs/spec/backlog.md)).
-- Server-side verification of results and leaderboards: v2 ([backend.md](docs/spec/backend.md), "Authentication and security").
-- Sign-in on preview deployments: Google accepts no wildcard redirect URI ([backend.md](docs/spec/backend.md), "Environments").
-- Moderation of content reports: v2 ([backlog.md](docs/spec/backlog.md)). P5 only stores them.
+- Reset for a signed-in user, "Reset learning" included: v1.1 (A33, A45, [backlog.md](../spec/backlog.md)).
+- Server-side verification of results and leaderboards: v2 ([backend.md](../spec/backend.md), "Authentication and security").
+- Sign-in on preview deployments: Google accepts no wildcard redirect URI ([backend.md](../spec/backend.md), "Environments").
+- Moderation of content reports: v2 ([backlog.md](../spec/backlog.md)). P5 only stores them.
 - The stored-data section of `/about` and the accessibility and device-matrix passes: P7.
-- IndexedDB migrations: a schema change resets the local data until the release ([ADR 061](docs/adr/061-schema-reset-before-release.md)).
+- IndexedDB migrations: a schema change resets the local data until the release ([ADR 061](../adr/061-schema-reset-before-release.md)).
 - Kana audio: P6.
 - A custom domain, WAF rules and any paid Cloudflare feature (A6, A16).
 
@@ -71,7 +73,7 @@ Checked on 2026-11-15 against the npm registry and the vendor documentation. "No
 | Not confirmed: deploy              | That `wrangler pages deploy apps/web/dist`, run from the repository root, uploads `./functions` and applies the root `wrangler.toml`. The documentation pages read do not say it. PR 2 confirms it in the deploy log and with the smoke test                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Not confirmed: `json_each`         | How `json_each` counts toward `rows_read` (O4). PR 1 measures it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | Not confirmed: tail on Pages       | That `pages deployment tail --format json` prints `cpuTime`. PR 1 confirms it; the fallback is the CPU time chart of the Pages project in the dashboard                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| Not confirmed: test plugin         | Confirmed in PR 2 ([ADR 083](docs/adr/083-api-package-and-pages-configuration.md)): `@cloudflare/vitest-plugin` 1.8.4 runs with Vite 8, Vitest 5 and a D1 binding, without a `main`; `readD1Migrations` is exported from the package's entry, not from a `/config` path                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Not confirmed: test plugin         | Confirmed in PR 2 ([ADR 083](../adr/083-api-package-and-pages-configuration.md)): `@cloudflare/vitest-plugin` 1.8.4 runs with Vite 8, Vitest 5 and a D1 binding, without a `main`; `readD1Migrations` is exported from the package's entry, not from a `/config` path                                                                                                                                                                                                                                                                                                                                                                                                           |
 | Not confirmed: wrangler flags      | `d1 migrations list` and `apply` accept `--env preview` with a Pages configuration (confirmed in PR 2, with the binding `DB` and with the database name). `pages secret put --env preview` is still not confirmed: the dashboard path of M5 is the alternative                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 ## 3. Decisions
@@ -82,7 +84,7 @@ Each decision fills a gap the spec leaves open. A decision that changes a senten
 
 #### D1. Server code lives in `apps/api`, mounted by a root `functions` entry
 
-- `apps/api` is the workspace package `@nekotype/api` (private, TypeScript source, no build step), as [architecture.md](docs/spec/architecture.md) lays out and as the lint rule in `apps/web/eslint.config.js` already expects.
+- `apps/api` is the workspace package `@nekotype/api` (private, TypeScript source, no build step), as [architecture.md](../spec/architecture.md) lays out and as the lint rule in `apps/web/eslint.config.js` already expects.
 - `functions/api/[[route]].ts` at the repository root is one line: `export { onRequest } from '../../apps/api/src/pages-entry';`. The import is relative because the root package has no dependency on Hono; everything else resolves from `apps/api`.
 - `apps/api/src/pages-entry.ts` builds the application with the real dependencies and exports `onRequest = handle(app)`.
 - `apps/api/tsconfig.json` includes `../../functions`, so the entry is type-checked. A unit test in `apps/api` fails when the entry file is anything but that one line.
@@ -103,7 +105,7 @@ Each decision fills a gap the spec leaves open. A decision that changes a senten
   └── vitest.config.ts
   ```
 
-- Import rules, enforced by `no-restricted-imports` in `apps/api/eslint.config.js` on top of `createBaseConfig`: `routes` → `auth`, `db`, `sync`, `lib`; `sync` → `db`, `lib`; `auth` → `db`, `lib`; `db` → `lib`; nothing imports `routes`. The package must not import `@nekotype/web`, `@nekotype/content` or `@nekotype/engine` ([architecture.md](docs/spec/architecture.md): the engine reaches the server in v2).
+- Import rules, enforced by `no-restricted-imports` in `apps/api/eslint.config.js` on top of `createBaseConfig`: `routes` → `auth`, `db`, `sync`, `lib`; `sync` → `db`, `lib`; `auth` → `db`, `lib`; `db` → `lib`; nothing imports `routes`. The package must not import `@nekotype/web`, `@nekotype/content` or `@nekotype/engine` ([architecture.md](../spec/architecture.md): the engine reaches the server in v2).
 - The same strictness as the rest of the repository: no `any`, no assertions. A D1 row and a parsed JSON value are `unknown` and are narrowed with the guards of `@nekotype/shared/runtime`; `first<T>()` with a type argument is an assertion in disguise and is not used.
 
 #### D2. The application is a factory with injected dependencies
@@ -118,7 +120,7 @@ Each decision fills a gap the spec leaves open. A decision that changes a senten
 #### D3. `_routes.json` and the Vite proxy
 
 - `apps/web/public/_routes.json` is `{ "version": 1, "include": ["/api/*"], "exclude": [] }`; Vite copies it into `dist`. A unit test next to `redirects.test.ts` keeps its content.
-- `apps/web/vite.config.ts` proxies `/api` to `http://localhost:8788` in the dev server ([backend.md](docs/spec/backend.md), "Local development"). The browser origin in development is always `http://localhost:5173`.
+- `apps/web/vite.config.ts` proxies `/api` to `http://localhost:8788` in the dev server ([backend.md](../spec/backend.md), "Local development"). The browser origin in development is always `http://localhost:5173`.
 
 #### D4. `wrangler.toml` at the repository root
 
@@ -170,7 +172,7 @@ migrations_dir = "apps/api/migrations"
 
 #### D5. D1 migrations
 
-- Files in `apps/api/migrations/`, named `NNNN_title.sql`. `0001_init.sql` is the schema of [backend.md](docs/spec/backend.md) plus `CREATE INDEX users_email ON users(email)` ([Q5](#q5-spec-amendments), S1).
+- Files in `apps/api/migrations/`, named `NNNN_title.sql`. `0001_init.sql` is the schema of [backend.md](../spec/backend.md) plus `CREATE INDEX users_email ON users(email)` ([Q5](#q5-spec-amendments), S1).
 - A merged migration is never edited. A migration must work with the code deployed before it (new tables, new columns with defaults), because the preview database is shared by every pull request and production is migrated before its deploy.
 - Local: `pnpm run db:migrate:local`; `dev:api` and the e2e server run it themselves. API tests apply the files with `applyD1Migrations`.
 - Preview and production: CI. `deploy.yml` applies the migrations to `nekotype-preview` before a preview deployment (pull requests of this repository and the `release-candidate` deployment of `main`), and to `nekotype` after the candidate's smoke test and before the production deploy. Fork pull requests have no secrets and skip it, as they skip the deploy.
@@ -178,7 +180,7 @@ migrations_dir = "apps/api/migrations"
 
 #### D6. Sessions and OAuth
 
-Everything [backend.md](docs/spec/backend.md) ("Authentication and security") states stands. What it leaves open:
+Everything [backend.md](../spec/backend.md) ("Authentication and security") states stands. What it leaves open:
 
 - **State.** `GET /api/auth/:provider` sets the cookie `nt_oauth` (`HttpOnly; SameSite=Lax; Path=/api/auth; Max-Age=600`) with the state and, for Google, the PKCE code verifier, then redirects to the provider. The callback compares the state and deletes the cookie.
 - **`Secure`.** `nt_session` and `nt_oauth` carry `Secure` unless `APP_ORIGIN` starts with `http://` (local development and e2e).
@@ -193,18 +195,18 @@ Everything [backend.md](docs/spec/backend.md) ("Authentication and security") st
 
 #### D7. `/api/sync` details
 
-"Applying a batch" in [backend.md](docs/spec/backend.md) is the algorithm. What it leaves open:
+"Applying a batch" in [backend.md](../spec/backend.md) is the algorithm. What it leaves open:
 
 - **Order of checks.** `Origin` → body size → session → schema → read the row → `seq` rule → rate limit → apply. A batch with `seq` ≤ last is answered like an applied one, with `lastSeq` and `version`, and is not rate-limited (it writes nothing); `seq` > last + 1 is `409`; only a batch that would be applied is checked against `last_sync_at` and `SYNC_MIN_INTERVAL_MS`, and a `429` carries `Retry-After` in whole seconds.
 - **`device_seq`.** The value per device is `{ "seq": number, "at": number }`, because the 90-day cleanup needs the time of the last update ([Q5](#q5-spec-amendments), S4).
-- **Reads** ([ADR 082](docs/adr/082-sync-acknowledgement-without-snapshot.md)). One `batch()`: the small columns with `bucket_newest`, `json_extract(learn, '$.unlocked')`, `json_extract(learn, '$.activeDays')` and the touched days of `learn_buckets`; then `json_extract(column, ?, …)` statements of at most 98 bound paths for the touched kana of `learn_recent`, of `learn.entries` and of `learn.stats`. At the caps that is 4 statements. No `json_each` on a stored column. `apps/bench/src/apply-keyed.ts` is the measured model of these reads, not code to copy: it approximates the window rule and does not remove `mixups` keys.
+- **Reads** ([ADR 082](../adr/082-sync-acknowledgement-without-snapshot.md)). One `batch()`: the small columns with `bucket_newest`, `json_extract(learn, '$.unlocked')`, `json_extract(learn, '$.activeDays')` and the touched days of `learn_buckets`; then `json_extract(column, ?, …)` statements of at most 98 bound paths for the touched kana of `learn_recent`, of `learn.entries` and of `learn.stats`. At the caps that is 4 statements. No `json_each` on a stored column. `apps/bench/src/apply-keyed.ts` is the measured model of these reads, not code to copy: it approximates the window rule and does not remove `mixups` keys.
 - **Writes.** One `batch()`: the `UPDATE` (three `json_patch` columns, `bucket_newest`, no `RETURNING`), the `INSERT OR IGNORE INTO results … SELECT … FROM json_each(?)`, and the settings upsert when the batch carries settings. The response is `{ lastSeq, version }`.
-- **`GET /api/sync`.** Without `part`: `{ lastSeq, version }` from one read by the key. `part=rest`, `recent`, `buckets`: one part with `version` ([backend.md](docs/spec/backend.md), types `SnapshotRest`, `SnapshotRecent`, `SnapshotBuckets`), each assembled in SQL or by concatenation, never parsed.
+- **`GET /api/sync`.** Without `part`: `{ lastSeq, version }` from one read by the key. `part=rest`, `recent`, `buckets`: one part with `version` ([backend.md](../spec/backend.md), types `SnapshotRest`, `SnapshotRecent`, `SnapshotBuckets`), each assembled in SQL or by concatenation, never parsed.
 - **Settings.** `seq` = 1: `INSERT OR IGNORE` (the account's settings win). Otherwise `INSERT … ON CONFLICT(user_id) DO UPDATE … WHERE excluded.updated_at > user_settings.updated_at`.
 - **Query count.** At most 2 for the session (the lookup and a renewal), then at most 4 reads and 3 writes, repeated at most once by the version retry: at most 16 of 50 for a batch within the caps.
 - **Typing records.** The batch's results are sorted by `endedAt`, then `id`, and folded into the stored records with the function of D13; a result already counted changes nothing.
-- **`unlocked`.** The server has no kana table ([architecture.md](docs/spec/architecture.md)), so it keeps each track's unlocked kana as a set sorted by key; the client puts them in track order when it builds its view ([Q5](#q5-spec-amendments), S5).
-- **Snapshot.** Built from the returned column strings by concatenation ([ADR 078](docs/adr/078-user-stats-targeted-updates.md), item 4): the `learn` column without its closing brace, then `,"recent":`, `learn_recent`, `,"recallBuckets":`, `learn_buckets`, `}`.
+- **`unlocked`.** The server has no kana table ([architecture.md](../spec/architecture.md)), so it keeps each track's unlocked kana as a set sorted by key; the client puts them in track order when it builds its view ([Q5](#q5-spec-amendments), S5).
+- **Snapshot.** Built from the returned column strings by concatenation ([ADR 078](../adr/078-user-stats-targeted-updates.md), item 4): the `learn` column without its closing brace, then `,"recent":`, `learn_recent`, `,"recallBuckets":`, `learn_buckets`, `}`.
 - **`results` columns.** `config` holds `time:60`, `count:25` or `zen`; `json` holds the whole `TestResult`.
 - **`GET /api/sync`.** One `SELECT` of the whole row and one of the settings. The client also uses it to pull other devices' changes when it has nothing to send (D17; [Q5](#q5-spec-amendments), S6).
 - **Per-batch caps** on the learning part of a batch: see [Q1](#q1-a-large-delta-against-the-256-kb-body-and-the-cpu-limit).
@@ -224,8 +226,8 @@ Everything [backend.md](docs/spec/backend.md) ("Authentication and security") st
 - `apps/web/e2e/sync-server/` has its own `wrangler.toml` (`ENVIRONMENT = "test"`, `APP_ORIGIN = "http://localhost:5274"`, `SYNC_MIN_INTERVAL_MS = "0"`, a local D1) and its own `functions/api/[[route]].ts`. That entry calls `createApp` with a **fake `OAuthProviders`**: `authorizationUrl` points at `/api/test/authorize`, a route defined in this entry only, which reads the cookie `e2e_user` and redirects to the real callback with it as the code; `profile(code)` returns a verified `<code>@example.test`. The real callback, session and user code run; a test signs in by pressing the real button after setting one cookie.
 - Why this is not a backdoor: the fake provider and the test route live in `apps/web/e2e/`, the deployed bundle is built from the root `functions/` only, and `apps/api/src` has no test-only branch. A unit test in `apps/api` fails if anything under `apps/api/src` or `functions/` imports from `apps/web` or contains the string `api/test`.
 - The client's timers are moved with Playwright's clock where a test would wait 10 seconds.
-- Turnstile is not part of any e2e: the widget needs Cloudflare's network. The report dialog is covered by DOM tests with a fake loader and the endpoint by API tests ([quality.md](docs/spec/quality.md) lists no report e2e).
-- e2e files: `guest-sign-in.spec.ts` (a guest with a learning session and a typing test signs in; after a reload in a fresh context the same account shows both), `offline-online.spec.ts` (a test finished offline stays visible, then arrives), `two-tabs.spec.ts` (two tabs of one device finish work at the same time; one batch each, nothing lost, nothing doubled). Two devices are covered below the browser (D12, PR 5, PR 7): nothing in that case needs one ([ADR 052](docs/adr/052-e2e-scope-and-latency-on-main.md)).
+- Turnstile is not part of any e2e: the widget needs Cloudflare's network. The report dialog is covered by DOM tests with a fake loader and the endpoint by API tests ([quality.md](../spec/quality.md) lists no report e2e).
+- e2e files: `guest-sign-in.spec.ts` (a guest with a learning session and a typing test signs in; after a reload in a fresh context the same account shows both), `offline-online.spec.ts` (a test finished offline stays visible, then arrives), `two-tabs.spec.ts` (two tabs of one device finish work at the same time; one batch each, nothing lost, nothing doubled). Two devices are covered below the browser (D12, PR 5, PR 7): nothing in that case needs one ([ADR 052](../adr/052-e2e-scope-and-latency-on-main.md)).
 
 #### D10. `shared/schemas`
 
@@ -239,8 +241,8 @@ Everything [backend.md](docs/spec/backend.md) ("Authentication and security") st
 
 #### D11. One merge function for the learning state
 
-- `LearnDelta` has the fields of `LearnState` ([backend.md](docs/spec/backend.md)), so a delta is a `LearnState` that holds only changes. One function serves every case: `mergeLearn(a, b, order?)` merges a state with a delta, a delta with a delta, and a snapshot with an outbox.
-- It applies the rules of [storage-sync.md](docs/spec/storage-sync.md) field by field with the functions that exist: `mergeUnlocked`, `mergeEntries`, `mergeRecent`, `addLearnStats` then `decayLearnStat`, `mergeActiveDays`, `addBuckets`. `order` is the track order of each track; without it the unlocked kana are sorted by key (the server's form, D7).
+- `LearnDelta` has the fields of `LearnState` ([backend.md](../spec/backend.md)), so a delta is a `LearnState` that holds only changes. One function serves every case: `mergeLearn(a, b, order?)` merges a state with a delta, a delta with a delta, and a snapshot with an outbox.
+- It applies the rules of [storage-sync.md](../spec/storage-sync.md) field by field with the functions that exist: `mergeUnlocked`, `mergeEntries`, `mergeRecent`, `addLearnStats` then `decayLearnStat`, `mergeActiveDays`, `addBuckets`. `order` is the track order of each track; without it the unlocked kana are sorted by key (the server's form, D7).
 - `emptyLearnState()` is the neutral element (no unlocked vowels; the client's `initialLearnState()` adds them).
 - Statistics are merged in the order the server sees them: `decay(add(decay(add(snapshot, outbox)), delta))`.
 - For typing: `mergeKanaStats(a, b)` (add, then `decayKanaStat`, per kana) and `addCounters`.
@@ -294,7 +296,7 @@ function splitLearnDelta(
 #### D14. The year-of-learning generator
 
 - `packages/shared/src/testing/year.ts`, exported as `@nekotype/shared/testing`. `generateYear({ seed, keys })` returns `{ learn, kanaStats, counters, typingRecords, deviceSeq }` and `generateBatch({ seed, keys, kind })` returns a `SyncRequest` of kind `learning` (30 kana of one track, one day, no results), `capped` (the caps of Q1) or `results` (50 results with their typing delta).
-- The data is that of [ADR 078](docs/adr/078-user-stats-targeted-updates.md): 229 kana with 10 recall answers each, 365 days of buckets per track with about 25 buckets a day, statistics for every kana, records for 12 modes, three devices. A test asserts the serialized sizes: the three learning columns within 10% of 300 KB.
+- The data is that of [ADR 078](../adr/078-user-stats-targeted-updates.md): 229 kana with 10 recall answers each, 365 days of buckets per track with about 25 buckets a day, statistics for every kana, records for 12 modes, three devices. A test asserts the serialized sizes: the three learning columns within 10% of 300 KB.
 - `keys` are the kana keys of both tracks. `shared` must not import the engine, so they come from `packages/shared/src/testing/kana-keys.json`; a test in `apps/web` keeps the file equal to `keysOfTrack`.
 - Used by: the measurement (PR 1, PR 5, PR 13), the API tests (PR 5), the sync engine tests (PR 7). `apps/web` may import it from test files only (a lint rule).
 
@@ -302,7 +304,7 @@ function splitLearnDelta(
 
 #### D15. IndexedDB schema 4
 
-One pull request (PR 6) changes the stores, so the local data resets once ([ADR 061](docs/adr/061-schema-reset-before-release.md)). `SCHEMA_VERSION` becomes 4.
+One pull request (PR 6) changes the stores, so the local data resets once ([ADR 061](../adr/061-schema-reset-before-release.md)). `SCHEMA_VERSION` becomes 4.
 
 | Store      | Change                                                                                                                                                                                                                                                                                                                                                            |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -319,7 +321,7 @@ The wrapper (`shared/lib/idb/idb.ts`) gets two methods, with the same behaviour 
 
 #### D16. Changed settings travel in `SyncDelta.settings`, taken from the `settings` store
 
-[storage-sync.md](docs/spec/storage-sync.md) leaves this to P5 ("Changed settings go with `learn` until P5 decides otherwise").
+[storage-sync.md](../spec/storage-sync.md) leaves this to P5 ("Changed settings go with `learn` until P5 decides otherwise").
 
 - Settings are not copied into `delta`. The `settings` record is the only copy; `meta.settingsSyncedAt` is the `updatedAt` of the settings the server last acknowledged or sent.
 - When a batch is built, `SyncDelta.settings` is the current document if its `updatedAt` is greater than `meta.settingsSyncedAt`, otherwise `null`.
@@ -333,15 +335,15 @@ The wrapper (`shared/lib/idb/idb.ts`) gets two methods, with the same behaviour 
 | `entities/user`                   | initial                     | Signals `userId`, `sessionExpired`, `profile`, `authError`, `authAvailable`; `initUser(db)` (reads `meta`); `beginSignIn(provider)` (writes `meta.pendingSignIn`, then navigates to `/api/auth/<provider>`); the `nekotype:user` channel. No `fetch`                                                                                           |
 | `shared/lib/sync-request.ts`      | initial                     | `requestSync(reason)` and `onSyncRequest(handler)`: the end of a learning session and the end of a typing test call the first; the sync engine registers the second. With no handler (a guest) nothing happens                                                                                                                                 |
 | `app/sync-bootstrap.ts`           | initial                     | After the database opens: `initUser`; reads and removes `auth_error` from the URL; if `userId` is set or `pendingSignIn` is present, `import('@/features/sync')` and start it; listens on `nekotype:user` to do the same when another tab signs in                                                                                             |
-| `shared/api`                      | lazy                        | `apiFetch`: JSON, the error body of [backend.md](docs/spec/backend.md), `Retry-After`; `fetch` is injected                                                                                                                                                                                                                                     |
+| `shared/api`                      | lazy                        | `apiFetch`: JSON, the error body of [backend.md](../spec/backend.md), `Retry-After`; `fetch` is injected                                                                                                                                                                                                                                       |
 | `features/sync`                   | lazy, one chunk             | `model/engine.ts` (batches, outbox, the Web Lock, triggers, failed requests, catch-up, retention), `model/account.ts` (session check, guest merge, another user, sign-out, account deletion), `model/status.ts` (the sync status signal), `lib/` (pure: build a batch, apply an acknowledgement), `api/`, `ui/` (the "another account" dialog) |
 | `pages/settings/ui/account-panel` | lazy, loaded when signed in | Profile, sync status, sign-out, delete account. The guest form (text and two buttons) is in the settings route chunk and imports `entities/user` only                                                                                                                                                                                          |
 | `entities/stats/api/history.ts`   | with `/stats`               | `GET /api/results`; the typing store's `loadOlderResults()`                                                                                                                                                                                                                                                                                    |
-| `pages/trainer` (report)          | lazy, loaded on open        | `ui/report-dialog.tsx`, `lib/turnstile.ts`, `api/reports.ts`. `frontend.md` names a slice `features/report-content`; it has one consumer, so [ADR 015](docs/adr/015-merging-widgets-layer-into-pages-trainer-ui.md) merges it into the page                                                                                                    |
+| `pages/trainer` (report)          | lazy, loaded on open        | `ui/report-dialog.tsx`, `lib/turnstile.ts`, `api/reports.ts`. `frontend.md` names a slice `features/report-content`; it has one consumer, so [ADR 015](../adr/015-merging-widgets-layer-into-pages-trainer-ui.md) merges it into the page                                                                                                      |
 
 - `features/sync` has two consumers (`app` and `pages/settings`) and `entities/user` three, so both stay slices.
 - **A guest never loads the sync engine.** Every import of `@/features/sync` is dynamic and guarded by `userId`. `check-budget.mjs` gets a rule: the chunk that holds `src/features/sync/index.ts` is not the initial chunk and is not in the static imports of any route chunk; the idle prefetch does not fetch it.
-- **Budget.** Allowances for the initial JS: PR 6 at most +1.4 KB (the merge functions and the view), PR 7 at most +0.3 KB, PR 8 at most +0.8 KB (the navigation link, the sign-in notice, their strings; raised from 0.4 KB by the maintainer on 2026-11-18, [ADR 090](docs/adr/090-sign-in-sign-out-and-the-account-section.md)). The phase ends at 33.5 KB or less. An executor who cannot stay inside an allowance stops and asks; moving code out of the initial chunk is not theirs to decide.
+- **Budget.** Allowances for the initial JS: PR 6 at most +1.4 KB (the merge functions and the view), PR 7 at most +0.3 KB, PR 8 at most +0.8 KB (the navigation link, the sign-in notice, their strings; raised from 0.4 KB by the maintainer on 2026-11-18, [ADR 090](../adr/090-sign-in-sign-out-and-the-account-section.md)). The phase ends at 33.5 KB or less. An executor who cannot stay inside an allowance stops and asks; moving code out of the initial chunk is not theirs to decide.
 - **Sync flow**, where the spec is silent:
   - A trigger with nothing to send does nothing, except `start` and `online`, which call `GET /api/sync` without `part` and read the three parts only when `version` differs from `meta.snapshotVersion` (ADR 082), so a device sees what the others did ([Q5](#q5-spec-amendments), S6).
   - The engine never reads the stores' memory. It works on IndexedDB and tells the stores to read again by posting on the channels they already listen to (`nekotype:learn`, `nekotype:typing`, `nekotype:settings`); a second channel object in the same tab receives the message too.
@@ -352,7 +354,7 @@ The wrapper (`shared/lib/idb/idb.ts`) gets two methods, with the same behaviour 
 
 #### D18. Two tabs: merges instead of overwrites
 
-Replaces "Two tabs before P5" in [storage-sync.md](docs/spec/storage-sync.md).
+Replaces "Two tabs before P5" in [storage-sync.md](../spec/storage-sync.md).
 
 - A store keeps three things in memory: the **view** it shows, the **unwritten** changes (a delta), and nothing else.
 - Every action computes its change as a delta, applies it to the view incrementally (the cost stays that of one answer, as today) and merges it into `unwritten`.
@@ -365,12 +367,12 @@ Replaces "Two tabs before P5" in [storage-sync.md](docs/spec/storage-sync.md).
 
 #### D19. Sign-in, the session and the device
 
-- **Returning from OAuth.** `beginSignIn` writes `meta.pendingSignIn` before leaving the page; at the next start its presence means "a sign-in redirect has just returned" ([storage-sync.md](docs/spec/storage-sync.md), "Session state") and the client calls `GET /api/me`. The API does not change. `provider` is remembered for `sign in again` and for the `via GitHub` line of the profile.
+- **Returning from OAuth.** `beginSignIn` writes `meta.pendingSignIn` before leaving the page; at the next start its presence means "a sign-in redirect has just returned" ([storage-sync.md](../spec/storage-sync.md), "Session state") and the client calls `GET /api/me`. The API does not change. `provider` is remembered for `sign in again` and for the `via GitHub` line of the profile.
 - **`GET /api/me` result:**
   - `401` with `meta.userId` set: the `401` rule (A27). Without it (a sign-in that was abandoned): `pendingSignIn` is removed and the user stays a guest.
   - `200`, `meta.userId` unset: guest merge. One transaction writes `userId`, a new `deviceId`, `lastSeq` = 0, `profile`, and removes `pendingSignIn`; the engine starts and the first batch carries the guest's delta.
   - `200`, same user: `sessionExpired` and `pendingSignIn` are removed and syncing resumes with the same `deviceId` and `lastSeq`.
-  - `200`, another user: the rule of [storage-sync.md](docs/spec/storage-sync.md) ("Different user"), with the dialog of [Q2](#q2-design-gaps).
+  - `200`, another user: the rule of [storage-sync.md](../spec/storage-sync.md) ("Different user"), with the dialog of [Q2](#q2-design-gaps).
 - **`deviceId`** is `uuidv7(clock.now())` from `shared/lib/uuid.ts`, which the results already use. No new helper.
 - **Sign-out** clears every user store and the user keys of `meta`, keeps `meta.schemaVersion`, `meta.typingIntervals` (the keyboard's K, a property of the device) and `nekotype:locale`. It also resets the settings to their defaults, and so does account deletion ([Q3](#q3-does-sign-out-clear-the-settings)).
 - **"Reset progress"** is hidden whenever `meta.userId` is set, an expired session included (A33).
@@ -383,7 +385,7 @@ Replaces "Two tabs before P5" in [storage-sync.md](docs/spec/storage-sync.md).
 
 #### D21. Turnstile
 
-- The script `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit` is added to the page when the report dialog opens, never before. The widget is rendered explicitly in the full-width, 65 px high slot of the design (size `flexible`, [ADR 089](docs/adr/089-sign-out-text-and-dialog-fields.md)) with the dark theme and the interface language. A token is used once: after a failed submit the widget is reset.
+- The script `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit` is added to the page when the report dialog opens, never before. The widget is rendered explicitly in the full-width, 65 px high slot of the design (size `flexible`, [ADR 089](../adr/089-sign-out-text-and-dialog-fields.md)) with the dark theme and the interface language. A token is used once: after a failed submit the widget is reset.
 - Site keys are public constants in `pages/trainer/lib/turnstile.ts`, chosen by host: the production key on `nekotype.pages.dev`, the preview key on its subdomains, Cloudflare's always-passing test key elsewhere (`localhost`).
 - The server reads `TURNSTILE_SECRET_KEY`. Without it the endpoint answers `503 unavailable`. With `ENVIRONMENT` = `production` it refuses Cloudflare's published test secrets, so a wrong secret cannot open the endpoint.
 - `apps/web/public/_headers` needs no change: there is no Content-Security-Policy to extend.
@@ -400,13 +402,13 @@ Each question has options, a recommendation, and the pull requests that wait for
 
 ### Q1. A large delta against the 256 KB body and the CPU limit
 
-The spec contradicts itself. [storage-sync.md](docs/spec/storage-sync.md) sends a guest's whole delta in the first batch; [backend.md](docs/spec/backend.md) limits a body to 256 KB and a request to 10 ms of CPU. The learning state of a year on both tracks is about 300 KB, so a guest who learned for most of a year holds more than a body may carry: the first sync after sign-in would be answered `413` and, by A28, blocked until the next release. A smaller delta still makes the server parse, validate and merge every kana and every day at once, which is the whole-row work [ADR 078](docs/adr/078-user-stats-targeted-updates.md) measured at 7.9–15 ms and set out to avoid. A signed-in user who was offline for weeks meets the same limits more slowly.
+The spec contradicts itself. [storage-sync.md](../spec/storage-sync.md) sends a guest's whole delta in the first batch; [backend.md](../spec/backend.md) limits a body to 256 KB and a request to 10 ms of CPU. The learning state of a year on both tracks is about 300 KB, so a guest who learned for most of a year holds more than a body may carry: the first sync after sign-in would be answered `413` and, by A28, blocked until the next release. A smaller delta still makes the server parse, validate and merge every kana and every day at once, which is the whole-row work [ADR 078](../adr/078-user-stats-targeted-updates.md) measured at 7.9–15 ms and set out to avoid. A signed-in user who was offline for weeks meets the same limits more slowly.
 
 - **Option A (recommended).** Cap the learning part of a batch: at most 60 kana (entries, recent answers and statistics) and 31 bucket days per track. The rest stays in `delta` and follows in catch-up batches 5 seconds apart, as unsynced results already do (`splitLearnDelta`, D12). The server rejects a batch over the caps with `400`. A normal sync (one session: at most 25 kana, one day) is never split; a year-long guest needs about 13 batches, about a minute. PR 1 measures a batch at the caps and may lower them.
 - **Option B.** Raise the body limit to 512 KB and accept that a rare first sync may exceed 10 ms, relying on the platform's tolerance for infrequent overruns. The spec says the design does not rely on it (O4).
 - **Option C.** Leave it and document the limit. A long-time guest then loses the ability to sync.
 - **Waiting:** PR 1 (what to measure), PR 4, PR 5, PR 7.
-- **Answer (2026-11-15):** option A. The caps of 60 kana and 31 bucket days per track are the starting values; PR 1 may lower them by its measurement, and the final values are recorded in the ADR of PR 1. **Confirmed on 2026-11-16** at 60 and 31 by [ADR 082](docs/adr/082-sync-acknowledgement-without-snapshot.md).
+- **Answer (2026-11-15):** option A. The caps of 60 kana and 31 bucket days per track are the starting values; PR 1 may lower them by its measurement, and the final values are recorded in the ADR of PR 1. **Confirmed on 2026-11-16** at 60 and 31 by [ADR 082](../adr/082-sync-acknowledgement-without-snapshot.md).
 
 ### Q2. Design gaps
 
@@ -431,11 +433,11 @@ Proposals (existing components and tokens only; English / Russian):
 | j   | The profile                                 | As drawn: the cat mark, the display name, `via GitHub` / `через GitHub`. No avatar image (it would be a request to a third party). Without a display name, the email; without both, `account` / `аккаунт` **Accepted: decision 123.**                                                                                                                                                                                                            |
 
 - **Waiting:** pull request D, then PR 8 (e, f, g, h, j), PR 11 (h, i), PR 12 (a, b, c, d).
-- **Answer (2026-11-15):** option A. The items are drawn in the design artifact and exported by pull request D before PR 8, PR 11 and PR 12. Done on 2026-11-15: each row above names the design decision that was accepted. The strings and states to build from are in [`decisions.md`](docs/design/source/decisions.md) (114–124), the `Dialog`, `Notice` and `Nav` guidelines and [ADR 079](docs/adr/079-account-and-report-states.md); where a row's proposal differs from the decision, the decision wins.
+- **Answer (2026-11-15):** option A. The items are drawn in the design artifact and exported by pull request D before PR 8, PR 11 and PR 12. Done on 2026-11-15: each row above names the design decision that was accepted. The strings and states to build from are in [`decisions.md`](../design/source/decisions.md) (114–124), the `Dialog`, `Notice` and `Nav` guidelines and [ADR 079](../adr/079-account-and-report-states.md); where a row's proposal differs from the decision, the decision wins.
 
 ### Q3. Does sign-out clear the settings?
 
-[storage-sync.md](docs/spec/storage-sync.md) says sign-out clears "all user stores"; "Reset progress" keeps `settings`. Settings are synced with the account, so they are account data.
+[storage-sync.md](../spec/storage-sync.md) says sign-out clears "all user stores"; "Reset progress" keeps `settings`. Settings are synced with the account, so they are account data.
 
 - **Option A (recommended).** Sign-out and account deletion reset the settings to their defaults. The next person at a shared computer starts clean (A5), and nothing of the account is left.
 - **Option B.** The settings stay on the device.
@@ -535,7 +537,7 @@ Delete the Pages project `nekotype-bench` and the database `nekotype-bench` (das
 
 ## 6. Pull requests
 
-Common to all: the branch is cut from fresh `main`; the acceptance items are those of [phases.md](docs/spec/phases.md), numbered in the [table at the end](#acceptance-items-and-pull-requests); sizes are changed lines including tests, a rough guide to how much one executor session holds. ADR numbers are the next free ones when the pull request is opened (the last one today is 083, from this pull request's ADR; check `docs/adr/` when opening yours).
+Common to all: the branch is cut from fresh `main`; the acceptance items are those of [phases.md](../spec/phases.md), numbered in the [table at the end](#acceptance-items-and-pull-requests); sizes are changed lines including tests, a rough guide to how much one executor session holds. ADR numbers are the next free ones when the pull request is opened (the last one today is 083, from this pull request's ADR; check `docs/adr/` when opening yours).
 
 Order. A pull request starts when the ones it depends on are merged; pull requests with no path between them can run in parallel.
 
@@ -568,7 +570,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
   - `apps/bench` (`@nekotype/bench`, private): its own `wrangler.toml` (project `nekotype-bench`, D1 `nekotype-bench`), `public/` with an empty page and `_routes.json`, `functions/api/sync.ts`, which applies a batch exactly as "Applying a batch" in `backend.md` describes and returns the `meta` of every statement, `scripts/seed.ts` (writes the year-long row with `wrangler d1 execute --remote --file`), `scripts/measure.ts` (deploys, tails with `--format json`, sends the requests, prints the table) and a `README.md`.
 - **Measures**, for the batches `learning`, `capped` and `results` of D14 and for the whole-row read of `GET`: `cpuTime` of the first request after each of 5 fresh deployments (cold) and of 50 further requests (warm: median, p95, maximum); `rows_read`, `rows_written` and the number of statements; the size of the response.
 - **Pass:** every cold request and the warm p95 are at most 8 ms (2 ms are left for the session, validation and the routing that the real endpoint adds); a learning sync reads at most 250 rows (20,000 syncs a day, above the 16,000 tests a day that the write limit allows) and writes 1; the `results` batch writes at most 151 rows.
-- **Result (2026-11-16): failed** ([ADR 081](docs/adr/081-sync-measurement-p5.md)). A second measurement of three variants led to [ADR 082](docs/adr/082-sync-acknowledgement-without-snapshot.md), which changes the model and replaces the pass line above; PR 2, PR 4 and PR 5 no longer wait.
+- **Result (2026-11-16): failed** ([ADR 081](../adr/081-sync-measurement-p5.md)). A second measurement of three variants led to [ADR 082](../adr/082-sync-acknowledgement-without-snapshot.md), which changes the model and replaces the pass line above; PR 2, PR 4 and PR 5 no longer wait.
 - **Fail:** the executor does not redesign. It reports the numbers, the pull request is still merged as the record, and the maintainer decides the follow-up to ADR 078; PR 2, PR 4 and PR 5 wait.
 - **Dependencies:** `wrangler` and `tsx` as `devDependencies` of `apps/bench`, so the version is the lockfile's and not the newest one. No effect on the client bundle.
 - **Deploying from an agent session.** `scripts/measure.ts` first checks that the Pages project `nekotype-bench` exists (`wrangler pages project list`) and stops if it does not: creating it is the maintainer's step M1. The bench has a Function and a `_routes.json`, which keep its deploy on Pages (section 2); the address of every deployment must end in `nekotype-bench.pages.dev`, and the script fails otherwise.
@@ -653,7 +655,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 ### PR 7 — The sync engine
 
 - **Branch:** `p5-07-sync-engine`. **Depends on:** PR 5, PR 6, Q1, Q5 (S6).
-- **Goal.** `features/sync` without its user interface: batches, the outbox, the Web Lock, triggers, failed requests, catch-up, retention ([storage-sync.md](docs/spec/storage-sync.md), "Batches" to "History"; D16, D17).
+- **Goal.** `features/sync` without its user interface: batches, the outbox, the Web Lock, triggers, failed requests, catch-up, retention ([storage-sync.md](../spec/storage-sync.md), "Batches" to "History"; D16, D17).
 - **Adds:** `entities/user` (D17: the signals, `initUser` and the `nekotype:user` channel; `beginSignIn`, `authAvailable` and `authError` come in PR 8); `shared/api` (`apiFetch`); `shared/lib/sync-request.ts` and its two callers (the end of a learning session in `pages/learn`, the end of a typing test in `features/training`); `features/sync` (`model/engine.ts`, `model/status.ts`, `lib/build-batch.ts`, `lib/apply-ack.ts`, `api/sync.ts`); `app/sync-bootstrap.ts`, called from `app/init.ts`; the rule of D17 in `check-budget.mjs` and its test; `latency-gate.mjs` (D22).
 - **Also adds** `pages/settings/ui/account-panel.tsx` as a lazy chunk with the sync status line only, rendered when `userId` is set. It gives `features/sync` its second consumer from the start (steiger's `insignificant-slice` rule; ADR 015 forbids switching the rule off), and PR 8 completes the panel.
 - **The engine starts only when `meta.userId` is set**, which nothing sets before PR 8, so production behaviour does not change with this pull request.
@@ -702,7 +704,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 ### PR 10 — Server history
 
 - **Branch:** `p5-10-history`. **Depends on:** PR 5, PR 7.
-- **Goal.** `GET /api/results` and the history of `/stats` filled from the server on demand ([storage-sync.md](docs/spec/storage-sync.md), "History").
+- **Goal.** `GET /api/results` and the history of `/stats` filled from the server on demand ([storage-sync.md](../spec/storage-sync.md), "History").
 - **Adds:** `apps/api/src/routes/results.ts` (the cursor `<endedAt>:<id>`, at most 50, newest first, ties by id); `entities/stats/api/history.ts`; the typing store's `loadOlderResults()` (stores the page with `synced` = 1; remembers for the page load that the server has no more).
 - **Changes:** `pages/stats` history table: on the last local page, for a signed-in user who is online, the next page is requested; `loading history…` under the table (the string of the design's `Notice` guidelines).
 - **Tests:** API: paging through 120 results with equal `endedAt` values among them, the cursor and limit bounds, another user's results never returned, `401`. Unit: a new device fills its history page by page; inserting twice changes nothing; a guest never requests.
@@ -746,7 +748,7 @@ Sign-in is hidden on previews, so nothing behind a session can be tried on a pre
 
 ### Acceptance items and pull requests
 
-The items of the P5 acceptance in [phases.md](docs/spec/phases.md), in its order.
+The items of the P5 acceptance in [phases.md](../spec/phases.md), in its order.
 
 | #   | Acceptance item                                                                                                              | PR                                       |
 | --- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
@@ -774,7 +776,7 @@ The items of the P5 acceptance in [phases.md](docs/spec/phases.md), in its order
 
 One executor takes one pull request of section 6.
 
-1. **Read first:** `AGENTS.md`; this file whole; the spec sections your pull request names and the files it links; the ADRs it cites, [ADR 078](docs/adr/078-user-stats-targeted-updates.md) and [ADR 061](docs/adr/061-schema-reset-before-release.md) always. Check the Status table: every pull request yours depends on is merged, and every question and manual step it waits for has an answer written in this file. If not, stop and tell the maintainer what is missing.
+1. **Read first:** `AGENTS.md`; this file whole; the spec sections your pull request names and the files it links; the ADRs it cites, [ADR 078](../adr/078-user-stats-targeted-updates.md) and [ADR 061](../adr/061-schema-reset-before-release.md) always. Check the Status table: every pull request yours depends on is merged, and every question and manual step it waits for has an answer written in this file. If not, stop and tell the maintainer what is missing.
 2. **Make no decision this plan does not hold.** Architecture, data formats, names of stores, bindings and secrets, user-visible behaviour and copy are decided here, in the spec or in the design. If something is missing, ambiguous or turns out wrong, ask the maintainer (in Russian) and wait; do not choose and do not "fix" the spec on your own. A measurement outside its limit is reported, not worked around.
 3. **Stay in scope.** Build what your pull request lists. Anything else you had to touch is named in the pull request description.
 4. **Follow `AGENTS.md`:** the code rules (no `any`, no assertions, strings through i18n with `en` and `ru` in parity, injected time and randomness), the layer rules, the hot-path and budget rules. Never bypass a hook.

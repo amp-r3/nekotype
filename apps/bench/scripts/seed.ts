@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { KANA_KEYS, generateYear } from '@nekotype/shared/testing';
 import type { Year } from '@nekotype/shared/testing';
+import type { ValidSettings } from '@nekotype/shared/types';
 
 const USER_ID = 'bench-user';
 /** The session token `measure.ts` sends; D1 keeps its SHA-256 digest only. */
@@ -34,6 +35,22 @@ function schema(): string {
   return [...drops, ...files.map((name) => readFileSync(join(migrations, name), 'utf8'))].join(
     '\n',
   );
+}
+
+/** Settings of the bench user; a finished test of `measure.ts` sends them newer, as a device would. */
+export function benchSettings(updatedAt: number): ValidSettings {
+  return {
+    typing: {
+      script: 'hiragana',
+      content: 'words',
+      strictness: 'learner',
+      weakFocus: true,
+      test: { kind: 'time', seconds: 60 },
+      showTranslation: true,
+    },
+    learn: { strictness: 'learner', track: 'hiragana', targetMs: 1500, sound: true },
+    updatedAt,
+  };
 }
 
 const quote = (text: string): string => `'${text.replaceAll("'", "''")}'`;
@@ -64,6 +81,8 @@ export function seedSql(seed = 1): { sql: string; sizes: Record<string, number> 
     schema(),
     `INSERT INTO users (id, email, display_name, avatar_url, created_at) VALUES (${quote(USER_ID)}, NULL, NULL, NULL, 0);`,
     `INSERT INTO sessions (id_hash, user_id, expires_at) VALUES (${quote(sessionHash)}, ${quote(USER_ID)}, 4102444800000);`,
+    // The settings row exists, as for any user who has synced once: a change updates it in place.
+    `INSERT INTO user_settings (user_id, json, updated_at) VALUES (${quote(USER_ID)}, ${quote(JSON.stringify(benchSettings(0)))}, 0);`,
     `INSERT INTO user_stats (user_id, kana_stats, counters, learn, learn_recent, learn_buckets, bucket_newest, typing_records, device_seq, last_sync_at, version) VALUES (${quote(USER_ID)}, '', '', '', '', '', '', '', '', 0, 0);`,
   ];
   const sizes: Record<string, number> = {};
