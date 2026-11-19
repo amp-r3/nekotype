@@ -4,10 +4,10 @@ Instructions for AI coding agents working in this repository. `CLAUDE.md` is a s
 
 ## Project
 
-Nekotype is a keyboard-first web app for learning hiragana and katakana from zero, with progress tracking; typing Japanese words and phrases in romaji is its second part (ADR 058). Production: <https://nekotype.pages.dev> (Cloudflare Pages).
+Nekotype is a keyboard-first web app for learning Japanese, starting with hiragana and katakana from zero, with progress tracking (ADR 058, ADR 093). The typing trainer on `/type` is being removed (P6); words join learning instead. Production: <https://nekotype.pages.dev> (Cloudflare Pages).
 
 - **Current code** is the v1 baseline in a pnpm monorepo (ADR 027; phases P0–P5 done): a Preact SPA in `apps/web/` (learning on `/`, the typing trainer with words and phrases on `/type`), the stream input engine and kana tables in `packages/engine`, shared types, guards, merge and patch functions and the API schemas in `packages/shared`, the content pipeline in `packages/content` (a build tool, run by hand; its generated chunks are committed), the API in `apps/api` (Hono on Pages Functions with a D1 database: sign-in with Google and GitHub, sessions, `/api/sync`, `/api/results`, account deletion, `/api/reports` with Turnstile), and `apps/bench`, the sync measurement on a test Pages project. Settings, learning state and typing results, records and statistics are in IndexedDB, the language in localStorage; for a signed-in user a lazy sync engine sends them to D1 and merges what other devices sent.
-- **Target** is the learning-first MVP in `docs/spec/`, delivered in phases P0–P7: adaptive kana learning on `/` with IndexedDB (done in P3), words and phrases from the content pipeline (done in P4), Pages Functions + D1 sync (done in P5), kana audio (P6), polish and release (P7). What the target still lacks: kana audio (P6); the stored-data section of `/about`, the accessibility and device-matrix passes, the release switch of the schema rule and the release tag (P7).
+- **Target** is the learning MVP in `docs/spec/`, delivered in phases P0–P12 (ADR 093): kana learning on `/` with IndexedDB (done in P3), the content pipeline (done in P4), Pages Functions + D1 sync (done in P5); still to come: removing the typing trainer (P6), an adaptive knowledge model for kana (P7), a placement test (P8), words in learning (P9), vocabulary with English meanings (P10), kana audio (P11), polish and release (P12).
 - Where documents disagree, `docs/spec/` wins over everything else. `README.md` and `docs/architecture/` describe the code after the latest finished phase; when a phase changes the code, update them in the same PR.
 
 ## Documents
@@ -105,7 +105,7 @@ Run a single test file from its package: `cd apps/web && pnpm exec vitest run sr
 ## Data and deployment constraints
 
 - Production is the Pages project `nekotype` at `nekotype.pages.dev` (ADR 025). Keep the origin stable from launch: localStorage data is bound to it (A6).
-- Until the P7 release tag nobody but the maintainer uses production (ADR 061): a change to the IndexedDB schema resets the local data and no migration is written; raise `SCHEMA_VERSION` instead. The legacy `kanaflow:*` keys are deleted, never read. `nekotype:locale` is device data. P7 replaces this rule: after the release every schema change needs a migration and a test.
+- Until the P12 release tag nobody but the maintainer uses production (ADR 061): a change to the IndexedDB schema resets the local data and no migration is written; raise `SCHEMA_VERSION` instead. The legacy `kanaflow:*` keys are deleted, never read. `nekotype:locale` is device data. P12 replaces this rule: after the release every schema change needs a migration and a test.
 - The raw keystroke log must never be persisted.
 - Learning and typing data are separate: a typing test never changes the learning state, and a learning session never changes typing statistics (A39).
 - Licences (ADR 064): code is AGPL-3.0-only; the name, logos and cat are all rights reserved (`BRAND.md`); fonts are OFL-1.1. A new brand file or font goes into the lists in `NOTICE.md`.

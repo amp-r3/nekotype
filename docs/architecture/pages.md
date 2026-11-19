@@ -41,7 +41,7 @@ Part of the [architecture description](README.md) of the current code.
   - The component starts the load when it mounts, and only the list's place shows `loading…` or the error with `retry`. The idle prefetch does not fetch this chunk.
   - `lib/paging.ts` sorts by sentence id and slices pages of 25; the whole list is in memory, so a page change is synchronous, the count line (`role="status"`) announces the range and focus stays on the pressed page button. `Pagination` is the one from `/stats` with its own labels.
   - In a container of 480px or less a row is a block (CSS `.nk-credits`, the `td[data-label]` values become the line labels).
-  - The kana audio (P6) and stored data (P7) sections are not rendered yet.
+  - The kana audio (P11) and stored data (P12) sections are not rendered yet.
 
 ## The settings screen (`pages/settings`)
 

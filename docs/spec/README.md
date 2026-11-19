@@ -2,7 +2,7 @@
 
 Nov 1, 2026 · @Амир
 
-Revised Nov 6, 2026: learning first ([ADR 058](../adr/058-learning-first.md)).
+Revised Nov 6, 2026: learning first ([ADR 058](../adr/058-learning-first.md)). Revised Nov 19, 2026: learning only, words in learning, an adaptive knowledge model ([ADR 093](../adr/093-learning-only-words-in-learning.md)); the typing parts of this specification describe the current code until P6 removes them.
 
 ## Document scope
 
@@ -27,7 +27,7 @@ This document specifies the Nekotype MVP: required behaviour, data models, inter
 | [storage-sync.md](storage-sync.md) | IndexedDB, settings, merge rules, batches, sync triggers             |
 | [backend.md](backend.md)           | Free-tier limits, D1 schema, API, security, environments             |
 | [quality.md](quality.md)           | Budgets, latency measurement, tests, CI                              |
-| [phases.md](phases.md)             | Phases P0–P7 with acceptance criteria                                |
+| [phases.md](phases.md)             | Phases P0–P12 with acceptance criteria                               |
 | [backlog.md](backlog.md)           | Post-MVP backlog                                                     |
 | [decisions.md](decisions.md)       | Design decisions (A1…), resolved and open items                      |
 
@@ -35,9 +35,9 @@ Item prefixes: **D** — change from the baseline (this file); **A** — design 
 
 ## Product scope
 
-Nekotype teaches hiragana and katakana from zero and tracks the learner's progress; its second part is typing Japanese words and phrases in romaji. Learning is the core of the product ([ADR 058](../adr/058-learning-first.md)): kana unlock one at a time as the learner becomes confident with the ones already unlocked, are practised by recall (kana → romaji) and recognition (romaji → kana), and are kept by daily reviews. Romaji is the way to answer and a real skill for typing words, not the measure of knowing a kana. The MVP consists of the learning mode, typing of dictionary-sourced words and phrases, accounts with cross-device sync, and kana audio.
+Nekotype teaches Japanese, starting with hiragana and katakana from zero, and tracks the learner's progress ([ADR 093](../adr/093-learning-only-words-in-learning.md)). Kana are practised by recall (kana → romaji) and recognition (romaji → kana) and kept by reviews; an adaptive knowledge model sets the pace by what the learner shows (P7), and a placement test lets a learner who already knows kana start where they are (P8). Words join learning: first words made of known kana, as practice of the kana in context (P9), then words learned with their English meanings (P10). Romaji is the way to answer, not the measure of knowing a kana. The MVP consists of learning kana and words, accounts with cross-device sync, and kana audio. The typing trainer on `/type` (ADR 058) is removed in P6; until then the rows on typing below describe the current code.
 
-**Target users:** people starting Japanese who do not read kana yet, and kana readers who want to type words and phrases faster. Learning covers kana only.
+**Target users:** people starting Japanese who do not read kana yet, and people who know some kana and want to go on from where they are.
 
 **Constraints:**
 
@@ -52,18 +52,19 @@ Nekotype teaches hiragana and katakana from zero and tracks the learner's progre
 | Area       | Included                                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Learning   | Hiragana and katakana as independent tracks; kana unlocked one at a time by confidence; recall (typing the romaji) and recognition (choosing the kana from 4); weighted task choice with a focus on new kana; Leitner boxes with daily reviews; kana chart with learning states; mastered count, daily median answer time, streak |
-| Typing     | Words and phrases in hiragana, katakana or both; tests by time (15/30/60/120 s), by count (10/25/50/100 prompts), zen; KPM and kana accuracy compared with the user's average and personal best                                                                                                                                   |
+| Words      | Words made only of known kana as practice of the kana (P9); words learned with their English meanings (P10), both as items of the knowledge model of P7                                                                                                                                                                           |
+| Typing     | Removed in P6 (ADR 093); until then: words and phrases in hiragana, katakana or both; tests by time (15/30/60/120 s), by count (10/25/50/100 prompts), zen; KPM and kana accuracy compared with the user's average and personal best                                                                                              |
 | Input      | Japanese text stream with a romaji buffer at the caret; two strictness modes; keyboard-layout and IME warnings                                                                                                                                                                                                                    |
 | Statistics | Learning progress by day and streak; activity by day; filtered test history and chart (KPM, accuracy, rejected keys, hints), personal bests, weak kana; started/finished counters                                                                                                                                                 |
 | Accounts   | Guest mode; sign-in with Google and GitHub; guest data merged on sign-in; sync of settings, learning progress, results and statistics                                                                                                                                                                                             |
-| Audio      | The sound of each kana after every task, from openly licensed recordings, loaded lazily (P6)                                                                                                                                                                                                                                      |
+| Audio      | The sound of each kana after every task, from openly licensed recordings, loaded lazily (P11)                                                                                                                                                                                                                                     |
 | Content    | JLPT N5–N4 words from JMdict, short phrases from Tatoeba; displayed in kana only; English translations                                                                                                                                                                                                                            |
 | Interface  | English and Russian UI, a badge on a personal best, animations, keyboard shortcuts, dark theme                                                                                                                                                                                                                                    |
 | Other      | "Report a problem" action for words and phrases; source attribution page                                                                                                                                                                                                                                                          |
 
 ### Out of scope
 
-Speed tests on single kana (removed by [ADR 058](../adr/058-learning-first.md)), Russian translations of words and phrases, kanji in any form (including furigana and kanji learning), custom word sets, audio for words and phrases, speech synthesis, offline PWA, light and additional themes, leaderboards, content admin panel, vocabulary SRS, grammar, Hepburn-only mode. Except the speed tests, these items are listed in [Post-MVP backlog](backlog.md).
+Speed tests on single kana (removed by [ADR 058](../adr/058-learning-first.md)), the typing trainer (removed by [ADR 093](../adr/093-learning-only-words-in-learning.md) in P6), Russian translations of words and phrases (O3), kanji in any form (including furigana and kanji learning), custom word sets, audio for words and phrases, speech synthesis, offline PWA, light and additional themes, leaderboards, content admin panel, grammar, Hepburn-only mode. Except the speed tests, the typing trainer and Russian translations, these items are listed in [Post-MVP backlog](backlog.md).
 
 ## Changes from the baseline
 
