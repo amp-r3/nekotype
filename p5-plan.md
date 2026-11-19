@@ -24,7 +24,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | 9   | `p5-09-sync-e2e`         | done        | #172         |
 | 10  | `p5-10-history`          | done        | #173         |
 | 11  | `p5-11-account-deletion` | done        | #174         |
-| 12  | `p5-12-report`           | not started |              |
+| 12  | `p5-12-report`           | done        | #175         |
 | 13  | `p5-13-acceptance`       | not started |              |
 
 **Amended on 2026-11-16 by [ADR 082](docs/adr/082-sync-acknowledgement-without-snapshot.md)** after PR 1 failed its limits: a sync is acknowledged without the snapshot, `GET /api/sync` answers by parts, the learning columns are read by `json_extract` paths, and the CPU line is the warm median. D7, D12, PR 4, PR 5, PR 7 and section 8 carry the changes; where another line of this plan still speaks of a snapshot in the response, the ADR wins.
