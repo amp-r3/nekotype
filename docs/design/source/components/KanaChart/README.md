@@ -1,6 +1,6 @@
 # KanaChart
 
-The kana table of a track. Two modes: `state` — the learning table on `/` (ADR 058); `miss` — weak kana in typing on `/stats` (decision 110).
+The kana table of a track: the learning table on `/` (ADR 058). One mode since decision 128: the `miss` mode (weak kana in typing on `/stats`, decision 110) left with the typing trainer.
 
 **Composition — the groups of `docs/spec/learning.md`, rows by the engine's `RowId`:**
 
@@ -16,7 +16,7 @@ The kana table of a track. Two modes: `state` — the learning table on `/` (ADR
 
 Basic and voiced rows are aligned to the a·i·u·e·o columns (`y` has gaps). The vowel row has no consonant head: its head column stays empty at the same width, so あ い う え お line up with the columns below, and its row header is named `vowels` / `гласные` for screen readers (`aria-label` on the `rowheader` cell — the name a screen reader announces for the row). `a` is never used as the head: it would read as the a column. `w_n`, combinations and extended rows run consecutively. Two-character kana is set in `jp-cell-sm` to fit a 44px cell. Take the composition from `kanaRows(script)` and `kanaOf(script)`. At 360px everything is one column (the widest row, `ext_ti`, is 6 cells, 320px). Unlocked cells of a row need not be consecutive: in `ext_va`, ヴ unlocks before ヴァ and ヴィ.
 
-## `state` mode
+## States
 
 Data per kana: `{ state, box, due, next, median, acc, answers, mixups, recog }`. A kana without data is locked. `nextUnlock` names the locked kana that opens next. Four states, each with a marker that does not depend on colour (checked in grayscale on the preview), plus one mark:
 
@@ -41,9 +41,3 @@ Data per kana: `{ state, box, due, next, median, acc, answers, mixups, recog }`.
   Text on `bg-raised`: `fur` 12.57:1, `fur-dim` 7.1:1. The rows below move down by the panel's height (inline, as before). Closes with the same cell, `Esc` anywhere in the panel or on the cell (focus returns to the cell) or `close`. The cell carries `aria-expanded`.
 - One tooltip at a time; the table is a grid of buttons, no charts, no animation — it is in the initial chunk of `/`.
 - `role="grid"`, cells are buttons with a roving `tabIndex` (one Tab stop). ← → go in order, ↑ ↓ — to the nearest column of the adjacent row, including across blocks.
-
-## `miss` — weak kana in typing (`/stats`, decision 110)
-
-`/stats` → typing → `weak kana in typing` / `слабые каны в наборе`: the table of a script filled by the share of typing attempts with an error. Data per kana: `{ v, n }` — `erroredAttempts / attempts` and `attempts` of the stored `KanaStat`, over every saved typing test. It does not follow the filters of the page: per-kana errors are stored as totals, not per test. A kana that was never typed has no datum: a `line` outline, `not typed yet` / `ещё не набиралась`. The cells are not locked and open no details; the tooltip and `aria-label` are `ぬ` + `errors 22% · 75 attempts` / `ошибки 22% · 75 попыток`. A script switch (`Segmented`) stands over the table only when tests of both scripts exist. The legend (`fewer errors` … `more errors` / `меньше ошибок` … `больше ошибок`) is part of the component.
-
-Steps: `heat-miss-1…5` for a share above 0, 3, 7, 12 and 20%; the kana is `fur` on steps 1–3 and `on-fur` on 4–5.
