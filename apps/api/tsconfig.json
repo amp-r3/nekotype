@@ -4,5 +4,11 @@
     "lib": ["ES2022"],
     "types": ["@cloudflare/workers-types", "@cloudflare/vitest-plugin/types", "node", "vite/client"]
   },
-  "include": ["src", "../../functions", "vitest.config.ts", "eslint.config.js"]
+  "include": [
+    "src",
+    "../../functions",
+    "../web/e2e/sync-server/functions",
+    "vitest.config.ts",
+    "eslint.config.js"
+  ]
 }

@@ -142,7 +142,9 @@ To install the browser binary and run the E2E suite:
 
 ```bash
 pnpm --filter @nekotype/web exec playwright install --with-deps chromium webkit    # One-time install of the browsers
-pnpm run e2e                        # Run the Playwright suite against the production bundle (vite build + vite preview)
+pnpm run e2e                        # Run the Playwright suites against the production bundle (vite build + vite preview), then the sync suite
+pnpm run e2e:sync                   # Only the sync suite (e2e/sync/): `wrangler pages dev` with the real API, a local D1 and a fake OAuth provider on port 5274 (ADR 091)
+(cd apps/web && pnpm exec playwright test -c playwright.sync.config.ts guest-sign-in)   # One sync file
 ```
 
 ### Git Hooks

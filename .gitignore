@@ -5,6 +5,7 @@ node_modules/
 dist/
 dist-probe/
 dist-e2e/
+dist-e2e-sync/
 dist-ssr/
 *.local
 

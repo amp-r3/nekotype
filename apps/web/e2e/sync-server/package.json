@@ -1,0 +1,5 @@
+{
+  "name": "nekotype-e2e-sync-server",
+  "private": true,
+  "description": "Makes this folder the root of the Pages project for wrangler, which looks for wrangler.toml from the nearest package.json. Not a workspace package."
+}
