@@ -1,4 +1,4 @@
-import type { ReadingHint, Script } from '@nekotype/engine';
+import type { Script } from '@nekotype/engine';
 
 export type {
   BasicRowId,
@@ -17,15 +17,3 @@ export type {
 } from '@nekotype/engine';
 
 export type ScriptMode = Script | 'both';
-
-export type ContentKind = 'words' | 'phrases';
-
-export type ContentItem = {
-  readonly id: string;
-  readonly text: string;
-  // `mixed` (kana with katakana words in one sentence) is for phrases only.
-  readonly script: Script | 'mixed';
-  readonly meaning: { readonly en: string };
-  readonly readingHints?: readonly ReadingHint[];
-  readonly tatoebaId?: number;
-};

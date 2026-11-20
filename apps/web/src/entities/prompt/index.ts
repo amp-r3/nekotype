@@ -10,8 +10,6 @@ export type {
   KanaKey,
   KanaEntry,
   KanaRow,
-  ContentKind,
-  ContentItem,
   ReadingHint,
   PromptItem,
   Strictness,
@@ -48,10 +46,3 @@ export {
 } from './lib/engine';
 
 export { canonicalFor } from './lib/canonical';
-
-export { loadContent, loadChunk, chunksFor } from './api/content-loader';
-export { CONTENT_VERSION } from './api/content-version';
-export type { ContentChunk } from './api/content-loader';
-
-export { loadCredits } from './api/credits-loader';
-export type { PhraseCredit } from './api/credits-loader';

@@ -163,7 +163,7 @@ Nekotype adheres to strict first-load asset caps, checked by `pnpm run budget` (
 | **JetBrains Mono 400/500** | $\le 45$ KB  | **10.79 / 10.61 KB**   | ✅ Passed                 |
 | **Golos Text 400/500**     | $\le 45$ KB  | **9.42 / 9.56 KB**     | ✅ Passed                 |
 | **Total First Load**       | $\le 160$ KB | **99.17 KB**           | ✅ Passed (62% of budget) |
-| **Lazy content chunk**     | $\le 40$ KB  | **24.15 KB** (largest) | ✅ Passed                 |
+| **Lazy content chunk**     | $\le 40$ KB  | none shipped (P10)     | —                         |
 | **Lazy route chunk**       | $\le 25$ KB  | **11.81 KB** (largest) | ✅ Passed                 |
 
 ---

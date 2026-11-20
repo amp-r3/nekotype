@@ -5,7 +5,6 @@ export const BUDGETS: {
   readonly fontKb: number;
   readonly totalFirstLoadKb: number;
   readonly lazyRouteGzipKb: number;
-  readonly lazyContentGzipKb: number;
 };
 
 export const PROBE_MARKER: string;
