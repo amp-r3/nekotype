@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { LearnKanaKey } from '@nekotype/shared/types';
 import { createMemoryDb, onSyncRequest } from '@/shared/lib';
-import { canonicalFor } from '@/entities/prompt';
+import { canonicalFor } from '../lib/prompt';
 import { createLearnStore, keyOf } from '@/entities/learn';
 import { createLearnSession } from './session';
 import type { LearnSession, TaskPort } from './session';
@@ -141,7 +141,7 @@ describe('learning session: flow', () => {
   it('runs 25 tasks to the summary and counts the session once each way', () => {
     const env = setup();
     env.session.start();
-    expect(env.store.counters.value.started.learn).toBe(1);
+    expect(env.store.counters.value.started).toBe(1);
     const numbers: number[] = [];
     while (env.session.phase.value === 'task') {
       numbers.push(env.session.task.value?.n ?? 0);
@@ -149,7 +149,7 @@ describe('learning session: flow', () => {
     }
     expect(numbers).toEqual(Array.from({ length: 25 }, (_, i) => i + 1));
     expect(env.session.phase.value).toBe('summary');
-    expect(env.store.counters.value.finished.learn).toBe(1);
+    expect(env.store.counters.value.finished).toBe(1);
     expect(env.session.summary.value).not.toBeNull();
   });
 
@@ -161,7 +161,7 @@ describe('learning session: flow', () => {
     answerRight(env);
     expect(asked).not.toHaveBeenCalled();
     while (env.session.phase.value === 'task') answerRight(env);
-    expect(asked).toHaveBeenCalledExactlyOnceWith('learn');
+    expect(asked).toHaveBeenCalledOnce();
     off();
   });
 
@@ -429,7 +429,7 @@ describe('learning session: leaving', () => {
     env.session.leave();
     expect(env.session.phase.value).toBe('idle');
     expect(env.session.summary.value).toBeNull();
-    expect(env.store.counters.value.finished.learn).toBe(0);
+    expect(env.store.counters.value.finished).toBe(0);
     expect(Object.keys(env.store.state.value.entries)).toHaveLength(1);
     // The pause timer is gone.
     env.scheduler.flush();

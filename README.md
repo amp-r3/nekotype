@@ -6,7 +6,7 @@
 
 > A lightweight, keyboard-first web app for learning Hiragana and Katakana from zero, with adaptive unlocking, spaced reviews and progress tracking, instantaneous feedback, dual-tier romaji matching and zero latency.
 
-**Status.** The code implements phases P0–P5 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md), [ADR 093](docs/adr/093-learning-only-words-in-learning.md)): `/` teaches hiragana and katakana one kana at a time with introductions, recall, recognition and spaced reviews, with progress in IndexedDB. The typing trainer is being removed in phase P6: its screen, `/type`, is gone (it answers 404) and what it saved is removed in the next pull requests of the phase. Since P5 a user can sign in with Google or GitHub on production: progress and settings sync through Pages Functions and D1, the account can be deleted, and `POST /api/reports` takes reports of a wrong reading or translation (Turnstile). Next come the adaptive knowledge model (P7), kana audio (P8), a placement test and mnemonics (P9), then words in learning (P10) and vocabulary (P11).
+**Status.** The code implements phases P0–P5 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md), [ADR 093](docs/adr/093-learning-only-words-in-learning.md)): `/` teaches hiragana and katakana one kana at a time with introductions, recall, recognition and spaced reviews, with progress in IndexedDB. The typing trainer is being removed in phase P6: its screen, `/type`, is gone (it answers 404), and so are its data: what syncs is learning progress and settings only (sync format 2, IndexedDB schema 5; [ADR 096](docs/adr/096-learning-only-data-and-sync-format-2.md)). Since P5 a user can sign in with Google or GitHub on production: progress and settings sync through Pages Functions and D1, the account can be deleted, and `POST /api/reports` takes reports of a wrong reading or translation (Turnstile). Next come the adaptive knowledge model (P7), kana audio (P8), a placement test and mnemonics (P9), then words in learning (P10) and vocabulary (P11).
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Max%20Strict-blue.svg)](https://www.typescriptlang.org/)
@@ -47,14 +47,14 @@
 
 A pnpm workspace ([ADR 027](docs/adr/027-pnpm-workspace-layout-for-the-monorepo.md)); packages are consumed as TypeScript source, with no build step.
 
-| Path                | Package             | Contents                                                                                                                                                                 |
-| ------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `apps/web/`         | `@nekotype/web`     | The Preact single-page app (Feature-Sliced Design), its tests, e2e tests, scripts, assets                                                                                |
-| `apps/api/`         | `@nekotype/api`     | The Hono application behind `/api/*` (Pages Functions), its D1 migrations and its tests in the Workers runtime; `functions/` mounts it                                   |
-| `apps/bench/`       | `@nekotype/bench`   | The CPU and D1 measurement of the real `/api/sync` on a test Pages project (P5); a tool run by hand, never deployed to production                                        |
-| `packages/engine/`  | `@nekotype/engine`  | The NFA romaji engine and the kana tables; imports nothing, runs in a browser or a Worker                                                                                |
-| `packages/shared/`  | `@nekotype/shared`  | Types (`Clock`, `Rng`, `Scheduler`, …), type guards, and the merge, patch and apply functions of the learning state and typing records, shared by the client and the API |
-| `packages/content/` | `@nekotype/content` | The content pipeline (build tool, never bundled): pinned sources, parsers, the word and phrase steps; `generate` writes the content chunks                               |
+| Path                | Package             | Contents                                                                                                                                              |
+| ------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/`         | `@nekotype/web`     | The Preact single-page app (Feature-Sliced Design), its tests, e2e tests, scripts, assets                                                             |
+| `apps/api/`         | `@nekotype/api`     | The Hono application behind `/api/*` (Pages Functions), its D1 migrations and its tests in the Workers runtime; `functions/` mounts it                |
+| `apps/bench/`       | `@nekotype/bench`   | The CPU and D1 measurement of the real `/api/sync` on a test Pages project (P5); a tool run by hand, never deployed to production                     |
+| `packages/engine/`  | `@nekotype/engine`  | The NFA romaji engine and the kana tables; imports nothing, runs in a browser or a Worker                                                             |
+| `packages/shared/`  | `@nekotype/shared`  | Types (`Clock`, `Rng`, `Scheduler`, …), type guards, and the merge, patch and apply functions of the learning state, shared by the client and the API |
+| `packages/content/` | `@nekotype/content` | The content pipeline (build tool, never bundled): pinned sources, parsers, the word and phrase steps; `generate` writes the content chunks            |
 
 Root scripts run the package scripts with `pnpm -r`; run one package directly with `pnpm --filter @nekotype/web run <script>`.
 
@@ -168,7 +168,7 @@ Nekotype adheres to strict first-load asset caps, checked by `pnpm run budget` (
 
 ## ☁️ Deployment
 
-Nekotype is a static SPA (`apps/web/dist/`; settings, learning and typing progress in IndexedDB, the language in `localStorage`) with an API behind `/api/*`: Pages Functions (`functions/api/[[route]].ts` mounts the Hono app of `apps/api`) and a D1 database. It ships to **Cloudflare Pages** at the domain root, so `VITE_BASE` stays at its default `/`. `wrangler.toml` in the repository root is the source of truth for the project's bindings, variables and databases (production, preview and local): change them there, not in the dashboard. Secrets are the exception and are set with `wrangler pages secret put`.
+Nekotype is a static SPA (`apps/web/dist/`; settings and learning progress in IndexedDB, the language in `localStorage`) with an API behind `/api/*`: Pages Functions (`functions/api/[[route]].ts` mounts the Hono app of `apps/api`) and a D1 database. It ships to **Cloudflare Pages** at the domain root, so `VITE_BASE` stays at its default `/`. `wrangler.toml` in the repository root is the source of truth for the project's bindings, variables and databases (production, preview and local): change them there, not in the dashboard. Secrets are the exception and are set with `wrangler pages secret put`.
 
 **Production:** <https://nekotype.pages.dev> · **Previews:** one URL per pull request.
 

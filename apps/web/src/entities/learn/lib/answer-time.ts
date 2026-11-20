@@ -2,7 +2,7 @@
 
 /** Answer times are capped when they are recorded. */
 export const ANSWER_TIME_CAP_MS = 10_000;
-/** K while fewer than `K_MIN_INTERVALS` typing intervals are recorded. */
+/** K while fewer than `K_MIN_INTERVALS` key intervals are recorded. */
 export const DEFAULT_K_MS = 200;
 export const K_MIN_INTERVALS = 20;
 /** K is the median of this many latest intervals. */
@@ -27,14 +27,14 @@ export function median(values: readonly number[]): number {
   return ((sorted[mid - 1] ?? 0) + upper) / 2;
 }
 
-/** K of the device from its recorded typing intervals, oldest first. */
-export function typingK(intervals: readonly number[]): number {
+/** K of the device from its recorded key intervals, oldest first. */
+export function answerK(intervals: readonly number[]): number {
   if (intervals.length < K_MIN_INTERVALS) return DEFAULT_K_MS;
   return median(intervals.slice(-K_WINDOW));
 }
 
 /**
- * The typing intervals of one answer: the time between two consecutive accepted keystrokes with no
+ * The key intervals of one answer: the time between two consecutive accepted keystrokes with no
  * rejected key and no Esc between them.
  */
 export function intervalsOf(keystrokes: readonly Keystroke[]): number[] {

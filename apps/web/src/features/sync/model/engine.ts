@@ -12,44 +12,30 @@ import {
   isSettings,
   isSnapshot,
   isSyncResponse,
-  mergeTypingRecords,
-  isTypingRecords,
 } from '@nekotype/shared/runtime';
 import type { ApiResult, FetchLike } from '@/shared/api';
-import type { ChangeChannel, Db, Read, SyncReason, Write } from '@/shared/lib';
+import type { ChangeChannel, Db, Read, Write } from '@/shared/lib';
 import { DELTA_STORE, META_STORE, OUTBOX_STORE, SNAPSHOT_STORE, SYNC_KEY } from '@/shared/lib';
 import { createSyncApi } from '../api/sync';
 import type { Parts, SyncApi } from '../api/sync';
 import { appliesLocally, assembleSnapshot, settingsAfter } from '../lib/apply-ack';
-import {
-  bodyBytes,
-  buildBatch,
-  isEmptyLearnChanges,
-  isEmptyTypingChanges,
-  noCounters,
-  noLearnChanges,
-} from '../lib/build-batch';
+import { bodyBytes, buildBatch, isEmptyLearnChanges, noLearnChanges } from '../lib/build-batch';
 import type { Batch } from '../lib/build-batch';
-import { readLearnChanges, readOutbox, readResultRow, readTypingChanges } from '../lib/stored';
+import { readLearnChanges, readOutbox } from '../lib/stored';
 import { setSyncOnline, setSyncStatus } from './status';
 import type { SyncStatus } from './status';
 
 const SETTINGS_STORE = 'settings';
-const RESULTS_STORE = 'results';
-const RECORDS_STORE = 'records';
 const SETTINGS_KEY = 'current';
-const RECORDS_KEY = 'current';
 
 /** One request per device in this many ms (storage-sync.md, "Sync triggers"). */
 export const REQUEST_SPACING_MS = 10_000;
 /** The spacing of catch-up batches. */
 export const CATCH_UP_SPACING_MS = 5_000;
-/** The wait after a test or a learning session ends before it is sent. */
+/** The wait after a learning session ends before it is sent. */
 export const AFTER_WORK_MS = 10_000;
 /** The body of a request sent while the page is hidden: browsers cut `keepalive` bodies at 64 KB. */
 export const KEEPALIVE_MAX_BYTES = 60 * 1024;
-/** A signed-in user's results kept on the device beyond the unsynced ones. */
-export const RETAINED_RESULTS = 1000;
 const MAX_SEQ_REWRITES = 3;
 const DEFAULT_RETRY_MS = 5_000;
 
@@ -80,13 +66,12 @@ export type SyncEngineDeps = {
   /** The stores listen on these: a post makes them read the database again. */
   readonly channels: {
     readonly learn: ChangeChannel;
-    readonly typing: ChangeChannel;
     readonly settings: ChangeChannel;
   };
   /** The user keys of `meta` changed (`sessionExpired`): the signals read them again. */
   readonly refreshUser: () => Promise<void>;
   /** Registers the handler of `requestSync`; returns the function that removes it. */
-  readonly onSyncRequest: (handler: (reason: SyncReason) => void) => () => void;
+  readonly onSyncRequest: (handler: () => void) => () => void;
 };
 
 export interface SyncEngine {
@@ -157,7 +142,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
   let statusRun: Promise<void> = Promise.resolve();
   let removers: (() => void)[] = [];
 
-  const post = (...names: readonly ('learn' | 'typing' | 'settings')[]): void => {
+  const post = (...names: readonly ('learn' | 'settings')[]): void => {
     for (const name of names) deps.channels[name].post();
   };
 
@@ -168,22 +153,17 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
     if (meta.blockedAt === appVersion) return 'blocked';
     if (meta.sessionExpired) return 'expired';
     if (!deps.env.isOnline() || networkFailed) return 'offline';
-    const [outbox, learn, typing, unsynced, settings, syncedAt] = await Promise.all([
+    const [outbox, learn, settings, syncedAt] = await Promise.all([
       db.get(OUTBOX_STORE, SYNC_KEY),
       db.get(DELTA_STORE, 'learn'),
-      db.get(DELTA_STORE, 'typing'),
-      db.getByIndex(RESULTS_STORE, 'synced', 0, 1),
       db.get(SETTINGS_STORE, SETTINGS_KEY),
       db.get(META_STORE, 'settingsSyncedAt'),
     ]);
     const learnChanges = readLearnChanges(learn);
-    const typingChanges = readTypingChanges(typing);
     const unsent = isSettings(settings) && settings.updatedAt > (asCount(syncedAt) ?? 0);
     const pending =
       outbox !== undefined ||
       (learnChanges !== null && !isEmptyLearnChanges(learnChanges)) ||
-      (typingChanges !== null && !isEmptyTypingChanges(typingChanges)) ||
-      unsynced.length > 0 ||
       unsent;
     return pending ? 'pending' : 'synced';
   };
@@ -207,27 +187,22 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
   };
 
   /**
-   * One transaction: the new snapshot and its version, the outbox cleared, its results marked, the
-   * records merged with the server's when the snapshot was read, the settings rule (D16).
+   * One transaction: the new snapshot and its version, the outbox cleared, the settings rule (D16).
    */
   const store = async (
     next: Snapshot,
     version: number,
     sent: Outbox | null,
     lastSeq: number | null,
-    fromServer: boolean,
   ): Promise<void> => {
-    const ids = sent?.resultIds ?? [];
     const reads: Read[] = [
       { store: SETTINGS_STORE, key: SETTINGS_KEY },
       { store: META_STORE, key: 'settingsSyncedAt' },
-      { store: RECORDS_STORE, key: RECORDS_KEY },
-      ...ids.map((id): Read => ({ store: RESULTS_STORE, key: id })),
     ];
     const replaced = { settings: false };
     await db.update(
       reads,
-      ([settings, syncedAt, records, ...rows]) => {
+      ([settings, syncedAt]) => {
         const after = settingsAfter(
           isSettings(settings) ? settings : null,
           asCount(syncedAt) ?? 0,
@@ -241,25 +216,6 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
         ];
         if (lastSeq !== null) writes.push(metaPut('lastSeq', lastSeq));
         if (sent !== null) writes.push({ op: 'delete', store: OUTBOX_STORE, key: SYNC_KEY });
-        for (const row of rows) {
-          const stored = readResultRow(row);
-          if (stored !== null) {
-            writes.push({
-              op: 'put',
-              store: RESULTS_STORE,
-              key: stored.result.id,
-              value: { ...stored.result, synced: 1 },
-            });
-          }
-        }
-        if (fromServer) {
-          writes.push({
-            op: 'put',
-            store: RECORDS_STORE,
-            key: RECORDS_KEY,
-            value: mergeTypingRecords(isTypingRecords(records) ? records : {}, next.typingRecords),
-          });
-        }
         if (after.replace !== null) {
           replaced.settings = true;
           writes.push({
@@ -271,9 +227,9 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
         }
         return writes;
       },
-      [SNAPSHOT_STORE, OUTBOX_STORE, RESULTS_STORE],
+      [SNAPSHOT_STORE, OUTBOX_STORE],
     );
-    post('learn', 'typing');
+    post('learn');
     if (replaced.settings) post('settings');
   };
 
@@ -291,13 +247,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
     const snapshot = isSnapshot(stored) ? stored : null;
     const base = appliesLocally(snapshot, asCount(version), response.version) ? snapshot : null;
     if (base !== null) {
-      await store(
-        applyBatch(base, outbox.request),
-        response.version,
-        outbox,
-        response.lastSeq,
-        false,
-      );
+      await store(applyBatch(base, outbox.request), response.version, outbox, response.lastSeq);
       return true;
     }
     const parts = await api.readParts();
@@ -307,7 +257,6 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
       parts.rest.version,
       outbox,
       response.lastSeq,
-      true,
     );
     return true;
   };
@@ -334,7 +283,6 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
       parts.rest.version,
       null,
       null,
-      true,
     );
   };
 
@@ -386,64 +334,45 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
 
   // ---- building and sending a batch ---------------------------------------------------------
 
-  /** Moves the next batch from `delta` and `results` into the outbox in one transaction (step 3). */
-  const buildNext = async (
-    deviceId: string,
-    options: { readonly results: boolean; readonly maxBytes: number },
-  ): Promise<Outbox | null> => {
-    const rows = options.results
-      ? (await db.getByIndex(RESULTS_STORE, 'synced', 0, 50)).flatMap((row) => {
-          const stored = readResultRow(row);
-          return stored === null || stored.synced ? [] : [stored.result];
-        })
-      : [];
+  /** Moves the next batch from `delta` into the outbox in one transaction (step 3). */
+  const buildNext = async (deviceId: string, maxBytes: number): Promise<Outbox | null> => {
     const built: { batch: Batch | null } = { batch: null };
     await db.update(
       [
         { store: OUTBOX_STORE, key: SYNC_KEY },
         { store: DELTA_STORE, key: 'learn' },
-        { store: DELTA_STORE, key: 'typing' },
         { store: SETTINGS_STORE, key: SETTINGS_KEY },
         { store: META_STORE, key: 'lastSeq' },
         { store: META_STORE, key: 'settingsSyncedAt' },
       ],
-      ([outbox, learn, typing, settings, lastSeq, syncedAt]) => {
+      ([outbox, learn, settings, lastSeq, syncedAt]) => {
         if (outbox !== undefined) return [];
         const batch = buildBatch(
           {
             deviceId,
             seq: (asCount(lastSeq) ?? 0) + 1,
             learn: readLearnChanges(learn) ?? noLearnChanges(),
-            typing: readTypingChanges(typing) ?? { kanaStats: {}, counters: noCounters() },
             settings:
               isSettings(settings) && settings.updatedAt > (asCount(syncedAt) ?? 0)
                 ? settings
                 : null,
-            results: rows,
           },
-          options.maxBytes,
+          maxBytes,
         );
         if (batch === null) return [];
         built.batch = batch;
         capped = !isEmptyLearnChanges(batch.rest);
-        const sent: Outbox = {
-          seq: batch.request.seq,
-          request: batch.request,
-          resultIds: batch.resultIds,
-        };
+        const sent: Outbox = { seq: batch.request.seq, request: batch.request };
         return [
           { op: 'put', store: OUTBOX_STORE, key: SYNC_KEY, value: sent },
           isEmptyLearnChanges(batch.rest)
             ? { op: 'delete', store: DELTA_STORE, key: 'learn' }
             : { op: 'put', store: DELTA_STORE, key: 'learn', value: batch.rest },
-          { op: 'delete', store: DELTA_STORE, key: 'typing' },
         ];
       },
     );
     const batch = built.batch;
-    return batch === null
-      ? null
-      : { seq: batch.request.seq, request: batch.request, resultIds: batch.resultIds };
+    return batch === null ? null : { seq: batch.request.seq, request: batch.request };
   };
 
   /** Sends the outbox once and settles the answer. */
@@ -458,26 +387,8 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
     return failed(result, outbox);
   };
 
-  /** True when the last batch left changes out because of the caps, or results wait: a catch-up batch follows (step 5). */
-  const hasMore = async (): Promise<boolean> =>
-    capped || (await db.getByIndex(RESULTS_STORE, 'synced', 0, 1)).length > 0;
-
-  /** The oldest synced results above the limit go (history, "Retention"). */
-  const retain = async (): Promise<void> => {
-    const count = await db.count(RESULTS_STORE);
-    if (count <= RETAINED_RESULTS) return;
-    let over = count - RETAINED_RESULTS;
-    const drop: Write[] = [];
-    for (const row of await db.getAll(RESULTS_STORE, 'endedAt')) {
-      if (over === 0) break;
-      const stored = readResultRow(row);
-      if (stored !== null && stored.synced) {
-        drop.push({ op: 'delete', store: RESULTS_STORE, key: stored.result.id });
-        over -= 1;
-      }
-    }
-    await db.write(drop);
-  };
+  /** True when the last batch left changes out because of the caps: a catch-up batch follows (step 5). */
+  const hasMore = (): boolean => capped;
 
   // ---- a cycle ------------------------------------------------------------------------------
 
@@ -501,7 +412,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
       const stored = await db.get(OUTBOX_STORE, SYNC_KEY);
       let outbox = stored === undefined ? null : readOutbox(stored);
       if (stored !== undefined && outbox === null) return;
-      outbox ??= await buildNext(user.deviceId, { results: true, maxBytes: MAX_SYNC_BODY_BYTES });
+      outbox ??= await buildNext(user.deviceId, MAX_SYNC_BODY_BYTES);
       if (outbox === null) {
         if (withPull) await pull(api);
         return;
@@ -509,8 +420,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
       const verdict = await send(api, outbox, false);
       if (verdict === 'again' && rewrites < MAX_SEQ_REWRITES) continue;
       if (verdict === 'sent') {
-        await retain();
-        if (await hasMore()) schedule(false, CATCH_UP_SPACING_MS, CATCH_UP_SPACING_MS);
+        if (hasMore()) schedule(false, CATCH_UP_SPACING_MS, CATCH_UP_SPACING_MS);
       }
       return;
     }
@@ -527,7 +437,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
     if (outbox !== null) {
       if (bodyBytes(JSON.stringify(outbox.request)) > KEEPALIVE_MAX_BYTES) return;
     } else {
-      outbox = await buildNext(user.deviceId, { results: false, maxBytes: KEEPALIVE_MAX_BYTES });
+      outbox = await buildNext(user.deviceId, KEEPALIVE_MAX_BYTES);
       if (outbox === null) return;
     }
     await send(api, outbox, true);

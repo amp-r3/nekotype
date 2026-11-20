@@ -55,11 +55,11 @@ From P2 the interface follows the [Nekotype design system](../design/README.md) 
 
 **Slices** (a starting point; ADR 015 still merges a slice with a single consumer into it):
 
-| Layer      | Slices                                                                                                                                     |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `pages`    | `learn` (`/`; also the learning session and task choice), `stats`, `settings`, `about`                                                     |
-| `features` | `sync`                                                                                                                                     |
-| `entities` | `prompt` (the kana table, the engine binding), `stats`, `learn` (learning state, confidence, unlocking, boxes, streak), `user`, `settings` |
+| Layer      | Slices                                                                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `pages`    | `learn` (`/`; also the learning session, task choice, the kana table and the engine binding), `stats`, `settings`, `about` |
+| `features` | `sync`                                                                                                                     |
+| `entities` | `learn` (learning state, confidence, unlocking, boxes, streak), `user`, `settings`                                         |
 
 Slices on one layer do not import each other, so a flow crossing features, such as sign-out running a sync first, is composed in the page or in `app`. The input source is in `shared` ([Architecture](architecture.md)).
 

@@ -14,10 +14,8 @@ export function assembleSnapshot(
 ): Snapshot {
   return {
     settings: rest.settings,
-    kanaStats: rest.kanaStats,
     counters: rest.counters,
     learn: { ...rest.learn, recent: recent.recent, recallBuckets: buckets.recallBuckets },
-    typingRecords: rest.typingRecords,
   };
 }
 

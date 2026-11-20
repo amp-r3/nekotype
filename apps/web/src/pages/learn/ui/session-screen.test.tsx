@@ -4,7 +4,7 @@ import { render, options, createRef, Fragment } from 'preact';
 import type { VNode } from 'preact';
 import { act } from 'preact/test-utils';
 import { createMemoryDb, immersive, recordWrites } from '@/shared/lib';
-import { canonicalFor } from '@/entities/prompt';
+import { canonicalFor } from '../lib/prompt';
 import { t } from '@/shared/i18n';
 import { createLearnStore } from '@/entities/learn';
 import { createLearnSession } from '../model/session';

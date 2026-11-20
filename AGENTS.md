@@ -4,9 +4,9 @@ Instructions for AI coding agents working in this repository. `CLAUDE.md` is a s
 
 ## Project
 
-Nekotype is a keyboard-first web app for learning Japanese, starting with hiragana and katakana from zero, with progress tracking (ADR 058, ADR 093). The typing trainer is being removed (P6): `/type` is gone and answers 404, its data goes in the next pull requests of the phase; words join learning instead. Production: <https://nekotype.pages.dev> (Cloudflare Pages).
+Nekotype is a keyboard-first web app for learning Japanese, starting with hiragana and katakana from zero, with progress tracking (ADR 058, ADR 093). The typing trainer is being removed (P6): `/type` is gone and answers 404 and its data are gone from the client, the sync and the API (sync format 2; the D1 table and columns go in the last pull requests of the phase); words join learning instead. Production: <https://nekotype.pages.dev> (Cloudflare Pages).
 
-- **Current code** is the v1 baseline in a pnpm monorepo (ADR 027; phases P0–P5 done): a Preact SPA in `apps/web/` (learning on `/`), the stream input engine and kana tables in `packages/engine`, shared types, guards, merge and patch functions and the API schemas in `packages/shared`, the content pipeline in `packages/content` (a build tool, run by hand; its generated chunks are committed), the API in `apps/api` (Hono on Pages Functions with a D1 database: sign-in with Google and GitHub, sessions, `/api/sync`, `/api/results`, account deletion, `/api/reports` with Turnstile), and `apps/bench`, the sync measurement on a test Pages project. Settings, learning state and typing results, records and statistics are in IndexedDB, the language in localStorage; for a signed-in user a lazy sync engine sends them to D1 and merges what other devices sent.
+- **Current code** is the v1 baseline in a pnpm monorepo (ADR 027; phases P0–P5 done): a Preact SPA in `apps/web/` (learning on `/`), the stream input engine and kana tables in `packages/engine`, shared types, guards, merge and patch functions and the API schemas in `packages/shared`, the content pipeline in `packages/content` (a build tool, run by hand; its generated chunks are committed), the API in `apps/api` (Hono on Pages Functions with a D1 database: sign-in with Google and GitHub, sessions, `/api/sync`, account deletion, `/api/reports` with Turnstile), and `apps/bench`, the sync measurement on a test Pages project. Settings and learning state are in IndexedDB, the language in localStorage; for a signed-in user a lazy sync engine sends them to D1 and merges what other devices sent.
 - **Target** is the learning MVP in `docs/spec/`, delivered in phases P0–P12 (ADR 093): kana learning on `/` with IndexedDB (done in P3), the content pipeline (done in P4), Pages Functions + D1 sync (done in P5); still to come: removing the typing trainer (P6), an adaptive knowledge model (P7), kana audio with listening tasks (P8), a placement test and kana mnemonics (P9), words in learning (P10), vocabulary with English meanings (P11), polish and release (P12).
 - Where documents disagree, `docs/spec/` wins over everything else. `README.md` and `docs/architecture/` describe the code after the latest finished phase; when a phase changes the code, update them in the same PR.
 
@@ -84,7 +84,7 @@ Run a single test file from its package: `cd apps/web && pnpm exec vitest run sr
 
 ## Input engine
 
-- The engine (`packages/engine`; `apps/web/src/entities/prompt/lib/engine.ts` only binds it to the kana table) is pure TypeScript: no DOM, signals, storage or app aliases. It must run in the browser and in a Worker.
+- The engine (`packages/engine`; `apps/web/src/pages/learn/lib/prompt/engine.ts` only binds it to the kana table) is pure TypeScript: no DOM, signals, storage or app aliases. It must run in the browser and in a Worker.
 - Two strictness modes: relaxed (`learner`) and strict IME (`ime`). Invariant: relaxed accepts every input strict accepts. It is a property test; do not break it.
 - The accepted-input table in `docs/spec/engine.md` is normative. Every row is a golden test; change the spec and the test together.
 - The kana table format (`ime[]` + `learner[]` spellings per entry) is shared by the engine, the content build and the font subset.
@@ -107,7 +107,6 @@ Run a single test file from its package: `cd apps/web && pnpm exec vitest run sr
 - Production is the Pages project `nekotype` at `nekotype.pages.dev` (ADR 025). Keep the origin stable from launch: localStorage data is bound to it (A6).
 - Until the P12 release tag nobody but the maintainer uses production (ADR 061): a change to the IndexedDB schema resets the local data and no migration is written; raise `SCHEMA_VERSION` instead. The legacy `kanaflow:*` keys are deleted, never read. `nekotype:locale` is device data. P12 replaces this rule: after the release every schema change needs a migration and a test.
 - The raw keystroke log must never be persisted.
-- Learning and typing data are separate: a typing test never changes the learning state, and a learning session never changes typing statistics (A39).
 - Licences (ADR 064): code is AGPL-3.0-only; the name, logos and cat are all rights reserved (`BRAND.md`); fonts are OFL-1.1. A new brand file or font goes into the lists in `NOTICE.md`.
 - Content (words, phrases) is generated by the content pipeline, not edited by hand (D19). Tatoeba phrases must keep per-sentence author credit (A19).
 - Free tiers only (Cloudflare Pages Functions, D1). Check the limits in the spec before adding server work.

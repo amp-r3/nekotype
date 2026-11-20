@@ -6,12 +6,11 @@ import type {
   Scheduler,
   Snapshot,
   SyncRequest,
-  TestResult,
   TimeoutHandle,
   ValidSettings,
 } from '@nekotype/shared/types';
 import { applyBatch, emptyLearnState, isObject } from '@nekotype/shared/runtime';
-import type { ChangeChannel, Db, SyncReason } from '@/shared/lib';
+import type { ChangeChannel, Db } from '@/shared/lib';
 import { createMemoryDb } from '@/shared/lib';
 import type { FetchLike } from '@/shared/api';
 import { createSyncEngine } from './engine';
@@ -138,18 +137,13 @@ export function createTestChannel(): TestChannel {
   };
 }
 
-export const emptyCounters = (): Counters => ({
-  started: { typing: 0, learn: 0 },
-  finished: { typing: 0, learn: 0 },
-});
+export const emptyCounters = (): Counters => ({ started: 0, finished: 0 });
 
 export function emptySnapshot(): Snapshot {
   return {
     settings: null,
-    kanaStats: {},
     counters: emptyCounters(),
     learn: emptyLearnState(),
-    typingRecords: {},
   };
 }
 
@@ -242,10 +236,8 @@ export function createFakeServer() {
         lastSeq,
         version,
         settings: snapshot.settings,
-        kanaStats: snapshot.kanaStats,
         counters: snapshot.counters,
         learn,
-        typingRecords: snapshot.typingRecords,
       }),
     );
   };
@@ -301,42 +293,8 @@ export function learnRecord(delta: LearnDelta, counters: Counters = emptyCounter
   return { learn: delta, counters };
 }
 
-export function result(id: string, endedAt: number): TestResult {
-  return {
-    id,
-    content: 'words',
-    script: 'both',
-    strictness: 'learner',
-    config: { kind: 'time', seconds: 30 },
-    endReason: 'complete',
-    repeated: false,
-    startedAt: endedAt - 30_000,
-    endedAt,
-    durationMs: 30_000,
-    tokens: 60,
-    erroredTokens: 3,
-    items: 10,
-    keystrokes: 70,
-    rejectedKeystrokes: 2,
-    assisted: 0,
-    kpm: 120,
-    kanaAccuracy: 0.95,
-    celebratedPersonalBest: false,
-    contentVersion: 'c1',
-    appVersion: 'test',
-  };
-}
-
 export function settingsAt(updatedAt: number): ValidSettings {
   return {
-    typing: {
-      script: 'both',
-      content: 'words',
-      strictness: 'learner',
-      weakFocus: true,
-      test: { kind: 'time', seconds: 30 },
-      showTranslation: true,
-    },
     learn: { strictness: 'learner', track: 'hiragana', targetMs: 1500, sound: true },
     updatedAt,
   };
@@ -358,12 +316,12 @@ export type Rig = {
   readonly timers: TimerScheduler;
   readonly env: ReturnType<typeof createTestEnv>;
   readonly locks: ReturnType<typeof createTestLocks>;
-  readonly channels: { learn: TestChannel; typing: TestChannel; settings: TestChannel };
+  readonly channels: { learn: TestChannel; settings: TestChannel };
   readonly refreshUser: () => Promise<void>;
   readonly refreshed: { count: number };
   readonly engine: SyncEngine;
   /** What `requestSync` calls. */
-  readonly request: (reason: SyncReason) => void;
+  readonly request: () => void;
 };
 
 export async function createRig(
@@ -383,11 +341,10 @@ export async function createRig(
   const locks = options.locks ?? createTestLocks();
   const channels = {
     learn: createTestChannel(),
-    typing: createTestChannel(),
     settings: createTestChannel(),
   };
   const refreshed = { count: 0 };
-  let handler: ((reason: SyncReason) => void) | null = null;
+  let handler: (() => void) | null = null;
   const refreshUser = (): Promise<void> => {
     refreshed.count += 1;
     return Promise.resolve();
@@ -420,8 +377,8 @@ export async function createRig(
     refreshUser,
     refreshed,
     engine,
-    request: (reason) => {
-      handler?.(reason);
+    request: () => {
+      handler?.();
     },
   };
 }

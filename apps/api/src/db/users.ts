@@ -1,13 +1,15 @@
 import type { OAuthProfile, OAuthProviderName } from '../env';
 import { corrupt, isRow, textOf } from './rows';
 
-/** The initial `user_stats` row (p5-plan.md, D6): the neutral element of every column. */
+/**
+ * The initial `user_stats` row (p5-plan.md, D6): the neutral element of every column. The two typing
+ * columns of P5 are still `NOT NULL` until migration 0003 drops them (p6-plan.md, D9), so the insert
+ * names them.
+ */
+const TYPING_COLUMNS_UNTIL_0003 = '{}';
+
 const INITIAL_STATS = {
-  kana_stats: '{}',
-  counters: JSON.stringify({
-    started: { typing: 0, learn: 0 },
-    finished: { typing: 0, learn: 0 },
-  }),
+  counters: JSON.stringify({ started: 0, finished: 0 }),
   learn: JSON.stringify({
     unlocked: { hiragana: [], katakana: [] },
     entries: {},
@@ -17,7 +19,6 @@ const INITIAL_STATS = {
   learn_recent: '{}',
   learn_buckets: JSON.stringify({ hiragana: {}, katakana: {} }),
   bucket_newest: '{}',
-  typing_records: '{}',
   device_seq: '{}',
 };
 
@@ -84,13 +85,13 @@ export async function createUser(
       )
       .bind(
         userId,
-        INITIAL_STATS.kana_stats,
+        TYPING_COLUMNS_UNTIL_0003,
         INITIAL_STATS.counters,
         INITIAL_STATS.learn,
         INITIAL_STATS.learn_recent,
         INITIAL_STATS.learn_buckets,
         INITIAL_STATS.bucket_newest,
-        INITIAL_STATS.typing_records,
+        TYPING_COLUMNS_UNTIL_0003,
         INITIAL_STATS.device_seq,
       ),
   ]);

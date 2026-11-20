@@ -1,36 +1,5 @@
-import type { ValidTestConfig, ValidSettings } from './types';
+import type { ValidSettings } from './types';
 import { isObject } from './object';
-
-export function isTestConfig(value: unknown): value is ValidTestConfig {
-  if (!isObject(value)) return false;
-
-  if (value['kind'] === 'time') {
-    const s = value['seconds'];
-    return s === 15 || s === 30 || s === 60 || s === 120;
-  }
-
-  if (value['kind'] === 'count') {
-    const p = value['prompts'];
-    return p === 10 || p === 25 || p === 50 || p === 100;
-  }
-
-  if (value['kind'] === 'zen') return true;
-
-  return false;
-}
-
-function isTypingSettings(value: unknown): value is ValidSettings['typing'] {
-  if (!isObject(value)) return false;
-  const script = value['script'];
-  if (script !== 'hiragana' && script !== 'katakana' && script !== 'both') return false;
-  const content = value['content'];
-  if (content !== 'words' && content !== 'phrases') return false;
-  const strictness = value['strictness'];
-  if (strictness !== 'learner' && strictness !== 'ime') return false;
-  if (typeof value['weakFocus'] !== 'boolean') return false;
-  if (typeof value['showTranslation'] !== 'boolean') return false;
-  return isTestConfig(value['test']);
-}
 
 function isLearnSettings(value: unknown): value is ValidSettings['learn'] {
   if (!isObject(value)) return false;
@@ -44,9 +13,12 @@ function isLearnSettings(value: unknown): value is ValidSettings['learn'] {
   return typeof value['sound'] === 'boolean';
 }
 
+/** Strict: a document with any other key (the `typing` block of earlier versions) is not valid. */
 export function isSettings(value: unknown): value is ValidSettings {
   if (!isObject(value)) return false;
+  const keys = Object.keys(value);
+  if (keys.length !== 2 || !keys.includes('learn') || !keys.includes('updatedAt')) return false;
   const updatedAt = value['updatedAt'];
   if (typeof updatedAt !== 'number' || !Number.isFinite(updatedAt)) return false;
-  return isTypingSettings(value['typing']) && isLearnSettings(value['learn']);
+  return isLearnSettings(value['learn']);
 }

@@ -30,10 +30,7 @@ export function initialLearnState(): LearnState {
 }
 
 export function initialCounters(): Counters {
-  return {
-    started: { typing: 0, learn: 0 },
-    finished: { typing: 0, learn: 0 },
-  };
+  return { started: 0, finished: 0 };
 }
 
 /**

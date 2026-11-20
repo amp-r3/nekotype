@@ -19,9 +19,7 @@ type Kind = { readonly name: string; readonly part: string | null; readonly batc
 const KINDS: readonly Kind[] = [
   { name: 'learning', part: null, batch: 'learning' },
   { name: 'capped', part: null, batch: 'capped' },
-  { name: 'results', part: null, batch: 'results' },
   { name: 'finished', part: null, batch: 'finished' },
-  { name: 'largest', part: null, batch: 'largest' },
   { name: 'get', part: null, batch: null },
   { name: 'get-recent', part: 'recent', batch: null },
   { name: 'get-buckets', part: 'buckets', batch: null },

@@ -12,7 +12,6 @@ export const LATENCY_PATHS = [
   'apps/web/src/pages/learn/',
   'apps/web/src/shared/ui/kana-task.tsx',
   'apps/web/src/shared/ui/task-controller.ts',
-  'apps/web/src/entities/prompt/',
   'apps/web/src/entities/learn/model/',
   'apps/web/src/shared/lib/idb/',
   'apps/web/src/shared/i18n/dictionary.ts',

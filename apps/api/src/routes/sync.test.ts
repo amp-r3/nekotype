@@ -25,9 +25,7 @@ import type {
   LearnDelta,
   LearnKanaKey,
   Snapshot,
-  SyncDelta,
   SyncRequest,
-  TestResult,
   ValidSettings,
 } from '@nekotype/shared/types';
 import { describe, expect, it } from 'vitest';
@@ -82,10 +80,7 @@ const post = (s: Setup, cookie: string, body: unknown, headers: Record<string, s
 const get = (s: Setup, cookie: string, query: string) =>
   s.call(`/api/sync?${query}`, { headers: { Cookie: cookie } });
 
-const zeroCounters = (): Counters => ({
-  started: { typing: 0, learn: 0 },
-  finished: { typing: 0, learn: 0 },
-});
+const zeroCounters = (): Counters => ({ started: 0, finished: 0 });
 
 const emptyLearn = (): LearnDelta => ({
   entries: {},
@@ -103,67 +98,26 @@ function request(
     learn?: Partial<LearnDelta>;
     counters?: Counters;
     settings?: ValidSettings | null;
-    kanaStats?: SyncDelta['kanaStats'];
-    results?: readonly TestResult[];
   } = {},
 ): SyncRequest {
   return {
-    v: 1,
+    v: 2,
     deviceId: over.deviceId ?? A,
     seq,
     delta: {
-      kanaStats: over.kanaStats ?? {},
       counters: over.counters ?? zeroCounters(),
       learn: { ...emptyLearn(), ...over.learn },
       settings: over.settings ?? null,
     },
-    results: over.results ?? [],
   };
 }
 
-const learned = (count = 1): Counters => ({
-  started: { typing: 0, learn: count },
-  finished: { typing: 0, learn: count },
-});
+const learned = (count = 1): Counters => ({ started: count, finished: count });
 
 function settings(updatedAt: number, targetMs = 1500): ValidSettings {
   return {
-    typing: {
-      script: 'both',
-      content: 'words',
-      strictness: 'learner',
-      weakFocus: true,
-      test: { kind: 'time', seconds: 30 },
-      showTranslation: true,
-    },
     learn: { strictness: 'learner', track: 'hiragana', targetMs, sound: true },
     updatedAt,
-  };
-}
-
-function result(index: number, endedAt = START + index * 60_000): TestResult {
-  return {
-    id: `0192f0a0-${String(userCount).padStart(4, '0')}-7000-8000-${String(index).padStart(12, '0')}`,
-    content: 'words',
-    script: 'hiragana',
-    strictness: 'learner',
-    config: { kind: 'time', seconds: 60 },
-    endReason: 'complete',
-    repeated: false,
-    startedAt: endedAt - 60_000,
-    endedAt,
-    durationMs: 60_000,
-    tokens: 100,
-    erroredTokens: 5,
-    items: 20,
-    keystrokes: 150,
-    rejectedKeystrokes: 5,
-    assisted: 0,
-    kpm: 80 + index,
-    kanaAccuracy: 0.95,
-    celebratedPersonalBest: false,
-    contentVersion: 'c1',
-    appVersion: 'a1',
   };
 }
 
@@ -192,17 +146,14 @@ async function snapshotOf(
     lastSeq: rest.lastSeq,
     snapshot: {
       settings: rest.settings,
-      kanaStats: rest.kanaStats,
       counters: rest.counters,
       learn: { ...rest.learn, recent: recent.recent, recallBuckets: buckets.recallBuckets },
-      typingRecords: rest.typingRecords,
     },
   };
 }
 
 const fresh: Snapshot = {
   settings: null,
-  kanaStats: {},
   counters: zeroCounters(),
   learn: {
     unlocked: { hiragana: [], katakana: [] },
@@ -212,7 +163,6 @@ const fresh: Snapshot = {
     activeDays: [],
     recallBuckets: { hiragana: {}, katakana: {} },
   },
-  typingRecords: {},
 };
 
 async function column(userId: string, name: string): Promise<unknown> {
@@ -289,14 +239,32 @@ describe('POST /api/sync: checks', () => {
     ['not JSON', '{'],
     ['an empty body', ''],
     ['an array', '[]'],
-    ['another format version', { ...request(1), v: 2 }],
+    ['the format version of P5', { ...request(1), v: 1 }],
+    ['another format version', { ...request(1), v: 3 }],
+    ['results of a typing test', { ...request(1), results: [] }],
+    ['kana statistics of typing', { ...request(1), delta: { ...request(1).delta, kanaStats: {} } }],
+    [
+      'counters per mode',
+      {
+        ...request(1),
+        delta: {
+          ...request(1).delta,
+          counters: { started: { typing: 0, learn: 1 }, finished: { typing: 0, learn: 1 } },
+        },
+      },
+    ],
+    [
+      'settings with a typing block',
+      {
+        ...request(1, { settings: settings(1) }),
+        delta: { ...request(1).delta, settings: { ...settings(1), typing: { script: 'both' } } },
+      },
+    ],
     ['a device id that is not a UUID', { ...request(1), deviceId: 'device-a' }],
     ['seq 0', request(0)],
     ['a fractional seq', request(1.5)],
     ['an unknown key', { ...request(1), extra: true }],
     ['an unknown key in the delta', { ...request(1), delta: { ...request(1).delta, extra: 1 } }],
-    ['51 results', request(1, { results: Array.from({ length: 51 }, (_, i) => result(i)) })],
-    ['a result with a bad id', request(1, { results: [{ ...result(1), id: 'r1' }] })],
     ['a kana key of another script', withLearn({ entries: { 'latin:a': entry(1) } })],
     [
       '61 kana',
@@ -390,17 +358,6 @@ describe('POST /api/sync: seq', () => {
     ).toEqual({ lastSeq: 0, version: 2 });
   });
 
-  it('does not insert a result twice, resent or sent again in another batch', async () => {
-    const s = setup();
-    const { id, cookie } = await newUser();
-    const results = [result(1), result(2)];
-    await post(s, cookie, request(1, { results }));
-    await post(s, cookie, request(1, { results }));
-    expect(await count('results', id)).toBe(2);
-    await post(s, cookie, request(2, { results: [result(2), result(3)] }));
-    expect(await count('results', id)).toBe(3);
-  });
-
   it('limits an applied batch to one per interval, and not a resent one', async () => {
     const s = setup({ interval: '5000' });
     const { cookie } = await newUser();
@@ -464,26 +421,6 @@ describe('POST /api/sync: the merge rules on stored data', () => {
     expect(snapshot.learn.activeDays).toEqual([[10, 14]]);
     expect(snapshot.learn.recallBuckets.hiragana).toEqual({ '20000': { '5': 3, '6': 1 } });
     expect(snapshot).toEqual(applyBatch(applyBatch(fresh, first), second));
-  });
-
-  it('counts a typing batch and keeps the records of its results', async () => {
-    const s = setup();
-    const { id, cookie } = await newUser();
-    const batch = request(1, {
-      counters: { started: { typing: 2, learn: 0 }, finished: { typing: 2, learn: 0 } },
-      kanaStats: { [kana(hiragana, 0)]: { attempts: 10, erroredAttempts: 2 } },
-      results: [result(2), result(1), result(3)],
-    });
-    await post(s, cookie, batch);
-    const { snapshot } = await snapshotOf(s, cookie);
-    expect(snapshot).toEqual(applyBatch(fresh, batch));
-    expect(Object.keys(snapshot.typingRecords)).toHaveLength(1);
-    expect(await count('results', id)).toBe(3);
-    const row = await env.DB.prepare('SELECT config, json FROM results WHERE id = ?')
-      .bind(result(1).id)
-      .first();
-    expect(isObject(row) ? row['config'] : null).toBe('time:60');
-    expect(isObject(row) ? String(row['json']) : '').toContain(result(1).id);
   });
 
   it('names a dropped `mixups` key with null: the stored statistics equal the full merge', async () => {
@@ -606,16 +543,11 @@ describe('POST /api/sync: a lost version', () => {
     const { id, cookie } = await newUser();
     const counting = countingDb(env.DB, { beforeUpdate: () => bump(id) });
     const s = setup({ db: counting.db });
-    const response = await post(
-      s,
-      cookie,
-      request(1, { counters: learned(), results: [result(1)] }),
-    );
+    const response = await post(s, cookie, request(1, { counters: learned() }));
     expect(response.status).toBe(200);
     // The other write took version 1, this batch version 2.
     expect(await json(response)).toEqual({ lastSeq: 1, version: 2 });
     expect((await snapshotOf(setup(), cookie)).snapshot.counters).toEqual(learned());
-    expect(await count('results', id)).toBe(1);
   });
 
   it('is a 503 conflict with Retry-After when it is lost twice, and a resend then succeeds', async () => {
@@ -642,10 +574,8 @@ describe('a year of learning', () => {
   const lastAt = (YEAR_FIRST_DAY + 364) * DAY;
   const yearSnapshot: Snapshot = {
     settings: null,
-    kanaStats: year.kanaStats,
     counters: year.counters,
     learn: year.learn,
-    typingRecords: year.typingRecords,
   };
 
   async function yearUser() {
@@ -662,7 +592,7 @@ describe('a year of learning', () => {
     expect(before.snapshot.counters).toEqual(year.counters);
 
     let expected = yearSnapshot;
-    for (const [index, kind] of (['learning', 'capped', 'results'] as const).entries()) {
+    for (const [index, kind] of (['learning', 'capped'] as const).entries()) {
       const batch = {
         ...generateBatch({ seed: 21 + index, keys: KANA_KEYS, kind }),
         seq: LAST_SEQ + 1 + index,
@@ -710,12 +640,10 @@ describe('a year of learning', () => {
   it('the three parts carry one version and equal the stored row', async () => {
     const s = setup({ start: lastAt + DAY });
     const { id, cookie } = await yearUser();
-    await post(s, cookie, generateBatch({ seed: 4, keys: KANA_KEYS, kind: 'results' }));
+    await post(s, cookie, generateBatch({ seed: 4, keys: KANA_KEYS, kind: 'learning' }));
     const { snapshot, version } = await snapshotOf(s, cookie, DEVICE_ID);
     expect(version).toBe(1);
-    expect(snapshot.kanaStats).toEqual(await column(id, 'kana_stats'));
     expect(snapshot.counters).toEqual(await column(id, 'counters'));
-    expect(snapshot.typingRecords).toEqual(await column(id, 'typing_records'));
     expect(snapshot.learn.recent).toEqual(await column(id, 'learn_recent'));
     expect(snapshot.learn.recallBuckets).toEqual(await column(id, 'learn_buckets'));
     const learn = await column(id, 'learn');
@@ -730,7 +658,7 @@ describe('a year of learning', () => {
     });
   });
 
-  it('writes at most 2 rows for a learning sync and 6 for a finished test', async () => {
+  it('writes at most 2 rows for a learning sync', async () => {
     const { id, cookie } = await yearUser();
     // Settings are updated in place: the first insert also writes the index entry of the key.
     await env.DB.prepare('INSERT INTO user_settings (user_id, json, updated_at) VALUES (?, ?, 0)')
@@ -746,38 +674,18 @@ describe('a year of learning', () => {
     ).toBe(200);
     expect(counting.log.rowsWritten).toBeLessThanOrEqual(2);
     expect(counting.log.rowsWritten).toBeGreaterThanOrEqual(1);
-
-    counting.reset();
-    const finished = request(LAST_SEQ + 2, {
-      deviceId: DEVICE_ID,
-      counters: { started: { typing: 1, learn: 0 }, finished: { typing: 1, learn: 0 } },
-      settings: settings(2),
-      results: [result(1, lastAt + 2 * DAY)],
-    });
-    expect((await post(s, cookie, finished)).status).toBe(200);
-    expect(counting.log.rowsWritten).toBeLessThanOrEqual(6);
-    expect(counting.log.rowsWritten).toBeGreaterThanOrEqual(4);
-    expect(await count('results', id)).toBe(1);
   });
 
-  it('uses at most 16 of the 50 statements for 50 results at the caps', async () => {
+  it('uses at most 13 of the 50 statements for a batch at the caps', async () => {
     const { cookie } = await yearUser();
     const counting = countingDb(env.DB);
     const s = setup({ db: counting.db, start: lastAt + DAY });
     const capped = generateBatch({ seed: 8, keys: KANA_KEYS, kind: 'capped' });
-    const results = generateBatch({ seed: 8, keys: KANA_KEYS, kind: 'results' });
-    const batch: SyncRequest = {
-      ...capped,
-      delta: { ...capped.delta, kanaStats: results.delta.kanaStats },
-      results: results.results,
-    };
-    expect(batch.results).toHaveLength(50);
-    expect((await post(s, cookie, batch)).status).toBe(200);
-    expect(counting.log.statements).toBeLessThanOrEqual(16);
-    // The session, 4 reads and 2 writes (the update and the results).
-    expect(counting.log.statements).toBeGreaterThanOrEqual(7);
-    // 50 results of one batch are inserted with the rows of their two indexes and the user.
-    expect(counting.log.rowsWritten).toBeLessThanOrEqual(50 * 3 + 2);
+    expect((await post(s, cookie, capped)).status).toBe(200);
+    expect(counting.log.statements).toBeLessThanOrEqual(13);
+    // The session, 4 reads and the update.
+    expect(counting.log.statements).toBeGreaterThanOrEqual(6);
+    expect(counting.log.rowsWritten).toBeLessThanOrEqual(2);
   });
 });
 
@@ -857,5 +765,19 @@ describe('GET /api/sync', () => {
     const { snapshot, version } = await snapshotOf(s, cookie);
     expect(version).toBe(0);
     expect(snapshot).toEqual(fresh);
+  });
+
+  it('answers part=rest with settings, counters and learn only', async () => {
+    const s = setup();
+    const { cookie } = await newUser();
+    const body = await json(await get(s, cookie, `deviceId=${A}&part=rest`));
+    expect(isObject(body) ? Object.keys(body).sort() : []).toEqual([
+      'counters',
+      'lastSeq',
+      'learn',
+      'part',
+      'settings',
+      'version',
+    ]);
   });
 });

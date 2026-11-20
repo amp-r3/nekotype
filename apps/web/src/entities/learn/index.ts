@@ -5,7 +5,6 @@ export type {
   LearnKanaKey,
   LearnState,
   LearnStat,
-  Mode,
   RecallAnswer,
   Track,
 } from '@nekotype/shared/types';
@@ -17,7 +16,7 @@ export {
   intervalsOf,
   median,
   recallAnswerTime,
-  typingK,
+  answerK,
 } from './lib/answer-time';
 
 export { CONFIDENT_ACCURACY, accuracyOf, isConfident, medianAnswerMs } from './lib/confidence';

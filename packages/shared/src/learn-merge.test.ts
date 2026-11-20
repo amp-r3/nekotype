@@ -82,8 +82,8 @@ describe('mergeEntry', () => {
 
 describe('counters and stats are added', () => {
   const c = (n: number): Counters => ({
-    started: { typing: n, learn: 2 * n },
-    finished: { typing: 3 * n, learn: 4 * n },
+    started: 2 * n,
+    finished: 4 * n,
   });
   it('addCounters', () => {
     expect(addCounters(c(1), c(2))).toEqual(c(3));

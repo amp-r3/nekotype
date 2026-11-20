@@ -4,7 +4,7 @@ import { openRaw } from './idb';
 import { createMemoryDb } from './memory-db';
 import type { Db } from './idb';
 
-const STORES = ['a', 'b', { name: 'results', indexes: ['synced'] }] as const;
+const STORES = ['a', 'b'] as const;
 
 const backends: readonly [string, () => Promise<Db>][] = [
   ['IndexedDB', async () => (await openRaw(new IDBFactory(), 'test', STORES)).db],
@@ -81,26 +81,6 @@ describe.each(backends)('Db.update on %s', (_name, open) => {
   it('reads and writes nothing for no reads and no writes', async () => {
     const db = await open();
     await db.update([], () => []);
-    expect(await db.count('a')).toBe(0);
-  });
-});
-
-describe.each(backends)('Db.getByIndex on %s', (_name, open) => {
-  it('returns the first `limit` values whose index equals the value, in key order', async () => {
-    const db = await open();
-    for (const [id, synced] of [
-      ['r3', 0],
-      ['r1', 0],
-      ['r2', 1],
-      ['r4', 0],
-    ] as const) {
-      await db.put('results', id, { id, synced });
-    }
-    expect(await db.getByIndex('results', 'synced', 0, 2)).toEqual([
-      { id: 'r1', synced: 0 },
-      { id: 'r3', synced: 0 },
-    ]);
-    expect(await db.getByIndex('results', 'synced', 1, 50)).toEqual([{ id: 'r2', synced: 1 }]);
-    expect(await db.getByIndex('results', 'synced', 2, 50)).toEqual([]);
+    expect(await db.get('a', 'x')).toBeUndefined();
   });
 });

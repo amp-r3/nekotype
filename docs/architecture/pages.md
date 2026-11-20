@@ -13,6 +13,8 @@ Part of the [architecture description](README.md) of the current code.
   - ADR 015 keeps the session in the page, which is its only consumer.
 - `shared/ui` holds `KanaTask`, `createTaskController`, `OptionCard` and `KanaChart` as presentational components: data, states and strings come as props, and they import nothing from `entities` or `pages`. The input source (`shared/lib/input`) serves the learning session.
 
+The kana table and the binding of `packages/engine` to it live in `pages/learn/lib/prompt` ([ADR 096](../adr/096-learning-only-data-and-sync-format-2.md)): the table (`data`: `basicRows`, `dakutenRows`, `yoonRows`, `extendedRows`, `allKanaRows`), the binding (`engine.ts`: `compile`, `start`, `step`, `isComplete`, `spellingsFor`, `canonical` and the rest of the matcher API) and `canonicalFor` (`canonical.ts`). A recall task and an introduction compile their kana with it. The generated word and phrase chunks stay in `entities/prompt/content/`: nothing in `apps/web/src` imports them and `check-budget.mjs` fails a build whose manifest holds one (no content is shipped before P10, ADR 093).
+
 ## The statistics screen (`pages/stats`)
 
 - `pages/stats` (a lazy route; ADR 076, design decisions 130 and 137) is the learning progress, all of the screen: no section switch, no URL hash. It reads the learning store, shapes the data in `lib/` (pure functions with tests) and draws it in `ui/`.

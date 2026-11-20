@@ -30,7 +30,7 @@ import {
   readWithSyncBase,
   reportWriteFailure,
 } from '@/shared/lib';
-import { K_WINDOW, intervalsOf, recallAnswerTime, typingK } from '../lib/answer-time';
+import { K_WINDOW, intervalsOf, recallAnswerTime, answerK } from '../lib/answer-time';
 import type { Keystroke } from '../lib/answer-time';
 import { addRecallTime } from '../lib/buckets';
 import { reviewEntry } from '../lib/boxes';
@@ -48,7 +48,7 @@ import {
 } from '../lib/state';
 
 const DELTA_KEY = 'learn';
-const INTERVALS_KEY = 'typingIntervals';
+const INTERVALS_KEY = 'keyIntervals';
 
 export type LearnStatus = 'loading' | 'ready' | 'error';
 
@@ -309,7 +309,7 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
     },
 
     recordRecall({ key, keystrokes, ok, review = false }) {
-      const ms = recallAnswerTime(keystrokes, typingK(intervals));
+      const ms = recallAnswerTime(keystrokes, answerK(intervals));
       // `at` identifies the answer in a merge, so two answers never share one.
       lastAt = Math.max(deps.clock.now(), lastAt + 1);
       const answer: RecallAnswer = { at: lastAt, ms, ok };
@@ -375,10 +375,7 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
     },
 
     countSession(kind) {
-      const bump = (c: Counters): Counters => ({
-        ...c,
-        [kind]: { ...c[kind], learn: c[kind].learn + 1 },
-      });
+      const bump = (c: Counters): Counters => ({ ...c, [kind]: c[kind] + 1 });
       counters.value = bump(counters.value);
       unwritten = { ...unwritten, counters: bump(unwritten.counters) };
       schedule();

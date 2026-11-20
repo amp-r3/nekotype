@@ -23,7 +23,7 @@ export function StatsPage(): JSX.Element {
   }, []);
 
   const status = learnStatus.value;
-  const has = learnState.value.activeDays.length > 0 || learnCounters.value.started.learn > 0;
+  const has = learnState.value.activeDays.length > 0 || learnCounters.value.started > 0;
 
   return (
     <section className="max-w-layout-max mx-auto flex w-full flex-col gap-8 sm:gap-12">

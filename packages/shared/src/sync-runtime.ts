@@ -10,16 +10,8 @@ import { mergeLearn } from './learn-state';
 import { isObject } from './object';
 import { isSettings } from './settings-runtime';
 import { isCount, outboxDelta } from './sync-format';
-import {
-  applyResultsToRecords,
-  isKanaStats,
-  isTestResult,
-  isTypingRecords,
-  mergeKanaStats,
-} from './typing-runtime';
 import type {
   Outbox,
-  ResultsResponse,
   Snapshot,
   SnapshotBuckets,
   SnapshotRecent,
@@ -32,8 +24,6 @@ import type {
 // Constants and guards of the sync, and the one function that applies a batch to a snapshot
 // (spec backend.md, "Applying a batch"; ADR 082).
 
-/** Results in one batch (ADR 078). */
-export const MAX_RESULTS_PER_BATCH = 50;
 /** The body of a sync request, bytes (backend.md, "Sync request limits"). */
 export const MAX_SYNC_BODY_BYTES = 256 * 1024;
 /** The caps on the learning part of a batch (p5-plan.md, Q1; ADR 082): kana, and days per track. */
@@ -41,16 +31,6 @@ export const BATCH_CAPS = { kana: 60, days: 31 } as const;
 
 export function isSyncResponse(value: unknown): value is SyncResponse {
   return isObject(value) && isCount(value['lastSeq']) && isCount(value['version']);
-}
-
-/** `GET /api/results`: a page of results and the cursor of the next one (`null` on the last). */
-export function isResultsResponse(value: unknown): value is ResultsResponse {
-  return (
-    isObject(value) &&
-    Array.isArray(value['results']) &&
-    value['results'].every(isTestResult) &&
-    (value['next'] === null || (typeof value['next'] === 'string' && value['next'] !== ''))
-  );
 }
 
 function isSettingsOrNull(value: unknown): value is ValidSettings | null {
@@ -64,10 +44,8 @@ export function isSnapshotRest(value: unknown): value is SnapshotRest {
     isCount(value['lastSeq']) &&
     isCount(value['version']) &&
     isSettingsOrNull(value['settings']) &&
-    isKanaStats(value['kanaStats']) &&
     isCounters(value['counters']) &&
-    isLearnRest(value['learn']) &&
-    isTypingRecords(value['typingRecords'])
+    isLearnRest(value['learn'])
   );
 }
 
@@ -93,13 +71,11 @@ export function isSnapshot(value: unknown): value is Snapshot {
   return (
     isObject(value) &&
     isSettingsOrNull(value['settings']) &&
-    isKanaStats(value['kanaStats']) &&
     isCounters(value['counters']) &&
     isObject(value['learn']) &&
     isLearnRest(value['learn']) &&
     isRecentMap(value['learn']['recent']) &&
-    isRecallBuckets(value['learn']['recallBuckets']) &&
-    isTypingRecords(value['typingRecords'])
+    isRecallBuckets(value['learn']['recallBuckets'])
   );
 }
 
@@ -124,23 +100,16 @@ export function applyBatch(snapshot: Snapshot, request: SyncRequest): Snapshot {
   const { delta } = request;
   return {
     settings: mergeSettings(snapshot.settings, delta.settings, request.seq),
-    kanaStats: mergeKanaStats(snapshot.kanaStats, delta.kanaStats),
     counters: addCounters(snapshot.counters, delta.counters),
     learn: mergeLearn(snapshot.learn, delta.learn),
-    typingRecords: applyResultsToRecords(snapshot.typingRecords, request.results),
   };
 }
 
 /**
- * A stored batch, checked for what the stores read from it: the counters and the statistics of its
- * delta. The sync engine, which sends it, checks the rest (`results`, `settings`) when it reads it.
+ * A stored batch, checked for what the stores read from it: the counters and the learning part of
+ * its delta. The sync engine, which sends it, checks the settings when it reads it.
  */
 export function isOutbox(value: unknown): value is Outbox {
   const delta = outboxDelta(value);
-  return (
-    delta !== null &&
-    isKanaStats(delta['kanaStats']) &&
-    isCounters(delta['counters']) &&
-    isLearnState(delta['learn'])
-  );
+  return delta !== null && isCounters(delta['counters']) && isLearnState(delta['learn']);
 }

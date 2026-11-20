@@ -10,21 +10,21 @@ describe('requestSync', () => {
 
   it('does nothing without a handler', () => {
     expect(() => {
-      requestSync('learn');
+      requestSync();
     }).not.toThrow();
   });
 
-  it('calls the registered handler with the reason', () => {
+  it('calls the registered handler', () => {
     const handler = vi.fn();
     off = onSyncRequest(handler);
-    requestSync('test');
-    expect(handler).toHaveBeenCalledWith('test');
+    requestSync();
+    expect(handler).toHaveBeenCalledOnce();
   });
 
   it('stops calling a handler that was removed', () => {
     const handler = vi.fn();
     onSyncRequest(handler)();
-    requestSync('learn');
+    requestSync();
     expect(handler).not.toHaveBeenCalled();
   });
 });

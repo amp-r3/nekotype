@@ -1,6 +1,6 @@
 // Re-exports only. A barrel with code of its own sits in the initial chunk, and so does every module
 // it re-exports, with each export any lazy chunk uses (apps/web/vite.config.ts).
-export { isTestConfig, isSettings } from './settings-runtime';
+export { isSettings } from './settings-runtime';
 export { isObject } from './object';
 
 // The learning state's guards and merge rules are a module of their own: the first screen does not
@@ -39,11 +39,9 @@ export { emptyLearnState, mergeLearn, patchLearn } from './learn-state';
 export type { LearnPatch, StatPatch, StoredLearn } from './learn-state';
 export { SYNC_FORMAT_VERSION, outboxDelta } from './sync-format';
 export {
-  MAX_RESULTS_PER_BATCH,
   MAX_SYNC_BODY_BYTES,
   BATCH_CAPS,
   isSyncResponse,
-  isResultsResponse,
   isSnapshotRest,
   isSnapshotRecent,
   isSnapshotBuckets,
@@ -52,27 +50,3 @@ export {
   mergeSettings,
   applyBatch,
 } from './sync-runtime';
-
-// Typing records, kana statistics and test results: rules shared with the server.
-export {
-  RECENT_RESULTS,
-  BEST_MIN_ACCURACY,
-  KANA_DECAY_AT,
-  roundKpm,
-  roundAccuracy,
-  personalBestKey,
-  isBestEligible,
-  averageKpm,
-  applyResultToRecords,
-  applyResultsToRecords,
-  mergeTypingRecords,
-  mergeKanaStats,
-  isKanaStats,
-  addKanaStats,
-  decayKanaStat,
-  isKanaStat,
-  isTestResult,
-  isTypingRecordEntry,
-  isTypingRecords,
-} from './typing-runtime';
-export type { ResultApplied } from './typing-runtime';

@@ -140,14 +140,8 @@ export function isLearnState(value: unknown): value is LearnState {
   );
 }
 
-const MODES = ['typing', 'learn'] as const;
-
-function isModeCounts(value: unknown): value is Counters['started'] {
-  return isObject(value) && MODES.every((mode) => isCount(value[mode]));
-}
-
 export function isCounters(value: unknown): value is Counters {
-  return isObject(value) && isModeCounts(value['started']) && isModeCounts(value['finished']);
+  return isObject(value) && isCount(value['started']) && isCount(value['finished']);
 }
 
 /** Union of unlocked kana, listed in `order` (the track order); a kana outside it follows, sorted. */
@@ -201,16 +195,7 @@ export function mergeEntries(
 
 /** Counters are added. */
 export function addCounters(a: Counters, b: Counters): Counters {
-  return {
-    started: {
-      typing: a.started.typing + b.started.typing,
-      learn: a.started.learn + b.started.learn,
-    },
-    finished: {
-      typing: a.finished.typing + b.finished.typing,
-      learn: a.finished.learn + b.finished.learn,
-    },
-  };
+  return { started: a.started + b.started, finished: a.finished + b.finished };
 }
 
 /** A kana's learning counters and mixups are added (decay runs afterwards). */

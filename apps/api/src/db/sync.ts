@@ -30,9 +30,7 @@ export interface ReadPlan {
 
 /** The stored row as far as a batch reads it; every value is `unknown` until a guard looks at it. */
 export interface StoredRow {
-  readonly kanaStats: unknown;
   readonly counters: unknown;
-  readonly typingRecords: unknown;
   readonly deviceSeq: unknown;
   readonly bucketNewest: unknown;
   readonly lastSyncAt: number;
@@ -139,7 +137,7 @@ export async function readForSync(
   const read = await db.batch([
     db
       .prepare(
-        `SELECT kana_stats, counters, typing_records, device_seq, bucket_newest, last_sync_at, version,
+        `SELECT counters, device_seq, bucket_newest, last_sync_at, version,
            json_extract(learn, '$.unlocked') AS unlocked,
            json_extract(learn, '$.activeDays') AS active_days,
            json_extract(learn_buckets, ${dayMarks}) AS days
@@ -167,9 +165,7 @@ export async function readForSync(
   const days = parseJson(textOf(row, 'days'), 'learn_buckets');
   const dayValues: readonly unknown[] = Array.isArray(days) ? days.slice(1) : [];
   return {
-    kanaStats: parseJson(textOf(row, 'kana_stats'), 'kana_stats'),
     counters: parseJson(textOf(row, 'counters'), 'counters'),
-    typingRecords: parseJson(textOf(row, 'typing_records'), 'typing_records'),
     deviceSeq: parseJson(textOf(row, 'device_seq'), 'device_seq'),
     bucketNewest: parseJson(textOf(row, 'bucket_newest'), 'bucket_newest'),
     lastSyncAt,
@@ -189,16 +185,12 @@ export interface SyncWrite {
   /** The `version` that was read; the `UPDATE` applies only to it. */
   readonly version: number;
   readonly now: number;
-  readonly kanaStats: string;
   readonly counters: string;
-  readonly typingRecords: string;
   readonly deviceSeq: string;
   readonly bucketNewest: string;
   readonly learnPatch: string;
   readonly recentPatch: string | null;
   readonly bucketsPatch: string | null;
-  /** The results as a JSON array, or `null` for none. */
-  readonly results: string | null;
   readonly settings: {
     readonly json: string;
     readonly updatedAt: number;
@@ -208,26 +200,22 @@ export interface SyncWrite {
 }
 
 /**
- * Step 3: one `batch()` with the `UPDATE` (guarded by `version`, nothing returned), the results and
- * the settings. Resolves to whether the `UPDATE` applied. A lost attempt still inserts its results
- * and settings, which is harmless: both are idempotent.
+ * Step 3: one `batch()` with the `UPDATE` (guarded by `version`, nothing returned) and the settings.
+ * Resolves to whether the `UPDATE` applied. A lost attempt still writes its settings, which is
+ * harmless: the write is idempotent.
  */
 export async function writeSync(db: D1Database, write: SyncWrite): Promise<boolean> {
   const assignments = [
-    'kana_stats = ?2',
-    'counters = ?3',
-    'typing_records = ?4',
-    'device_seq = ?5',
-    'bucket_newest = ?6',
-    'learn = json_patch(learn, ?7)',
-    'last_sync_at = ?8',
+    'counters = ?2',
+    'device_seq = ?3',
+    'bucket_newest = ?4',
+    'learn = json_patch(learn, ?5)',
+    'last_sync_at = ?6',
     'version = version + 1',
   ];
   const values: (string | number)[] = [
     write.userId,
-    write.kanaStats,
     write.counters,
-    write.typingRecords,
     write.deviceSeq,
     write.bucketNewest,
     write.learnPatch,
@@ -249,24 +237,6 @@ export async function writeSync(db: D1Database, write: SyncWrite): Promise<boole
       )
       .bind(...values),
   ];
-  if (write.results !== null) {
-    statements.push(
-      db
-        .prepare(
-          `INSERT OR IGNORE INTO results (id, user_id, ended_at, content, script, strictness, config, kpm, kana_accuracy, json)
-           SELECT json_extract(value, '$.id'), ?1, json_extract(value, '$.endedAt'),
-             json_extract(value, '$.content'), json_extract(value, '$.script'),
-             json_extract(value, '$.strictness'),
-             CASE json_extract(value, '$.config.kind')
-               WHEN 'time' THEN 'time:' || json_extract(value, '$.config.seconds')
-               WHEN 'count' THEN 'count:' || json_extract(value, '$.config.prompts')
-               ELSE 'zen' END,
-             json_extract(value, '$.kpm'), json_extract(value, '$.kanaAccuracy'), value
-           FROM json_each(?2)`,
-        )
-        .bind(write.userId, write.results),
-    );
-  }
   if (write.settings !== null) {
     const { json, updatedAt, keepStored } = write.settings;
     statements.push(
@@ -339,7 +309,7 @@ export async function readPart(
   if (part === 'rest') {
     const row = await db
       .prepare(
-        `SELECT kana_stats, counters, learn, typing_records, version,
+        `SELECT counters, learn, version,
            json_extract(device_seq, ?2) AS last_seq,
            (SELECT json FROM user_settings WHERE user_id = ?1) AS settings
          FROM user_stats WHERE user_id = ?1`,
@@ -351,9 +321,8 @@ export async function readPart(
     if (version === null) throw corrupt('user_stats', 'version');
     return (
       `{"part":"rest","lastSeq":${lastSeqOf(row)},"version":${version},` +
-      `"settings":${textOf(row, 'settings') ?? 'null'},"kanaStats":${stored(row, 'kana_stats')},` +
-      `"counters":${stored(row, 'counters')},"learn":${stored(row, 'learn')},` +
-      `"typingRecords":${stored(row, 'typing_records')}}`
+      `"settings":${textOf(row, 'settings') ?? 'null'},"counters":${stored(row, 'counters')},` +
+      `"learn":${stored(row, 'learn')}}`
     );
   }
   const column = part === 'recent' ? 'learn_recent' : 'learn_buckets';

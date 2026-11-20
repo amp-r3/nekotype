@@ -1,9 +1,8 @@
-import { personalBestKey } from '../typing-runtime';
 import { BATCH_CAPS } from '../sync-runtime';
+import { SYNC_FORMAT_VERSION } from '../sync-format';
 import type {
   Counters,
   DayBuckets,
-  KanaStat,
   LearnDelta,
   LearnEntry,
   LearnKanaKey,
@@ -11,9 +10,7 @@ import type {
   LearnStat,
   RecallAnswer,
   SyncRequest,
-  TestResult,
   Track,
-  TypingRecords,
 } from '../types';
 import type { KanaKeys } from './kana-keys';
 import { intIn, seededRng } from './rng';
@@ -21,7 +18,7 @@ import type { Rng } from '../types';
 
 // A year of daily learning on both tracks, the data of ADR 078: 229 kana with 10 recall answers
 // each, 365 days of buckets per track with about 25 buckets a day, statistics for every kana,
-// records for 12 modes and three devices. For tests and measurements only.
+// and three devices. For tests and measurements only.
 
 /** The first day of the year, as a day number. */
 export const YEAR_FIRST_DAY = 20_400;
@@ -33,13 +30,11 @@ export type DeviceSeq = Record<string, { seq: number; at: number }>;
 
 export type Year = {
   learn: LearnState;
-  kanaStats: Record<LearnKanaKey, KanaStat>;
   counters: Counters;
-  typingRecords: TypingRecords;
   deviceSeq: DeviceSeq;
 };
 
-export type BatchKind = 'learning' | 'capped' | 'results';
+export type BatchKind = 'learning' | 'capped';
 
 /** The device that sends the generated batches; its `seq` in the year is `LAST_SEQ`. */
 export const DEVICE_ID = '0a0a0a0a-0a0a-4a0a-8a0a-0a0a0a0a0a0a';
@@ -89,44 +84,6 @@ function learnStat(rng: Rng, all: readonly LearnKanaKey[], own: LearnKanaKey): L
   return { recognitions, recognitionErrors: intIn(rng, 0, recognitions >> 3), mixups };
 }
 
-function typingRecords(rng: Rng): TypingRecords {
-  const records: Record<string, TypingRecords[string]> = {};
-  for (const content of ['words', 'phrases'] as const) {
-    for (const script of ['hiragana', 'katakana', 'both'] as const) {
-      for (const strictness of ['learner', 'ime'] as const) {
-        const key = personalBestKey({
-          content,
-          script,
-          strictness,
-          config: { kind: 'time', seconds: 60 },
-        });
-        const recent = [];
-        for (let i = 0; i < 10; i += 1) {
-          recent.push({
-            resultId: resultId(rng, YEAR_FIRST_DAY * DAY_MS + i * 3_600_000),
-            endedAt: (YEAR_FIRST_DAY + 300) * DAY_MS + i * 3_600_000,
-            kpm: intIn(rng, 400, 900) / 10,
-          });
-        }
-        records[key] = { best: { kpm: 91.5, resultId: resultId(rng, 1) }, recent };
-      }
-    }
-  }
-  return records;
-}
-
-function hex(rng: Rng, digits: number): string {
-  let out = '';
-  for (let i = 0; i < digits; i += 1) out += intIn(rng, 0, 15).toString(16);
-  return out;
-}
-
-/** A UUID-shaped id that sorts by time, like a UUID v7. */
-function resultId(rng: Rng, at: number): string {
-  const time = at.toString(16).padStart(12, '0');
-  return `${time.slice(0, 8)}-${time.slice(8)}-7${hex(rng, 3)}-8${hex(rng, 3)}-${hex(rng, 12)}`;
-}
-
 export function generateYear(options: { seed: number; keys: KanaKeys }): Year {
   const rng = seededRng(options.seed);
   const all = [...options.keys.hiragana, ...options.keys.katakana];
@@ -135,7 +92,6 @@ export function generateYear(options: { seed: number; keys: KanaKeys }): Year {
   const entries: Record<string, LearnEntry> = {};
   const recent: Record<string, RecallAnswer[]> = {};
   const stats: Record<string, LearnStat> = {};
-  const kanaStats: Record<string, KanaStat> = {};
   for (const key of all) {
     entries[key] = {
       box: pickOne(rng, BOXES),
@@ -144,8 +100,6 @@ export function generateYear(options: { seed: number; keys: KanaKeys }): Year {
     };
     recent[key] = answers(rng, 10, lastAt);
     stats[key] = learnStat(rng, all, key);
-    const attempts = intIn(rng, 40, 190);
-    kanaStats[key] = { attempts, erroredAttempts: intIn(rng, 0, attempts >> 3) };
   }
 
   const activeDays: [number, number][] = [];
@@ -168,12 +122,7 @@ export function generateYear(options: { seed: number; keys: KanaKeys }): Year {
   };
   return {
     learn,
-    kanaStats,
-    counters: {
-      started: { typing: 120, learn: 380 },
-      finished: { typing: 100, learn: 365 },
-    },
-    typingRecords: typingRecords(rng),
+    counters: { started: 380, finished: 365 },
     deviceSeq: {
       [DEVICE_ID]: { seq: LAST_SEQ, at: lastAt },
       'device-b': { seq: 120, at: lastAt - 20 * DAY_MS },
@@ -181,11 +130,6 @@ export function generateYear(options: { seed: number; keys: KanaKeys }): Year {
     },
   };
 }
-
-const NO_COUNTERS: Counters = {
-  started: { typing: 0, learn: 0 },
-  finished: { typing: 0, learn: 0 },
-};
 
 function emptyLearnDelta(): LearnDelta {
   return {
@@ -239,38 +183,6 @@ function learningDelta(
   };
 }
 
-function generateResults(rng: Rng, count: number): TestResult[] {
-  const results: TestResult[] = [];
-  const base = (YEAR_FIRST_DAY + 366) * DAY_MS;
-  for (let i = 0; i < count; i += 1) {
-    const endedAt = base + i * 120_000;
-    results.push({
-      id: resultId(rng, endedAt),
-      content: 'words',
-      script: 'hiragana',
-      strictness: 'learner',
-      config: { kind: 'time', seconds: 60 },
-      endReason: 'complete',
-      repeated: false,
-      startedAt: endedAt - 60_000,
-      endedAt,
-      durationMs: 60_000,
-      tokens: 90,
-      erroredTokens: 6,
-      items: 24,
-      keystrokes: 150,
-      rejectedKeystrokes: 4,
-      assisted: 0,
-      kpm: intIn(rng, 400, 900) / 10,
-      kanaAccuracy: 0.9333,
-      celebratedPersonalBest: false,
-      contentVersion: '2026-11-01',
-      appVersion: '1.0.0',
-    });
-  }
-  return results;
-}
-
 /** A batch of the kind D14 names, for a device whose last applied `seq` is `LAST_SEQ`. */
 export function generateBatch(options: {
   seed: number;
@@ -280,50 +192,19 @@ export function generateBatch(options: {
   const rng = seededRng(options.seed);
   const { keys } = options;
   const lastDay = YEAR_FIRST_DAY + 364;
-  const base = { v: 1, deviceId: DEVICE_ID, seq: LAST_SEQ + 1 } as const;
+  const base = { v: SYNC_FORMAT_VERSION, deviceId: DEVICE_ID, seq: LAST_SEQ + 1 } as const;
 
   if (options.kind === 'learning') {
     // 30 kana of one track and one new day: the day also pushes the oldest day out.
     const learn = learningDelta(rng, keys, ['hiragana'], 30, [lastDay + 2]);
-    return {
-      ...base,
-      delta: { kanaStats: {}, counters: learnCounters(), learn, settings: null },
-      results: [],
-    };
+    return { ...base, delta: { counters: learnCounters(), learn, settings: null } };
   }
-  if (options.kind === 'capped') {
-    const days: number[] = [];
-    for (let i = 0; i < BATCH_CAPS.days; i += 1) days.push(lastDay - BATCH_CAPS.days + 1 + i);
-    const learn = learningDelta(rng, keys, TRACKS, BATCH_CAPS.kana, days);
-    return {
-      ...base,
-      delta: { kanaStats: {}, counters: learnCounters(), learn, settings: null },
-      results: [],
-    };
-  }
-  const kanaStats: Record<string, KanaStat> = {};
-  for (const key of keys.hiragana.slice(0, 46)) {
-    kanaStats[key] = { attempts: intIn(rng, 5, 40), erroredAttempts: intIn(rng, 0, 3) };
-  }
-  return {
-    ...base,
-    delta: {
-      kanaStats,
-      counters: {
-        started: { typing: 50, learn: 0 },
-        finished: { typing: 50, learn: 0 },
-      },
-      learn: emptyLearnDelta(),
-      settings: null,
-    },
-    results: generateResults(rng, 50),
-  };
+  const days: number[] = [];
+  for (let i = 0; i < BATCH_CAPS.days; i += 1) days.push(lastDay - BATCH_CAPS.days + 1 + i);
+  const learn = learningDelta(rng, keys, TRACKS, BATCH_CAPS.kana, days);
+  return { ...base, delta: { counters: learnCounters(), learn, settings: null } };
 }
 
 function learnCounters(): Counters {
-  return {
-    ...NO_COUNTERS,
-    started: { typing: 0, learn: 1 },
-    finished: { typing: 0, learn: 1 },
-  };
+  return { started: 1, finished: 1 };
 }

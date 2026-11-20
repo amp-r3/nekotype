@@ -106,20 +106,4 @@ export const ru = {
   'stage.switchLayout': 'переключите раскладку на английскую',
   'key.esc': 'esc',
   'key.enter': 'enter',
-
-  // Shared marks
-  'badge.personalBest': 'личный рекорд',
-
-  // The mode of a typing test: results and statistics
-  'mode.line': '{content} · {script} · {strictness} · {mode}',
-  'mode.time': '{n} с',
-  'mode.count': '{n}',
-  'mode.zen': 'zen',
-  'mode.content.words': 'слова',
-  'mode.content.phrases': 'фразы',
-  'mode.script.hiragana': 'хирагана',
-  'mode.script.katakana': 'катакана',
-  'mode.script.both': 'обе',
-  'mode.strictness.learner': 'мягкая',
-  'mode.strictness.ime': 'строгая IME',
 } as const satisfies Record<keyof typeof en, string>;

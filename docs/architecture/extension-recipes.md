@@ -13,7 +13,7 @@ Part of the [architecture description](README.md) of the current code.
    ```ts
    export const customRows: readonly KanaRow[] = rowsOf('basic', [['my_custom_row', 'かカ ka|…']]);
    ```
-3. Re-export it in `packages/engine/src/data/index.ts` (re-exports only: a barrel with code of its own would keep everything it re-exports in the initial chunk), include it in `allKanaRows` in `tables.ts`, update the golden fixture `data/fixtures/kana-table.json`, and export a new group from `packages/engine/src/index.ts` and `apps/web/src/entities/prompt/model/data/index.ts` if the app needs it.
+3. Re-export it in `packages/engine/src/data/index.ts` (re-exports only: a barrel with code of its own would keep everything it re-exports in the initial chunk), include it in `allKanaRows` in `tables.ts`, update the golden fixture `data/fixtures/kana-table.json`, and export a new group from `packages/engine/src/index.ts` and `apps/web/src/pages/learn/lib/prompt/data/index.ts` if the app needs it.
 4. Run `pnpm --filter @nekotype/web run fonts` (downloads the pinned sources, ADR 034) so `glyphs.txt` and the font subset include the new glyphs (a test fails while `glyphs.txt` is out of sync).
 5. Run `pnpm test`: the row-count and `RowId` tests in `packages/engine/src/data.test.ts` need updating, and the property tests cover the new entries in both strictness modes.
 

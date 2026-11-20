@@ -12,24 +12,15 @@ import {
   uuidv7,
 } from '@/shared/lib';
 import type { AuthProvider, SignInCheck } from '@/entities/user';
-import { isEmptyLearnChanges, isEmptyTypingChanges } from '../lib/build-batch';
-import { readLearnChanges, readTypingChanges } from '../lib/stored';
+import { isEmptyLearnChanges } from '../lib/build-batch';
+import { readLearnChanges } from '../lib/stored';
 import { readPendingSignIn, readProfile } from '../lib/profile';
 import type { Profile } from '../lib/profile';
 
-const RESULTS_STORE = 'results';
-
 /** The stores that hold a user's data; sign-out and another account clear them (D19, Q3). */
-const USER_STORES = [
-  'results',
-  DELTA_STORE,
-  SNAPSHOT_STORE,
-  OUTBOX_STORE,
-  'records',
-  'settings',
-] as const;
+const USER_STORES = [DELTA_STORE, SNAPSHOT_STORE, OUTBOX_STORE, 'settings'] as const;
 
-/** The user keys of `meta`. `schemaVersion` and `typingIntervals` (the device's K) stay. */
+/** The user keys of `meta`. `schemaVersion` and `keyIntervals` (the device's K) stay. */
 const USER_META_KEYS = [
   'userId',
   'deviceId',
@@ -41,19 +32,6 @@ const USER_META_KEYS = [
   'profile',
   'pendingSignIn',
 ] as const;
-
-/** More unsynced results than any device holds: `getByIndex` needs a limit. */
-const ALL = 1_000_000;
-
-/** What the device holds that the server has not acknowledged. Settings do not count (ADR 089). */
-export type Unsent = {
-  /** Unsynced results. */
-  readonly results: number;
-  /** A batch in the outbox or a non-empty `delta` record. */
-  readonly other: boolean;
-};
-
-export const hasUnsent = (unsent: Unsent): boolean => unsent.results > 0 || unsent.other;
 
 /** The part of the sync engine the account code drives. */
 export type EngineControl = {
@@ -69,7 +47,6 @@ export type AccountDeps = {
   /** The stores listen on these; a `reset` makes them drop what they hold. */
   readonly channels: {
     readonly learn: ChangeChannel;
-    readonly typing: ChangeChannel;
     readonly settings: ChangeChannel;
   };
   /** The user keys of `meta` changed: the signals read them again and the other tabs are told. */
@@ -88,8 +65,8 @@ export interface Account {
   check: () => Promise<void>;
   /** The choice of the "another account" dialog (design decision 118). */
   resolveAnotherAccount: (choice: 'cancel' | 'discard') => Promise<void>;
-  /** What sign-out would lose; with a valid session a sync runs first. */
-  prepareSignOut: () => Promise<Unsent>;
+  /** Whether sign-out would lose progress; with a valid session a sync runs first. */
+  prepareSignOut: () => Promise<boolean>;
   /**
    * Deletes the session on the server (not with an expired session: it has none) and clears the
    * user's data. False when the server could not be reached: nothing is cleared.
@@ -124,22 +101,14 @@ export function createAccount(deps: AccountDeps): Account {
   // The account the dialog asks about.
   let waiting: { readonly me: MeResponse; readonly provider: AuthProvider | null } | null = null;
 
-  const unsent = async (): Promise<Unsent> => {
-    const [outbox, learn, typing, results] = await Promise.all([
+  /** What the device holds that the server has not acknowledged: a batch in the outbox or changes in `delta`. Settings do not count (ADR 089). */
+  const unsent = async (): Promise<boolean> => {
+    const [outbox, learn] = await Promise.all([
       db.get(OUTBOX_STORE, SYNC_KEY),
       db.get(DELTA_STORE, 'learn'),
-      db.get(DELTA_STORE, 'typing'),
-      db.getByIndex(RESULTS_STORE, 'synced', 0, ALL),
     ]);
     const learnChanges = readLearnChanges(learn);
-    const typingChanges = readTypingChanges(typing);
-    return {
-      results: results.length,
-      other:
-        outbox !== undefined ||
-        (learnChanges !== null && !isEmptyLearnChanges(learnChanges)) ||
-        (typingChanges !== null && !isEmptyTypingChanges(typingChanges)),
-    };
+    return outbox !== undefined || (learnChanges !== null && !isEmptyLearnChanges(learnChanges));
   };
 
   const profileOf = (me: MeResponse, provider: AuthProvider): Profile => ({
@@ -166,7 +135,6 @@ export function createAccount(deps: AccountDeps): Account {
       ...extra,
     ]);
     deps.channels.learn.post('reset');
-    deps.channels.typing.post('reset');
     deps.channels.settings.post('reset');
     await deps.refreshUser();
   };
@@ -206,7 +174,7 @@ export function createAccount(deps: AccountDeps): Account {
       const provider = pending ?? readProfile(storedProfile)?.provider ?? null;
 
       if (current === null) {
-        // Guest merge: the guest's delta and results go in the first batches.
+        // Guest merge: the guest's delta goes in the first batches.
         await finish(newUserWrites(me, provider));
         return;
       }
@@ -220,7 +188,7 @@ export function createAccount(deps: AccountDeps): Account {
         return;
       }
       // Another user: the previous account's unsent data must not reach this one.
-      if (hasUnsent(await unsent())) {
+      if (await unsent()) {
         waiting = { me, provider };
         deps.setSignInCheck('choice');
         return;
