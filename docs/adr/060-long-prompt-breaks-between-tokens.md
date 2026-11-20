@@ -1,6 +1,6 @@
 # ADR 060: A Prompt Longer Than a Line Breaks Between Tokens
 
-- **Status:** In force. Amends [ADR 047](047-stream-trimmed-by-whole-lines.md), item 1.
+- **Status:** Superseded by [ADR 093](093-learning-only-words-in-learning.md): the text stream left with the typing trainer in P6. Amends [ADR 047](047-stream-trimmed-by-whole-lines.md), item 1.
 - **Context:** ADR 047 never breaks a prompt: `.nk-word` is `nowrap`, and a line breaks only between prompts. A phrase wider than the whole stream line, which happens at 360 px, then runs past the edge of the stream. Design system version 10 (decision 33, [ADR 059](059-design-system-v10.md)) asks for a break inside such a prompt only, at a place that does not split what is read as one unit.
 - **Decision:**
   1. A prompt that fits a line is never broken, as before; lines break between prompts.

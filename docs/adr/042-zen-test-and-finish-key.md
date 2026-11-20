@@ -1,6 +1,6 @@
 # ADR 042: The Zen Test and Its Finish Key
 
-- **Status:** In force. Amends [ADR 022](022-key-intent-semantics-reveal-strictly-via-escape.md) for one key. Amended by [ADR 050](050-completed-prompts-at-test-end.md): "completed" is every prompt before the one on screen, not `committedPrompts()`.
+- **Status:** Superseded by [ADR 093](093-learning-only-words-in-learning.md): the zen test left with the typing trainer in P6. Amends [ADR 022](022-key-intent-semantics-reveal-strictly-via-escape.md) for one key. Amended by [ADR 050](050-completed-prompts-at-test-end.md): "completed" is every prompt before the one on screen, not `committedPrompts()`.
 - **Context:** The spec lists a zen test (no length, ended by hand) and the key Ctrl/Cmd+Enter that ends it, and the rule for what a test ended by hand keeps ([Metrics](../spec/metrics.md), "Test end"). ADR 022 left every modifier combination to the browser.
 - **Decision:**
   - **The config.** `{ kind: 'zen' }` joins `ValidTestConfig` and `isTestConfig`. It adds a case and changes none: settings saved with a time or count test stay valid (a test covers this), so no migration is needed, and the P3 migration moves `test` as it is.

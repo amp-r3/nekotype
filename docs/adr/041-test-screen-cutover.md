@@ -1,6 +1,6 @@
 # ADR 041: The Test Screen on the Text Stream
 
-- **Status:** In force. Completes [ADR 040](040-text-stream-window-and-dom-writer.md) and the stream part of [ADR 031](031-adopt-the-nekotype-design-system.md).
+- **Status:** Superseded by [ADR 093](093-learning-only-words-in-learning.md): the test screen left with the typing trainer in P6. Completes [ADR 040](040-text-stream-window-and-dom-writer.md) and the stream part of [ADR 031](031-adopt-the-nekotype-design-system.md).
 - **Context:** The model and the writer of the stream existed but the screen still showed one prompt, a mirror of the typed romaji and a shake. The hot path (D16) allows no component render on a keystroke and one on a completed prompt, and the first key changes the phase of the session.
 - **Decision:**
   - **One render per completed prompt.** `TextStream` reads `session.stream` and renders its tokens; it has no child component, so one render is one component render. Everything a keystroke changes goes around the render: the lines of text (counter, kana per minute, accuracy, notices, the revealed romaji, the translation, the prompt text) are signals passed as text nodes; the caret, buffer, token classes and the flash go through the writer by signal effects; the attributes tests read (`data-phase`, `data-canonical`, `data-rejected`) are written to the root. `data-rejected` is set by a rejected key and cleared by the next accepted one, so it does not depend on a timer.
