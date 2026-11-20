@@ -1,9 +1,9 @@
 import * as v from 'valibot';
-import { BATCH_CAPS, MAX_RESULTS_PER_BATCH } from './sync-runtime';
+import { BATCH_CAPS } from './sync-runtime';
+import { SYNC_FORMAT_VERSION } from './sync-format';
 import { RECENT_ANSWERS, isActiveDays, isLearnKanaKey } from './learn-runtime';
 import type {
   Counters,
-  KanaStat,
   LearnDelta,
   LearnEntry,
   LearnKanaKey,
@@ -12,7 +12,6 @@ import type {
   ReportRequest,
   SyncDelta,
   SyncRequest,
-  TestResult,
   ValidSettings,
 } from './types';
 
@@ -55,29 +54,9 @@ function kanaRecord<T extends v.GenericSchema>(value: T, max: number) {
 
 // Settings
 
-const testConfigSchema = v.variant('kind', [
-  v.strictObject({
-    kind: v.literal('time'),
-    seconds: v.picklist([15, 30, 60, 120]),
-  }),
-  v.strictObject({
-    kind: v.literal('count'),
-    prompts: v.picklist([10, 25, 50, 100]),
-  }),
-  v.strictObject({ kind: v.literal('zen') }),
-]);
-
 const strictness = v.picklist(['learner', 'ime']);
 
 export const settingsSchema = v.strictObject({
-  typing: v.strictObject({
-    script: v.picklist(['hiragana', 'katakana', 'both']),
-    content: v.picklist(['words', 'phrases']),
-    strictness,
-    weakFocus: v.boolean(),
-    test: testConfigSchema,
-    showTranslation: v.boolean(),
-  }),
   learn: v.strictObject({
     strictness,
     track: v.picklist(['hiragana', 'katakana']),
@@ -93,45 +72,6 @@ export const settingsSchema = v.strictObject({
   }),
   updatedAt: finite,
 }) satisfies v.GenericSchema<unknown, ValidSettings>;
-
-// Results
-
-export const testResultSchema = v.pipe(
-  v.strictObject({
-    id: v.pipe(v.string(), v.uuid()),
-    content: v.picklist(['words', 'phrases']),
-    script: v.picklist(['hiragana', 'katakana', 'both']),
-    strictness,
-    config: v.variant('kind', [
-      v.strictObject({
-        kind: v.literal('time'),
-        seconds: v.pipe(count, v.minValue(1)),
-      }),
-      v.strictObject({
-        kind: v.literal('count'),
-        prompts: v.pipe(count, v.minValue(1)),
-      }),
-      v.strictObject({ kind: v.literal('zen') }),
-    ]),
-    endReason: v.picklist(['complete', 'manual', 'idle', 'hidden']),
-    repeated: v.boolean(),
-    startedAt: finite,
-    endedAt: finite,
-    durationMs: count,
-    tokens: count,
-    erroredTokens: count,
-    items: count,
-    keystrokes: count,
-    rejectedKeystrokes: count,
-    assisted: count,
-    kpm: v.pipe(finite, v.minValue(0)),
-    kanaAccuracy: v.pipe(finite, v.minValue(0), v.maxValue(1)),
-    celebratedPersonalBest: v.boolean(),
-    contentVersion: v.pipe(v.string(), v.maxLength(SHORT_TEXT)),
-    appVersion: v.pipe(v.string(), v.maxLength(SHORT_TEXT)),
-  }),
-  v.check((result) => result.erroredTokens <= result.tokens, 'more errors than tokens'),
-) satisfies v.GenericSchema<unknown, TestResult>;
 
 // The learning part of a batch
 
@@ -202,22 +142,14 @@ export const learnDeltaSchema = v.pipe(
   ),
 ) satisfies v.GenericSchema<unknown, LearnDelta>;
 
-// Typing statistics
-
-const kanaStatSchema = v.pipe(
-  v.strictObject({ attempts: count, erroredAttempts: count }),
-  v.check((stat) => stat.erroredAttempts <= stat.attempts, 'more errors than attempts'),
-) satisfies v.GenericSchema<unknown, KanaStat>;
-
-const modeCounts = v.strictObject({ typing: count, learn: count });
+// Counters and the batch
 
 const countersSchema = v.strictObject({
-  started: modeCounts,
-  finished: modeCounts,
+  started: count,
+  finished: count,
 }) satisfies v.GenericSchema<unknown, Counters>;
 
 const syncDeltaSchema = v.strictObject({
-  kanaStats: kanaRecord(kanaStatSchema, KANA_TOTAL),
   counters: countersSchema,
   learn: learnDeltaSchema,
   settings: v.nullable(settingsSchema),
@@ -226,11 +158,10 @@ const syncDeltaSchema = v.strictObject({
 // Requests
 
 export const syncRequestSchema = v.strictObject({
-  v: v.literal(1),
+  v: v.literal(SYNC_FORMAT_VERSION),
   deviceId: deviceIdSchema,
   seq: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)),
   delta: syncDeltaSchema,
-  results: v.pipe(v.array(testResultSchema), v.maxLength(MAX_RESULTS_PER_BATCH)),
 }) satisfies v.GenericSchema<unknown, SyncRequest>;
 
 export const reportRequestSchema = v.strictObject({
@@ -240,21 +171,6 @@ export const reportRequestSchema = v.strictObject({
   comment: v.exactOptional(v.pipe(v.string(), v.maxLength(REPORT_COMMENT_MAX))),
   turnstileToken: v.pipe(v.string(), v.minLength(1), v.maxLength(2048)),
 }) satisfies v.GenericSchema<unknown, ReportRequest>;
-
-/** `GET /api/results?before=<endedAt>:<id>&limit=`: query values are strings. */
-export const resultsQuerySchema = v.strictObject({
-  before: v.exactOptional(v.pipe(v.string(), v.regex(/^-?\d+(\.\d+)?:[\w-]{1,64}$/))),
-  limit: v.exactOptional(
-    v.pipe(
-      v.string(),
-      v.regex(/^\d{1,2}$/),
-      v.transform(Number),
-      v.integer(),
-      v.minValue(1),
-      v.maxValue(50),
-    ),
-  ),
-});
 
 /** The validated batch, or `null`: the server answers `400` and logs nothing of the body. */
 export function parseSyncRequest(input: unknown): SyncRequest | null {

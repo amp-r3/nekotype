@@ -142,10 +142,7 @@ describe('learn store: recognition and introduction', () => {
     store.countSession('started');
     store.countSession('started');
     store.countSession('finished');
-    expect(store.counters.value).toEqual({
-      started: { typing: 0, learn: 2 },
-      finished: { typing: 0, learn: 1 },
-    });
+    expect(store.counters.value).toEqual({ started: 2, finished: 1 });
   });
 });
 
@@ -329,7 +326,7 @@ describe('learn store: persistence', () => {
     expect(writes).toHaveLength(1);
     expect(writes[0]?.map((w) => `${w.store}/${'key' in w ? w.key : ''}`)).toEqual([
       'delta/learn',
-      'meta/typingIntervals',
+      'meta/keyIntervals',
     ]);
   });
 
@@ -364,8 +361,8 @@ describe('learn store: persistence', () => {
     await next.store.init();
     expect(next.store.ready.value).toBe(true);
     expect(next.store.state.value).toEqual(store.state.value);
-    expect(next.store.counters.value.started.learn).toBe(1);
-    expect(await db.get('meta', 'typingIntervals')).toEqual([150]);
+    expect(next.store.counters.value.started).toBe(1);
+    expect(await db.get('meta', 'keyIntervals')).toEqual([150]);
   });
 
   it('unlocks on load when the stored answers allow it', async () => {
@@ -398,7 +395,7 @@ describe('learn store: persistence', () => {
         ...initialLearnState(),
         unlocked: { hiragana: keysOfTrack('hiragana').slice(0, 7), katakana: [] },
       },
-      counters: { started: { typing: 0, learn: 3 }, finished: { typing: 0, learn: 2 } },
+      counters: { started: 3, finished: 2 },
     });
     const stored = await db.get('delta', 'learn');
     let failing = true;
@@ -426,7 +423,7 @@ describe('learn store: persistence', () => {
     await store.retry();
     expect(store.status.value).toBe('ready');
     expect(store.state.value.unlocked.hiragana).toHaveLength(7);
-    expect(store.counters.value.finished.learn).toBe(2);
+    expect(store.counters.value.finished).toBe(2);
   });
 
   it('stays in the error status when a retry fails too', async () => {
@@ -459,7 +456,7 @@ describe('learn store: persistence', () => {
     expect(await db.get('delta', 'learn')).toBeUndefined();
     expect(store.state.value.entries).toEqual({});
     expect(store.state.value.recent).toEqual({});
-    expect(store.counters.value.started.learn).toBe(0);
+    expect(store.counters.value.started).toBe(0);
     expect(scheduler.pending).toBe(0);
   });
 });
@@ -615,7 +612,7 @@ describe('learn store: two tabs', () => {
     // b read a's record and kept its own answer on top.
     expect(b.store.state.value.recent[KA]).toHaveLength(1);
     expect(b.store.state.value.recent[A]).toHaveLength(1);
-    expect(b.store.counters.value.started.learn).toBe(2);
+    expect(b.store.counters.value.started).toBe(2);
     b.scheduler.runAll();
     await b.store.flush();
     await a.store.flush();
@@ -623,13 +620,13 @@ describe('learn store: two tabs', () => {
     for (const { store } of [a, b]) {
       expect(store.state.value.recent[KA]).toHaveLength(1);
       expect(store.state.value.recent[A]).toHaveLength(1);
-      expect(store.counters.value.started.learn).toBe(2);
+      expect(store.counters.value.started).toBe(2);
     }
     const fresh = tab(db, newChannel());
     await fresh.store.init();
     expect(fresh.store.state.value.recent[KA]).toHaveLength(1);
     expect(fresh.store.state.value.recent[A]).toHaveLength(1);
-    expect(fresh.store.counters.value.started.learn).toBe(2);
+    expect(fresh.store.counters.value.started).toBe(2);
   });
 
   it('empties the other tab on a reset, with what it holds unwritten', async () => {
@@ -707,7 +704,7 @@ describe('learn store: reset in another tab', () => {
     await b.store.flush();
     expect(b.store.state.value.entries).toEqual({});
     expect(b.store.state.value.recent).toEqual({});
-    expect(b.store.counters.value.started.learn).toBe(0);
+    expect(b.store.counters.value.started).toBe(0);
 
     b.store.countSession('started');
     b.scheduler.runAll();
@@ -715,7 +712,7 @@ describe('learn store: reset in another tab', () => {
     const stored = await db.get('delta', 'learn');
     expect(stored).toMatchObject({
       learn: { entries: {}, recent: {} },
-      counters: { started: { learn: 1 } },
+      counters: { started: 1 },
     });
   });
 });
@@ -762,10 +759,7 @@ describe('learn store: write failures and the target', () => {
 });
 
 describe('learn store: the view is snapshot, outbox and delta merged (D18)', () => {
-  const counters = (learn: number) => ({
-    started: { typing: 0, learn },
-    finished: { typing: 0, learn: 0 },
-  });
+  const counters = (started: number) => ({ started, finished: 0 });
   const answerAt = (at: number) => ({ at, ms: 900, ok: true });
   const learnWith = (at: number, extra: Partial<LearnState> = {}): LearnState => ({
     ...emptyLearnState(),
@@ -777,24 +771,19 @@ describe('learn store: the view is snapshot, outbox and delta merged (D18)', () 
   });
   const snapshot: Snapshot = {
     settings: null,
-    kanaStats: { [A]: { attempts: 10, erroredAttempts: 2 } },
     counters: counters(5),
     learn: learnWith(1, {
       entries: { [A]: { box: 1 as const, dueAt: 9, updatedAt: 1 } },
       unlocked: { hiragana: [KA], katakana: [] },
     }),
-    typingRecords: {},
   };
   const outbox: Outbox = {
     seq: 1,
-    resultIds: [],
     request: {
-      v: 1,
+      v: 2,
       deviceId: 'd',
       seq: 1,
-      results: [],
       delta: {
-        kanaStats: {},
         counters: counters(1),
         learn: learnWith(2),
         settings: null,
@@ -834,7 +823,7 @@ describe('learn store: the view is snapshot, outbox and delta merged (D18)', () 
     const { store } = setup({ db });
     await store.init();
     expect(store.state.value.recent[A]?.map((a) => a.at)).toEqual([2]);
-    expect(store.counters.value.started.learn).toBe(1);
+    expect(store.counters.value.started).toBe(1);
   });
 
   it('puts a new answer on the stored delta, not over the snapshot or the outbox', async () => {
@@ -849,12 +838,12 @@ describe('learn store: the view is snapshot, outbox and delta merged (D18)', () 
     const stored = await db.get('delta', 'learn');
     expect(stored).toMatchObject({
       learn: { recent: { [A]: [expect.objectContaining({ ok: true })] } },
-      counters: { started: { learn: 1 } },
+      counters: { started: 1 },
     });
     expect(await db.get('snapshot', 'current')).toEqual(snapshot);
     expect(await db.get('outbox', 'current')).toEqual(outbox);
     expect(store.state.value.recent[A]).toHaveLength(3);
-    expect(store.counters.value.started.learn).toBe(5 + 1 + 1);
+    expect(store.counters.value.started).toBe(5 + 1 + 1);
   });
 
   it('reads the learning part of the snapshot and the outbox when another part is broken', async () => {
@@ -867,17 +856,17 @@ describe('learn store: the view is snapshot, outbox and delta merged (D18)', () 
     const { store } = setup({ db });
     await store.init();
     expect(store.state.value.recent[A]?.map((a) => a.at)).toEqual([1, 2]);
-    expect(store.counters.value.started.learn).toBe(5 + 1);
+    expect(store.counters.value.started).toBe(5 + 1);
   });
 
   it('skips a broken learning part, and a batch of another format', async () => {
     const db = createMemoryDb();
     await db.put('snapshot', 'current', { ...snapshot, counters: {} });
-    await db.put('outbox', 'current', { ...outbox, request: { ...outbox.request, v: 2 } });
+    await db.put('outbox', 'current', { ...outbox, request: { ...outbox.request, v: 1 } });
     const { store } = setup({ db });
     await store.init();
     expect(store.state.value.recent[A]).toBeUndefined();
-    expect(store.counters.value.started.learn).toBe(0);
+    expect(store.counters.value.started).toBe(0);
   });
 
   it('shows a rebuilt view after an acknowledgement moved the batch into the snapshot', async () => {

@@ -37,17 +37,9 @@ function schema(): string {
   );
 }
 
-/** Settings of the bench user; a finished test of `measure.ts` sends them newer, as a device would. */
+/** Settings of the bench user; a finished session of `measure.ts` sends them newer, as a device would. */
 export function benchSettings(updatedAt: number): ValidSettings {
   return {
-    typing: {
-      script: 'hiragana',
-      content: 'words',
-      strictness: 'learner',
-      weakFocus: true,
-      test: { kind: 'time', seconds: 60 },
-      showTranslation: true,
-    },
     learn: { strictness: 'learner', track: 'hiragana', targetMs: 1500, sound: true },
     updatedAt,
   };
@@ -67,13 +59,11 @@ export function seedSql(seed = 1): { sql: string; sizes: Record<string, number> 
   const year = generateYear({ seed, keys: KANA_KEYS });
   const { recent, recallBuckets, ...rest } = year.learn;
   const columns: [string, string][] = [
-    ['kana_stats', JSON.stringify(year.kanaStats)],
     ['counters', JSON.stringify(year.counters)],
     ['learn', JSON.stringify(rest)],
     ['learn_recent', JSON.stringify(recent)],
     ['learn_buckets', JSON.stringify(recallBuckets)],
     ['bucket_newest', JSON.stringify(newestDays(year.learn))],
-    ['typing_records', JSON.stringify(year.typingRecords)],
     ['device_seq', JSON.stringify(year.deviceSeq)],
   ];
   const sessionHash = createHash('sha256').update(SESSION_TOKEN).digest('hex');
@@ -83,7 +73,7 @@ export function seedSql(seed = 1): { sql: string; sizes: Record<string, number> 
     `INSERT INTO sessions (id_hash, user_id, expires_at) VALUES (${quote(sessionHash)}, ${quote(USER_ID)}, 4102444800000);`,
     // The settings row exists, as for any user who has synced once: a change updates it in place.
     `INSERT INTO user_settings (user_id, json, updated_at) VALUES (${quote(USER_ID)}, ${quote(JSON.stringify(benchSettings(0)))}, 0);`,
-    `INSERT INTO user_stats (user_id, kana_stats, counters, learn, learn_recent, learn_buckets, bucket_newest, typing_records, device_seq, last_sync_at, version) VALUES (${quote(USER_ID)}, '', '', '', '', '', '', '', '', 0, 0);`,
+    `INSERT INTO user_stats (user_id, kana_stats, counters, learn, learn_recent, learn_buckets, bucket_newest, typing_records, device_seq, last_sync_at, version) VALUES (${quote(USER_ID)}, '{}', '', '', '', '', '', '{}', '', 0, 0);`,
   ];
   const sizes: Record<string, number> = {};
   for (const [column, text] of columns) {

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { LearnKanaKey, Track } from '@nekotype/shared/types';
 import { keyOf, keysOfTrack } from '@/entities/learn';
-import { spellingsFor } from '@/entities/prompt';
-import type { Strictness } from '@/entities/prompt';
+import { spellingsFor } from './prompt';
+import type { Strictness } from './prompt';
 import { distractorsFor, recognitionOptions } from './distractors';
 import { key, seededRng } from './test-util';
 

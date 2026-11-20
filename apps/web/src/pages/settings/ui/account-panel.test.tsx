@@ -9,7 +9,7 @@ import { initUser } from '@/entities/user';
 import type * as UserModule from '@/entities/user';
 import type * as SyncModule from '@/features/sync';
 import { deleteAccount, prepareSignOut, signOut, syncOnline, syncStatus } from '@/features/sync';
-import type { SyncStatus, Unsent } from '@/features/sync';
+import type { SyncStatus } from '@/features/sync';
 import { AccountPanel } from './account-panel';
 
 // The chunk of the engine is not needed to show the panel: writable signals and spies stand in.
@@ -158,7 +158,7 @@ describe('AccountPanel', () => {
   });
 
   it('signs out without a dialog when nothing is unsent', async () => {
-    vi.mocked(prepareSignOut).mockResolvedValue({ results: 0, other: false });
+    vi.mocked(prepareSignOut).mockResolvedValue(false);
     vi.mocked(signOut).mockResolvedValue(true);
     await show();
     await act(async () => {
@@ -169,34 +169,32 @@ describe('AccountPanel', () => {
     expect(container.querySelector('dialog[open]')).toBeNull();
   });
 
-  it.each<[Unsent, string, string]>([
-    [{ results: 3, other: true }, '3 results have not been sent yet.', '3 результата ещё не'],
-    [{ results: 1, other: false }, '1 result has not been sent yet.', '1 результат ещё не'],
-    [{ results: 5, other: false }, '5 results have not been sent', '5 результатов ещё не'],
-    [{ results: 0, other: true }, 'Some progress has not been sent yet.', 'Часть прогресса'],
-  ])('asks first when data is unsent: %o', async (unsent, en, ru) => {
-    vi.mocked(prepareSignOut).mockResolvedValue(unsent);
-    vi.mocked(signOut).mockResolvedValue(true);
-    await show();
-    await act(async () => {
-      button(container, t('settings.account.signOut')).click();
-      await settle();
-    });
-    const dialog = container.querySelector('dialog');
-    if (dialog === null) throw new Error('no dialog');
-    expect(dialog.open).toBe(true);
-    expect(dialog.textContent).toContain(en);
-    expect(signOut).not.toHaveBeenCalled();
+  it.each<[string, string]>([['Some progress has not been sent yet.', 'Часть прогресса']])(
+    'asks first when progress is unsent: %s',
+    async (en, ru) => {
+      vi.mocked(prepareSignOut).mockResolvedValue(true);
+      vi.mocked(signOut).mockResolvedValue(true);
+      await show();
+      await act(async () => {
+        button(container, t('settings.account.signOut')).click();
+        await settle();
+      });
+      const dialog = container.querySelector('dialog');
+      if (dialog === null) throw new Error('no dialog');
+      expect(dialog.open).toBe(true);
+      expect(dialog.textContent).toContain(en);
+      expect(signOut).not.toHaveBeenCalled();
 
-    await act(async () => {
-      await setLocale('ru');
-      await loadDictionaryPart('settings');
-    });
-    expect(dialog.textContent).toContain(ru);
-  });
+      await act(async () => {
+        await setLocale('ru');
+        await loadDictionaryPart('settings');
+      });
+      expect(dialog.textContent).toContain(ru);
+    },
+  );
 
   it('keeps everything when the dialog is cancelled, and signs out when confirmed', async () => {
-    vi.mocked(prepareSignOut).mockResolvedValue({ results: 2, other: false });
+    vi.mocked(prepareSignOut).mockResolvedValue(true);
     vi.mocked(signOut).mockResolvedValue(true);
     await show();
     const open = async (): Promise<HTMLDialogElement> => {
@@ -225,7 +223,7 @@ describe('AccountPanel', () => {
   });
 
   it('enables sign-out again when the server could not be reached', async () => {
-    vi.mocked(prepareSignOut).mockResolvedValue({ results: 0, other: false });
+    vi.mocked(prepareSignOut).mockResolvedValue(false);
     vi.mocked(signOut).mockResolvedValue(false);
     await show();
     await act(async () => {

@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Outbox, Snapshot, SyncRequest } from '@nekotype/shared/types';
 import { isObject, isSnapshot } from '@nekotype/shared/runtime';
-import type { Db } from '@/shared/lib';
 import { createMemoryDb } from '@/shared/lib';
 import {
   AFTER_WORK_MS,
   CATCH_UP_SPACING_MS,
   KEEPALIVE_MAX_BYTES,
   REQUEST_SPACING_MS,
-  RETAINED_RESULTS,
 } from './engine';
 import {
   KEY_A,
@@ -20,23 +18,15 @@ import {
   errorResponse,
   learnDelta,
   learnRecord,
-  result,
   settingsAt,
   signedInDb,
 } from './test-util';
 import type { Rig } from './test-util';
 
 const isSyncRequest = (value: unknown): value is SyncRequest =>
-  isObject(value) && value['v'] === 1 && typeof value['seq'] === 'number';
+  isObject(value) && value['v'] === 2 && typeof value['seq'] === 'number';
 
 const entry = (updatedAt: number) => ({ box: 1, dueAt: updatedAt + 1000, updatedAt }) as const;
-
-async function putResults(db: Db, count: number, synced: 0 | 1, from = 0): Promise<void> {
-  for (let i = from; i < from + count; i += 1) {
-    const id = `r${String(i).padStart(5, '0')}`;
-    await db.put('results', id, { ...result(id, 1_000_000 + i), synced });
-  }
-}
 
 async function sync(rig: Rig): Promise<void> {
   rig.engine.start();
@@ -51,23 +41,18 @@ const body = (request: { body: string | null }): SyncRequest => {
 };
 
 describe('a batch', () => {
-  it('is built from both deltas, the changed settings and at most 50 results, and clears what it took', async () => {
+  it('is built from the learning delta and the changed settings, and clears what it took', async () => {
     const rig = await createRig();
     await rig.db.put(
       'delta',
       'learn',
       learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } }), {
         ...emptyCounters(),
-        started: { typing: 0, learn: 2 },
+        started: 2,
+        finished: 1,
       }),
     );
-    await rig.db.put('delta', 'typing', {
-      kanaStats: { [KEY_I]: { attempts: 3, erroredAttempts: 1 } },
-      counters: { ...emptyCounters(), finished: { typing: 1, learn: 0 } },
-    });
     await rig.db.put('settings', 'current', settingsAt(900));
-    await putResults(rig.db, 60, 0);
-
     await sync(rig);
 
     const [first] = rig.server.posts();
@@ -75,39 +60,12 @@ describe('a batch', () => {
     const sent = body(first ?? { body: null });
     expect(sent.seq).toBe(1);
     expect(sent.deviceId).toBe('dev-a');
-    expect(sent.results).toHaveLength(50);
-    expect(sent.results.map((r) => r.id)[0]).toBe('r00000');
-    expect(sent.results.every((r) => !('synced' in r))).toBe(true);
     expect(sent.delta.settings?.updatedAt).toBe(900);
     expect(Object.keys(sent.delta.learn.entries)).toEqual([KEY_A]);
-    expect(Object.keys(sent.delta.kanaStats)).toEqual([KEY_I]);
-    expect(sent.delta.counters).toEqual({
-      started: { typing: 0, learn: 2 },
-      finished: { typing: 1, learn: 0 },
-    });
-    // The acknowledgement cleared the outbox; both deltas left `delta` in the same transaction.
+    expect(sent.delta.counters).toEqual({ started: 2, finished: 1 });
+    // The acknowledgement cleared the outbox; the delta left `delta` in the same transaction.
     expect(await rig.db.get('outbox', 'current')).toBeUndefined();
     expect(await rig.db.get('delta', 'learn')).toBeUndefined();
-    expect(await rig.db.get('delta', 'typing')).toBeUndefined();
-    expect(await rig.db.getByIndex('results', 'synced', 1, 100)).toHaveLength(50);
-    expect(await rig.db.getByIndex('results', 'synced', 0, 100)).toHaveLength(10);
-  });
-
-  it('keeps the rest of the results for a catch-up batch 5 seconds later', async () => {
-    const rig = await createRig();
-    await putResults(rig.db, 60, 0);
-    await sync(rig);
-    expect(rig.server.posts()).toHaveLength(1);
-    expect(rig.timers.pending).toEqual([CATCH_UP_SPACING_MS]);
-
-    rig.timers.advance(CATCH_UP_SPACING_MS);
-    await rig.engine.idle();
-
-    expect(rig.server.posts()).toHaveLength(2);
-    expect(body(rig.server.posts()[1] ?? { body: null }).seq).toBe(2);
-    expect(body(rig.server.posts()[1] ?? { body: null }).results).toHaveLength(10);
-    expect(await rig.db.getByIndex('results', 'synced', 0, 100)).toHaveLength(0);
-    expect(rig.timers.pending).toEqual([]);
   });
 
   it('splits a delta over the caps: the rest stays in delta and follows 5 seconds later', async () => {
@@ -172,7 +130,7 @@ describe('an acknowledgement', () => {
     expect(await rig.db.get('meta', 'snapshotVersion')).toBe(1);
 
     await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_I]: entry(9) } })));
-    rig.request('learn');
+    rig.request();
     rig.timers.advance(AFTER_WORK_MS);
     await rig.engine.idle();
 
@@ -187,16 +145,14 @@ describe('an acknowledgement', () => {
   it('with another version reads the three parts, and again when their versions differ', async () => {
     const rig = await createRig();
     const other: SyncRequest = {
-      v: 1,
+      v: 2,
       deviceId: 'dev-b',
       seq: 1,
       delta: {
-        kanaStats: {},
         counters: emptyCounters(),
         learn: learnDelta({ entries: { [KEY_I]: entry(3) } }),
         settings: null,
       },
-      results: [],
     };
     await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
     let writes = 0;
@@ -218,43 +174,21 @@ describe('an acknowledgement', () => {
     expect(Object.keys(rig.server.snapshot().learn.entries).sort()).toEqual([KEY_A, KEY_I]);
   });
 
-  it('marks the results, merges the records and applies the settings rule', async () => {
+  it('applies the settings rule', async () => {
     const rig = await createRig();
     const server: Snapshot = {
       ...rig.server.snapshot(),
       settings: settingsAt(500),
-      typingRecords: {
-        'words|both|learner|time:60': {
-          best: { kpm: 200, resultId: 'far' },
-          recent: [{ resultId: 'far', endedAt: 1, kpm: 200 }],
-        },
-      },
     };
     rig.server.setSnapshot(server, 4);
     await rig.db.put('settings', 'current', settingsAt(100));
     await rig.db.put('meta', 'settingsSyncedAt', 100);
-    await rig.db.put('records', 'current', {
-      'words|both|learner|time:30': {
-        best: { kpm: 120, resultId: 'r00000' },
-        recent: [{ resultId: 'r00000', endedAt: 1_000_000, kpm: 120 }],
-      },
-    });
-    await putResults(rig.db, 1, 0);
-
     await sync(rig);
 
     expect(await rig.db.get('settings', 'current')).toEqual(settingsAt(500));
     expect(await rig.db.get('meta', 'settingsSyncedAt')).toBe(500);
     expect(rig.channels.settings.posts).toEqual(['change']);
-    const records = await rig.db.get('records', 'current');
-    expect(Object.keys(records ?? {}).sort()).toEqual([
-      'words|both|learner|time:30',
-      'words|both|learner|time:60',
-    ]);
-    const marked = await rig.db.get('results', 'r00000');
-    expect(marked).toMatchObject({ synced: 1 });
     expect(rig.channels.learn.posts).toEqual(['change']);
-    expect(rig.channels.typing.posts).toEqual(['change']);
   });
 
   it('keeps settings that changed after the batch was built, and sends them next', async () => {
@@ -270,7 +204,7 @@ describe('an acknowledgement', () => {
     // The batch carried 100; 300 is newer than what the server holds, so it is still to send.
     expect(await rig.db.get('meta', 'settingsSyncedAt')).toBe(100);
     rig.server.onRequest(null);
-    rig.request('test');
+    rig.request();
     rig.timers.advance(AFTER_WORK_MS);
     await rig.engine.idle();
     expect(body(rig.server.posts()[1] ?? { body: null }).delta.settings?.updatedAt).toBe(300);
@@ -414,9 +348,9 @@ describe('spacing', () => {
     const rig = await createRig();
     await sync(rig);
     await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
-    rig.request('learn');
+    rig.request();
     rig.timers.advance(3000);
-    rig.request('learn');
+    rig.request();
     expect(rig.timers.pending).toEqual([AFTER_WORK_MS - 3000]);
     rig.timers.advance(AFTER_WORK_MS - 3000 - 1);
     await rig.engine.idle();
@@ -446,10 +380,9 @@ describe('spacing', () => {
 });
 
 describe('the hidden page', () => {
-  it('sends the delta with keepalive and without results', async () => {
+  it('sends the delta with keepalive', async () => {
     const rig = await createRig();
     await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
-    await putResults(rig.db, 3, 0);
     rig.engine.start();
 
     rig.env.hide();
@@ -459,8 +392,6 @@ describe('the hidden page', () => {
 
     const [post] = rig.server.posts();
     expect(post?.keepalive).toBe(true);
-    expect(body(post ?? { body: null }).results).toEqual([]);
-    expect(await rig.db.getByIndex('results', 'synced', 0, 10)).toHaveLength(3);
     expect(await rig.db.get('outbox', 'current')).toBeUndefined();
   });
 
@@ -470,18 +401,15 @@ describe('the hidden page', () => {
     const outbox: Outbox = {
       seq: 1,
       request: {
-        v: 1,
+        v: 2,
         deviceId: 'dev-a',
         seq: 1,
         delta: {
-          kanaStats: {},
           counters: emptyCounters(),
           learn: learnDelta({ entries: { [KEY_A]: entry(5) } }),
           settings: null,
         },
-        results: [],
       },
-      resultIds: [],
     };
     await small.db.put('outbox', 'current', outbox);
     small.env.hide();
@@ -490,16 +418,17 @@ describe('the hidden page', () => {
     expect(small.server.posts()).toHaveLength(1);
     expect(small.server.posts()[0]?.keepalive).toBe(true);
 
-    // 100 results of about 600 bytes each are over 60 KB.
     const big = await createRig();
     await sync(big);
-    const results = Array.from({ length: 200 }, (_, i) => result(`r${String(i)}`, i));
-    await big.db.put('outbox', 'current', {
-      ...outbox,
-      request: { ...outbox.request, results },
-      resultIds: results.map((r) => r.id),
-    });
-    expect(JSON.stringify(results).length).toBeGreaterThan(KEEPALIVE_MAX_BYTES);
+    // 1500 entries of about 65 bytes each are over 60 KB.
+    const entries: Record<string, ReturnType<typeof entry>> = {};
+    for (let i = 0; i < 1500; i += 1) entries[`hiragana:k${String(i).padStart(4, '0')}`] = entry(i);
+    const request: SyncRequest = {
+      ...outbox.request,
+      delta: { ...outbox.request.delta, learn: learnDelta({ entries }) },
+    };
+    await big.db.put('outbox', 'current', { ...outbox, request });
+    expect(JSON.stringify(request).length).toBeGreaterThan(KEEPALIVE_MAX_BYTES);
     big.env.hide();
     await new Promise((resolve) => setTimeout(resolve, 0));
     await big.engine.idle();
@@ -590,16 +519,14 @@ describe('start and online with nothing to send', () => {
     expect(rig.server.gets().filter((g) => g.url.includes('part='))).toHaveLength(3);
 
     rig.server.externalWrite({
-      v: 1,
+      v: 2,
       deviceId: 'dev-b',
       seq: 1,
       delta: {
-        kanaStats: {},
         counters: emptyCounters(),
         learn: learnDelta({ entries: { [KEY_I]: entry(3) } }),
         settings: null,
       },
-      results: [],
     });
     rig.timers.advance(REQUEST_SPACING_MS);
     rig.env.goOnline();
@@ -614,21 +541,5 @@ describe('start and online with nothing to send', () => {
     const rig = await createRig({ db });
     await sync(rig);
     expect(rig.server.requests).toEqual([]);
-  });
-});
-
-describe('retention', () => {
-  it('keeps unsynced results and removes the oldest synced ones above the limit', async () => {
-    const rig = await createRig();
-    await putResults(rig.db, RETAINED_RESULTS, 1);
-    await putResults(rig.db, 60, 0, RETAINED_RESULTS);
-
-    await sync(rig);
-
-    // 50 of the 60 were synced by the batch; the 10 left are unsynced and stay.
-    expect(await rig.db.count('results')).toBe(RETAINED_RESULTS);
-    expect(await rig.db.getByIndex('results', 'synced', 0, 100)).toHaveLength(10);
-    expect(await rig.db.get('results', 'r00000')).toBeUndefined();
-    expect(await rig.db.get('results', 'r01059')).toBeDefined();
   });
 });

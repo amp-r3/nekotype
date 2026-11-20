@@ -3,25 +3,19 @@ import {
   BATCH_CAPS,
   addBuckets,
   addCounters,
-  addKanaStats,
   addLearnStats,
   applyBatch,
-  applyResultToRecords,
-  applyResultsToRecords,
   emptyLearnState,
   isLearnKanaKey,
   isLearnState,
   mergeActiveDays,
   mergeEntries,
-  mergeKanaStats,
   mergeLearn,
   mergeRecent,
-  mergeTypingRecords,
   mergeUnlocked,
   patchBuckets,
   patchLearn,
   patchRecent,
-  personalBestKey,
   splitLearnDelta,
   touchedKeys,
 } from './runtime';
@@ -37,7 +31,6 @@ import {
 import type {
   Counters,
   DayBuckets,
-  KanaStat,
   LearnDelta,
   LearnEntry,
   LearnKanaKey,
@@ -47,9 +40,7 @@ import type {
   Rng,
   Snapshot,
   SyncRequest,
-  TestResult,
   Track,
-  TypingRecords,
 } from './types';
 
 // The property, convergence, splitting and equivalence tests of p5-plan.md D12 (acceptance 14, 15
@@ -206,65 +197,6 @@ function storedOf(rng: Rng): LearnState {
   };
 }
 
-function resultOf(rng: Rng, id: string): TestResult {
-  const config = chance(rng, 0.5)
-    ? ({ kind: 'time', seconds: 60 } as const)
-    : ({ kind: 'count', prompts: 25 } as const);
-  return {
-    id,
-    content: 'words',
-    script: 'hiragana',
-    strictness: 'learner',
-    config,
-    endReason: chance(rng, 0.85) ? 'complete' : 'manual',
-    repeated: chance(rng, 0.1),
-    startedAt: 0,
-    endedAt: intIn(rng, 1, 30),
-    durationMs: 1000,
-    tokens: 10,
-    erroredTokens: 0,
-    items: 1,
-    keystrokes: 10,
-    rejectedKeystrokes: 0,
-    assisted: 0,
-    // Few distinct values, so ties are frequent.
-    kpm: intIn(rng, 3, 6) * 10,
-    kanaAccuracy: chance(rng, 0.9) ? 0.95 : 0.5,
-    celebratedPersonalBest: false,
-    contentVersion: 'c1',
-    appVersion: 'a1',
-  };
-}
-
-/** Results with distinct ids; `tag` keeps the ids of two calls apart. */
-function results(rng: Rng, tag = 'r'): TestResult[] {
-  const list: TestResult[] = [];
-  for (let i = intIn(rng, 0, 14); i > 0; i -= 1) list.push(resultOf(rng, `${tag}${i}`));
-  return list;
-}
-
-let recordsMade = 0;
-
-/** Records of results with ids of their own: one id is one result everywhere. */
-function records(rng: Rng): TypingRecords {
-  recordsMade += 1;
-  return applyResultsToRecords({}, results(rng, `s${recordsMade}-`));
-}
-
-function shuffled<T>(rng: Rng, items: readonly T[]): T[] {
-  const copy = [...items];
-  for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = intIn(rng, 0, i);
-    const a = copy[i];
-    const b = copy[j];
-    if (a !== undefined && b !== undefined) {
-      copy[i] = b;
-      copy[j] = a;
-    }
-  }
-  return copy;
-}
-
 /** Idempotent, commutative and associative. */
 function semilattice<T>(name: string, gen: (rng: Rng) => T, merge: (a: T, b: T) => T): void {
   it(`${name}: idempotent, commutative and associative`, () => {
@@ -306,96 +238,19 @@ describe('set-like merges (acceptance 14)', () => {
   );
   semilattice('mergeRecent', answers, mergeRecent);
   semilattice('mergeActiveDays', activeDays, mergeActiveDays);
-  semilattice('mergeTypingRecords', records, mergeTypingRecords);
 });
 
 describe('additive merges (acceptance 14)', () => {
   additive('addLearnStats', (rng) => stat(rng, false), addLearnStats);
   additive('addBuckets', (rng) => days(rng, 100, 500, 0.2), addBuckets);
   additive(
-    'addKanaStats',
-    (rng): KanaStat => ({ attempts: intIn(rng, 0, 90), erroredAttempts: intIn(rng, 0, 9) }),
-    (a, b) => addKanaStats(a, b),
-  );
-  additive(
     'addCounters',
     (rng): Counters => ({
-      started: { typing: intIn(rng, 0, 9), learn: intIn(rng, 0, 9) },
-      finished: { typing: intIn(rng, 0, 9), learn: intIn(rng, 0, 9) },
+      started: intIn(rng, 0, 9),
+      finished: intIn(rng, 0, 9),
     }),
     addCounters,
   );
-});
-
-describe('typing records and the tie rule (S7)', () => {
-  const base = resultOf(seededRng(1), 'base');
-  const eligible: TestResult = { ...base, endReason: 'complete', repeated: false, kanaAccuracy: 1 };
-  const key = personalBestKey(eligible);
-
-  it('with equal KPM the smaller id is the best, whichever is applied first', () => {
-    const a: TestResult = { ...eligible, id: 'a', kpm: 50, endedAt: 1 };
-    const b: TestResult = { ...eligible, id: 'b', kpm: 50, endedAt: 2 };
-    for (const order of [
-      [a, b],
-      [b, a],
-    ]) {
-      let folded: TypingRecords = {};
-      for (const result of order) folded = applyResultToRecords(folded, result).records;
-      expect(folded[key]?.best).toEqual({ kpm: 50, resultId: 'a' });
-    }
-  });
-
-  it('isBest stays strictly higher than the previous best', () => {
-    const first = applyResultToRecords({}, { ...eligible, id: 'b', kpm: 50 });
-    expect(first.isBest).toBe(true);
-    const tie = applyResultToRecords(first.records, { ...eligible, id: 'a', kpm: 50, endedAt: 9 });
-    expect(tie.isBest).toBe(false);
-    expect(tie.records[key]?.best?.resultId).toBe('a');
-  });
-
-  it('applyResultsToRecords does not depend on the order of the results', () => {
-    eachCase((rng) => {
-      const list = results(rng);
-      expect(applyResultsToRecords({}, shuffled(rng, list))).toEqual(
-        applyResultsToRecords({}, list),
-      );
-    });
-  });
-
-  it('records of two result sets merge into the records of their union', () => {
-    eachCase((rng) => {
-      const a = results(rng, 'a');
-      // `b` repeats some of `a`'s results: the union counts each once.
-      const b = [...results(rng, 'b'), ...a.filter(() => chance(rng, 0.3))];
-      const union = [...new Map([...a, ...b].map((result) => [result.id, result])).values()];
-      expect(
-        mergeTypingRecords(applyResultsToRecords({}, a), applyResultsToRecords({}, b)),
-      ).toEqual(applyResultsToRecords({}, union));
-    });
-  });
-
-  it('a result that is applied again changes nothing', () => {
-    eachCase((rng) => {
-      const list = results(rng);
-      const once = applyResultsToRecords({}, list);
-      expect(applyResultsToRecords(once, list)).toEqual(once);
-    });
-  });
-
-  it('mergeKanaStats adds, then halves above 200 attempts', () => {
-    expect(
-      mergeKanaStats(
-        { 'hiragana:あ': { attempts: 150, erroredAttempts: 20 } },
-        {
-          'hiragana:あ': { attempts: 70, erroredAttempts: 5 },
-          'hiragana:い': { attempts: 3, erroredAttempts: 1 },
-        },
-      ),
-    ).toEqual({
-      'hiragana:あ': { attempts: 110, erroredAttempts: 12 },
-      'hiragana:い': { attempts: 3, erroredAttempts: 1 },
-    });
-  });
 });
 
 describe('convergence of two devices (acceptance 15)', () => {
@@ -604,62 +459,38 @@ describe('the per-key patch equals the full merge (acceptance 17)', () => {
     expect(patchBuckets({}, null, {})).toEqual({ patch: {}, newest: null });
   });
 
-  it('the applied batch equals the server model for results, statistics and settings too (ADR 082)', () => {
+  it('the applied batch equals the server model for statistics, counters and settings too (ADR 082)', () => {
     eachCase((rng) => {
       const learn = storedOf(rng);
       const delta = deltaOf(rng);
       const snapshot: Snapshot = {
         settings: null,
-        kanaStats: { 'hiragana:あ': { attempts: 190, erroredAttempts: 3 } },
-        counters: { started: { typing: 1, learn: 2 }, finished: { typing: 1, learn: 1 } },
+        counters: { started: 5, finished: 4 },
         learn,
-        typingRecords: records(rng),
       };
       const request: SyncRequest = {
-        v: 1,
+        v: 2,
         deviceId: 'd',
         seq: intIn(rng, 2, 9),
-        delta: {
-          kanaStats: { 'hiragana:あ': { attempts: 30, erroredAttempts: 2 } },
-          counters: snapshot.counters,
-          learn: delta,
-          settings: null,
-        },
-        results: results(rng),
+        delta: { counters: { started: 2, finished: 1 }, learn: delta, settings: null },
       };
       const applied = applyBatch(snapshot, request);
       expect(applied.learn).toEqual(stateOf(serverApply(columnsOf(learn), delta)));
-      expect(applied.kanaStats['hiragana:あ']).toEqual({ attempts: 110, erroredAttempts: 2 });
-      expect(applied.counters.started.typing).toBe(2);
-      expect(applied.typingRecords).toEqual(
-        applyResultsToRecords(snapshot.typingRecords, request.results),
-      );
-      // Applying the same batch twice is the server's job to prevent (by `seq`); the typing
-      // records, which are keyed by result id, stay the same.
-      expect(
-        applyBatch(applied, { ...request, delta: { ...request.delta, learn: emptyDelta() } })
-          .typingRecords,
-      ).toEqual(applied.typingRecords);
+      expect(applied.counters).toEqual({ started: 7, finished: 5 });
     });
   });
-
-  function emptyDelta(): LearnDelta {
-    return { ...emptyLearnState() };
-  }
 });
 
 describe('a year of learning', () => {
   const year = generateYear({ seed: 11, keys: KANA_KEYS });
   const snapshot: Snapshot = {
     settings: null,
-    kanaStats: year.kanaStats,
     counters: year.counters,
     learn: year.learn,
-    typingRecords: year.typingRecords,
   };
 
   it('a learning batch and a batch at the caps are applied like the full merge', () => {
-    for (const kind of ['learning', 'capped', 'results'] as const) {
+    for (const kind of ['learning', 'capped'] as const) {
       const batch = generateBatch({ seed: 5, keys: KANA_KEYS, kind });
       const applied = applyBatch(snapshot, batch);
       expect(applied.learn).toEqual(mergeLearn(year.learn, batch.delta.learn));

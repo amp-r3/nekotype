@@ -13,9 +13,9 @@ export type {
   ReadingHint,
   PromptItem,
   Strictness,
-} from './model/types';
+} from './types';
 
-export { basicRows, dakutenRows, yoonRows, extendedRows, allKanaRows } from './model/data';
+export { basicRows, dakutenRows, yoonRows, extendedRows, allKanaRows } from './data';
 
 export type {
   Token,
@@ -25,7 +25,7 @@ export type {
   EngineView,
   TokenTiming,
   ErrorLog,
-} from './lib/engine';
+} from './engine';
 
 export {
   compile,
@@ -43,6 +43,6 @@ export {
   spellingsFor,
   createErrorLog,
   isKanaKey,
-} from './lib/engine';
+} from './engine';
 
-export { canonicalFor } from './lib/canonical';
+export { canonicalFor } from './canonical';

@@ -14,7 +14,7 @@ Nekotype is a high-performance, keyboard-first Japanese kana speed trainer engin
 | [romaji-model.md](romaji-model.md)           | Strict IME and learner spellings, ー, っ, ん, skip tokens, reading hints                               |
 | [engine.md](engine.md)                       | The matcher: positions, the public API of `packages/engine`                                            |
 | [input.md](input.md)                         | Input sources and `KeyIntent`s; adding an on-screen keyboard                                           |
-| [entities.md](entities.md)                   | The stores of `entities/stats`, `settings`, `learn` and `prompt`                                       |
+| [entities.md](entities.md)                   | The stores of `entities/settings` and `learn`                                                          |
 | [pages.md](pages.md)                         | The learning, statistics, about and settings screens; presentational `shared/ui`                       |
 | [sync.md](sync.md)                           | The sync engine and the account flows of `features/sync`, `entities/user`, `shared/api`, `requestSync` |
 | [extension-recipes.md](extension-recipes.md) | Adding a kana row, changing the vocabulary, adding a locale                                            |

@@ -20,8 +20,6 @@ describe('the migrations', () => {
       'sessions',
       'user_settings',
       'user_stats',
-      'results',
-      'results_user_time',
       'content_reports',
     ]) {
       expect(names).toContain(expected);
@@ -30,6 +28,12 @@ describe('the migrations', () => {
 });
 
 describe('the application', () => {
+  it('has no route for the typing history', async () => {
+    const response = await call('/api/results', { headers: { Cookie: 'nt_session=x' } });
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: { code: 'not_found' } });
+  });
+
   it('answers an unknown path with 404 and the error body', async () => {
     const response = await call('/api/unknown');
     expect(response.status).toBe(404);

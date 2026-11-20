@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  MAX_RESULTS_PER_BATCH,
   MAX_SYNC_BODY_BYTES,
   SYNC_FORMAT_VERSION,
   applyBatch,
@@ -10,7 +9,6 @@ import {
   isSnapshotRecent,
   isSnapshotRest,
   isSyncResponse,
-  isResultsResponse,
   mergeSettings,
   outboxDelta,
 } from './runtime';
@@ -20,22 +18,12 @@ import type { Snapshot, SyncRequest, ValidSettings } from './types';
 const year = generateYear({ seed: 3, keys: KANA_KEYS });
 const snapshot: Snapshot = {
   settings: null,
-  kanaStats: year.kanaStats,
   counters: year.counters,
   learn: year.learn,
-  typingRecords: year.typingRecords,
 };
 
 function settings(updatedAt: number, targetMs = 1500): ValidSettings {
   return {
-    typing: {
-      script: 'both',
-      content: 'words',
-      strictness: 'learner',
-      weakFocus: false,
-      test: { kind: 'zen' },
-      showTranslation: true,
-    },
     learn: { strictness: 'learner', track: 'hiragana', targetMs, sound: true },
     updatedAt,
   };
@@ -43,24 +31,13 @@ function settings(updatedAt: number, targetMs = 1500): ValidSettings {
 
 describe('constants', () => {
   it('are the values of the spec', () => {
-    expect(SYNC_FORMAT_VERSION).toBe(1);
-    expect(MAX_RESULTS_PER_BATCH).toBe(50);
+    expect(SYNC_FORMAT_VERSION).toBe(2);
     expect(MAX_SYNC_BODY_BYTES).toBe(262_144);
   });
 });
 
 describe('guards', () => {
   const { recent, recallBuckets, ...rest } = snapshot.learn;
-
-  it('isResultsResponse', () => {
-    expect(isResultsResponse({ results: [], next: null })).toBe(true);
-    expect(isResultsResponse({ results: [], next: '1:a' })).toBe(true);
-    expect(isResultsResponse({ results: [], next: '' })).toBe(false);
-    expect(isResultsResponse({ results: [], next: 5 })).toBe(false);
-    expect(isResultsResponse({ results: [{ id: 'x' }], next: null })).toBe(false);
-    expect(isResultsResponse({ next: null })).toBe(false);
-    expect(isResultsResponse(null)).toBe(false);
-  });
 
   it('isSyncResponse', () => {
     expect(isSyncResponse({ lastSeq: 0, version: 3 })).toBe(true);
@@ -75,9 +52,10 @@ describe('guards', () => {
     expect(isSnapshot({ ...snapshot, settings: settings(1) })).toBe(true);
     expect(isSnapshot({ ...snapshot, settings: { updatedAt: 1 } })).toBe(false);
     expect(isSnapshot({ ...snapshot, counters: {} })).toBe(false);
-    expect(isSnapshot({ ...snapshot, kanaStats: { 'hiragana:あ': { attempts: 1 } } })).toBe(false);
+    expect(
+      isSnapshot({ ...snapshot, counters: { started: { typing: 1, learn: 1 }, finished: 1 } }),
+    ).toBe(false);
     expect(isSnapshot({ ...snapshot, learn: rest })).toBe(false);
-    expect(isSnapshot({ ...snapshot, typingRecords: { k: { best: 1 } } })).toBe(false);
     expect(isSnapshot(emptyLearnState())).toBe(false);
   });
 
@@ -85,15 +63,12 @@ describe('guards', () => {
     const delta = { counters: 'not checked here' };
     const batch = {
       seq: 1,
-      resultIds: [],
-      request: { v: SYNC_FORMAT_VERSION, results: [], delta },
+      request: { v: SYNC_FORMAT_VERSION, delta },
     };
     expect(outboxDelta(batch)).toBe(delta);
     expect(outboxDelta(undefined)).toBeNull();
     expect(outboxDelta({ ...batch, seq: -1 })).toBeNull();
-    expect(outboxDelta({ ...batch, resultIds: null })).toBeNull();
-    expect(outboxDelta({ ...batch, request: { ...batch.request, v: 2 } })).toBeNull();
-    expect(outboxDelta({ ...batch, request: { ...batch.request, results: {} } })).toBeNull();
+    expect(outboxDelta({ ...batch, request: { ...batch.request, v: 1 } })).toBeNull();
     expect(outboxDelta({ ...batch, request: { ...batch.request, delta: [] } })).toBeNull();
   });
 
@@ -103,10 +78,8 @@ describe('guards', () => {
       lastSeq: 4,
       version: 9,
       settings: null,
-      kanaStats: snapshot.kanaStats,
       counters: snapshot.counters,
       learn: rest,
-      typingRecords: snapshot.typingRecords,
     };
     expect(isSnapshotRest(part)).toBe(true);
     expect(isSnapshotRest({ ...part, part: 'recent' })).toBe(false);
@@ -141,23 +114,19 @@ describe('mergeSettings', () => {
 
 describe('applyBatch', () => {
   const request: SyncRequest = {
-    v: 1,
+    v: 2,
     deviceId: 'd',
     seq: 1,
     delta: {
-      kanaStats: {},
-      counters: { started: { typing: 0, learn: 0 }, finished: { typing: 0, learn: 0 } },
+      counters: { started: 0, finished: 0 },
       learn: emptyLearnState(),
       settings: settings(10),
     },
-    results: [],
   };
 
   it('an empty batch changes nothing but the settings of a new account', () => {
     const applied = applyBatch(snapshot, request);
     expect(applied.settings).toEqual(settings(10));
-    expect(applied.kanaStats).toEqual(snapshot.kanaStats);
     expect(applied.counters).toEqual(snapshot.counters);
-    expect(applied.typingRecords).toEqual(snapshot.typingRecords);
   });
 });

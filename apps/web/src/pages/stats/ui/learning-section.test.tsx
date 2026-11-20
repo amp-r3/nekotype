@@ -60,7 +60,7 @@ describe('learning section: the answer-time periods and tracks', () => {
           katakana: { [String(today - 3)]: { '15': 1 } },
         },
       },
-      counters: { started: { typing: 0, learn: 2 }, finished: { typing: 0, learn: 2 } },
+      counters: { started: 2, finished: 2 },
     });
 
     container = document.createElement('div');

@@ -11,6 +11,11 @@ export default defineConfig([
     },
   },
   {
+    // The generated word and phrase chunks (packages/content writes them, ADR 093): data without
+    // code, loaded by no slice before P10, which gives them a home again.
+    ignores: ['src/entities/prompt/content/**'],
+  },
+  {
     files: ['src/shared/styles/**', 'src/shared/assets/**'],
     rules: {
       'fsd/public-api': 'off',

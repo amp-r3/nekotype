@@ -1,16 +1,12 @@
 import {
   addCounters,
-  applyResultsToRecords,
   isActiveDays,
   isCounters,
-  isKanaStats,
   isLearnEntry,
   isLearnKanaKey,
   isLearnStat,
   isObject,
   isRecallAnswer,
-  isTypingRecords,
-  mergeKanaStats,
   patchBuckets,
   patchLearn,
   patchRecent,
@@ -148,13 +144,9 @@ function planWrite(
   if (wait > 0) return { early: { kind: 'limited', retryAfterSeconds: Math.ceil(wait / 1000) } };
 
   // The small columns, whole.
-  if (!isKanaStats(row.kanaStats)) throw corrupt('user_stats', 'kana_stats');
   if (!isCounters(row.counters)) throw corrupt('user_stats', 'counters');
-  if (!isTypingRecords(row.typingRecords)) throw corrupt('user_stats', 'typing_records');
   if (!isNewest(row.bucketNewest)) throw corrupt('user_stats', 'bucket_newest');
-  const kanaStats = mergeKanaStats(row.kanaStats, delta.kanaStats);
   const counters = addCounters(row.counters, delta.counters);
-  const typingRecords = applyResultsToRecords(row.typingRecords, request.results);
 
   // `learn`: the small fields whole, the touched entries and statistics by path.
   const unlocked = isObject(row.unlocked) ? row.unlocked : {};
@@ -218,15 +210,12 @@ function planWrite(
     userId,
     version: row.version,
     now: options.now,
-    kanaStats: JSON.stringify(kanaStats),
     counters: JSON.stringify(counters),
-    typingRecords: JSON.stringify(typingRecords),
     deviceSeq: JSON.stringify(nextDeviceSeq),
     bucketNewest: JSON.stringify(bucketNewest),
     learnPatch: JSON.stringify(learnPatch),
     recentPatch: touched.kana.length > 0 ? JSON.stringify(recentPatch) : null,
     bucketsPatch: Object.keys(bucketsPatch).length > 0 ? JSON.stringify(bucketsPatch) : null,
-    results: request.results.length > 0 ? JSON.stringify(sortedResults(request)) : null,
     settings:
       delta.settings === null
         ? null
@@ -237,12 +226,6 @@ function planWrite(
           },
   };
   return { write, lastSeq: request.seq };
-}
-
-function sortedResults(request: SyncRequest) {
-  return [...request.results].sort(
-    (a, b) => a.endedAt - b.endedAt || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
-  );
 }
 
 /** The keys a batch needs from the stored row. */

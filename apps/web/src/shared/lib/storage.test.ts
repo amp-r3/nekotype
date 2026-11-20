@@ -60,26 +60,14 @@ describe('storage: KeyValueStore implementations and guards', () => {
 
   it('guards validate valid settings and reject invalid/corrupted payloads', () => {
     const valid = {
-      typing: {
-        script: 'both',
-        content: 'words',
-        strictness: 'learner',
-        weakFocus: true,
-        test: { kind: 'time', seconds: 30 },
-        showTranslation: true,
-      },
       learn: { strictness: 'learner', track: 'hiragana', targetMs: 1500, sound: true },
       updatedAt: 0,
     };
     expect(isSettings(valid)).toBe(true);
 
-    // Corrupted field types
-    expect(isSettings({ ...valid, typing: { ...valid.typing, script: 'klingon' } })).toBe(false);
-    expect(isSettings({ ...valid, typing: { ...valid.typing, content: 123 } })).toBe(false);
-    expect(isSettings({ ...valid, typing: { ...valid.typing, content: 'single' } })).toBe(false);
-    expect(
-      isSettings({ ...valid, typing: { ...valid.typing, test: { kind: 'time', seconds: 999 } } }),
-    ).toBe(false);
+    // The `typing` block of P5 is not valid any more.
+    expect(isSettings({ ...valid, typing: { script: 'both' } })).toBe(false);
+    expect(isSettings({ ...valid, learn: { ...valid.learn, track: 'klingon' } })).toBe(false);
     expect(isSettings('not an object')).toBe(false);
     expect(isSettings(null)).toBe(false);
   });

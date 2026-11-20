@@ -4,10 +4,9 @@ export type Write =
   | { op: 'delete'; store: string; key: string }
   | { op: 'clear'; store: string };
 
-/** A store with indexes. An index is named after the property of the value it orders by. */
+/** A store of the database. */
 export interface StoreDef {
   name: string;
-  indexes?: readonly string[];
 }
 
 /** A record to read inside an `update` transaction. */
@@ -19,9 +18,6 @@ export interface Db {
   delete(store: string, key: string): Promise<void>;
   /** Applies the writes in one transaction over their stores: all of them or none. */
   write(writes: readonly Write[]): Promise<void>;
-  /** All values of `store`, ascending in the order of `index` (ties by key), in one transaction; records without an indexable value are left out. */
-  getAll(store: string, index: string): Promise<unknown[]>;
-  count(store: string): Promise<number>;
   /**
    * A read-modify-write in one `readwrite` transaction (D15): reads the records, hands their values
    * (`undefined` for a missing one, in the order of `reads`) to the synchronous `compute` and
@@ -34,13 +30,6 @@ export interface Db {
     compute: (values: readonly unknown[]) => readonly Write[],
     scope?: readonly string[],
   ): Promise<void>;
-  /** The first `limit` values of `store` whose `index` property equals `value`, in key order. */
-  getByIndex(
-    store: string,
-    index: string,
-    value: number | string,
-    limit: number,
-  ): Promise<unknown[]>;
   hasStores(names: readonly string[]): boolean;
   close(): void;
 }
@@ -100,11 +89,6 @@ function wrap(raw: IDBDatabase): Db {
     put: (store, key, value) => run([{ op: 'put', store, key, value }]),
     delete: (store, key) => run([{ op: 'delete', store, key }]),
     write: (writes) => (writes.length === 0 ? Promise.resolve() : run(writes)),
-    getAll: (store, index) =>
-      request<unknown[]>(
-        raw.transaction(store, 'readonly').objectStore(store).index(index).getAll(),
-      ),
-    count: (store) => request(raw.transaction(store, 'readonly').objectStore(store).count()),
     update: (reads, compute, scope = []) =>
       new Promise((resolve, reject) => {
         const stores = [...new Set([...reads.map((r) => r.store), ...scope])];
@@ -147,10 +131,6 @@ function wrap(raw: IDBDatabase): Db {
           };
         });
       }),
-    getByIndex: (store, index, value, limit) =>
-      request<unknown[]>(
-        raw.transaction(store, 'readonly').objectStore(store).index(index).getAll(value, limit),
-      ),
     hasStores: (names) => names.every((n) => raw.objectStoreNames.contains(n)),
     close: () => {
       raw.close();
@@ -160,7 +140,7 @@ function wrap(raw: IDBDatabase): Db {
 
 /**
  * Opens `name` without a version, so the database is never refused for a lower one. A new database
- * gets the given stores, with their indexes, at version 1. A tab that holds the connection closes it on `versionchange`,
+ * gets the given stores at version 1. A tab that holds the connection closes it on `versionchange`,
  * so another tab can delete or upgrade the database.
  */
 export function openRaw(
@@ -174,10 +154,9 @@ export function openRaw(
     req.onupgradeneeded = (event) => {
       created = event.oldVersion === 0;
       for (const def of stores) {
-        const { name, indexes = [] } = typeof def === 'string' ? { name: def } : def;
+        const { name } = typeof def === 'string' ? { name: def } : def;
         if (req.result.objectStoreNames.contains(name)) continue;
-        const store = req.result.createObjectStore(name);
-        for (const index of indexes) store.createIndex(index, index);
+        req.result.createObjectStore(name);
       }
     };
     req.onblocked = () => {

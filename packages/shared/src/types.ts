@@ -25,21 +25,7 @@ export interface AudioProvider {
   play(key: LearnKanaKey): void;
 }
 
-export type ValidTestConfig =
-  | { readonly kind: 'time'; readonly seconds: 15 | 30 | 60 | 120 }
-  | { readonly kind: 'count'; readonly prompts: 10 | 25 | 50 | 100 }
-  // No length: the test goes on until it is ended by hand (spec metrics.md, "Test end").
-  | { readonly kind: 'zen' };
-
 export type ValidSettings = {
-  readonly typing: {
-    readonly script: 'hiragana' | 'katakana' | 'both';
-    readonly content: 'words' | 'phrases';
-    readonly strictness: 'learner' | 'ime';
-    readonly weakFocus: boolean;
-    readonly test: ValidTestConfig;
-    readonly showTranslation: boolean;
-  };
   readonly learn: {
     readonly strictness: 'learner' | 'ime';
     readonly track: 'hiragana' | 'katakana';
@@ -52,7 +38,6 @@ export type ValidSettings = {
 
 // Learning (spec metrics.md, "Data model")
 
-export type Mode = 'typing' | 'learn';
 export type Track = 'hiragana' | 'katakana';
 export type LearnKanaKey = `${Track}:${string}`;
 
@@ -98,72 +83,11 @@ export type LearnState = {
 /** Local day → bucket → number of recall answers. */
 export type DayBuckets = Readonly<Record<string, Readonly<Record<string, number>>>>;
 
+/** Learning sessions started and finished. */
 export type Counters = {
-  readonly started: Readonly<Record<Mode, number>>;
-  readonly finished: Readonly<Record<Mode, number>>;
+  readonly started: number;
+  readonly finished: number;
 };
-
-// Typing (spec metrics.md, "Data model")
-
-/** The key of a kana in the statistics, as in the engine's kana table. */
-export type KanaKey = LearnKanaKey;
-
-export type KanaStat = {
-  /** Committed tokens of this kana in saved typing tests. */
-  readonly attempts: number;
-  /** Of which errored. */
-  readonly erroredAttempts: number;
-};
-
-export type TestEndReason = 'complete' | 'manual' | 'idle' | 'hidden';
-
-export type TestResult = {
-  /** UUID v7, generated on the client. */
-  readonly id: string;
-  readonly content: 'words' | 'phrases';
-  readonly script: 'hiragana' | 'katakana' | 'both';
-  readonly strictness: 'learner' | 'ime';
-  readonly config:
-    | { readonly kind: 'time'; readonly seconds: number }
-    | { readonly kind: 'count'; readonly prompts: number }
-    | { readonly kind: 'zen' };
-  readonly endReason: TestEndReason;
-  /** Started with "Repeat". */
-  readonly repeated: boolean;
-  readonly startedAt: number;
-  readonly endedAt: number;
-  readonly durationMs: number;
-  readonly tokens: number;
-  readonly erroredTokens: number;
-  /** Completed prompts. */
-  readonly items: number;
-  readonly keystrokes: number;
-  readonly rejectedKeystrokes: number;
-  /** Hints (Esc). */
-  readonly assisted: number;
-  /** Stored rounded to 0.1. */
-  readonly kpm: number;
-  /** A fraction 0–1, stored rounded to 4 decimals. */
-  readonly kanaAccuracy: number;
-  /** A personal best was shown on this device at completion. */
-  readonly celebratedPersonalBest: boolean;
-  readonly contentVersion: string;
-  readonly appVersion: string;
-};
-
-export type TypingRecordEntry = {
-  /** Null until a result is eligible. */
-  readonly best: { readonly kpm: number; readonly resultId: string } | null;
-  /** The last 10 results counted in the average, oldest first. */
-  readonly recent: readonly {
-    readonly resultId: string;
-    readonly endedAt: number;
-    readonly kpm: number;
-  }[];
-};
-
-/** Key: `personalBestKey()`. */
-export type TypingRecords = Readonly<Record<string, TypingRecordEntry>>;
 
 // Sync batches (spec backend.md, "Request and response bodies")
 
@@ -185,8 +109,6 @@ export type LearnDelta = {
 
 export type SyncDelta = {
   /** Increments. */
-  readonly kanaStats: Readonly<Record<KanaKey, KanaStat>>;
-  /** Increments. */
   readonly counters: Counters;
   readonly learn: LearnDelta;
   /** Null when unchanged. */
@@ -195,29 +117,24 @@ export type SyncDelta = {
 
 export type SyncRequest = {
   /** Batch format version. */
-  readonly v: 1;
+  readonly v: 2;
   readonly deviceId: string;
   readonly seq: number;
   readonly delta: SyncDelta;
-  readonly results: readonly TestResult[];
 };
 
 /** `outbox/current` on the device: the one batch awaiting acknowledgement (p5-plan.md, D15). */
 export type Outbox = {
   readonly seq: number;
   readonly request: SyncRequest;
-  /** The ids of the results the batch carries; marked `synced` on acknowledgement. */
-  readonly resultIds: readonly string[];
 };
 
 /** The server's view of one user: what a sync acknowledgement keeps in step (ADR 082). */
 export type Snapshot = {
   readonly settings: ValidSettings | null;
-  readonly kanaStats: Readonly<Record<KanaKey, KanaStat>>;
   readonly counters: Counters;
   /** The client assembles it from the three parts. */
   readonly learn: LearnState;
-  readonly typingRecords: TypingRecords;
 };
 
 /** `POST /api/sync`, and `GET /api/sync` without `part`. */
@@ -227,10 +144,8 @@ export type SyncResponse = { readonly lastSeq: number; readonly version: number 
 export type SnapshotRest = SyncResponse & {
   readonly part: 'rest';
   readonly settings: ValidSettings | null;
-  readonly kanaStats: Readonly<Record<KanaKey, KanaStat>>;
   readonly counters: Counters;
   readonly learn: Omit<LearnState, 'recent' | 'recallBuckets'>;
-  readonly typingRecords: TypingRecords;
 };
 
 export type SnapshotRecent = {
@@ -243,12 +158,6 @@ export type SnapshotBuckets = {
   readonly part: 'buckets';
   readonly version: number;
   readonly recallBuckets: LearnState['recallBuckets'];
-};
-
-export type ResultsResponse = {
-  readonly results: readonly TestResult[];
-  /** The cursor for `before`; null on the last page. */
-  readonly next: string | null;
 };
 
 export type MeResponse = {

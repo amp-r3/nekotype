@@ -5,7 +5,7 @@ import {
   intervalsOf,
   median,
   recallAnswerTime,
-  typingK,
+  answerK,
 } from './answer-time';
 import type { Keystroke } from './answer-time';
 
@@ -66,24 +66,24 @@ describe('intervalsOf', () => {
   });
 });
 
-describe('typingK', () => {
+describe('answerK', () => {
   it('is 200 ms below 20 intervals', () => {
-    expect(typingK(Array.from({ length: 19 }, () => 100))).toBe(DEFAULT_K_MS);
+    expect(answerK(Array.from({ length: 19 }, () => 100))).toBe(DEFAULT_K_MS);
   });
   it('is the median of the intervals from the 20th on', () => {
-    expect(typingK(Array.from({ length: 20 }, () => 100))).toBe(100);
+    expect(answerK(Array.from({ length: 20 }, () => 100))).toBe(100);
   });
   it('uses the last 50 intervals only', () => {
     const intervals = [
       ...Array.from({ length: 30 }, () => 500),
       ...Array.from({ length: 50 }, () => 120),
     ];
-    expect(typingK(intervals)).toBe(120);
+    expect(answerK(intervals)).toBe(120);
   });
   it('changes the answer time when the 20th interval is recorded', () => {
     const typed = keys(800, 1000, 1200);
     const before = Array.from({ length: 19 }, () => 100);
-    expect(recallAnswerTime(typed, typingK(before))).toBe(800);
-    expect(recallAnswerTime(typed, typingK([...before, 100]))).toBe(1000);
+    expect(recallAnswerTime(typed, answerK(before))).toBe(800);
+    expect(recallAnswerTime(typed, answerK([...before, 100]))).toBe(1000);
   });
 });

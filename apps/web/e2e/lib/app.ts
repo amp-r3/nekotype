@@ -11,7 +11,7 @@ export async function seedLearning(
   await page.goto(path);
   await putRecord(page, 'delta', 'learn', {
     learn,
-    counters: { started: { typing: 0, learn: 0 }, finished: { typing: 0, learn: 0 } },
+    counters: { started: 0, finished: 0 },
   });
   await page.reload();
 }

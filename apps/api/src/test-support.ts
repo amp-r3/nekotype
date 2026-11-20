@@ -137,19 +137,17 @@ export function newestDays(year: Year): Record<string, number> {
 }
 
 /**
- * Gives the user the learning state and the typing data of a generated year. D1 allows 100 KB per
+ * Gives the user the learning state of a generated year. D1 allows 100 KB per
  * statement, so each large column is appended in chunks, as the measurement's seed does.
  */
 export async function seedYear(db: D1Database, userId: string, year: Year): Promise<void> {
   const { recent, recallBuckets, ...rest } = year.learn;
   const columns: [string, string][] = [
-    ['kana_stats', JSON.stringify(year.kanaStats)],
     ['counters', JSON.stringify(year.counters)],
     ['learn', JSON.stringify(rest)],
     ['learn_recent', JSON.stringify(recent)],
     ['learn_buckets', JSON.stringify(recallBuckets)],
     ['bucket_newest', JSON.stringify(newestDays(year))],
-    ['typing_records', JSON.stringify(year.typingRecords)],
     ['device_seq', JSON.stringify(year.deviceSeq)],
   ];
   for (const [column, text] of columns) {

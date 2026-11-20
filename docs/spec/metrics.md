@@ -29,56 +29,16 @@ Learning measures how fast and how reliably the learner recalls each kana. The k
 
 **Local day.** A local calendar day is the number of days from 1970-01-01 to the date in the device's time zone at the moment of the answer. Due dates ([Learning](learning.md), "Boxes") use the same calendar.
 
-**Streak (A41).** A day is active when it has at least one answer in a learning or review session; an introduction alone or a typing test does not make a day active. The current streak counts the consecutive active days ending today, or ending yesterday while today has no answer yet; otherwise it is 0, so one missed day resets it. The best streak is the longest run of active days. Both are derived from the stored runs of active days.
+**Streak (A41).** A day is active when it has at least one answer in a learning or review session; an introduction alone does not make a day active. The current streak counts the consecutive active days ending today, or ending yesterday while today has no answer yet; otherwise it is 0, so one missed day resets it. The best streak is the longest run of active days. Both are derived from the stored runs of active days.
 
 **Daily median (A42).** Recall answer times are counted per track and local day in buckets of 100 ms: bucket `i` holds times from `100 × i` to `100 × i + 99` ms, and the cap puts longer times in bucket 100. The day's median is the midpoint (`100 × i + 50` ms) of the bucket that holds the ⌈n / 2⌉-th shortest answer time of the day. Days more than 365 days before the newest day of the track are dropped.
 
-**What learning writes.** Every answer updates the kana's recent recall answers, its learning counters and mixups, its box in a review, the runs of active days, the day's buckets and the unlocked kana. These changes are written to IndexedDB after each answer, outside the keystroke handler. A learning session changes no typing statistic, and a typing test changes no learning state.
+**What learning writes.** Every answer updates the kana's recent recall answers, its learning counters and mixups, its box in a review, the runs of active days, the day's buckets and the unlocked kana. These changes are written to IndexedDB after each answer, outside the keystroke handler.
 
 ## Data model
 
 ```ts
-type Mode = 'typing' | 'learn';
 type Track = 'hiragana' | 'katakana';
-
-// Typing
-
-type KanaStat = {
-  attempts: number; // committed tokens of this kana in saved typing tests
-  erroredAttempts: number; // of which errored = true
-};
-
-type TestResult = {
-  id: string; // UUID v7, generated on the client
-  content: 'words' | 'phrases';
-  script: 'hiragana' | 'katakana' | 'both';
-  strictness: 'learner' | 'ime'; // code identifier kept; UI label "Relaxed"
-  config: { kind: 'time'; seconds: number } | { kind: 'count'; prompts: number } | { kind: 'zen' };
-  endReason: 'complete' | 'manual' | 'idle' | 'hidden';
-  repeated: boolean; // started with "Repeat"
-  startedAt: number; // whole milliseconds, like endedAt and durationMs
-  endedAt: number;
-  durationMs: number; // endedAt − startedAt; KPM is computed from the time as measured, before rounding
-  tokens: number;
-  erroredTokens: number;
-  items: number; // completed prompts
-  keystrokes: number;
-  rejectedKeystrokes: number;
-  assisted: number; // hints (Esc)
-  kpm: number;
-  kanaAccuracy: number;
-  celebratedPersonalBest: boolean; // a personal best was shown on this device at completion
-  contentVersion: string;
-  appVersion: string;
-};
-
-type TypingRecords = Record<
-  string /* personalBestKey(), see below */,
-  {
-    best: { kpm: number; resultId: string } | null; // null until a result is eligible
-    recent: { resultId: string; endedAt: number; kpm: number }[]; // the last 10 results counted in the average, oldest first
-  }
->;
 
 // Learning
 
@@ -109,18 +69,12 @@ type LearnState = {
   recallBuckets: Record<Track, Record<string /* local day */, Record<string /* bucket */, number>>>;
 };
 
-// started: a typing test on its first keystroke, a learning or review session on its first task;
-// finished: a typing test per "Test end", a session that reached its summary
-type Counters = { started: Record<Mode, number>; finished: Record<Mode, number> };
+// started: a learning or review session on its first task;
+// finished: a session that reached its summary
+type Counters = { started: number; finished: number };
 ```
 
-- **Decay:** when a kana's typing `attempts` exceeds 200, both its counters are halved and rounded down. When its learning `recognitions` exceeds 200, `recognitions`, `recognitionErrors` and every entry of `mixups` are halved and rounded down; map entries that reach 0 are removed. The same function runs on the client and on the server (see [Storage and sync](storage-sync.md)).
-- **Statistic keys:** a merged っX is recorded under the `KanaKey` of the following kana, as in the baseline. A standalone っ and ー have no `KanaKey`: they count in `tokens` and `erroredTokens` but not in `KanaStat`.
-- **Weakness** (typing): `weakness = (erroredAttempts + 1) / (attempts + 2)`; weight `1 + 4 × weakness`, bounded to 1–5. A word or phrase weighs the mean of its kana weights via `computeItemWeight` (D20). The weights serve `weakFocus` only.
-- **Personal best** — maximum KPM per `personalBestKey`, for a test with `endReason` = `complete`, `repeated` = false and kana accuracy ≥ 80% (A3). With equal KPM the result with the smaller id is the best, so the best does not depend on the order in which results are applied (ADR 085); the "new best" of the results screen stays strictly higher than the best before. The eligibility rule and the key function live in `shared/runtime`, so the client and the server apply the same rule.
-- **`personalBestKey`** — `content|script|strictness|config`. `config` is `time:60`, `count:25` or `zen`. Example: `words|hiragana|learner|time:60`. `weakFocus` is not part of the key: it only makes a test harder.
-- **Average** — `recent` holds, per key, the last 10 saved results with `repeated` = false, whatever their `endReason`. The average shown with a result is the mean of `recent` before that result is added; with no earlier result nothing is compared. The difference to the personal best is to the best before the test; a new best shows the badge and the difference to the previous best. The first eligible result of a key is a new best, with no previous best to compare with.
-- **Typing record storage** is described in [Storage and sync](storage-sync.md). `celebratedPersonalBest` only records what was shown at completion.
+- **Decay:** when a kana's `recognitions` exceeds 200, `recognitions`, `recognitionErrors` and every entry of `mixups` are halved and rounded down; map entries that reach 0 are removed. The same function runs on the client and on the server (see [Storage and sync](storage-sync.md)).
 - The raw keystroke log MUST NOT be persisted.
 
 ## Screens

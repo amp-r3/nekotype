@@ -7,7 +7,7 @@ import { testDeps } from '../test-deps';
 
 const START = 1_700_000_000_000;
 const origin = { Origin: 'http://localhost:5173' };
-const TABLES = ['oauth_accounts', 'sessions', 'user_settings', 'user_stats', 'results'] as const;
+const TABLES = ['oauth_accounts', 'sessions', 'user_settings', 'user_stats'] as const;
 
 let users = 0;
 
@@ -18,7 +18,7 @@ async function count(table: string, userId: string): Promise<number> {
   return typeof row?.['n'] === 'number' ? row['n'] : -1;
 }
 
-/** A user with a second session, settings, results and a report. */
+/** A user with a second session, settings and a report. */
 async function populated() {
   users += 1;
   const userId = `delete-user-${users}`;
@@ -33,12 +33,6 @@ async function populated() {
       userId,
       '{}',
       START,
-    ),
-    ...[1, 2, 3].map((n) =>
-      env.DB.prepare(
-        `INSERT INTO results (id, user_id, ended_at, content, script, strictness, config, kpm, kana_accuracy, json)
-         VALUES (?, ?, ?, 'words', 'hiragana', 'learner', 'time:60', 80, 0.95, '{}')`,
-      ).bind(`${userId}-r${n}`, userId, START + n),
     ),
     env.DB.prepare(
       `INSERT INTO content_reports (id, user_id, item_id, content_version, reason, comment, created_at)
@@ -90,6 +84,6 @@ describe('DELETE /api/me', () => {
 
     const foreign = await mine.remove({ Cookie: mine.cookie, Origin: 'https://evil.example' });
     expect(foreign.status).toBe(403);
-    expect(await count('results', mine.userId)).toBe(3);
+    expect(await count('user_settings', mine.userId)).toBe(1);
   });
 });

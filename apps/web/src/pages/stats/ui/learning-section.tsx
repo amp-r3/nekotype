@@ -143,12 +143,12 @@ export function LearningSection({ today }: { readonly today: number }): JSX.Elem
       ))}
       <Stat
         label={t('stats.learn.sessionsStarted')}
-        value={counters.started.learn}
+        value={counters.started}
         testId="stats-started"
       />
       <Stat
         label={t('stats.learn.sessionsFinished')}
-        value={counters.finished.learn}
+        value={counters.finished}
         testId="stats-finished"
       />
 

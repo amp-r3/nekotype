@@ -149,7 +149,7 @@ describe('GET /api/auth/:provider/callback', () => {
     expect(await env.DB.prepare('SELECT * FROM user_stats').first()).toMatchObject({
       user_id: user?.['id'],
       kana_stats: '{}',
-      counters: '{"started":{"typing":0,"learn":0},"finished":{"typing":0,"learn":0}}',
+      counters: '{"started":0,"finished":0}',
       learn: '{"unlocked":{"hiragana":[],"katakana":[]},"entries":{},"stats":{},"activeDays":[]}',
       learn_recent: '{}',
       learn_buckets: '{"hiragana":{},"katakana":{}}',

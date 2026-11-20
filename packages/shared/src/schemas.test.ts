@@ -1,54 +1,14 @@
 import * as v from 'valibot';
 import { describe, expect, it } from 'vitest';
 import { KANA_KEYS, generateBatch } from './testing';
-import { isObject, isSettings, isTestResult, BATCH_CAPS } from './runtime';
-import {
-  deviceIdSchema,
-  reportRequestSchema,
-  resultsQuerySchema,
-  settingsSchema,
-  syncRequestSchema,
-  testResultSchema,
-} from './schemas';
-import type { SyncRequest, TestResult } from './types';
+import { isObject, isSettings, BATCH_CAPS, SYNC_FORMAT_VERSION } from './runtime';
+import { deviceIdSchema, reportRequestSchema, settingsSchema, syncRequestSchema } from './schemas';
 
 const ID = '0192f0a0-0000-7000-8000-000000000001';
 
 const settings = {
-  typing: {
-    script: 'both',
-    content: 'words',
-    strictness: 'learner',
-    weakFocus: true,
-    test: { kind: 'time', seconds: 30 },
-    showTranslation: true,
-  },
   learn: { strictness: 'learner', track: 'hiragana', targetMs: 1500, sound: true },
   updatedAt: 0,
-};
-
-const result: TestResult = {
-  id: ID,
-  content: 'words',
-  script: 'hiragana',
-  strictness: 'learner',
-  config: { kind: 'time', seconds: 60 },
-  endReason: 'complete',
-  repeated: false,
-  startedAt: 0,
-  endedAt: 60_000,
-  durationMs: 60_000,
-  tokens: 100,
-  erroredTokens: 5,
-  items: 20,
-  keystrokes: 150,
-  rejectedKeystrokes: 5,
-  assisted: 0,
-  kpm: 100,
-  kanaAccuracy: 0.95,
-  celebratedPersonalBest: false,
-  contentVersion: 'c1',
-  appVersion: 'a1',
 };
 
 const ok = (schema: v.GenericSchema, value: unknown) => v.safeParse(schema, value).success;
@@ -56,11 +16,6 @@ const ok = (schema: v.GenericSchema, value: unknown) => v.safeParse(schema, valu
 describe('the schemas agree with the guards of shared/runtime', () => {
   const settingsCases: unknown[] = [
     settings,
-    { ...settings, typing: { ...settings.typing, test: { kind: 'zen' } } },
-    { ...settings, typing: { ...settings.typing, test: { kind: 'count', prompts: 100 } } },
-    { ...settings, typing: { ...settings.typing, content: 'single' } },
-    { ...settings, typing: { ...settings.typing, test: { kind: 'time', seconds: 45 } } },
-    { ...settings, typing: { ...settings.typing, showTranslation: 'no' } },
     { ...settings, learn: { ...settings.learn, targetMs: 1000 } },
     { ...settings, learn: { ...settings.learn, targetMs: 3000 } },
     { ...settings, learn: { ...settings.learn, targetMs: 1100 } },
@@ -69,8 +24,9 @@ describe('the schemas agree with the guards of shared/runtime', () => {
     { ...settings, learn: { ...settings.learn, track: 'both' } },
     { ...settings, learn: { ...settings.learn, sound: 1 } },
     { ...settings, updatedAt: '0' },
-    { typing: settings.typing, updatedAt: 0 },
-    { v: 1, ...settings.typing },
+    { ...settings, typing: { script: 'both' } },
+    { ...settings, extra: 1 },
+    { updatedAt: 0 },
     null,
     [],
   ];
@@ -80,40 +36,10 @@ describe('the schemas agree with the guards of shared/runtime', () => {
       expect(ok(settingsSchema, value)).toBe(isSettings(value));
     },
   );
-
-  const resultCases: unknown[] = [
-    result,
-    { ...result, config: { kind: 'zen' } },
-    { ...result, config: { kind: 'count', prompts: 25 } },
-    null,
-    { ...result, endReason: 'crash' },
-    { ...result, config: { kind: 'time' } },
-    { ...result, config: { kind: 'time', seconds: 0 } },
-    { ...result, kanaAccuracy: 1.2 },
-    { ...result, kpm: Number.NaN },
-    { ...result, kpm: -1 },
-    { ...result, tokens: 1.5 },
-    { ...result, erroredTokens: 101 },
-    { ...result, repeated: 'no' },
-    { ...result, celebratedPersonalBest: undefined },
-  ];
-  it.each(resultCases.map((value, index) => [index, value] as const))(
-    'result case %i',
-    (_index, value) => {
-      expect(ok(testResultSchema, value)).toBe(isTestResult(value));
-    },
-  );
-
-  it('differs from the guard only where the schema is stricter: a result id is a UUID', () => {
-    expect(isTestResult({ ...result, id: 'r0' })).toBe(true);
-    expect(ok(testResultSchema, { ...result, id: 'r0' })).toBe(false);
-    expect(isTestResult({ ...result, id: '' })).toBe(false);
-    expect(ok(testResultSchema, { ...result, id: '' })).toBe(false);
-  });
 });
 
 describe('syncRequestSchema', () => {
-  const kinds = ['learning', 'capped', 'results'] as const;
+  const kinds = ['learning', 'capped'] as const;
   it.each(kinds)('accepts the generated %s batch', (kind) => {
     const batch = generateBatch({ seed: 7, keys: KANA_KEYS, kind });
     expect(v.safeParse(syncRequestSchema, batch).success).toBe(true);
@@ -151,23 +77,33 @@ describe('syncRequestSchema', () => {
   });
 
   it('checks the envelope: format version, device and seq', () => {
-    expect(ok(syncRequestSchema, { ...learning, v: 2 })).toBe(false);
+    expect(SYNC_FORMAT_VERSION).toBe(2);
+    expect(ok(syncRequestSchema, { ...learning, v: 1 })).toBe(false);
+    expect(ok(syncRequestSchema, { ...learning, v: 3 })).toBe(false);
     expect(ok(syncRequestSchema, { ...learning, deviceId: 'device-a' })).toBe(false);
     expect(ok(syncRequestSchema, { ...learning, seq: 0 })).toBe(false);
     expect(ok(syncRequestSchema, { ...learning, seq: 1.5 })).toBe(false);
     expect(ok(syncRequestSchema, { ...learning, seq: 1 })).toBe(true);
   });
 
-  it('accepts at most 50 results', () => {
-    const many = (count: number): SyncRequest => ({
-      ...learning,
-      results: Array.from({ length: count }, (_, index) => ({
-        ...result,
-        id: `0192f0a0-0000-7000-8000-${String(index).padStart(12, '0')}`,
-      })),
-    });
-    expect(ok(syncRequestSchema, many(50))).toBe(true);
-    expect(ok(syncRequestSchema, many(51))).toBe(false);
+  it('rejects typing data: results, kanaStats and a typing block of the settings', () => {
+    expect(ok(syncRequestSchema, { ...learning, results: [] })).toBe(false);
+    expect(
+      ok(syncRequestSchema, { ...learning, delta: { ...learning.delta, kanaStats: {} } }),
+    ).toBe(false);
+    const typing = { script: 'both' };
+    expect(
+      ok(syncRequestSchema, {
+        ...learning,
+        delta: { ...learning.delta, settings: { ...settings, typing } },
+      }),
+    ).toBe(false);
+    expect(
+      ok(syncRequestSchema, {
+        ...learning,
+        delta: { ...learning.delta, counters: { started: { typing: 0, learn: 1 }, finished: 1 } },
+      }),
+    ).toBe(false);
   });
 
   it('caps the kana of the learning part at 60 and the days of a track at 31', () => {
@@ -267,16 +203,6 @@ describe('syncRequestSchema', () => {
       ),
     ).toBe(true);
   });
-
-  it('bounds the text fields of a result', () => {
-    const withResult = (patch: Record<string, unknown>): unknown => ({
-      ...learning,
-      results: [{ ...result, ...patch }],
-    });
-    expect(ok(syncRequestSchema, withResult({ appVersion: 'a'.repeat(64) }))).toBe(true);
-    expect(ok(syncRequestSchema, withResult({ appVersion: 'a'.repeat(65) }))).toBe(false);
-    expect(ok(syncRequestSchema, withResult({ contentVersion: 'c'.repeat(65) }))).toBe(false);
-  });
 });
 
 describe('the other schemas', () => {
@@ -296,14 +222,6 @@ describe('the other schemas', () => {
     expect(ok(reportRequestSchema, { ...base, comment: 'x'.repeat(500) })).toBe(true);
     expect(ok(reportRequestSchema, { ...base, comment: 'x'.repeat(501) })).toBe(false);
     expect(ok(reportRequestSchema, { ...base, reason: 'spam' })).toBe(false);
-  });
-
-  it('resultsQuerySchema reads a cursor and a limit of 1–50', () => {
-    expect(ok(resultsQuerySchema, {})).toBe(true);
-    expect(ok(resultsQuerySchema, { before: `1700000000000:${ID}`, limit: '50' })).toBe(true);
-    expect(ok(resultsQuerySchema, { limit: '51' })).toBe(false);
-    expect(ok(resultsQuerySchema, { limit: '0' })).toBe(false);
-    expect(ok(resultsQuerySchema, { before: 'x' })).toBe(false);
   });
 });
 

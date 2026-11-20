@@ -12,8 +12,8 @@ import type {
 } from '@nekotype/shared/types';
 import type { KeyIntent } from '@/shared/lib';
 import { requestSync } from '@/shared/lib';
-import { compile, isComplete, start, step } from '@/entities/prompt';
-import type { MatchState, Matcher, Strictness } from '@/entities/prompt';
+import { compile, isComplete, start, step } from '../lib/prompt';
+import type { MatchState, Matcher, Strictness } from '../lib/prompt';
 import type { Keystroke, LearnStore } from '@/entities/learn';
 import { ANSWER_PAUSE_MS, SESSION_TASKS } from '../lib/constants';
 import { recognitionOptions } from '../lib/distractors';
@@ -165,7 +165,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
   const finish = (): void => {
     clearTimer();
     store.countSession('finished');
-    requestSync('learn');
+    requestSync();
     summary.value = summarize({
       track,
       before,

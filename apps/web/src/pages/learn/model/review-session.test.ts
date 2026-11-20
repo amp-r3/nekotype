@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createMemoryDb } from '@/shared/lib';
-import { canonicalFor } from '@/entities/prompt';
+import { canonicalFor } from '../lib/prompt';
 import { createLearnStore, initialCounters } from '@/entities/learn';
 import { createLearnSession } from './session';
 import type { TaskPort } from './session';
@@ -61,7 +61,7 @@ describe('review session', () => {
     expect(env.session.mode).toBe('review');
     expect(env.session.total).toBe(2);
     env.session.start();
-    expect(env.store.counters.value.started.learn).toBe(1);
+    expect(env.store.counters.value.started).toBe(1);
     const seen: string[] = [];
     while (env.session.phase.value === 'task') {
       const task = env.session.task.value;
@@ -75,7 +75,7 @@ describe('review session', () => {
     }
     expect(seen).toEqual([key('あ'), key('い')]);
     expect(env.session.phase.value).toBe('summary');
-    expect(env.store.counters.value.finished.learn).toBe(1);
+    expect(env.store.counters.value.finished).toBe(1);
   });
 
   it('moves boxes on each answer: up when correct, back to box 1 after an error', async () => {

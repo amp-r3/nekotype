@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { useRef, useState } from 'preact/hooks';
-import { t, tPlural } from '@/shared/i18n';
+import { t } from '@/shared/i18n';
 import { Button, Dialog, Notice } from '@/shared/ui';
 import { CatMark } from '@/shared/ui/cat-mark';
 import { beginSignIn, sessionExpired, storedProfile } from '@/entities/user';
@@ -12,7 +12,7 @@ import {
   syncOnline,
   syncStatus,
 } from '@/features/sync';
-import type { Profile, SyncStatus, Unsent } from '@/features/sync';
+import type { Profile, SyncStatus } from '@/features/sync';
 
 const STATUS_KEYS = {
   synced: 'settings.sync.synced',
@@ -27,11 +27,6 @@ function nameOf(user: Profile | null): string {
   return user?.displayName ?? user?.email ?? t('settings.account.noName');
 }
 
-// What the sign-out dialog names: the unsent results, or that some progress waits (ADR 089).
-function lossText(unsent: Unsent): string {
-  return unsent.results > 0 ? tPlural('signOut.results', unsent.results) : t('signOut.progress');
-}
-
 /**
  * The account section of `/settings` for a signed-in user: a lazy chunk with the sync engine. The
  * profile, the sync status (with `sign in again` while the session is expired), sign-out, which
@@ -44,7 +39,7 @@ export function AccountPanel(): JSX.Element {
   const expired = sessionExpired.value;
   const needsConnection = !expired && !syncOnline.value;
   const [busy, setBusy] = useState(false);
-  const [loss, setLoss] = useState<Unsent | null>(null);
+  const [loss, setLoss] = useState(false);
   const cancelRef = useRef<HTMLButtonElement | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [word, setWord] = useState('');
@@ -58,15 +53,14 @@ export function AccountPanel(): JSX.Element {
     const done = await signOut();
     // On success the section is replaced by the guest form; otherwise the status says why.
     if (!done) setBusy(false);
-    setLoss(null);
+    setLoss(false);
   };
 
   const start = async (): Promise<void> => {
     setBusy(true);
-    const unsent = await prepareSignOut();
-    if (unsent.results > 0 || unsent.other) {
+    if (await prepareSignOut()) {
       setBusy(false);
-      setLoss(unsent);
+      setLoss(true);
       return;
     }
     await finish();
@@ -165,22 +159,22 @@ export function AccountPanel(): JSX.Element {
       </div>
 
       <Dialog
-        open={loss !== null}
+        open={loss}
         onClose={() => {
-          setLoss(null);
+          setLoss(false);
         }}
         title={t('signOut.title')}
         closeLabel={t('signOut.cancel')}
         initialFocusRef={cancelRef}
       >
-        <p className="text-fur-dim text-ui-body">{loss === null ? '' : lossText(loss)}</p>
+        <p className="text-fur-dim text-ui-body">{t('signOut.progress')}</p>
         <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
           <Button
             variant="text"
             buttonRef={cancelRef}
             disabled={busy}
             onClick={() => {
-              setLoss(null);
+              setLoss(false);
             }}
           >
             {t('signOut.cancel')}

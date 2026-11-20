@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { LearnKanaKey } from '@nekotype/shared/types';
 import { createMemoryDb } from '@/shared/lib';
-import { canonicalFor } from '@/entities/prompt';
+import { canonicalFor } from '../lib/prompt';
 import { createLearnStore, dependenciesOf, isConfident } from '@/entities/learn';
 import { createLearnSession } from './session';
 import type { LearnSession, TaskPort } from './session';

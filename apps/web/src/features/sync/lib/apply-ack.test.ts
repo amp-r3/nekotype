@@ -25,10 +25,8 @@ describe('assembleSnapshot', () => {
       lastSeq: 1,
       version: 2,
       settings: settingsAt(3),
-      kanaStats: {},
       counters: emptyCounters(),
       learn: rest,
-      typingRecords: {},
     };
     const recentPart: SnapshotRecent = { part: 'recent', version: 2, recent };
     const buckets: SnapshotBuckets = { part: 'buckets', version: 2, recallBuckets };

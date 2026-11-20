@@ -1,6 +1,6 @@
 # ADR 072: Delta Split per Mode
 
-- **Status:** In force.
+- **Status:** In force until P6; superseded by [ADR 096](096-learning-only-data-and-sync-format-2.md): there is one `delta` record, `learn`.
 - **Context:** `storage-sync.md` kept one `delta` record (`current`) for learning and typing changes. Learning writes after every answer and typing writes after every test; with one record each write reads and rewrites the other mode's data, two tabs in different modes overwrite each other, and a bug in one mode's writer can damage the other's data. A39 requires the modes to stay separate.
 - **Decision:**
   1. The `delta` store holds two records: `learn` (learning changes) and `typing` (typing kana statistics and counters). The `current` key is gone.

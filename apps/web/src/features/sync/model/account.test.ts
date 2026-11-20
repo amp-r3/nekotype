@@ -5,7 +5,7 @@ import type { Db } from '@/shared/lib';
 import { createMemoryDb } from '@/shared/lib';
 import type { FetchLike } from '@/shared/api';
 import type { SignInCheck } from '@/entities/user';
-import { createAccount, hasUnsent } from './account';
+import { createAccount } from './account';
 import type { Account } from './account';
 import { CATCH_UP_SPACING_MS } from './engine';
 import {
@@ -17,7 +17,6 @@ import {
   errorResponse,
   learnDelta,
   learnRecord,
-  result,
   settingsAt,
   signedInDb,
 } from './test-util';
@@ -36,7 +35,7 @@ const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 const isSyncRequest = (value: unknown): value is SyncRequest =>
-  isObject(value) && typeof value['seq'] === 'number' && Array.isArray(value['results']);
+  isObject(value) && typeof value['seq'] === 'number' && isObject(value['delta']);
 
 const bodyOf = (request: { body: string | null }): SyncRequest => {
   const parsed: unknown = JSON.parse(request.body ?? 'null');
@@ -49,7 +48,7 @@ type Harness = {
   readonly db: Db;
   readonly calls: { me: number; logout: number };
   readonly checks: SignInCheck[];
-  readonly channels: { learn: TestChannel; typing: TestChannel; settings: TestChannel };
+  readonly channels: { learn: TestChannel; settings: TestChannel };
   /** What `GET /api/me` answers next. */
   answer: () => Response;
 };
@@ -62,7 +61,6 @@ function harness(
   const checks: SignInCheck[] = [];
   const channels = {
     learn: createTestChannel(),
-    typing: createTestChannel(),
     settings: createTestChannel(),
   };
   const h: Harness = {
@@ -95,13 +93,6 @@ function harness(
     }),
   };
   return h;
-}
-
-async function putResults(db: Db, count: number, synced: 0 | 1): Promise<void> {
-  for (let i = 0; i < count; i += 1) {
-    const id = `r${String(i).padStart(5, '0')}`;
-    await db.put('results', id, { ...result(id, 1_000_000 + i), synced });
-  }
 }
 
 const learnChanges = () => learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } }));
@@ -226,7 +217,6 @@ describe('another user signs in (storage-sync.md, "Different user")', () => {
     await db.put('meta', 'sessionExpired', true);
     await db.put('meta', 'pendingSignIn', { provider: 'google' });
     await db.put('delta', 'learn', learnChanges());
-    await putResults(db, 2, 0);
     await db.put('settings', 'current', settingsAt(500));
     return db;
   }
@@ -249,13 +239,12 @@ describe('another user signs in (storage-sync.md, "Different user")', () => {
     expect(await db.get('meta', 'sessionExpired')).toBe(true);
     expect(await db.get('meta', 'pendingSignIn')).toBeUndefined();
     expect(await db.get('delta', 'learn')).toEqual(learnChanges());
-    expect(await db.count('results')).toBe(2);
   });
 
   it('discard clears the device and the new user starts with no local data', async () => {
     const db = await previousUserWithUnsent();
-    await db.put('meta', 'typingIntervals', [120, 140]);
-    await db.put('meta', 'schemaVersion', 4);
+    await db.put('meta', 'keyIntervals', [120, 140]);
+    await db.put('meta', 'schemaVersion', 5);
     const h = harness(db);
     h.answer = () => json(200, me('user-2'));
 
@@ -268,20 +257,17 @@ describe('another user signs in (storage-sync.md, "Different user")', () => {
     expect(await db.get('meta', 'lastSeq')).toBe(0);
     expect(await db.get('meta', 'sessionExpired')).toBeUndefined();
     expect(await db.get('delta', 'learn')).toBeUndefined();
-    expect(await db.count('results')).toBe(0);
     expect(await db.get('settings', 'current')).toBeUndefined();
     // The device's own keys stay.
-    expect(await db.get('meta', 'typingIntervals')).toEqual([120, 140]);
-    expect(await db.get('meta', 'schemaVersion')).toBe(4);
+    expect(await db.get('meta', 'keyIntervals')).toEqual([120, 140]);
+    expect(await db.get('meta', 'schemaVersion')).toBe(5);
     // The stores drop their views.
     expect(h.channels.learn.posts).toEqual(['reset']);
-    expect(h.channels.typing.posts).toEqual(['reset']);
     expect(h.channels.settings.posts).toEqual(['reset']);
   });
 
   it('clears silently when nothing of the previous account is unsent', async () => {
     const db = await signedInDb('dev-a', 'user-1');
-    await putResults(db, 3, 1);
     const h = harness(db);
     h.answer = () => json(200, me('user-2'));
 
@@ -289,15 +275,13 @@ describe('another user signs in (storage-sync.md, "Different user")', () => {
 
     expect(h.checks).toEqual(['idle']);
     expect(await db.get('meta', 'userId')).toBe('user-2');
-    expect(await db.count('results')).toBe(0);
   });
 });
 
 describe('the guest merge with the engine (acceptance 10)', () => {
-  it('sends the guest delta in the first batch and 1,000 results over 20 batches', async () => {
+  it('sends the guest delta in the first batch', async () => {
     const db = createMemoryDb();
     await db.put('delta', 'learn', learnChanges());
-    await putResults(db, 1000, 0);
     const server = createFakeServer();
     const clock = new TestClock();
     const h = harness(db, { server, clock });
@@ -308,10 +292,8 @@ describe('the guest merge with the engine (acceptance 10)', () => {
     await drain(rig);
 
     const posts = server.posts().map(bodyOf);
-    expect(posts).toHaveLength(20);
+    expect(posts).toHaveLength(1);
     expect(posts[0]?.delta.learn.entries[KEY_A]).toEqual(entry(5));
-    expect(new Set(posts.flatMap((p) => p.results.map((r) => r.id))).size).toBe(1000);
-    expect(await db.getByIndex('results', 'synced', 0, 2000)).toHaveLength(0);
   });
 });
 
@@ -361,23 +343,22 @@ describe('sign-out', () => {
     const unsent = await h.account.prepareSignOut();
 
     expect(server.posts()).toHaveLength(1);
-    expect(hasUnsent(unsent)).toBe(false);
+    expect(unsent).toBe(false);
   });
 
-  it('names the unsent results when the sync cannot send them', async () => {
+  it('names the unsent progress when the sync cannot send it', async () => {
     const server = createFakeServer();
     const db = await signedInDb();
-    await putResults(db, 3, 0);
     await db.put('delta', 'learn', learnChanges());
     const rig = await createRig({ db, server });
     rig.engine.start();
     server.forceNetworkError();
     const h = harness(db, { server, rig: () => rig });
 
-    expect(await h.account.prepareSignOut()).toEqual({ results: 3, other: true });
+    expect(await h.account.prepareSignOut()).toBe(true);
   });
 
-  it('with an expired session does not sync and counts what waits', async () => {
+  it('with an expired session does not sync and says what waits', async () => {
     const server = createFakeServer();
     const db = await signedInDb();
     await db.put('meta', 'sessionExpired', true);
@@ -385,7 +366,7 @@ describe('sign-out', () => {
     const rig = await createRig({ db, server });
     const h = harness(db, { server, rig: () => rig });
 
-    expect(await h.account.prepareSignOut()).toEqual({ results: 0, other: true });
+    expect(await h.account.prepareSignOut()).toBe(true);
     expect(server.requests).toHaveLength(0);
 
     expect(await h.account.signOut()).toBe(true);
@@ -396,11 +377,9 @@ describe('sign-out', () => {
   it('deletes the session, clears the user stores and resets the settings (Q3)', async () => {
     const db = await signedInDb();
     await db.put('meta', 'profile', { displayName: 'a', email: null, provider: 'github' });
-    await db.put('meta', 'typingIntervals', [100]);
+    await db.put('meta', 'keyIntervals', [100]);
     await db.put('settings', 'current', settingsAt(500));
     await db.put('snapshot', 'current', { any: 1 });
-    await db.put('records', 'current', {});
-    await putResults(db, 2, 1);
     const h = harness(db);
 
     expect(await h.account.signOut()).toBe(true);
@@ -409,10 +388,9 @@ describe('sign-out', () => {
     for (const key of ['userId', 'deviceId', 'lastSeq', 'profile']) {
       expect(await db.get('meta', key)).toBeUndefined();
     }
-    expect(await db.get('meta', 'typingIntervals')).toEqual([100]);
+    expect(await db.get('meta', 'keyIntervals')).toEqual([100]);
     expect(await db.get('settings', 'current')).toBeUndefined();
     expect(await db.get('snapshot', 'current')).toBeUndefined();
-    expect(await db.count('results')).toBe(0);
     expect(h.channels.settings.posts).toEqual(['reset']);
   });
 
@@ -429,7 +407,6 @@ describe('sign-out', () => {
       },
       channels: {
         learn: createTestChannel(),
-        typing: createTestChannel(),
         settings: createTestChannel(),
       },
       refreshUser: () => Promise.resolve(),
@@ -448,12 +425,11 @@ describe('sign-out', () => {
     const clock = new TestClock();
     const db = await signedInDb('dev-a', 'user-1');
     await db.put('delta', 'learn', learnChanges());
-    await putResults(db, 3, 0);
     const rig = await createRig({ db, server, clock });
     await drain(rig);
     const h = harness(db, { server, clock, rig: () => rig });
 
-    expect(hasUnsent(await h.account.prepareSignOut())).toBe(false);
+    expect(await h.account.prepareSignOut()).toBe(false);
     expect(await h.account.signOut()).toBe(true);
     expect(await db.get('snapshot', 'current')).toBeUndefined();
 
@@ -472,14 +448,12 @@ describe('deleteAccount', () => {
   const setup = async (answer: () => Promise<Response>) => {
     const db = await signedInDb();
     await db.put('meta', 'profile', { displayName: 'a', email: null, provider: 'github' });
-    await db.put('meta', 'typingIntervals', [100]);
+    await db.put('meta', 'keyIntervals', [100]);
     await db.put('settings', 'current', settingsAt(500));
     await db.put('delta', 'learn', learnChanges());
-    await putResults(db, 2, 0);
     const requests: { input: string; method: string | undefined }[] = [];
     const channels = {
       learn: createTestChannel(),
-      typing: createTestChannel(),
       settings: createTestChannel(),
     };
     const account = createAccount({
@@ -508,10 +482,9 @@ describe('deleteAccount', () => {
     for (const key of ['userId', 'deviceId', 'lastSeq', 'profile']) {
       expect(await db.get('meta', key)).toBeUndefined();
     }
-    expect(await db.get('meta', 'typingIntervals')).toEqual([100]);
+    expect(await db.get('meta', 'keyIntervals')).toEqual([100]);
     expect(await db.get('settings', 'current')).toBeUndefined();
     expect(await db.get('delta', 'learn')).toBeUndefined();
-    expect(await db.count('results')).toBe(0);
     expect(channels.learn.posts).toEqual(['reset']);
     expect(channels.settings.posts).toEqual(['reset']);
   });
@@ -528,6 +501,5 @@ describe('deleteAccount', () => {
     expect(await db.get('meta', 'userId')).toBe('user-1');
     expect(await db.get('settings', 'current')).toEqual(settingsAt(500));
     expect(await db.get('delta', 'learn')).toBeDefined();
-    expect(await db.count('results')).toBe(2);
   });
 });

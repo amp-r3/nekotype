@@ -55,9 +55,9 @@ export {
 } from './idb/database';
 export { SCHEMA_VERSION, PRE_RELEASE, DATABASE_NAME, STORES } from './idb/schema';
 
-export type { ValidTestConfig, ValidSettings } from '@nekotype/shared/types';
+export type { ValidSettings } from '@nekotype/shared/types';
 
-export { isObject, isTestConfig, isSettings } from '@nekotype/shared/runtime';
+export { isObject, isSettings } from '@nekotype/shared/runtime';
 
 export type { KeyIntent } from './input/input-adapter';
 export type { InputSource, InputSourceDeps } from './input/input-source';
@@ -65,5 +65,4 @@ export { createInputSource } from './input/input-source';
 
 export { uuidv7 } from './uuid';
 
-export type { SyncReason } from './idb/sync-request';
 export { requestSync, onSyncRequest } from './idb/sync-request';

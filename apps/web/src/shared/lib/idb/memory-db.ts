@@ -16,8 +16,6 @@ export function createMemoryDb(): Db {
       }
     }
   };
-  const indexable = (v: unknown): v is number | string =>
-    typeof v === 'number' || typeof v === 'string';
   return {
     get: (store, key) => Promise.resolve(data.get(id(store, key))),
     put: (store, key, value) => {
@@ -32,25 +30,6 @@ export function createMemoryDb(): Db {
       applyToMap(writes);
       return Promise.resolve();
     },
-    getAll: (store, index) => {
-      const prefix = id(store, '');
-      const rows: { key: string; at: number | string; value: unknown }[] = [];
-      for (const [k, value] of data) {
-        if (!k.startsWith(prefix) || typeof value !== 'object' || value === null) continue;
-        const at: unknown = Reflect.get(value, index);
-        if (indexable(at)) rows.push({ key: k, at, value });
-      }
-      const compare = (a: number | string, b: number | string): number =>
-        typeof a === typeof b ? (a < b ? -1 : a > b ? 1 : 0) : typeof a === 'number' ? -1 : 1;
-      rows.sort((a, b) => compare(a.at, b.at) || compare(a.key, b.key));
-      return Promise.resolve(rows.map((r) => r.value));
-    },
-    count: (store) => {
-      const prefix = id(store, '');
-      let n = 0;
-      for (const k of data.keys()) if (k.startsWith(prefix)) n += 1;
-      return Promise.resolve(n);
-    },
     update: (reads, compute, scope = []) => {
       const allowed = new Set([...reads.map((r) => r.store), ...scope]);
       try {
@@ -62,16 +41,6 @@ export function createMemoryDb(): Db {
       } catch (error) {
         return Promise.reject(error instanceof Error ? error : new Error('update failed'));
       }
-    },
-    getByIndex: (store, index, value, limit) => {
-      const prefix = id(store, '');
-      const rows: { key: string; value: unknown }[] = [];
-      for (const [k, v] of data) {
-        if (!k.startsWith(prefix) || typeof v !== 'object' || v === null) continue;
-        if (Reflect.get(v, index) === value) rows.push({ key: k, value: v });
-      }
-      rows.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
-      return Promise.resolve(rows.slice(0, limit).map((r) => r.value));
     },
     hasStores: () => true,
     close: () => {},

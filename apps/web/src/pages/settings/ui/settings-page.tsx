@@ -4,7 +4,6 @@ import { t } from '@/shared/i18n';
 import type { Strictness } from '@nekotype/engine';
 import { Button, Dialog, ResetIcon, Segmented } from '@/shared/ui';
 import { Select } from '@/shared/ui/select';
-import { resetTyping } from '@/entities/stats';
 import { resetLearning } from '@/entities/learn';
 import { authAvailable, beginSignIn, userId } from '@/entities/user';
 import {
@@ -101,7 +100,6 @@ export function SettingsPage(): JSX.Element {
   const signedIn = userId.value !== null;
 
   const handleConfirmReset = () => {
-    void resetTyping();
     void resetLearning();
     setResetDialogOpen(false);
   };

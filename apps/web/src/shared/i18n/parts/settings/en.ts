@@ -33,14 +33,6 @@ export const settingsEn = {
   'settings.account.signOut': 'sign out',
   'settings.account.needsConnection': 'Needs a connection.',
   'signOut.title': 'Sign out?',
-  'signOut.results.one':
-    '{count} result has not been sent yet. If you sign out now, it will be lost.',
-  'signOut.results.few':
-    '{count} results have not been sent yet. If you sign out now, they will be lost.',
-  'signOut.results.many':
-    '{count} results have not been sent yet. If you sign out now, they will be lost.',
-  'signOut.results.other':
-    '{count} results have not been sent yet. If you sign out now, they will be lost.',
   'signOut.progress': 'Some progress has not been sent yet. If you sign out now, it will be lost.',
   'signOut.cancel': 'cancel',
   'signOut.action': 'sign out',

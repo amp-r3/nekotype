@@ -2,8 +2,8 @@ import { kanaRows, similarKana } from '@nekotype/engine';
 import type { LearnKanaKey, LearnStat, Rng, Track } from '@nekotype/shared/types';
 import { isLearnKanaKey } from '@nekotype/shared/runtime';
 import { keyOf, keysOfTrack } from '@/entities/learn';
-import { spellingsFor } from '@/entities/prompt';
-import type { Strictness } from '@/entities/prompt';
+import { spellingsFor } from './prompt';
+import type { Strictness } from './prompt';
 import { OPTION_COUNT } from './constants';
 import { shuffled } from './shuffle';
 

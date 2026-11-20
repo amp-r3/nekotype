@@ -37,7 +37,7 @@ The engine and all user data live in the browser. Pages Functions handle sign-in
 
 The `apps/web` restriction on `shared/schemas` is enforced by an ESLint import rule, so valibot never reaches the client bundle. The same rule keeps `shared/testing` out of the application: only test files may import it.
 
-The binding of the engine to the kana table is not part of the engine: it lives in `apps/web` (`entities/prompt`). Nor are the rules of the learning mode (see "Learning logic" below).
+The binding of the engine to the kana table is not part of the engine: it lives in `apps/web` (`pages/learn/lib/prompt`, since P6: `pages/learn` is its only consumer). Nor are the rules of the learning mode (see "Learning logic" below).
 
 ## Key technical decisions
 

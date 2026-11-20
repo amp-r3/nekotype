@@ -1,8 +1,8 @@
-import type { ChangeChannel, Db, SyncReason } from '@/shared/lib';
+import type { ChangeChannel, Db } from '@/shared/lib';
 import { changeChannel, defaultClock, defaultScheduler, onSyncRequest } from '@/shared/lib';
 import { refreshUser, setSignInCheck } from '@/entities/user';
 import { createAccount } from './account';
-import type { Account, Unsent } from './account';
+import type { Account } from './account';
 import { createSyncEngine } from './engine';
 import type { SyncEngine, SyncEnv, SyncLocks } from './engine';
 
@@ -61,7 +61,6 @@ let account: Account | null = null;
 
 type SyncEngineChannels = {
   readonly learn: ChangeChannel;
-  readonly typing: ChangeChannel;
   readonly settings: ChangeChannel;
 };
 
@@ -69,7 +68,6 @@ type SyncEngineChannels = {
 function syncChannels(): SyncEngineChannels {
   channels ??= {
     learn: changeChannel('nekotype:learn'),
-    typing: changeChannel('nekotype:typing'),
     settings: changeChannel('nekotype:settings'),
   };
   return channels;
@@ -98,9 +96,9 @@ export function resolveAnotherAccount(choice: 'cancel' | 'discard'): Promise<voi
   return account?.resolveAnotherAccount(choice) ?? Promise.resolve();
 }
 
-/** Syncs when it can, then says what sign-out would lose. */
-export function prepareSignOut(): Promise<Unsent> {
-  return account?.prepareSignOut() ?? Promise.resolve({ results: 0, other: false });
+/** Syncs when it can, then says whether sign-out would lose progress. */
+export function prepareSignOut(): Promise<boolean> {
+  return account?.prepareSignOut() ?? Promise.resolve(false);
 }
 
 /** Signs out; false when the server could not be reached and nothing changed. */
@@ -126,7 +124,7 @@ export function startSync(db: Db): void {
     env: createEnv(),
     channels: syncChannels(),
     refreshUser,
-    onSyncRequest: (handler: (reason: SyncReason) => void) => onSyncRequest(handler),
+    onSyncRequest: (handler: () => void) => onSyncRequest(handler),
   });
   engine.start();
 }

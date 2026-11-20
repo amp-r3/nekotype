@@ -61,7 +61,7 @@ describe('learning section: with answers', () => {
           katakana: {},
         },
       },
-      counters: { started: { typing: 0, learn: 5 }, finished: { typing: 0, learn: 4 } },
+      counters: { started: 5, finished: 4 },
     });
 
     container = document.createElement('div');
