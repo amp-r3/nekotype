@@ -19,7 +19,7 @@ export default defineConfig({
   reporter: 'list',
   use: {
     baseURL,
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
