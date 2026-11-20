@@ -110,7 +110,24 @@ describe('the workflow', () => {
       "(github.event_name != 'pull_request' || needs.scope.outputs.sync_e2e == 'true')",
     );
     expect(workflow).toContain(
-      "(github.event_name != 'pull_request' || steps.latency.outputs.needed == 'true')",
+      "(github.event_name != 'pull_request' || needs.scope.outputs.latency == 'true')",
     );
+    expect(workflow).toContain(
+      "latency: ${{ github.event_name != 'pull_request' && 'true' || steps.latency.outputs.needed || 'true' }}",
+    );
+  });
+
+  it('deploys only after every check job, and a skipped one does not stop it (ADR 098)', () => {
+    expect(workflow).toContain('needs: [scope, checks, e2e-web, e2e-sync, latency]');
+    expect(workflow).toContain("!cancelled() && needs.scope.result == 'success'");
+    expect(workflow).toContain("!contains(needs.*.result, 'failure')");
+  });
+
+  it('gives the traces of each browser job an artifact name of its own', () => {
+    const names = [...workflow.matchAll(/name: (playwright-test-results\S*)/g)].map(
+      (match) => match[1],
+    );
+    expect(names).toHaveLength(3);
+    expect(new Set(names).size).toBe(names.length);
   });
 });

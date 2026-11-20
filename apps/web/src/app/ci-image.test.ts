@@ -11,18 +11,27 @@ function lockedVersion(): string | undefined {
   return /^ {2}'@playwright\/test@(\d+\.\d+\.\d+)':/m.exec(lock)?.[1];
 }
 
-function imageVersion(): string | undefined {
+// Every browser job has its own `container` block (ADR 098), so every tag is checked.
+function imageVersions(): (string | undefined)[] {
   const workflow = readFileSync(join(repoRoot, '.github/workflows/deploy.yml'), 'utf-8');
-  return /image: mcr\.microsoft\.com\/playwright:v(\d+\.\d+\.\d+)-/.exec(workflow)?.[1];
+  return [...workflow.matchAll(/image: mcr\.microsoft\.com\/playwright:v(\d+\.\d+\.\d+)-/g)].map(
+    (match) => match[1],
+  );
 }
 
 describe('CI container image', () => {
-  it('has the version of @playwright/test that pnpm-lock.yaml installs', () => {
+  it('has the version of @playwright/test that pnpm-lock.yaml installs, in every job', () => {
     const locked = lockedVersion();
     expect(locked, '@playwright/test is not in pnpm-lock.yaml').toBeDefined();
-    expect(
-      imageVersion(),
-      `Update the tag of the Playwright image in .github/workflows/deploy.yml to v${locked ?? '?'}`,
-    ).toBe(locked);
+    const versions = imageVersions();
+    expect(versions.length, 'no Playwright image in .github/workflows/deploy.yml').toBeGreaterThan(
+      0,
+    );
+    for (const version of versions) {
+      expect(
+        version,
+        `Update every tag of the Playwright image in .github/workflows/deploy.yml to v${locked ?? '?'}`,
+      ).toBe(locked);
+    }
   });
 });

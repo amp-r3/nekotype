@@ -18,6 +18,10 @@ env:
   CLOUDFLARE_PROJECT_NAME: nekotype
 
 jobs:
+  # The jobs (ADR 098): `scope` decides what the change needs; `checks`, `e2e-web`, `e2e-sync` and
+  # `latency` run side by side on runners of their own; `deploy` waits for all of them. Together
+  # they are the steps of `verify` plus the latency gate, as one job ran them one after another.
+
   # What the change needs (ADR 097): the files it changes, and on `main` whether this exact tree
   # already passed every check in its pull request. It runs without the container and without
   # `pnpm install`: a few seconds. Whatever it cannot decide is "everything runs".
@@ -31,6 +35,9 @@ jobs:
       docs_only: ${{ steps.scope.outputs.docs_only || 'false' }}
       web_e2e: ${{ steps.scope.outputs.web_e2e || 'true' }}
       sync_e2e: ${{ steps.scope.outputs.sync_e2e || 'true' }}
+      # On `main` and by hand the latency gate always runs (ADR 052); a pull request runs it when
+      # `latency-gate.mjs` says so (ADR 074).
+      latency: ${{ github.event_name != 'pull_request' && 'true' || steps.latency.outputs.needed || 'true' }}
       verified: ${{ steps.verified.outputs.verified || 'false' }}
       tree: ${{ steps.tree.outputs.tree }}
     steps:
@@ -51,6 +58,14 @@ jobs:
           BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
         run: node apps/web/scripts/ci-scope.mjs "$BASE" HEAD
 
+      # The keystroke latency test takes about a minute. A pull request runs it only when it changes
+      # a file that can move keystroke latency (`apps/web/scripts/latency-gate.mjs`, ADR 074), so a
+      # regression shows on the pull request and not after the merge.
+      - name: Does this pull request need the latency gate
+        id: latency
+        if: github.event_name == 'pull_request'
+        run: node apps/web/scripts/latency-gate.mjs HEAD^1 HEAD
+
       # A pull request run that passed every check it needed leaves the artifact `verified-<tree>`
       # (last step below). The tree of `main` after a squash merge is the same tree when `main` did
       # not move since that run. Only an artifact of a run of this repository counts, never a fork's.
@@ -67,31 +82,18 @@ jobs:
           echo "Artifacts verified-${TREE} of this repository: ${found}"
           if [ "${found:-0}" -gt 0 ]; then echo "verified=true" >> "$GITHUB_OUTPUT"; fi
 
-  deploy:
+  # typecheck + lint + Prettier + `docs:check` + unit tests with coverage + build + size budget. No
+  # browser runs here, so the job needs no container (ADR 098). Markdown files only need Prettier and
+  # `docs:check`, and on `main` not even those (ADR 097).
+  checks:
     needs: scope
-    # Nothing to build or deploy for a change of Markdown files on `main`; a pull request still
-    # checks them.
-    if: needs.scope.outputs.docs_only != 'true' || github.event_name == 'pull_request'
+    if: >-
+      needs.scope.outputs.verified != 'true' &&
+      (needs.scope.outputs.docs_only != 'true' || github.event_name == 'pull_request')
     runs-on: ubuntu-latest
-    # A run takes three to five minutes; a step that hangs must not hold the workflow for hours.
-    timeout-minutes: 15
-    # The job runs in the Playwright image: Chromium, WebKit and their system libraries are in it, so
-    # no browser is downloaded and no package is installed per run (ADR 054). The tag must be the
-    # version of @playwright/test in pnpm-lock.yaml; a test (app/ci-image.test.ts) checks it.
-    container:
-      image: mcr.microsoft.com/playwright:v1.64.1-noble
-      options: --init --ipc=host
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with:
-          # A pull request is checked out as a merge commit; its first parent is the base, so two
-          # commits are enough to list what the pull request changes (latency gate below).
-          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 1 }}
-
-      # The workspace belongs to the runner's user and the container runs as root, so git refuses it
-      # as "dubious ownership" and `pnpm install` fails in the `prepare` script (`git config`).
-      - name: Trust the workspace
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       # pnpm version comes from `packageManager` in package.json.
       - uses: pnpm/action-setup@v4
@@ -101,67 +103,172 @@ jobs:
           node-version: 24
           cache: pnpm
 
-      - run: node -v && pnpm -v
-
       - run: pnpm install --frozen-lockfile
 
-      # `verify` is these steps (app/ci-scope.test.ts keeps them equal). The browser tests (Chromium
-      # and WebKit come with the container image) and the sync tests run on `main` always, and on a
-      # pull request when its files can reach them (ADR 097).
       - name: Markdown files only
         if: needs.scope.outputs.docs_only == 'true'
         run: pnpm run format:check && pnpm run docs:check
 
-      # typecheck + lint + Prettier + unit tests with coverage + build + size budget. It produces
-      # apps/web/dist, so no second build is needed.
+      # `verify` is this step and the two browser jobs below (app/ci-scope.test.ts keeps them equal).
       - name: Verify without the browser tests
-        if: needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified != 'true'
+        if: needs.scope.outputs.docs_only != 'true'
         run: pnpm run verify:quick
 
-      # The tree is the one that passed every check in its pull request (ADR 097): the same
-      # `dist` is built again for the deployment, and its size budget is checked once more.
-      - name: Build of a tree that passed its pull request
-        if: needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified == 'true'
-        run: pnpm run build && pnpm run budget
+  # The browser jobs run in the Playwright image: Chromium, WebKit and their system libraries are in
+  # it, so no browser is downloaded and no package is installed per run (ADR 054). The tag must be
+  # the version of @playwright/test in pnpm-lock.yaml; a test (app/ci-image.test.ts) checks every
+  # one. Each job builds the bundle it tests itself (its Playwright configuration does), so none
+  # waits for another. They run on `main` always, unless the tree is verified, and on a pull request
+  # when its files can reach them (ADR 097).
+
+  # Chromium, and the `@mobile` tests on WebKit, against the production bundle.
+  e2e-web:
+    needs: scope
+    if: >-
+      needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified != 'true' &&
+      (github.event_name != 'pull_request' || needs.scope.outputs.web_e2e == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --init --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+
+      # The workspace belongs to the runner's user and the container runs as root, so git refuses it
+      # as "dubious ownership" and `pnpm install` fails in the `prepare` script (`git config`).
+      - name: Trust the workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
 
       - name: Browser tests
-        if: >-
-          needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified != 'true' &&
-          (github.event_name != 'pull_request' || needs.scope.outputs.web_e2e == 'true')
         run: pnpm --filter @nekotype/web exec playwright test
 
-      - name: Sync tests
-        if: >-
-          needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified != 'true' &&
-          (github.event_name != 'pull_request' || needs.scope.outputs.sync_e2e == 'true')
-        run: pnpm run e2e:sync
-
       # A failed browser test leaves its trace and page snapshot here; a flaky one cannot be
-      # reproduced on a fast machine, so this is the only way to see what the page did.
+      # reproduced on a fast machine, so this is the only way to see what the page did. Each job
+      # names its artifact: two artifacts of one run cannot share a name.
       - name: Upload the traces of failed browser tests
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-test-results
+          name: playwright-test-results-web
           path: apps/web/test-results/
           retention-days: 7
           if-no-files-found: ignore
 
-      # The keystroke latency test takes about two minutes. On `main` and by hand it always runs,
-      # before anything is deployed, and a failure stops the workflow before the candidate and
-      # production (ADR 052). A pull request runs it only when it changes a file that can move
-      # keystroke latency (`apps/web/scripts/latency-gate.mjs`, ADR 074), so a regression shows
-      # on the pull request and not after the merge.
-      - name: Does this pull request need the latency gate
-        id: latency
-        if: github.event_name == 'pull_request' && needs.scope.outputs.docs_only != 'true'
-        run: node apps/web/scripts/latency-gate.mjs HEAD^1 HEAD
+  # The sync tests: Chromium against `wrangler pages dev` with the real API and a local D1 (ADR 091).
+  e2e-sync:
+    needs: scope
+    if: >-
+      needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified != 'true' &&
+      (github.event_name != 'pull_request' || needs.scope.outputs.sync_e2e == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --init --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trust the workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Sync tests
+        run: pnpm run e2e:sync
+
+      - name: Upload the traces of failed sync tests
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results-sync
+          path: apps/web/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # The keystroke latency gate (ADR 052, 074): on `main` and by hand always, unless the tree is
+  # verified, and on a pull request when `scope` says so. A failure stops the workflow before the
+  # candidate and production. It has a runner of its own, so nothing else takes its CPU while it
+  # measures.
+  latency:
+    needs: scope
+    if: >-
+      needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified != 'true' &&
+      (github.event_name != 'pull_request' || needs.scope.outputs.latency == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --init --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trust the workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
 
       - name: Keystroke latency gate
-        if: >-
-          needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified != 'true' &&
-          (github.event_name != 'pull_request' || steps.latency.outputs.needed == 'true')
         run: pnpm run e2e:latency
+
+      - name: Upload the traces of a failed latency test
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results-latency
+          path: apps/web/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # Waits for every check above: a failed one stops the deployment, a skipped one (the change cannot
+  # reach it, or the tree is verified) does not (ADR 097, 098). Nothing to build or deploy for a
+  # change of Markdown files. No browser runs here, so no container.
+  deploy:
+    needs: [scope, checks, e2e-web, e2e-sync, latency]
+    if: >-
+      ${{ !cancelled() && needs.scope.result == 'success' && !contains(needs.*.result, 'failure') &&
+      needs.scope.outputs.docs_only != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The bundle that is deployed, with its size budget checked once more; `checks` built the same
+      # one (a second of work, not worth an artifact between the jobs).
+      - name: Build
+        run: pnpm run build && pnpm run budget
 
       # The branch a build is first deployed to. A pull request has its own preview. A push to main
       # goes to `release-candidate` first, a preview deployment that is not production (ADR 045).
@@ -179,7 +286,6 @@ jobs:
 
       # First run only: creates the Pages project. Later runs fail harmlessly.
       - name: Ensure Pages project exists
-        if: needs.scope.outputs.docs_only != 'true'
         run: pnpm exec wrangler pages project create "$CLOUDFLARE_PROJECT_NAME" --production-branch=main || true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -190,7 +296,7 @@ jobs:
       # before it (p5-plan.md, D5). It is applied before the deployment that needs it. Fork PRs have
       # no secrets and skip it, as they skip the deployment.
       - name: Apply D1 migrations (preview)
-        if: needs.scope.outputs.docs_only != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: pnpm exec wrangler d1 migrations apply DB --env preview --remote
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -198,9 +304,9 @@ jobs:
 
       # PRs -> preview deployment with its own URL. Pushes to main -> the `release-candidate`
       # preview first; production comes only after its smoke test passes.
-      # Fork PRs have no access to secrets, so they only run the verify job.
+      # Fork PRs have no access to secrets, so they only run the checks.
       - name: Deploy to Cloudflare Pages
-        if: needs.scope.outputs.docs_only != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: pnpm exec wrangler pages deploy apps/web/dist --project-name="$CLOUDFLARE_PROJECT_NAME" --branch="${{ steps.branch.outputs.name }}" --commit-dirty=true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -215,7 +321,7 @@ jobs:
       # It waits for the new deployment to answer first. Falls back to the branch alias if wrangler
       # wrote no address.
       - name: Smoke-test the deployment
-        if: needs.scope.outputs.docs_only != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           BRANCH: ${{ steps.branch.outputs.name }}
           WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-output.ndjson
@@ -257,13 +363,13 @@ jobs:
             --fallback "https://${CLOUDFLARE_PROJECT_NAME}.pages.dev"
 
       # What a push to `main` looks for (ADR 097): this tree passed every check this run needed.
-      # Last, so a failed step above leaves no artifact. A skipped group counts as passed: it was
-      # skipped because the files of this change cannot reach it.
+      # Last, and this job runs only when no check job failed, so a failure leaves no artifact. A
+      # skipped job counts as passed: it was skipped because the files of this change cannot reach it.
       - name: Record the tree as verified
-        if: success() && github.event_name == 'pull_request' && needs.scope.outputs.docs_only != 'true'
+        if: success() && github.event_name == 'pull_request'
         run: echo "${{ needs.scope.outputs.tree }}" > verified-tree.txt
       - uses: actions/upload-artifact@v4
-        if: success() && github.event_name == 'pull_request' && needs.scope.outputs.docs_only != 'true'
+        if: success() && github.event_name == 'pull_request'
         with:
           name: verified-${{ needs.scope.outputs.tree }}
           path: verified-tree.txt

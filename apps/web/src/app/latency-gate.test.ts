@@ -70,7 +70,9 @@ describe('latency gate on pull requests (ADR 074)', () => {
   it('is wired into the workflow: a pull request runs the gate when the script says so', () => {
     const workflow = readFileSync(join(repoRoot, '.github/workflows/deploy.yml'), 'utf-8');
     expect(workflow).toContain('node apps/web/scripts/latency-gate.mjs HEAD^1 HEAD');
-    expect(workflow).toContain("steps.latency.outputs.needed == 'true'");
-    expect(workflow).toContain("fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 1 }}");
+    // The `scope` job decides (it has the whole history), the `latency` job runs (ADR 098).
+    expect(workflow).toContain("|| steps.latency.outputs.needed || 'true'");
+    expect(workflow).toContain("needs.scope.outputs.latency == 'true'");
+    expect(workflow).toContain('fetch-depth: 0');
   });
 });
