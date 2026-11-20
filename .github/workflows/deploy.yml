@@ -57,6 +57,17 @@ jobs:
       # `verify` already produces apps/web/dist, so no second build is needed.
       - run: pnpm run verify
 
+      # A failed browser test leaves its trace and page snapshot here; a flaky one cannot be
+      # reproduced on a fast machine, so this is the only way to see what the page did.
+      - name: Upload the traces of failed browser tests
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: apps/web/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
       # The keystroke latency test takes about two minutes. On `main` and by hand it always runs,
       # before anything is deployed, and a failure stops the workflow before the candidate and
       # production (ADR 052). A pull request runs it only when it changes a file that can move
