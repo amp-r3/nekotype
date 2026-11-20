@@ -56,7 +56,9 @@ export function SummaryScreen({
   }, [onContinue, inputRef]);
 
   return (
-    <section className="mx-auto flex w-full max-w-[880px] flex-col items-start gap-8 pb-12">
+    <section className="flex w-full max-w-[880px] flex-col items-start gap-8 pb-12">
+      {/* The title stands while the summary chunk loads or has failed, as over the summary. */}
+      <h1 className="text-ui-heading text-fur">{t('learn.summary.title')}</h1>
       {Panel !== null ? (
         <Panel summary={summary} />
       ) : (

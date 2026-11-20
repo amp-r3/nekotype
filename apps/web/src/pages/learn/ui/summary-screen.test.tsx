@@ -53,6 +53,11 @@ describe('summary screen', () => {
     );
   };
 
+  it('keeps the title while the summary chunk is not there', async () => {
+    await mount();
+    expect(container.querySelector('h1')?.textContent).toBe(t('learn.summary.title'));
+  });
+
   it('continues on Enter from the hidden field of the page', async () => {
     const { inputRef, onContinue } = await mount();
     if (inputRef.current === null) throw new Error('no input');

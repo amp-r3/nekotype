@@ -54,6 +54,23 @@ describe('Button', () => {
     mount(<Button variant="text">Cancel</Button>);
     expect(container.querySelector('button')?.className).toContain('bg-transparent');
   });
+
+  // A transparent border colour in the same class list would win over these (Tailwind sorts the
+  // utilities, not the class order).
+  it.each([
+    ['secondary', 'border-line-strong'],
+    ['danger', 'border-miss'],
+  ] as const)('draws the %s border in its own colour only', (variant, colour) => {
+    mount(<Button variant={variant}>go</Button>);
+    const classes = (container.querySelector('button')?.className ?? '').split(/\s+/);
+    expect(classes).toContain(colour);
+    expect(classes).not.toContain('border-transparent');
+  });
+
+  it('sets the interface font, not the one around it', () => {
+    mount(<Button variant="text">leave</Button>);
+    expect(container.querySelector('button')?.className.split(/\s+/)).toContain('font-ui');
+  });
 });
 
 describe('Nav', () => {

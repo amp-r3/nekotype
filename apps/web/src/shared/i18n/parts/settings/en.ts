@@ -39,6 +39,7 @@ export const settingsEn = {
   'settings.account.delete': 'delete account',
   'settings.account.signInToDelete': 'Sign in again to delete the account.',
   'delete.title': 'Delete account?',
+  'delete.text': 'Your account and learning progress will be deleted on every device.',
   'delete.label': 'Type "delete" to confirm',
   // The word to type; compared without case and surrounding spaces.
   'delete.word': 'delete',

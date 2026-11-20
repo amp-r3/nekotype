@@ -285,6 +285,16 @@ describe('AccountPanel', () => {
       expect(deleteAccount).not.toHaveBeenCalled();
     });
 
+    it('says what is deleted, shows the word in the field and reserves the notice line', async () => {
+      const dialog = await openDialog();
+      expect(dialog.textContent).toContain(t('delete.text'));
+      expect(dialog.querySelector('input')?.placeholder).toBe(t('delete.word'));
+      // The line is there before any failure, so a message never changes the height (decision 127).
+      const line = dialog.querySelector('[role="status"]');
+      expect(line).not.toBeNull();
+      expect(line?.textContent).toBe('');
+    });
+
     it('asks for the word of the current language', async () => {
       await setLocale('ru');
       await loadDictionaryPart('settings');

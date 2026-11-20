@@ -71,11 +71,10 @@ export function SummaryPanel({ summary }: SummaryPanelProps): JSX.Element {
   const confused = summary.mixups.length > 0 || summary.errors.length > 0;
   return (
     <div className="flex w-full max-w-[880px] flex-col gap-8" data-testid="summary">
-      <h1 className="text-ui-heading text-fur">{t('learn.summary.title')}</h1>
       {isEmptySummary(summary) && (
         <p className="text-fur-dim text-ui-body">{t('learn.summary.empty')}</p>
       )}
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-x-8 gap-y-12 max-sm:grid-cols-1">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-x-12 gap-y-8 max-sm:grid-cols-1 max-sm:gap-6">
         {summary.unlocked.length > 0 && (
           <Section title={t('learn.summary.unlocked')} testId="summary-unlocked">
             <Kana keys={summary.unlocked} />

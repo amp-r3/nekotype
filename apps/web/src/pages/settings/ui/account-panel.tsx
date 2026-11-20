@@ -202,7 +202,12 @@ export function AccountPanel(): JSX.Element {
         title={t('delete.title')}
         closeLabel={t('signOut.cancel')}
         initialFocusRef={deleteCancelRef}
-        note={deleteFailed ? <Notice tone="miss">{t('delete.failed')}</Notice> : undefined}
+        // The line is always there, so a failure never changes the dialog's height (decision 127).
+        note={
+          <Notice reserve tone={deleteFailed ? 'miss' : undefined}>
+            {deleteFailed ? t('delete.failed') : null}
+          </Notice>
+        }
         actions={
           <>
             <Button
@@ -227,6 +232,7 @@ export function AccountPanel(): JSX.Element {
           </>
         }
       >
+        <p className="text-fur-dim text-ui-body">{t('delete.text')}</p>
         <label className="flex flex-col gap-2">
           <span className="text-ui-label text-fur-dim">{t('delete.label')}</span>
           <input
@@ -237,6 +243,7 @@ export function AccountPanel(): JSX.Element {
             autoCapitalize="off"
             autoCorrect="off"
             spellcheck={false}
+            placeholder={t('delete.word')}
             data-testid="delete-word"
             onInput={(event) => {
               setWord(event.currentTarget.value);

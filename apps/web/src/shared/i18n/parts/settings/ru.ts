@@ -40,6 +40,7 @@ export const settingsRu = {
   'settings.account.delete': 'удалить аккаунт',
   'settings.account.signInToDelete': 'Войдите снова, чтобы удалить аккаунт.',
   'delete.title': 'Удалить аккаунт?',
+  'delete.text': 'Аккаунт и прогресс обучения будут удалены на всех устройствах.',
   'delete.label': 'Введите «удалить»',
   'delete.word': 'удалить',
   'delete.cancel': 'отмена',
