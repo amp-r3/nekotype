@@ -1,22 +1,15 @@
 import type { JSX } from 'preact';
 import { useId, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { cx } from '@/shared/lib';
-import type { ChartPoint, ChartRange, TrendPoint } from '../lib/trend';
+import type { ChartRange } from '../lib/trend';
 
 export type StatsChartProps = {
-  readonly points: readonly ChartPoint[];
-  /** The rolling median; `null` breaks it. */
-  readonly line?: readonly (TrendPoint | null)[];
-  /** The middle half of the same window (`lo`–`hi`); `null` breaks it. */
-  readonly band?: readonly (TrendPoint | null)[];
   /** Bars from `lo` to `hi` with a tick at `mid` (the answer time of a day or a week). */
-  readonly ranges?: readonly ChartRange[];
+  readonly ranges: readonly ChartRange[];
   /** How many bar slots the x axis holds; sets the bar width. */
   readonly slots?: number;
   /** A dashed line with its label, under the bars. */
   readonly reference?: { readonly value: number; readonly label: string };
-  /** The value over each mark (a few tests). */
-  readonly pointLabels?: boolean;
   readonly xDomain: readonly [number, number];
   readonly xTicks: readonly { readonly x: number; readonly label: string }[];
   readonly yDomain: readonly [number, number];
@@ -32,11 +25,7 @@ const PAD_RIGHT = 12;
 const PAD_TOP = 16;
 const PAD_BOTTOM = 24;
 const EDGE = 150;
-const RADIUS = 3;
-const RADIUS_BEST = 4;
 const RADIUS_RING = 7;
-const LABEL_LIFT = 10;
-const LABEL_EDGE = 28;
 const BAR_SHARE = 0.5;
 const BAR_MIN = 2;
 const BAR_MAX = 8;
@@ -44,33 +33,15 @@ const MID_OVERHANG = 2;
 const MID_HEIGHT = 2;
 const REF_LIFT = 6;
 
-/** The unbroken runs of a series: `null` ends one. */
-function runs(series: readonly (TrendPoint | null)[]): TrendPoint[][] {
-  const out: TrendPoint[][] = [];
-  let current: TrendPoint[] = [];
-  for (const item of series) {
-    if (item === null) {
-      if (current.length > 0) out.push(current);
-      current = [];
-    } else current.push(item);
-  }
-  if (current.length > 0) out.push(current);
-  return out;
-}
-
 /**
  * The chart of `/stats` (design ResultChart). It only draws: the series and the axes come from
- * `lib/trend` (S15). One Tab stop; ← → step through the marks in time order, `Home` / `End`
+ * `lib/trend` (S15). One Tab stop; ← → step through the bars in time order, `Home` / `End`
  * jump, `Esc` and blur clear the cursor. Drawn at the width it has, so the axis text never scales.
  */
 export function StatsChart({
-  points,
-  line = [],
-  band = [],
-  ranges = [],
+  ranges,
   slots = 1,
   reference,
-  pointLabels = false,
   xDomain,
   xTicks,
   yDomain,
@@ -105,9 +76,10 @@ export function StatsChart({
   const py = (value: number): number =>
     PAD_TOP + (1 - (value - y0) / (y1 - y0 || 1)) * (height - PAD_TOP - PAD_BOTTOM);
 
-  // The cursor walks the marks, or the bars when there are no marks, in time order.
-  const items: readonly { x: number; y: number; tip: () => readonly string[] }[] =
-    points.length > 0 ? points : ranges.map((r) => ({ x: r.x, y: r.mid, tip: r.tip }));
+  // The cursor walks the bars in time order.
+  const items: readonly { x: number; y: number; tip: () => readonly string[] }[] = ranges.map(
+    (r) => ({ x: r.x, y: r.mid, tip: r.tip }),
+  );
   const order = items
     .map((_, index) => index)
     .sort((a, b) => (items[a]?.x ?? 0) - (items[b]?.x ?? 0));
@@ -239,53 +211,6 @@ export function StatsChart({
               />
             </g>
           ))}
-          {runs(band).map((run, index) =>
-            run.length < 2 ? null : (
-              <polygon
-                key={`b${index}`}
-                className="nk-rc__band"
-                data-testid="chart-band"
-                points={[
-                  ...run.map((d) => `${px(d.x).toFixed(1)},${py(d.hi).toFixed(1)}`),
-                  ...run.map((d) => `${px(d.x).toFixed(1)},${py(d.lo).toFixed(1)}`).reverse(),
-                ].join(' ')}
-              />
-            ),
-          )}
-          {runs(line).map((run, index) =>
-            run.length < 2 ? null : (
-              <polyline
-                key={`l${index}`}
-                className="nk-rc__line"
-                data-testid="chart-line"
-                pathLength={1}
-                points={run.map((d) => `${px(d.x).toFixed(1)},${py(d.y).toFixed(1)}`).join(' ')}
-              />
-            ),
-          )}
-          {points.map((point, index) => (
-            <circle
-              key={index}
-              className={`nk-rc__pt${point.mark === null ? '' : ` nk-rc__pt--${point.mark}`}`}
-              cx={px(point.x)}
-              cy={py(point.y)}
-              r={(point.mark === 'best' ? RADIUS_BEST : RADIUS) + (pointLabels ? 1 : 0)}
-              data-testid="chart-point"
-            />
-          ))}
-          {pointLabels &&
-            points.map((point, index) => (
-              <text
-                key={`v${index}`}
-                className="nk-rc__val text-mono-small font-mono"
-                x={px(point.x)}
-                y={py(point.y) - LABEL_LIFT}
-                text-anchor={px(point.x) > width - LABEL_EDGE ? 'end' : 'middle'}
-                data-testid="chart-value"
-              >
-                {yFormat(point.y)}
-              </text>
-            ))}
           {current !== null && (
             <>
               <line

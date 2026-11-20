@@ -76,7 +76,6 @@ describe('settings page: Reset progress', () => {
     );
     expect(headings.map((heading) => heading.textContent)).toEqual([
       t('settings.learn.title'),
-      t('settings.typing.title'),
       t('settings.data.title'),
       t('settings.account.title'),
     ]);

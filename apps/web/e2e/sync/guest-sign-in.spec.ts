@@ -3,7 +3,7 @@ import {
   chooseAccount,
   expectSyncStatus,
   playLearningSession,
-  sessionsLine,
+  sessionCounts,
   signIn,
   uniqueUser,
 } from '../lib/sync';
@@ -28,7 +28,9 @@ test.describe('a guest signs in (storage-sync.md, "Guest, sign-in and sign-out")
     await expectSyncStatus(device, 'synced');
 
     await device.goto('/stats');
-    await expect(sessionsLine(device)).toContainText('1 started · 1 finished');
+    const counts = sessionCounts(device);
+    await expect(counts.started).toHaveText('1');
+    await expect(counts.finished).toHaveText('1');
     await other.close();
   });
 });

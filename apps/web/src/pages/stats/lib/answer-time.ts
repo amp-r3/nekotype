@@ -1,6 +1,6 @@
 import { addBuckets, quartilesOf } from '@/entities/learn';
 import type { DayBuckets } from '@nekotype/shared/types';
-import type { Period } from './selection';
+import type { Period } from './days';
 import { MIN_DAYS_ALL, mondayOf } from './days';
 import { axisOf } from './trend';
 import type { Axis } from './trend';

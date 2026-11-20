@@ -1,37 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import type { LearnState, TestResult } from '@nekotype/shared/types';
-import { initialLearnState, localDay } from '@/entities/learn';
-import { activityDays, gridDays, levelOf, weeksFor } from './activity';
+import type { LearnState } from '@nekotype/shared/types';
+import { initialLearnState } from '@/entities/learn';
+import { activeDaysIn, activityDays, fitMap, gridDays, levelOf } from './activity';
 import { mondayOf } from './days';
 
 function state(parts: Partial<LearnState>): LearnState {
   return { ...initialLearnState(), ...parts };
-}
-
-function result(endedAt: number): TestResult {
-  return {
-    id: 'r',
-    content: 'words',
-    script: 'hiragana',
-    strictness: 'learner',
-    config: { kind: 'time', seconds: 60 },
-    endReason: 'complete',
-    repeated: false,
-    startedAt: 0,
-    endedAt,
-    durationMs: 60_000,
-    tokens: 100,
-    erroredTokens: 5,
-    items: 20,
-    keystrokes: 150,
-    rejectedKeystrokes: 6,
-    assisted: 0,
-    kpm: 100,
-    kanaAccuracy: 0.95,
-    celebratedPersonalBest: false,
-    contentVersion: 'c',
-    appVersion: 'a',
-  };
 }
 
 describe('levelOf', () => {
@@ -65,33 +39,66 @@ describe('activityDays', () => {
           katakana: { '100': { '4': 4 }, '101': { '2': 1 } },
         },
       }),
-      [],
+      200,
     );
-    expect(days.get(100)).toEqual({ answers: 7, tests: 0, active: false });
+    expect(days.get(100)).toEqual({ answers: 7, active: false, run: false });
     expect(days.get(101)?.answers).toBe(1);
   });
 
   it('marks a run of active days, also without recall answers', () => {
-    const days = activityDays(state({ activeDays: [[10, 12]] }), []);
+    const days = activityDays(state({ activeDays: [[10, 12]] }), 100);
     expect([...days.keys()]).toEqual([10, 11, 12]);
-    expect(days.get(11)).toEqual({ answers: 0, tests: 0, active: true });
+    expect(days.get(11)).toEqual({ answers: 0, active: true, run: false });
   });
 
-  it('counts tests by the local day of endedAt, repeats included', () => {
-    const endedAt = new Date(2026, 10, 3, 12).getTime();
-    const day = localDay(endedAt);
-    const days = activityDays(state({}), [result(endedAt), { ...result(endedAt), repeated: true }]);
-    expect(days.get(day)).toEqual({ answers: 0, tests: 2, active: false });
+  it('marks the days of the current streak: the last run, ending today or yesterday', () => {
+    const runs: LearnState['activeDays'] = [
+      [1, 3],
+      [10, 12],
+    ];
+    const ending = (today: number): number[] =>
+      [...activityDays(state({ activeDays: runs }), today)]
+        .filter(([, day]) => day.run)
+        .map(([key]) => key);
+    expect(ending(12)).toEqual([10, 11, 12]);
+    expect(ending(13)).toEqual([10, 11, 12]);
+    expect(ending(14)).toEqual([]);
   });
 });
 
-describe('weeksFor', () => {
-  it('is 12 without a day, and between 12 and 26 otherwise', () => {
-    expect(weeksFor(null, 1000)).toBe(12);
-    expect(weeksFor(1000, 1000)).toBe(12);
-    expect(weeksFor(1000 - 11 * 7, 1000)).toBe(12);
-    expect(weeksFor(1000 - 12 * 7, 1000)).toBe(13);
-    expect(weeksFor(1000 - 30 * 7, 1000)).toBe(26);
+describe('activeDaysIn', () => {
+  const runs: LearnState['activeDays'] = [
+    [60, 70],
+    [90, 99],
+    [100, 100],
+  ];
+  it('counts the days of the last 30 only', () => {
+    // The window of today = 100 is days 71–100.
+    expect(activeDaysIn(state({ activeDays: runs }), 100, 30)).toBe(11);
+    expect(activeDaysIn(state({ activeDays: [[60, 80]] }), 100, 30)).toBe(10);
+    expect(activeDaysIn(state({}), 100, 30)).toBe(0);
+  });
+  it('does not count days after today', () => {
+    expect(activeDaysIn(state({ activeDays: [[98, 105]] }), 100, 30)).toBe(3);
+  });
+});
+
+describe('fitMap', () => {
+  it('takes as many weeks as fit at 16 px, at most 26, and grows the cells up to 28 px', () => {
+    expect(fitMap(null)).toEqual({ weeks: 12, cell: 16 });
+    // A phone: 328 px less the weekday column.
+    const phone = fitMap(328);
+    expect(phone.weeks).toBe(15);
+    expect(phone.cell).toBe(16);
+    const desktop = fitMap(828);
+    expect(desktop.weeks).toBe(26);
+    // (828 − 32 − 25 × 4) / 26: the cells share the width exactly.
+    expect(desktop.cell).toBeCloseTo(26.77, 2);
+    expect(fitMap(2000)).toEqual({ weeks: 26, cell: 28 });
+  });
+  it('never has fewer than one week or cells under 16 px', () => {
+    expect(fitMap(10).weeks).toBe(1);
+    expect(fitMap(10).cell).toBe(16);
   });
 });
 

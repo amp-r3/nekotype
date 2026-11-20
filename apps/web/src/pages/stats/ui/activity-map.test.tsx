@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { loadDictionaryPart } from '@/shared/i18n';
@@ -15,16 +15,34 @@ let container: HTMLDivElement;
 afterEach(() => {
   render(null, container);
   container.remove();
+  vi.unstubAllGlobals();
 });
 
 // A Wednesday, so the last column is not full.
 const TODAY = localDay(new Date(2026, 5, 17, 12).getTime());
 
-function mount(days: Map<number, ActivityDay>, weeks = 12): void {
+// happy-dom has no layout: the map takes its frame from the width the observer reports. Without
+// a width it draws 12 weeks of 16 px.
+function mount(days: Map<number, ActivityDay>, width: number | null = null): void {
+  if (width !== null) {
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(
+          private readonly callback: (entries: { contentRect: { width: number } }[]) => void,
+        ) {}
+        observe(): void {
+          this.callback([{ contentRect: { width } }]);
+        }
+        disconnect(): void {}
+        unobserve(): void {}
+      },
+    );
+  }
   container = document.createElement('div');
   document.body.appendChild(container);
   void act(() => {
-    render(<ActivityMap days={days} today={TODAY} weeks={weeks} />, container);
+    render(<ActivityMap days={days} today={TODAY} />, container);
   });
 }
 
@@ -49,37 +67,56 @@ describe('ActivityMap', () => {
     expect(all[0]?.classList.contains('is-l0')).toBe(true);
   });
 
-  it('takes the level class from the answers and the test mark from the tests', () => {
+  it('takes the level class from the answers and the dot from the current streak', () => {
     mount(
       new Map([
-        [TODAY - 1, { answers: 60, tests: 0, active: true }],
-        [TODAY - 2, { answers: 0, tests: 2, active: false }],
-        [TODAY - 3, { answers: 0, tests: 0, active: true }],
+        [TODAY - 1, { answers: 60, active: true, run: true }],
+        [TODAY - 2, { answers: 0, active: false, run: false }],
+        [TODAY - 3, { answers: 0, active: true, run: false }],
       ]),
     );
     const all = cells();
     const at = (back: number): HTMLElement | undefined => all[all.length - 1 - back];
     expect(at(1)?.classList.contains('is-l4')).toBe(true);
-    expect(at(1)?.classList.contains('is-test')).toBe(false);
+    expect(at(1)?.classList.contains('is-run')).toBe(true);
     expect(at(2)?.classList.contains('is-l0')).toBe(true);
-    expect(at(2)?.classList.contains('is-test')).toBe(true);
+    expect(at(2)?.classList.contains('is-run')).toBe(false);
     expect(at(3)?.classList.contains('is-l1')).toBe(true);
+    // The legend names the dot.
+    expect(container.textContent).toContain('current streak');
   });
 
   it('puts the numbers of a day in its label', () => {
     mount(
       new Map([
-        [TODAY - 1, { answers: 51, tests: 3, active: true }],
-        [TODAY - 2, { answers: 1, tests: 0, active: true }],
+        [TODAY - 1, { answers: 51, active: true, run: true }],
+        [TODAY - 2, { answers: 1, active: true, run: false }],
       ]),
     );
     const all = cells();
-    expect(all.at(-1)?.getAttribute('aria-label')).toContain('no activity');
+    expect(all.at(-1)?.getAttribute('aria-label')).toContain('no answers');
     expect(all.at(-1)?.getAttribute('aria-label')).toContain('today');
-    expect(all.at(-2)?.getAttribute('aria-label')).toContain('51 answers · 3 tests');
+    expect(all.at(-2)?.getAttribute('aria-label')).toContain('51 answers');
+    expect(all.at(-2)?.getAttribute('aria-label')).toContain('current streak');
     expect(all.at(-3)?.getAttribute('aria-label')).toContain('1 answer');
+    expect(all.at(-3)?.getAttribute('aria-label')).not.toContain('current streak');
     expect(all.at(-2)?.getAttribute('aria-label')).toContain(
       new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short' }).format(dayStart(TODAY - 1)),
+    );
+  });
+
+  it('fills the width it has: as many weeks as fit, at most 26, the cell grows to 28 px', () => {
+    mount(new Map(), 328);
+    expect(cells()).toHaveLength(14 * 7 + 3);
+    expect(container.querySelector('figure')?.getAttribute('style')).toContain(
+      '--nk-am-cell: 16px',
+    );
+    render(null, container);
+    container.remove();
+    mount(new Map(), 2000);
+    expect(cells()).toHaveLength(25 * 7 + 3);
+    expect(container.querySelector('figure')?.getAttribute('style')).toContain(
+      '--nk-am-cell: 28px',
     );
   });
 
@@ -111,7 +148,7 @@ describe('ActivityMap', () => {
   });
 
   it('shows the tooltip of the focused cell', () => {
-    mount(new Map([[TODAY - 1, { answers: 12, tests: 0, active: true }]]));
+    mount(new Map([[TODAY - 1, { answers: 12, active: true, run: false }]]));
     const all = cells();
     expect(container.querySelector('[role="tooltip"]')).toBeNull();
     void act(() => {

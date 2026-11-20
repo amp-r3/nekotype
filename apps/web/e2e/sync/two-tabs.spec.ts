@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import {
   expectSyncStatus,
   playLearningSession,
-  sessionsLine,
+  sessionCounts,
   signIn,
   uniqueUser,
 } from '../lib/sync';
@@ -34,7 +34,9 @@ test.describe('two tabs of one device (storage-sync.md, "Batches")', () => {
     await signIn(device, user);
     await expectSyncStatus(device, 'synced');
     await device.getByRole('link', { name: 'stats', exact: true }).click();
-    await expect(sessionsLine(device)).toContainText('2 started · 2 finished');
+    const counts = sessionCounts(device);
+    await expect(counts.started).toHaveText('2');
+    await expect(counts.finished).toHaveText('2');
     await other.close();
   });
 });
