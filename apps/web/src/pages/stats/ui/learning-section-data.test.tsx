@@ -88,7 +88,7 @@ describe('learning section: with answers', () => {
     const dotted = Array.from(container.querySelectorAll('[data-testid="activity-cell"].is-run'));
     expect(dotted).toHaveLength(3);
     expect(dotted.at(-1)?.classList.contains('is-today')).toBe(true);
-    // No section switch, no typing section, no session line below the chart.
+    // One section with no switch, and no session line below the chart.
     expect(container.querySelector('h1')?.textContent).toBe(t('page.stats'));
     expect(container.querySelectorAll('[role="radiogroup"]').length).toBe(1);
     expect(container.querySelector('[data-testid="stats-sessions"]')).toBeNull();

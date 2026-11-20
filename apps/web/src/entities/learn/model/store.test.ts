@@ -848,10 +848,10 @@ describe('learn store: the view is snapshot, outbox and delta merged (D18)', () 
 
   it('reads the learning part of the snapshot and the outbox when another part is broken', async () => {
     const db = createMemoryDb();
-    await db.put('snapshot', 'current', { ...snapshot, typingRecords: { k: { best: 1 } } });
+    await db.put('snapshot', 'current', { ...snapshot, settings: 'broken' });
     await db.put('outbox', 'current', {
       ...outbox,
-      request: { ...outbox.request, delta: { ...outbox.request.delta, kanaStats: 'broken' } },
+      request: { ...outbox.request, delta: { ...outbox.request.delta, settings: 'broken' } },
     });
     const { store } = setup({ db });
     await store.init();

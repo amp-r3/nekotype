@@ -30,9 +30,8 @@ export type CatProps = {
 };
 
 /**
- * The cat, asleep by default, `content` (typing results on a personal best) or `neutral` (the 404
- * screen). Decorative, so it is
- * hidden from assistive technology.
+ * The cat, asleep by default, `content` (drawn, not placed yet: design Cat) or `neutral` (the 404
+ * screen). Decorative, so it is hidden from assistive technology.
  */
 export function Cat({ mood = 'sleep', size = 96, className = '' }: CatProps): JSX.Element {
   if (mood === 'content' || mood === 'neutral') {
