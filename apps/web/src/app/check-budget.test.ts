@@ -153,10 +153,7 @@ describe('check-budget', () => {
   it('passes a build within every budget', () => {
     const { failures, lines } = checkBudget(
       makeDist({
-        lazy: [
-          { src: 'src/pages/stats/index.ts', kb: 20 },
-          { src: 'src/entities/prompt/content/words-hiragana.json', kb: 30 },
-        ],
+        lazy: [{ src: 'src/pages/stats/index.ts', kb: 20 }],
       }),
     );
     expect(failures).toEqual([]);
@@ -280,7 +277,7 @@ describe('check-budget', () => {
   it('does not count lazy chunks in the initial JS', () => {
     const failures = failuresFor({
       jsKb: 30,
-      lazy: [{ src: 'src/entities/prompt/content/words-hiragana.json', kb: 39 }],
+      lazy: [{ src: 'src/pages/stats/index.ts', kb: 24 }],
     });
     expect(failures).toEqual([]);
   });
@@ -290,20 +287,17 @@ describe('check-budget', () => {
     expect(failures).toEqual([expect.stringContaining('Lazy route chunk')]);
   });
 
-  it('applies 40 KB to a content chunk, found by its source and not by file name', () => {
-    // 30 KB is fine for content (a words chunk) but too big for a route
-    expect(
-      failuresFor({ lazy: [{ src: 'src/entities/prompt/content/words-hiragana.json', kb: 30 }] }),
-    ).toEqual([]);
-    expect(failuresFor({ lazy: [{ src: 'src/pages/stats/index.ts', kb: 30 }] })).toEqual([
-      expect.stringContaining('Lazy route chunk'),
-    ]);
-    expect(
-      failuresFor({ lazy: [{ src: 'src/entities/prompt/content/phrases-mixed.json', kb: 41 }] }),
-    ).toEqual([expect.stringContaining('Content chunk')]);
-    expect(failuresFor({ lazy: [{ src: 'content/n5-words.ts', kb: 41 }] })).toEqual([
-      expect.stringContaining('Content chunk'),
-    ]);
+  it('fails on any content chunk, found by its source and not by file name (no content before P10)', () => {
+    for (const src of [
+      'src/entities/prompt/content/words-hiragana.json',
+      'src/entities/prompt/content/phrases-mixed.json',
+      'content/n5-words.ts',
+    ]) {
+      expect(failuresFor({ lazy: [{ src, kb: 1 }] }), src).toEqual([
+        expect.stringContaining('no content is shipped before P10'),
+      ]);
+    }
+    expect(failuresFor({ lazy: [{ src: 'src/pages/stats/index.ts', kb: 20 }] })).toEqual([]);
   });
 
   it('a route chunk is not mistaken for content because of its file name', () => {

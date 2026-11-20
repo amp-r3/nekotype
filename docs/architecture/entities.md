@@ -40,4 +40,4 @@ Part of the [architecture description](README.md) of the current code.
 ## `entities/prompt`
 
 - The kana table of the application (`model/data`: `basicRows`, `dakutenRows`, `yoonRows`, `extendedRows`, `allKanaRows`) and the binding of `packages/engine` to it (`lib/engine.ts`: `compile`, `start`, `step`, `isComplete`, `spellingsFor`, `canonical` and the rest of the matcher API; `lib/canonical.ts`: `canonicalFor`). A recall task and an introduction compile their kana with this binding.
-- `api/` holds the loaders of the generated word and phrase chunks (`content-loader.ts`, `credits-loader.ts`) and `content/` the chunks themselves. Nothing in the screens reads them since the typing trainer was removed (ADR 093); they go out of the build in a pull request of their own.
+- `content/` holds the generated word and phrase chunks (written by `packages/content`, checked by its tests). Nothing in `apps/web/src` imports them and `check-budget.mjs` fails a build whose manifest holds one: no content is shipped before P10 (ADR 093). P10 adds the loader again.

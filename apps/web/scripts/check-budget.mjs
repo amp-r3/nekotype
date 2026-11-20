@@ -11,11 +11,11 @@ export const BUDGETS = {
   fontKb: 45,
   totalFirstLoadKb: 160,
   lazyRouteGzipKb: 25,
-  lazyContentGzipKb: 40,
 };
 
 // A lazy chunk is a content chunk when its source lives under a `content` directory (the generated
-// JSON of `entities/prompt/content/`); every other lazy chunk is a route chunk.
+// JSON of `entities/prompt/content/`); every other lazy chunk is a route chunk. No content is
+// shipped before P10 (ADR 093), so a content chunk in the build is a failure.
 const CONTENT_SOURCE = /(^|\/)content\//;
 
 // The global the probe publishes; it appears in no other place of the application.
@@ -212,14 +212,17 @@ export function checkBudget(distDir) {
   // 4. Lazy chunks
   for (const chunk of lazy) {
     const s = sizes(join(distDir, chunk.file));
-    const isContent = CONTENT_SOURCE.test(chunk.src);
-    line(isContent ? 'lazy content' : 'lazy route', chunk.file, s);
-    const [limit, label] = isContent
-      ? [BUDGETS.lazyContentGzipKb, 'Content chunk']
-      : [BUDGETS.lazyRouteGzipKb, 'Lazy route chunk'];
-    if (kb(s.gzip) > limit) {
+    if (CONTENT_SOURCE.test(chunk.src)) {
+      line('lazy content', chunk.file, s);
       failures.push(
-        `${label} ${chunk.file} exceeded budget (${kb(s.gzip).toFixed(2)} KB > ${limit} KB gzip)`,
+        `Content chunk ${chunk.file} is in the build: no content is shipped before P10 (ADR 093)`,
+      );
+      continue;
+    }
+    line('lazy route', chunk.file, s);
+    if (kb(s.gzip) > BUDGETS.lazyRouteGzipKb) {
+      failures.push(
+        `Lazy route chunk ${chunk.file} exceeded budget (${kb(s.gzip).toFixed(2)} KB > ${BUDGETS.lazyRouteGzipKb} KB gzip)`,
       );
     }
   }
