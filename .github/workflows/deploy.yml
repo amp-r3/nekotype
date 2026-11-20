@@ -18,7 +18,60 @@ env:
   CLOUDFLARE_PROJECT_NAME: nekotype
 
 jobs:
+  # What the change needs (ADR 097): the files it changes, and on `main` whether this exact tree
+  # already passed every check in its pull request. It runs without the container and without
+  # `pnpm install`: a few seconds. Whatever it cannot decide is "everything runs".
+  scope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      docs_only: ${{ steps.scope.outputs.docs_only || 'false' }}
+      web_e2e: ${{ steps.scope.outputs.web_e2e || 'true' }}
+      sync_e2e: ${{ steps.scope.outputs.sync_e2e || 'true' }}
+      verified: ${{ steps.verified.outputs.verified || 'false' }}
+      tree: ${{ steps.tree.outputs.tree }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: The tree of this commit
+        id: tree
+        run: echo "tree=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
+
+      # A pull request is a merge commit, its first parent is the base; a push is listed from the
+      # commit before it, so a push of several commits is judged by all of them.
+      - name: Scope of the change
+        id: scope
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
+        run: node apps/web/scripts/ci-scope.mjs "$BASE" HEAD
+
+      # A pull request run that passed every check it needed leaves the artifact `verified-<tree>`
+      # (last step below). The tree of `main` after a squash merge is the same tree when `main` did
+      # not move since that run. Only an artifact of a run of this repository counts, never a fork's.
+      - name: Did this tree pass its pull request
+        id: verified
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TREE: ${{ steps.tree.outputs.tree }}
+          REPO_ID: ${{ github.event.repository.id }}
+        run: |
+          found=$(gh api "repos/${{ github.repository }}/actions/artifacts?name=verified-${TREE}&per_page=100" \
+            --jq "[.artifacts[] | select(.expired == false and .workflow_run.head_repository_id == ${REPO_ID})] | length") || found=0
+          echo "Artifacts verified-${TREE} of this repository: ${found}"
+          if [ "${found:-0}" -gt 0 ]; then echo "verified=true" >> "$GITHUB_OUTPUT"; fi
+
   deploy:
+    needs: scope
+    # Nothing to build or deploy for a change of Markdown files on `main`; a pull request still
+    # checks them.
+    if: needs.scope.outputs.docs_only != 'true' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     # A run takes three to five minutes; a step that hangs must not hold the workflow for hours.
     timeout-minutes: 15
@@ -52,10 +105,36 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # typecheck + lint + Prettier + unit tests with coverage + build + size budget + e2e (Chromium
-      # and WebKit come with the container image).
-      # `verify` already produces apps/web/dist, so no second build is needed.
-      - run: pnpm run verify
+      # `verify` is these steps (app/ci-scope.test.ts keeps them equal). The browser tests (Chromium
+      # and WebKit come with the container image) and the sync tests run on `main` always, and on a
+      # pull request when its files can reach them (ADR 097).
+      - name: Markdown files only
+        if: needs.scope.outputs.docs_only == 'true'
+        run: pnpm run format:check && pnpm run docs:check
+
+      # typecheck + lint + Prettier + unit tests with coverage + build + size budget. It produces
+      # apps/web/dist, so no second build is needed.
+      - name: Verify without the browser tests
+        if: needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified != 'true'
+        run: pnpm run verify:quick
+
+      # The tree is the one that passed every check in its pull request (ADR 097): the same
+      # `dist` is built again for the deployment, and its size budget is checked once more.
+      - name: Build of a tree that passed its pull request
+        if: needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified == 'true'
+        run: pnpm run build && pnpm run budget
+
+      - name: Browser tests
+        if: >-
+          needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified != 'true' &&
+          (github.event_name != 'pull_request' || needs.scope.outputs.web_e2e == 'true')
+        run: pnpm --filter @nekotype/web exec playwright test
+
+      - name: Sync tests
+        if: >-
+          needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified != 'true' &&
+          (github.event_name != 'pull_request' || needs.scope.outputs.sync_e2e == 'true')
+        run: pnpm run e2e:sync
 
       # A failed browser test leaves its trace and page snapshot here; a flaky one cannot be
       # reproduced on a fast machine, so this is the only way to see what the page did.
@@ -75,11 +154,13 @@ jobs:
       # on the pull request and not after the merge.
       - name: Does this pull request need the latency gate
         id: latency
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && needs.scope.outputs.docs_only != 'true'
         run: node apps/web/scripts/latency-gate.mjs HEAD^1 HEAD
 
       - name: Keystroke latency gate
-        if: github.event_name != 'pull_request' || steps.latency.outputs.needed == 'true'
+        if: >-
+          needs.scope.outputs.docs_only != 'true' && needs.scope.outputs.verified != 'true' &&
+          (github.event_name != 'pull_request' || steps.latency.outputs.needed == 'true')
         run: pnpm run e2e:latency
 
       # The branch a build is first deployed to. A pull request has its own preview. A push to main
@@ -98,6 +179,7 @@ jobs:
 
       # First run only: creates the Pages project. Later runs fail harmlessly.
       - name: Ensure Pages project exists
+        if: needs.scope.outputs.docs_only != 'true'
         run: pnpm exec wrangler pages project create "$CLOUDFLARE_PROJECT_NAME" --production-branch=main || true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -108,7 +190,7 @@ jobs:
       # before it (p5-plan.md, D5). It is applied before the deployment that needs it. Fork PRs have
       # no secrets and skip it, as they skip the deployment.
       - name: Apply D1 migrations (preview)
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        if: needs.scope.outputs.docs_only != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         run: pnpm exec wrangler d1 migrations apply DB --env preview --remote
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -118,7 +200,7 @@ jobs:
       # preview first; production comes only after its smoke test passes.
       # Fork PRs have no access to secrets, so they only run the verify job.
       - name: Deploy to Cloudflare Pages
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        if: needs.scope.outputs.docs_only != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         run: pnpm exec wrangler pages deploy apps/web/dist --project-name="$CLOUDFLARE_PROJECT_NAME" --branch="${{ steps.branch.outputs.name }}" --commit-dirty=true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -133,7 +215,7 @@ jobs:
       # It waits for the new deployment to answer first. Falls back to the branch alias if wrangler
       # wrote no address.
       - name: Smoke-test the deployment
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        if: needs.scope.outputs.docs_only != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         env:
           BRANCH: ${{ steps.branch.outputs.name }}
           WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-output.ndjson
@@ -173,3 +255,16 @@ jobs:
             --production \
             --wrangler-output "$WRANGLER_OUTPUT_FILE_PATH" \
             --fallback "https://${CLOUDFLARE_PROJECT_NAME}.pages.dev"
+
+      # What a push to `main` looks for (ADR 097): this tree passed every check this run needed.
+      # Last, so a failed step above leaves no artifact. A skipped group counts as passed: it was
+      # skipped because the files of this change cannot reach it.
+      - name: Record the tree as verified
+        if: success() && github.event_name == 'pull_request' && needs.scope.outputs.docs_only != 'true'
+        run: echo "${{ needs.scope.outputs.tree }}" > verified-tree.txt
+      - uses: actions/upload-artifact@v4
+        if: success() && github.event_name == 'pull_request' && needs.scope.outputs.docs_only != 'true'
+        with:
+          name: verified-${{ needs.scope.outputs.tree }}
+          path: verified-tree.txt
+          retention-days: 14

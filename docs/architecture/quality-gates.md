@@ -21,6 +21,8 @@ Every commit and pull request must satisfy `pnpm run verify`, which CI also runs
 
 `apps/api` takes part in every step that applies to it: its tests run in the Workers runtime on a local D1 (`@cloudflare/vitest-plugin`, [ADR 083](../adr/083-api-package-and-pages-configuration.md)), so `pnpm test` needs no network and no Cloudflare account. In CI, the migrations are applied to the preview database before a preview deployment and to production before the production deployment, and the smoke test requests `/api/unknown` and `/api/me` on every deployment, and `/api/auth/google`: a redirect to Google on production (`--production`), a `404` on a preview.
 
+CI does not run the same steps for every change ([ADR 097](../adr/097-ci-scope-and-trees-verified-in-pull-requests.md)). A `scope` job (`apps/web/scripts/ci-scope.mjs`) reads the changed files: Markdown files only need `format:check` and `docs:check`; a change to `apps/api` alone skips the Chromium and WebKit tests; `apps/bench` and `packages/content` skip every browser test; any other path runs everything. A pull request run that passes uploads the artifact `verified-<git tree hash>`; a push to `main` whose tree has that artifact (from a run of this repository, not expired) builds, deploys and smoke-tests without repeating the tests and the latency test. A push to `main` with any other tree runs everything, and `workflow_dispatch` too. The steps in `deploy.yml` are the steps of `verify` one by one, and `app/ci-scope.test.ts` keeps them equal to the scripts.
+
 Git hooks run the same checks earlier (`pre-commit`: staged formatting, typecheck, lint, unit tests; `pre-push`: `verify:quick`, which is `verify` without the browser tests).
 
 ## End-to-end tests (`e2e/`)

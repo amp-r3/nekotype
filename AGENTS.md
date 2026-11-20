@@ -62,7 +62,7 @@ Run a single test file from its package: `cd apps/web && pnpm exec vitest run sr
   - `pre-commit`: `prettier --check` on staged files, then typecheck, lint, unit tests (code checks are skipped for Markdown-only commits); `AGENTS.md`/`CLAUDE.md` over 250 lines are rejected.
   - `pre-push`: `pnpm run verify:quick` (no e2e); when only Markdown files changed, `prettier --check` and `docs:check` instead. Do not run it by hand before pushing: the hook does it.
 - Never bypass hooks with `--no-verify` unless the maintainer explicitly asks. If a hook fails, fix the cause.
-- CI (`.github/workflows/deploy.yml`) runs `verify` (with e2e) on every push and PR, the latency test on `main` and by hand, and deploys with wrangler.
+- CI (`.github/workflows/deploy.yml`) runs `verify` (with e2e) on every PR and on `main` (ADR 097: not for a tree that passed in its PR, nor for Markdown only), the latency test on `main` and by hand, and deploys with wrangler.
 
 ## Architecture rules (baseline, kept in the MVP)
 
