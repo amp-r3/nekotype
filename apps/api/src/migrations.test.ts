@@ -2,11 +2,11 @@ import { env } from 'cloudflare:workers';
 import { isSettings } from '@nekotype/shared/runtime';
 import { describe, expect, it } from 'vitest';
 
-// Migration 0002 rewrites the rows of P5 (p6-plan.md, D9). The setup has applied every migration to
-// an empty database, so the test writes rows with the shapes P5 stored and runs the statements of
-// 0002 on them.
+// Migration 0002 rewrites the rows of P5 and 0003 drops the typing table and columns (p6-plan.md,
+// D9). The setup has applied every migration to an empty database, so each test first puts back the
+// schema of P5 (the columns and the table 0003 dropped), writes rows with the shapes P5 stored and
+// runs the statements of the migration under test on them.
 
-const NAME = '0002_learning_only.sql';
 const P5_SETTINGS = {
   typing: {
     script: 'both',
@@ -25,6 +25,26 @@ const P5_NEW_USER_COUNTERS = {
   started: { typing: 0, learn: 0 },
   finished: { typing: 0, learn: 0 },
 };
+
+async function restoreP5Schema(): Promise<void> {
+  const { results } = await env.DB.prepare("SELECT name FROM pragma_table_info('user_stats')").all<{
+    name: string;
+  }>();
+  if (results.some((column) => column.name === 'kana_stats')) return;
+  await env.DB.batch([
+    env.DB.prepare("ALTER TABLE user_stats ADD COLUMN kana_stats TEXT NOT NULL DEFAULT '{}'"),
+    env.DB.prepare("ALTER TABLE user_stats ADD COLUMN typing_records TEXT NOT NULL DEFAULT '{}'"),
+    env.DB.prepare(
+      `CREATE TABLE results (
+         id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+         ended_at INTEGER NOT NULL, content TEXT NOT NULL, script TEXT NOT NULL,
+         strictness TEXT NOT NULL, config TEXT NOT NULL, kpm REAL NOT NULL,
+         kana_accuracy REAL NOT NULL, json TEXT NOT NULL
+       )`,
+    ),
+    env.DB.prepare('CREATE INDEX results_user_time ON results(user_id, ended_at DESC)'),
+  ]);
+}
 
 async function p5User(id: string, counters: unknown, withSettings: boolean): Promise<void> {
   const statements = [
@@ -51,9 +71,9 @@ async function p5User(id: string, counters: unknown, withSettings: boolean): Pro
   await env.DB.batch(statements);
 }
 
-async function migrate(): Promise<void> {
-  const migration = env.TEST_MIGRATIONS.find((m) => m.name === NAME);
-  if (migration === undefined) throw new Error(`${NAME} is not among the migrations`);
+async function migrate(name: string): Promise<void> {
+  const migration = env.TEST_MIGRATIONS.find((m) => m.name === name);
+  if (migration === undefined) throw new Error(`${name} is not among the migrations`);
   await env.DB.batch(migration.queries.map((query) => env.DB.prepare(query)));
 }
 
@@ -66,10 +86,11 @@ async function text(sql: string, id: string): Promise<string> {
 
 describe('migration 0002', () => {
   it('flattens the counters, drops the typing block and empties the typing data', async () => {
+    await restoreP5Schema();
     await p5User('m-synced', P5_COUNTERS, true);
     await p5User('m-new', P5_NEW_USER_COUNTERS, false);
 
-    await migrate();
+    await migrate('0002_learning_only.sql');
 
     const counters = (id: string) => text('SELECT counters FROM user_stats WHERE user_id = ?', id);
     expect(JSON.parse(await counters('m-synced'))).toEqual({ started: 9, finished: 8 });
@@ -89,6 +110,39 @@ describe('migration 0002', () => {
     const left = await env.DB.prepare(
       "SELECT COUNT(*) AS n FROM results WHERE user_id LIKE 'm-%'",
     ).first();
+    expect(left).toEqual({ n: 0 });
+  });
+});
+
+describe('migration 0003', () => {
+  it('drops the typing table and columns and keeps the learning data', async () => {
+    await restoreP5Schema();
+    await p5User('d-user', P5_COUNTERS, true);
+    await migrate('0002_learning_only.sql');
+
+    await migrate('0003_drop_typing.sql');
+
+    const { results } = await env.DB.prepare(
+      "SELECT name FROM pragma_table_info('user_stats')",
+    ).all<{
+      name: string;
+    }>();
+    const columns = results.map((column) => column.name);
+    expect(columns).not.toContain('kana_stats');
+    expect(columns).not.toContain('typing_records');
+    expect(
+      JSON.parse(await text('SELECT counters FROM user_stats WHERE user_id = ?', 'd-user')),
+    ).toEqual({ started: 9, finished: 8 });
+    const table = await env.DB.prepare(
+      "SELECT name FROM sqlite_master WHERE name LIKE 'results%'",
+    ).all();
+    expect(table.results).toEqual([]);
+
+    // The foreign key of user_stats still cascades.
+    await env.DB.prepare('DELETE FROM users WHERE id = ?').bind('d-user').run();
+    const left = await env.DB.prepare('SELECT COUNT(*) AS n FROM user_stats WHERE user_id = ?')
+      .bind('d-user')
+      .first();
     expect(left).toEqual({ n: 0 });
   });
 });

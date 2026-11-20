@@ -148,12 +148,10 @@ describe('GET /api/auth/:provider/callback', () => {
     });
     expect(await env.DB.prepare('SELECT * FROM user_stats').first()).toMatchObject({
       user_id: user?.['id'],
-      kana_stats: '{}',
       counters: '{"started":0,"finished":0}',
       learn: '{"unlocked":{"hiragana":[],"katakana":[]},"entries":{},"stats":{},"activeDays":[]}',
       learn_recent: '{}',
       learn_buckets: '{"hiragana":{},"katakana":{}}',
-      typing_records: '{}',
       device_seq: '{}',
       last_sync_at: 0,
       version: 0,

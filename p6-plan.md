@@ -18,7 +18,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | 2   | `p6-02-content-out`         | done   | #183         |
 | 3   | `p6-03-stats-settings`      | done   | #184         |
 | 4   | `p6-04-learning-only-data`  | done   | #185         |
-| 5   | `p6-05-drop-typing-columns` | —      | —            |
+| 5   | `p6-05-drop-typing-columns` | done   | #192         |
 | 6   | `p6-06-close`               | —      | —            |
 
 ## 1. Goal and scope
