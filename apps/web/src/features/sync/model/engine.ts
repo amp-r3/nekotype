@@ -98,6 +98,9 @@ type Meta = {
 const asString = (value: unknown): string | null => (typeof value === 'string' ? value : null);
 const asCount = (value: unknown): number | null =>
   typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : null;
+// A settings `updatedAt` comes from the clock and has a fraction; `asCount` would read it as absent.
+const asTimestamp = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
 
 async function readMeta(db: Db): Promise<Meta> {
   const [userId, deviceId, snapshotVersion, expired, blockedAt] = await Promise.all([
@@ -160,7 +163,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
       db.get(META_STORE, 'settingsSyncedAt'),
     ]);
     const learnChanges = readLearnChanges(learn);
-    const unsent = isSettings(settings) && settings.updatedAt > (asCount(syncedAt) ?? 0);
+    const unsent = isSettings(settings) && settings.updatedAt > (asTimestamp(syncedAt) ?? 0);
     const pending =
       outbox !== undefined ||
       (learnChanges !== null && !isEmptyLearnChanges(learnChanges)) ||
@@ -205,7 +208,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
       ([settings, syncedAt]) => {
         const after = settingsAfter(
           isSettings(settings) ? settings : null,
-          asCount(syncedAt) ?? 0,
+          asTimestamp(syncedAt) ?? 0,
           sent?.request.delta.settings?.updatedAt ?? null,
           next.settings,
         );
@@ -353,7 +356,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
             seq: (asCount(lastSeq) ?? 0) + 1,
             learn: readLearnChanges(learn) ?? noLearnChanges(),
             settings:
-              isSettings(settings) && settings.updatedAt > (asCount(syncedAt) ?? 0)
+              isSettings(settings) && settings.updatedAt > (asTimestamp(syncedAt) ?? 0)
                 ? settings
                 : null,
           },

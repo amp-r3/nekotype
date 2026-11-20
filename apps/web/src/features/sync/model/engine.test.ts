@@ -221,6 +221,19 @@ describe('an acknowledgement', () => {
     expect(await rig.db.get('settings', 'current')).toEqual(settingsAt(40));
     expect(await rig.db.get('meta', 'settingsSyncedAt')).toBe(40);
   });
+
+  it('is synced when the settings carry a fractional updatedAt, as the clock gives them', async () => {
+    const rig = await createRig();
+    rig.server.setSnapshot({ ...rig.server.snapshot(), settings: settingsAt(40.4) }, 2);
+    await rig.db.put('settings', 'current', settingsAt(700.5));
+    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
+    const { syncStatus } = await import('./status');
+
+    await sync(rig);
+
+    expect(await rig.db.get('meta', 'settingsSyncedAt')).toBe(40.4);
+    expect(syncStatus.value).toBe('synced');
+  });
 });
 
 describe('failed requests', () => {
