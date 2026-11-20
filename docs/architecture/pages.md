@@ -27,11 +27,7 @@ Part of the [architecture description](README.md) of the current code.
 
 ## The about screen (`pages/about`)
 
-- `pages/about` (a lazy route; P4 PR 13, ADR 066) shows, in the route chunk, the sources and licences (`ui/source-rows.tsx`: four rows, `CC BY` of Waller's lists without a link, A3) and the terms of Nekotype (code, name and cat, fonts), then the phrase authors (`ui/phrase-credits.tsx`).
-  - The list is read from `credits.json`, a content chunk of its own: `loadCredits` in `entities/prompt/api/credits-loader.ts` imports it, checks its shape and keeps the result; a failure is forgotten so `retry` fetches again.
-  - The component starts the load when it mounts, and only the list's place shows `loading…` or the error with `retry`. The idle prefetch does not fetch this chunk.
-  - `lib/paging.ts` sorts by sentence id and slices pages of 25; the whole list is in memory, so a page change is synchronous, the count line (`role="status"`) announces the range and focus stays on the pressed page button. `Pagination` is the one from `/stats` with its own labels.
-  - In a container of 480px or less a row is a block (CSS `.nk-credits`, the `td[data-label]` values become the line labels).
+- `pages/about` (a lazy route; ADR 066) shows the terms of Nekotype (`ui/terms-section.tsx`: code, name and cat, fonts) and nothing else: no sources, no phrase authors, no lazy chunk beyond the route, because no content is shipped before P10 (ADR 093).
   - The kana audio (P8) and stored data (P12) sections are not rendered yet.
 
 ## The settings screen (`pages/settings`)

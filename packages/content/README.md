@@ -1,6 +1,6 @@
 # @nekotype/content
 
-The content pipeline: reads the pinned source files and generates the words and phrases the typing screen loads. It is a build tool: its dependencies are devDependencies and never reach the web bundle; `apps/web` does not import it. The specification is [docs/spec/content.md](../../docs/spec/content.md).
+The content pipeline: reads the pinned source files and generates the words and phrases that words in learning will load (P10; until then the application does not ship them). It is a build tool: its dependencies are devDependencies and never reach the web bundle; `apps/web` does not import it. The specification is [docs/spec/content.md](../../docs/spec/content.md).
 
 ## Requirements
 
@@ -27,7 +27,7 @@ pnpm --filter @nekotype/web run fonts          # then: rebuild glyphs.txt and th
 
 `generate` reads the pinned files from `.cache/` (run `fetch` first), runs the word and phrase steps (the phrase step takes about 40 s and about 1 GB of memory: kuromoji, ratings) and writes:
 
-- the chunks `words-hiragana`, `words-katakana`, `phrases-hiragana`, `phrases-katakana`, `phrases-mixed`, `credits` and `manifest.json` into `apps/web/src/entities/prompt/content/` (commit them; `apps/web` loads them with dynamic `import()` and never imports this package). Keys are sorted, indentation is 2 spaces, the folder is excluded from Prettier. `contentVersion` is defined in [content.md](../../docs/spec/content.md) and checked by `src/output.test.ts` against the committed files;
+- the chunks `words-hiragana`, `words-katakana`, `phrases-hiragana`, `phrases-katakana`, `phrases-mixed`, `credits` and `manifest.json` into `apps/web/src/entities/prompt/content/` (commit them; `apps/web` does not import them before P10, then loads them with dynamic `import()`, and never imports this package). Keys are sorted, indentation is 2 spaces, the folder is excluded from Prettier. `contentVersion` is defined in [content.md](../../docs/spec/content.md) and checked by `src/output.test.ts` against the committed files;
 - `build-report.json` (counts, raw and gzip size of every chunk, the selection reports with the compile failures), `ru-coverage.json` (words with a Russian gloss) and `audit-sample.md` (50 phrases for the manual reading check) into this folder. Commit them: the maintainer reads them in review.
 
 The build fails when compile failures exceed 5% of the selected items of a source (the words; the phrases that passed the filters), when a phrase lacks credit data, when fewer than 300 phrases qualify, or when a chunk is over 40 KB gzip. It serialises the output twice and compares hashes, and two runs on the same sources give identical files.
