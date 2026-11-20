@@ -1,7 +1,7 @@
 import type { settingsEn } from './en';
 
 export const settingsRu = {
-  'settings.reset.description': 'Стирает прогресс обучения и статистику набора в этом браузере.',
+  'settings.reset.description': 'Стирает прогресс обучения в этом браузере.',
 
   'settings.learn.title': 'Обучение',
   'settings.learn.strictness': 'строгость в обучении',
@@ -12,9 +12,6 @@ export const settingsRu = {
   'settings.learn.targetHint':
     'При меньшей цели каны позже становятся уверенными, а уверенные могут это утратить.',
   'settings.learn.targetValue': '{ms} мс',
-  'settings.typing.title': 'Набор',
-  'settings.showTranslation': 'перевод под текстом',
-  'settings.showTranslationHint': 'Перевод слова или фразы под текстом теста.',
   'settings.data.title': 'Данные',
   'settings.data.reset': 'сбросить прогресс',
   'settings.data.resetAction': 'сбросить',
@@ -62,8 +59,7 @@ export const settingsRu = {
 
   'dialog.close': 'закрыть',
   'reset.title': 'Сбросить прогресс?',
-  'reset.confirm':
-    'Прогресс обучения и статистика набора в этом браузере будут стёрты. Это нельзя отменить.',
+  'reset.confirm': 'Прогресс обучения в этом браузере будет стёрт. Это нельзя отменить.',
   'reset.action': 'сбросить',
   'reset.cancel': 'отмена',
 } as const satisfies Record<keyof typeof settingsEn, string>;

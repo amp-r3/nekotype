@@ -6,7 +6,6 @@ import { Button } from './button';
 import { Switch } from './switch';
 import { Segmented } from './segmented';
 import { Select } from './select';
-import { Toggle } from './toggle';
 import { Dialog } from './dialog';
 import { Kbd } from './kbd';
 import { Nav } from './nav';
@@ -161,21 +160,6 @@ describe('Select', () => {
     mount(<Select options={options} value="a" onChange={() => {}} ariaLabel="mode" />);
     expect(container.querySelector('label')).toBeNull();
     expect(container.querySelector('select')?.getAttribute('aria-label')).toBe('mode');
-  });
-});
-
-describe('Toggle', () => {
-  it('reports the opposite value and exposes aria-pressed', () => {
-    const onChange = vi.fn();
-    mount(
-      <Toggle pressed={false} onChange={onChange}>
-        weak kana
-      </Toggle>,
-    );
-    const button = container.querySelector('button');
-    expect(button?.getAttribute('aria-pressed')).toBe('false');
-    button?.click();
-    expect(onChange).toHaveBeenCalledWith(true);
   });
 });
 

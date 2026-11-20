@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
 import { t } from '@/shared/i18n';
 import { Segmented } from '@/shared/ui';
-import type { Period } from '../lib/selection';
+import type { Period } from '../lib/days';
 
 /** The period switch of the typing filters and of the answer-time chart: 7 days, 30 days, all. */
 export function PeriodSwitch({

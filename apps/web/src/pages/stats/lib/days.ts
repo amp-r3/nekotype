@@ -7,3 +7,6 @@ export const MIN_DAYS_ALL = 14;
 export function mondayOf(day: number): number {
   return day - ((((day + 3) % 7) + 7) % 7);
 }
+
+/** The period of the answer-time chart: the last 7 or 30 days, or all time. */
+export type Period = '7' | '30' | 'all';

@@ -2,14 +2,12 @@ import type { ComponentChildren, ComponentType, JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import type { Strictness } from '@nekotype/engine';
-import { Button, Dialog, ResetIcon, Segmented, Switch } from '@/shared/ui';
+import { Button, Dialog, ResetIcon, Segmented } from '@/shared/ui';
 import { Select } from '@/shared/ui/select';
 import { resetTyping } from '@/entities/stats';
 import { resetLearning } from '@/entities/learn';
 import { authAvailable, beginSignIn, userId } from '@/entities/user';
 import {
-  showTranslationSetting,
-  setShowTranslation,
   learnStrictness,
   setLearnStrictness,
   learnTargetMs,
@@ -143,15 +141,6 @@ export function SettingsPage(): JSX.Element {
             />
           </div>
         </SettingRow>
-      </Section>
-
-      <Section title={t('settings.typing.title')}>
-        <Switch
-          checked={showTranslationSetting.value}
-          onChange={setShowTranslation}
-          label={t('settings.showTranslation')}
-          description={t('settings.showTranslationHint')}
-        />
       </Section>
 
       {/* Reset progress is for guests only, an expired session included (A33). */}

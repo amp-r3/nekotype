@@ -39,7 +39,7 @@ describe('learning section: with answers', () => {
     container.remove();
   });
 
-  it('shows the streaks, both tracks, the session line and a chart with gaps; the section follows the switch', async () => {
+  it('shows the streak with its dotted days, the totals and a chart with gaps', async () => {
     const today = localDay(Date.now());
     const base = initialLearnState();
     const db = await getDatabase();
@@ -69,25 +69,29 @@ describe('learning section: with answers', () => {
     render(<StatsPage />, container);
     await act(settle);
 
-    const text = (id: string): string | null | undefined =>
-      container.querySelector(`[data-testid="${id}"]`)?.textContent;
     const stats = Array.from(container.querySelectorAll('.text-mono-stat')).map(
       (el) => el.parentElement?.parentElement?.textContent,
     );
     expect(stats).toEqual([
-      `${t('stats.learn.streakCurrent')}3days`,
-      `${t('stats.learn.streakBest')}3days`,
       `${t('stats.learn.masteredTrack', { track: t('learn.track.hiragana') })}0of 104`,
       `${t('stats.learn.masteredTrack', { track: t('learn.track.katakana') })}0of 125`,
+      `${t('stats.learn.sessionsStarted')}5`,
+      `${t('stats.learn.sessionsFinished')}4`,
     ]);
-    expect(text('stats-sessions')).toBe('learning sessions: 5 started · 4 finished');
-    // One section at a time: the typing section is not on the page, the learning one is selected.
+    // The streak column: the number, the best run and the active days of the last 30.
+    expect(container.querySelector('[data-testid="stats-streak"]')?.textContent).toBe('3');
+    expect(container.querySelector('[data-testid="stats-active-30"]')?.textContent).toBe(
+      'active days in the last 30: 6',
+    );
+    expect(container.textContent).toContain('best: 3 days');
+    // The dotted days of the map are the days of the streak: today and the two before it.
+    const dotted = Array.from(container.querySelectorAll('[data-testid="activity-cell"].is-run'));
+    expect(dotted).toHaveLength(3);
+    expect(dotted.at(-1)?.classList.contains('is-today')).toBe(true);
+    // No section switch, no typing section, no session line below the chart.
     expect(container.querySelector('h1')?.textContent).toBe(t('page.stats'));
-    expect(container.textContent).not.toContain(t('stats.typing.empty.title'));
-    expect(
-      container.querySelector(`[aria-label="${t('stats.section.label')}"] [aria-checked="true"]`)
-        ?.textContent,
-    ).toBe(t('stats.section.learning'));
+    expect(container.querySelectorAll('[role="radiogroup"]').length).toBe(1);
+    expect(container.querySelector('[data-testid="stats-sessions"]')).toBeNull();
     expect(container.textContent).toContain(`hiragana · ${t('stats.learn.answerCaptionDay')}`);
 
     // One bar per day with answers (30 days by default); the gap days have none.
@@ -109,16 +113,5 @@ describe('learning section: with answers', () => {
     // Only hiragana has answers: the chart shows it and there is no track switch.
     expect(container.querySelector(`[aria-label="${t('learn.track.label')}"]`)).toBeNull();
     expect(learnTrack.value).toBe('hiragana');
-
-    // The typing section has no data: its empty state, and the hash follows the switch.
-    const typingTab = Array.from(container.querySelectorAll('[role="radio"]')).find(
-      (el) => el.textContent === t('stats.section.typing'),
-    );
-    await act(() => {
-      typingTab?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-    expect(window.location.hash).toBe('#typing');
-    expect(container.textContent).toContain(t('stats.typing.empty.title'));
-    expect(container.querySelector('[data-testid="stats-median-chart"]')).toBeNull();
   });
 });

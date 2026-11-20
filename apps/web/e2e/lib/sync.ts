@@ -50,7 +50,10 @@ export async function playLearningSession(page: Page): Promise<void> {
   await answerSession(page);
 }
 
-/** The sessions line of `/stats`, which the other device reads (`learning sessions: …`). */
-export function sessionsLine(page: Page): Locator {
-  return page.getByTestId('stats-sessions');
+/** The totals of `/stats` that the other device reads: sessions started and finished. */
+export function sessionCounts(page: Page): { started: Locator; finished: Locator } {
+  return {
+    started: page.getByTestId('stats-started'),
+    finished: page.getByTestId('stats-finished'),
+  };
 }

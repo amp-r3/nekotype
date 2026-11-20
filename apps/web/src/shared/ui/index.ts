@@ -7,9 +7,6 @@ export type { DialogProps } from './dialog';
 export { Segmented } from './segmented';
 export type { SegmentedProps, SegmentedOption } from './segmented';
 
-export { Toggle } from './toggle';
-export type { ToggleProps } from './toggle';
-
 export { Switch } from './switch';
 export type { SwitchProps } from './switch';
 

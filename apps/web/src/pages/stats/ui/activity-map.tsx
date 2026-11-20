@@ -1,36 +1,51 @@
 import type { JSX } from 'preact';
-import { useMemo, useRef, useState } from 'preact/hooks';
+import { useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { locale, t, tPlural } from '@/shared/i18n';
 import { cx } from '@/shared/lib';
 import { dayStart } from '@/entities/learn';
-import { levelOf, gridDays } from '../lib/activity';
+import { fitMap, gridDays, levelOf } from '../lib/activity';
 import type { ActivityDay } from '../lib/activity';
 import { mondayOf } from '../lib/days';
 
-const NONE: ActivityDay = { answers: 0, tests: 0, active: false };
+const NONE: ActivityDay = { answers: 0, active: false, run: false };
 const LEVELS = [0, 1, 2, 3, 4, 5] as const;
 const MONTH_GAP = 3;
 
 type Props = {
   readonly days: ReadonlyMap<number, ActivityDay>;
   readonly today: number;
-  /** Columns, already limited for the screen. */
-  readonly weeks: number;
 };
 
 function swatch(classes: string, key: string | number): JSX.Element {
   return <span key={key} className={`nk-am__cell nk-am__sw ${classes}`} aria-hidden="true" />;
 }
 
-// Activity by day: the fill is the recall answers of the day, a square is a typing test, the
-// border is today (design ActivityMap). One Tab stop; arrows move by a day or a week.
-export function ActivityMap({ days, today, weeks }: Props): JSX.Element {
+// Activity by day: the fill is the recall answers of the day, a dot is a day of the current
+// streak, the border is today (design ActivityMap, decision 137). It fills the width it is given.
+// One Tab stop; arrows move by a day or a week.
+export function ActivityMap({ days, today }: Props): JSX.Element {
+  const figure = useRef<HTMLElement>(null);
+  const [width, setWidth] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const element = figure.current;
+    if (element === null || typeof ResizeObserver !== 'function') return undefined;
+    const observer = new ResizeObserver((entries) => {
+      const next = Math.floor(entries[0]?.contentRect.width ?? 0);
+      if (next > 0) setWidth(next);
+    });
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+  const { weeks, cell } = fitMap(width);
   const list = gridDays(today, weeks);
   const count = list.length;
   const [hover, setHover] = useState<number | null>(null);
-  const [focus, setFocus] = useState(count - 1);
+  const [focus, setFocus] = useState<number | null>(null);
   const grid = useRef<HTMLDivElement>(null);
-  const current = Math.min(focus, count - 1);
+  // Until a cell is chosen the Tab stop is today, whatever the width makes of the weeks.
+  const current = focus === null ? count - 1 : Math.min(focus, count - 1);
 
   const { dateFormat, monthFormat, weekdayFormat } = useMemo(
     () => ({
@@ -45,13 +60,10 @@ export function ActivityMap({ days, today, weeks }: Props): JSX.Element {
   const lines = (index: number): string[] => {
     const day = list[index] ?? today;
     const info = days.get(day) ?? NONE;
-    const numbers = [
-      info.answers > 0 ? tPlural('stats.answers', info.answers) : '',
-      info.tests > 0 ? tPlural('stats.tests', info.tests) : '',
-    ].filter((part) => part !== '');
     return [
       dateFormat.format(dayStart(day)),
-      numbers.length > 0 ? numbers.join(' · ') : t('stats.activity.none'),
+      info.answers > 0 ? tPlural('stats.answers', info.answers) : t('stats.activity.none'),
+      ...(info.run ? [t('stats.activity.run')] : []),
       ...(index === count - 1 ? [t('stats.activity.today')] : []),
     ];
   };
@@ -94,7 +106,12 @@ export function ActivityMap({ days, today, weeks }: Props): JSX.Element {
   const tipCol = shown === null ? 0 : Math.floor(shown / 7);
 
   return (
-    <figure className="nk-am" style={{ '--nk-am-weeks': weeks }} data-testid="activity-map">
+    <figure
+      ref={figure}
+      className="nk-am"
+      style={{ '--nk-am-weeks': weeks, '--nk-am-cell': `${cell}px` }}
+      data-testid="activity-map"
+    >
       <div className="nk-am__months text-mono-small font-mono" aria-hidden="true">
         {months.map((month) => (
           <span key={month.col} style={{ gridColumn: month.col + 1 }}>
@@ -123,7 +140,7 @@ export function ActivityMap({ days, today, weeks }: Props): JSX.Element {
           const classes = [
             'nk-am__cell',
             `is-l${levelOf(info.answers, info.active)}`,
-            info.tests > 0 ? 'is-test' : '',
+            info.run ? 'is-run' : '',
             index === count - 1 ? 'is-today' : '',
           ].join(' ');
           return (
@@ -174,8 +191,8 @@ export function ActivityMap({ days, today, weeks }: Props): JSX.Element {
           {t('stats.activity.more')}
         </span>
         <span className="nk-am__legend-item">
-          {swatch('is-l2 is-test', 'test')}
-          {t('stats.activity.test')}
+          {swatch('is-l2 is-run', 'run')}
+          {t('stats.activity.run')}
         </span>
         <span className="nk-am__legend-item">
           {swatch('is-l0 is-today', 'today')}

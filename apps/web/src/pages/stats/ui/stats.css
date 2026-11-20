@@ -1,4 +1,4 @@
-/* The result chart of /stats (design ResultChart). Lives here, not in the initial stylesheet, so it
+/* The answer-time chart of /stats (design ResultChart). Lives here, not in the initial stylesheet, so it
    ships with the lazy chunk (S17). `nk-rc`, because `nk-chart` is the kana chart's (index.css). */
 .nk-rc {
   position: relative;
@@ -22,48 +22,6 @@
   fill: var(--fur-dim);
 }
 
-.nk-rc__val {
-  fill: var(--fur);
-}
-
-/* The middle half of the last tests, then the median over it. Both come in on mount (S20). */
-.nk-rc__band {
-  fill: var(--heat-fur-1);
-  animation: nk-rc-in var(--dur-draw) var(--ease-out) both;
-}
-
-.nk-rc__line {
-  fill: none;
-  stroke: var(--chart-median);
-  stroke-width: var(--stroke-mark);
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  animation: nk-rc-draw var(--dur-draw) var(--ease-out) both;
-}
-
-@keyframes nk-rc-in {
-  from {
-    opacity: 0;
-  }
-}
-
-@keyframes nk-rc-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nk-rc__band,
-  .nk-rc__line {
-    animation: none;
-  }
-}
-
 .nk-rc__cursor {
   stroke: var(--chart-cursor);
   stroke-width: var(--stroke-hair);
@@ -73,27 +31,6 @@
   fill: none;
   stroke: var(--chart-cursor);
   stroke-width: var(--stroke-mark);
-}
-
-/* One test; the ring in the page colour keeps overlapping tests apart. */
-.nk-rc__pt {
-  fill: var(--fur-dim);
-  stroke: var(--bg);
-  stroke-width: var(--stroke-hair);
-}
-
-/* The personal best: a ring, like the badge outline. */
-.nk-rc__pt--best {
-  fill: var(--bg);
-  stroke: var(--eye);
-  stroke-width: var(--stroke-mark);
-}
-
-/* A repeat. */
-.nk-rc__pt--hollow {
-  fill: var(--bg);
-  stroke: var(--fur-dim);
-  stroke-width: var(--stroke-hair);
 }
 
 .nk-rc__tip {
@@ -138,21 +75,22 @@
   fill: var(--chart-median);
 }
 
-/* The activity map: a week per column, a day per cell (design ActivityMap). `nk-am`. */
+/* The activity map: a week per column, a day per cell (design ActivityMap, decision 137). The
+   cell size comes from the width the map has (`fitMap`), so the frame never depends on the history. */
 .nk-am {
-  --nk-am-step: calc(var(--space-4) + var(--space-1));
+  --nk-am-cell: var(--space-4);
+  --nk-am-step: calc(var(--nk-am-cell) + var(--space-1));
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: var(--space-6) minmax(0, 1fr);
   gap: var(--space-1) var(--space-2);
   margin: 0;
-  width: max-content;
-  max-width: 100%;
+  width: 100%;
 }
 
 .nk-am__months {
   grid-column: 2;
   display: grid;
-  grid-template-columns: repeat(var(--nk-am-weeks), var(--space-4));
+  grid-template-columns: repeat(var(--nk-am-weeks), var(--nk-am-cell));
   column-gap: var(--space-1);
   height: var(--space-4);
   color: var(--fur-dim);
@@ -162,7 +100,7 @@
 .nk-am__wd {
   grid-column: 1;
   display: grid;
-  grid-template-rows: repeat(7, var(--space-4));
+  grid-template-rows: repeat(7, var(--nk-am-cell));
   row-gap: var(--space-1);
   align-items: center;
   color: var(--fur-dim);
@@ -172,23 +110,29 @@
   grid-column: 2;
   position: relative;
   display: grid;
-  grid-template-rows: repeat(7, var(--space-4));
+  grid-template-rows: repeat(7, var(--nk-am-cell));
   grid-auto-flow: column;
-  grid-auto-columns: var(--space-4);
+  grid-auto-columns: var(--nk-am-cell);
   gap: var(--space-1);
 }
 
 .nk-am__cell {
   position: relative;
   box-sizing: border-box;
-  width: var(--space-4);
-  height: var(--space-4);
+  width: var(--nk-am-cell);
+  height: var(--nk-am-cell);
   padding: 0;
   border: var(--stroke-hair) solid transparent;
   border-radius: var(--radius-xs);
   background: transparent;
   color: var(--fur-dim);
   cursor: default;
+}
+
+/* The legend swatches keep the base size. */
+.nk-am__sw {
+  width: var(--space-4);
+  height: var(--space-4);
 }
 
 /* No answers: an outline and no fill. */
@@ -219,17 +163,22 @@
   color: var(--on-fur);
 }
 
-/* A finished typing test that day: a square in the cell's ink. */
-.nk-am__cell.is-test::after {
+/* A day of the current streak: a dot in the cell's ink, a quarter of the cell, at least space-1. */
+.nk-am__cell.is-run::after {
   content: '';
   position: absolute;
   left: 50%;
   top: 50%;
+  width: max(var(--space-1), calc(var(--nk-am-cell) / 4));
+  height: max(var(--space-1), calc(var(--nk-am-cell) / 4));
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.nk-am__sw.is-run::after {
   width: var(--space-1);
   height: var(--space-1);
-  margin: calc(var(--space-1) / -2);
-  border-radius: var(--radius-xs);
-  background: currentColor;
 }
 
 .nk-am__cell.is-today {
@@ -256,7 +205,7 @@ button.nk-am__cell.is-today:hover {
   color: var(--on-fur);
   white-space: nowrap;
   pointer-events: none;
-  left: calc(var(--c) * var(--nk-am-step) + var(--space-2));
+  left: calc(var(--c) * var(--nk-am-step) + var(--nk-am-cell) / 2);
   top: calc(var(--r) * var(--nk-am-step) - var(--space-2));
   transform: translate(-50%, -100%);
 }
@@ -288,36 +237,4 @@ button.nk-am__cell.is-today:hover {
 
 .nk-am__sw {
   flex: none;
-}
-
-/* ---- Weak kana in typing: the kana table filled by the share of attempts with an error ------- */
-
-.nk-cell.nk-heat.is-untyped {
-  border-color: var(--line);
-}
-
-.nk-cell.nk-heat.is-heat-0 {
-  color: var(--fur);
-}
-
-.nk-cell.nk-heat.is-heat-1 {
-  background: var(--heat-miss-1);
-}
-
-.nk-cell.nk-heat.is-heat-2 {
-  background: var(--heat-miss-2);
-}
-
-.nk-cell.nk-heat.is-heat-3 {
-  background: var(--heat-miss-3);
-}
-
-.nk-cell.nk-heat.is-heat-4 {
-  background: var(--heat-miss-4);
-  color: var(--on-fur);
-}
-
-.nk-cell.nk-heat.is-heat-5 {
-  background: var(--heat-miss-5);
-  color: var(--on-fur);
 }
