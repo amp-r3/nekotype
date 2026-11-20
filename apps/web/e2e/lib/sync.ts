@@ -37,6 +37,8 @@ export async function expectSyncStatus(page: Page, status: string): Promise<void
 export async function answerSession(page: Page): Promise<void> {
   for (let n = 1; n <= 25; n++) {
     await expect(page.getByTestId('task-session')).toHaveText(`learning · ${String(n)} of 25`);
+    // A key pressed before the hidden field has the focus is ignored by design.
+    await expect(page.getByLabel('Kana answer input')).toBeFocused();
     await answer(page, false);
   }
   await expect(page.getByRole('heading', { name: 'session summary' })).toBeVisible();
