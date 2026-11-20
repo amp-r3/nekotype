@@ -8,7 +8,7 @@ One task of a learning or review session on `/` (ADR 058): the session line, the
 
 | kind | prompt | input |
 | --- | --- | --- |
-| introduction | `new kana` / `новая кана` (`ui-caption`, `fur-dim`); the kana in `jp-solo` (`jp-solo-sm` below 640px), `fur`; under it the romaji as a ghost hint — `mono-counter` 24px, `untyped` | the user types the shown romaji once; **only the shown spelling is accepted** — another spelling of the same kana (`hu` for ふ `fu`, `si` for し `shi`) is a rejected key: the caret flashes, nothing is recorded (decision 96). Typed letters turn `fur`, like typed text in the stream; the `eye` caret stands before the next letter. A rejected key flashes the caret. Nothing is timed, no errors are recorded. |
+| introduction | `new kana` / `новая кана` (`ui-caption`, `fur-dim`); the kana in `jp-solo` (`jp-solo-sm` below 640px), `fur`; under it the romaji as a ghost hint — `mono-counter` 24px, `untyped` | the user types the shown romaji once; **only the shown spelling is accepted** — another spelling of the same kana (`hu` for ふ `fu`, `si` for し `shi`) is a rejected key: the caret flashes, nothing is recorded (decision 96). Typed letters of the ghost hint turn from `untyped` to `fur`; the `eye` caret stands before the next letter. A rejected key flashes the caret. Nothing is timed, no errors are recorded. |
 | recall | the kana in `jp-solo` / `jp-solo-sm`, `fur` — the question, the most contrasting element on screen (principle 1); the answer time runs from its display, so it is never dimmed. The `eye` caret and buffer show that no answer has been given yet | caret before the kana; the romaji buffer under it from the caret (`eye`, `mono-romaji`; `mono-small` below 640px). The buffer's line is reserved — the kana never moves. ぬ: `n` → buffer `n`; `nu` → done. きゃ: `k`, `ky`, `kya`. A rejected key (`m` for ぬ) flashes the caret `miss`; the error is recorded, the answer goes on until the kana is typed in full. |
 | recognition | the romaji in `mono-hero` (`mono-hero-sm` below 640px), `fur` | four `OptionCard`s in one row; keys `1`–`4` (number row and numeric keypad), click or tap |
 
@@ -25,7 +25,7 @@ One task of a learning or review session on `/` (ADR 058): the session line, the
 
 **Notice line** (one at a time, reserved, `control-h-sm` high): the revealed romaji after `Esc` — `Notice reveal`, `revealed: nu` / `ответ: nu` (counts as an error); `Kbd enter` + `next`; the layout and IME notices of the input source; `the task started over: the tab was hidden` / `задание заново: вкладка была скрыта`.
 
-**Hint line:** recall — `Kbd esc` + `show the romaji` / `показать ромадзи`. Under `pointer: coarse` there is no Esc on the on-screen keyboard: the line holds a `show the romaji` text button instead — same effect, counts as an error. The same button replaces the `esc` hint on `/type`. On the right, reserved: `click to focus` / `нажмите для ввода`.
+**Hint line:** recall — `Kbd esc` + `show the romaji` / `показать ромадзи`. Under `pointer: coarse` there is no Esc on the on-screen keyboard: the line holds a `show the romaji` text button instead — same effect, counts as an error. On the right, reserved: `click to focus` / `нажмите для ввода`.
 
 **Focus and tabs:** when the window loses focus the prompt dims to 25% and `return to the window to continue` appears; when the hidden input loses focus while the window keeps it, `click to focus` appears. If the tab is hidden during a task, the task starts over (`reset`): input cleared, time reset; an error made before stays recorded.
 
@@ -44,4 +44,4 @@ One task of a learning or review session on `/` (ADR 058): the session line, the
 
 Only `transform` and `opacity` animate (caret move `dur-caret`, flash `dur-reject`, dimming `dur-fade`); no layout changes on a keystroke.
 
-The sound of the kana after each task (from P6) has no UI here: no button, no indicator; only the setting in `/settings`. A task never waits for the sound.
+The sound of the kana after each task (from P8) has no UI here: no button, no indicator; only the setting in `/settings`. A task never waits for the sound.
