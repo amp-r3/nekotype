@@ -351,7 +351,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Docs:** an ADR (D5–D9); spec S7–S10, S12; `docs/architecture/` (`sync.md`, `entities.md`); `README.md` (what syncs); `AGENTS.md` (the "Learning and typing data are separate (A39)" rule goes; "The raw keystroke log must never be persisted" stays).
 - **Preview URL:** the first load starts from empty data (the schema reset) with default settings; a learning session, a reload, the progress is kept; reset progress empties it. Locally with `.dev.vars`: sign in, a learning session syncs; a second browser profile signs in and sees it.
 - **Done when:** `verify:quick` passes and CI is green with the sync e2e; the initial JS did not grow; M2 was done before the merge.
-- **Production check (M3):** —
+- **Production check (M3):** done 2026-11-20. Migrations applied; guest start, sign-in, progress and `synced` after a session checked on production. Found and fixed: the status stayed `pending` because a fractional `settingsSyncedAt` was read as absent (#187). Accepted: the exact URL `/type` is still answered from a stale Cloudflare edge cache (old `index.html`) until it expires, at most 7 days; the code and fresh URLs answer 404.
 - **Size:** about 3,000 lines deleted, about 1,000 written. If the session cannot hold it, the executor proposes a split to the maintainer; the format change of client and server stays in one pull request, because a deployment carries both.
 
 ### PR 5 — Drop the typing table and columns
