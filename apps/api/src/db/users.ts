@@ -1,12 +1,7 @@
 import type { OAuthProfile, OAuthProviderName } from '../env';
 import { corrupt, isRow, textOf } from './rows';
 
-/**
- * The initial `user_stats` row (p5-plan.md, D6): the neutral element of every column. The two typing
- * columns of P5 are still `NOT NULL` until migration 0003 drops them (p6-plan.md, D9), so the insert
- * names them.
- */
-const TYPING_COLUMNS_UNTIL_0003 = '{}';
+/** The initial `user_stats` row (p5-plan.md, D6): the neutral element of every column. */
 
 const INITIAL_STATS = {
   counters: JSON.stringify({ started: 0, finished: 0 }),
@@ -79,19 +74,17 @@ export async function createUser(
     linkOAuthAccountStatement(db, userId, provider, profile.providerUserId),
     db
       .prepare(
-        `INSERT INTO user_stats (user_id, kana_stats, counters, learn, learn_recent, learn_buckets,
-           bucket_newest, typing_records, device_seq, last_sync_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+        `INSERT INTO user_stats (user_id, counters, learn, learn_recent, learn_buckets,
+           bucket_newest, device_seq, last_sync_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
       )
       .bind(
         userId,
-        TYPING_COLUMNS_UNTIL_0003,
         INITIAL_STATS.counters,
         INITIAL_STATS.learn,
         INITIAL_STATS.learn_recent,
         INITIAL_STATS.learn_buckets,
         INITIAL_STATS.bucket_newest,
-        TYPING_COLUMNS_UNTIL_0003,
         INITIAL_STATS.device_seq,
       ),
   ]);

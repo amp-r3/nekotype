@@ -25,6 +25,20 @@ describe('the migrations', () => {
       expect(names).toContain(expected);
     }
   });
+
+  it('hold no typing data (0003)', async () => {
+    const { results } = await env.DB.prepare('SELECT name FROM pragma_table_info(?)')
+      .bind('user_stats')
+      .all<{ name: string }>();
+    const columns = results.map((row) => row.name);
+    expect(columns).not.toContain('kana_stats');
+    expect(columns).not.toContain('typing_records');
+    expect(columns).toContain('counters');
+    const tables = await env.DB.prepare(
+      "SELECT name FROM sqlite_master WHERE name IN ('results', 'results_user_time')",
+    ).all();
+    expect(tables.results).toEqual([]);
+  });
 });
 
 describe('the application', () => {

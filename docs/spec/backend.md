@@ -34,33 +34,25 @@ CREATE TABLE user_settings (
   user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   json TEXT NOT NULL, updated_at INTEGER NOT NULL
 );
--- counters, learning state and last applied seq per device in one row; `kana_stats` and `typing_records`
--- are empty and unused since P6 (migration `0002`) until a migration drops them;
+-- counters, learning state and last applied seq per device in one row;
 -- the learning state is split so that its large parts are updated per key (ADR 078, 082)
 CREATE TABLE user_stats (
   user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-  kana_stats TEXT NOT NULL, counters TEXT NOT NULL,
+  counters TEXT NOT NULL,
   learn TEXT NOT NULL,         -- unlocked, entries, stats, activeDays
   learn_recent TEXT NOT NULL,  -- kana → recent recall answers
   learn_buckets TEXT NOT NULL, -- track → day → bucket → count
   bucket_newest TEXT NOT NULL, -- track → newest day of learn_buckets
-  typing_records TEXT NOT NULL, device_seq TEXT NOT NULL, last_sync_at INTEGER NOT NULL,
+  device_seq TEXT NOT NULL, last_sync_at INTEGER NOT NULL,
   version INTEGER NOT NULL DEFAULT 0
 );
--- Unused since P6: empty, nothing reads or writes it until a migration drops it.
-CREATE TABLE results (
-  id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  ended_at INTEGER NOT NULL, content TEXT NOT NULL, script TEXT NOT NULL, strictness TEXT NOT NULL,
-  config TEXT NOT NULL, kpm REAL NOT NULL, kana_accuracy REAL NOT NULL, json TEXT NOT NULL
-);
-CREATE INDEX results_user_time ON results(user_id, ended_at DESC);
 CREATE TABLE content_reports (
   id TEXT PRIMARY KEY, user_id TEXT, item_id TEXT NOT NULL, content_version TEXT NOT NULL,
   reason TEXT NOT NULL, comment TEXT, created_at INTEGER NOT NULL
 );
 ```
 
-**Migrations** are the files `apps/api/migrations/NNNN_title.sql`; `0001_init.sql` is the schema above; `0002_learning_only.sql` rewrites the data of P5 for learning only (flat counters, settings without `typing`, the typing columns emptied, `results` cleared) and changes no schema. A merged migration is never edited, and each one works with the code deployed before it (new tables, new columns with defaults), because the preview database is shared by every pull request and production is migrated before its deploy. CI applies them with `wrangler d1 migrations apply`: to `nekotype-preview` before a preview deployment, and to `nekotype` after the release candidate's smoke test and before the production deploy ([ADR 083](../adr/083-api-package-and-pages-configuration.md)). Locally, `pnpm run db:migrate:local`.
+**Migrations** are the files `apps/api/migrations/NNNN_title.sql`; `0001_init.sql` creates the schema of P5 and the schema above is what all the migrations leave; `0002_learning_only.sql` rewrites the data of P5 for learning only (flat counters, settings without `typing`, the typing columns emptied, `results` cleared) and changes no schema; `0003_drop_typing.sql` drops the table `results` and the columns `kana_stats` and `typing_records` of `user_stats`. A merged migration is never edited, and each one works with the code deployed before it (new tables, new columns with defaults), because the preview database is shared by every pull request and production is migrated before its deploy. CI applies them with `wrangler d1 migrations apply`: to `nekotype-preview` before a preview deployment, and to `nekotype` after the release candidate's smoke test and before the production deploy ([ADR 083](../adr/083-api-package-and-pages-configuration.md)). Locally, `pnpm run db:migrate:local`.
 
 `user_stats.device_seq` maps `deviceId` → `{ "seq": number, "at": number }`: the last applied `seq` and the time it was applied, which the 90-day cleanup needs (see [Batches](storage-sync.md#batches)). The `user_stats` row is created with the user and its `oauth_accounts` row, in one `batch()`, in the OAuth callback, so a sync always finds it. It starts with empty documents (`bucket_newest` = `{}`: a track without a key has no days) and `last_sync_at` = 0.
 
