@@ -9,8 +9,8 @@ export const META_STORE = 'meta';
 
 /**
  * What a store reads to build its view besides its own delta (p5-plan.md, D18). Each store checks
- * only the part it reads: the guards of the whole snapshot would bring the typing rules into the
- * first screen's chunk (ADR 087).
+ * only the part it reads, so a broken part it does not read cannot hide its own, and the guards of
+ * the whole snapshot stay out of the first screen's chunk (ADR 087).
  */
 export type SyncBase = {
   /** The server's snapshot, unchecked; `undefined` for a guest. */

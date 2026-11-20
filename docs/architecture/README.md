@@ -1,10 +1,10 @@
 # Architecture of the current code
 
-Nekotype is a high-performance, keyboard-first Japanese kana speed trainer engineered around a Non-deterministic Finite Automaton (NFA) romaji engine, fine-grained Preact signals, and strict Feature-Sliced Design (FSD) architecture.
+Nekotype is a keyboard-first web app for learning Japanese kana, engineered around a Non-deterministic Finite Automaton (NFA) romaji engine, fine-grained Preact signals, and strict Feature-Sliced Design (FSD) architecture.
 
-> **Scope.** Describes the code as it stands after phase P5 (backend and sync): the application in `apps/web/src/`, the two packages it uses, `packages/engine` and `packages/shared`, the content pipeline `packages/content`, whose generated files the application reads, and the API in `apps/api` with its measurement tool `apps/bench`. Where it disagrees with the [MVP specification](../spec/README.md), the specification applies. These files are updated in the pull request that changes the code they describe.
+> **Scope.** Describes the code as it stands after phase P6 (learning only): the application in `apps/web/src/`, the two packages it uses, `packages/engine` and `packages/shared`, the content pipeline `packages/content`, whose generated files are committed into the application's tree but not shipped before P10, and the API in `apps/api` with its measurement tool `apps/bench`. Where it disagrees with the [MVP specification](../spec/README.md), the specification applies. These files are updated in the pull request that changes the code they describe.
 
-> **Direction.** [ADR 058](../adr/058-learning-first.md) made learning the core of the MVP. Since P3, `/` is the learning screen. [ADR 093](../adr/093-learning-only-words-in-learning.md) removes the typing trainer: in P6 PR 1 the `/type` route and the trainer are gone, and the typing data and the content chunks follow in later pull requests of the phase. Since P5 a signed-in user's data syncs through Pages Functions and D1 ([sync.md](sync.md)).
+> **Direction.** [ADR 058](../adr/058-learning-first.md) made learning the core of the MVP. Since P3, `/` is the learning screen. [ADR 093](../adr/093-learning-only-words-in-learning.md) removed the typing trainer in P6: the `/type` route, the trainer, its data in the client, the sync and D1, and the content chunks of the build; words come back as part of learning in P10. Since P5 a signed-in user's data syncs through Pages Functions and D1 ([sync.md](sync.md)).
 
 ## Contents
 

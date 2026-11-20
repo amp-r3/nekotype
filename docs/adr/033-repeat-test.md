@@ -1,6 +1,6 @@
 # ADR 033: Repeat Test
 
-- **Status:** In force.
+- **Status:** Superseded by [ADR 093](093-learning-only-words-in-learning.md): the repeat of a typing test left with the typing trainer in P6.
 - **Context:** The design system had a "Repeat" button on the results screen that the spec did not define. With new prompts it would duplicate "Next test", so it needs behaviour of its own. Repeating known text is easier, which affects personal bests.
 - **Decision:**
   - "Repeat" runs the prompts of the finished test in the same order with the same settings. When a time or zen test runs out of them, new prompts follow.

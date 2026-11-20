@@ -6,18 +6,18 @@
 
 > A lightweight, keyboard-first web app for learning Hiragana and Katakana from zero, with adaptive unlocking, spaced reviews and progress tracking, instantaneous feedback, dual-tier romaji matching and zero latency.
 
-**Status.** The code implements phases P0–P5 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md), [ADR 093](docs/adr/093-learning-only-words-in-learning.md)): `/` teaches hiragana and katakana one kana at a time with introductions, recall, recognition and spaced reviews, with progress in IndexedDB. The typing trainer is being removed in phase P6: its screen, `/type`, is gone (it answers 404), and so are its data: what syncs is learning progress and settings only (sync format 2, IndexedDB schema 5; [ADR 096](docs/adr/096-learning-only-data-and-sync-format-2.md)). Since P5 a user can sign in with Google or GitHub on production: progress and settings sync through Pages Functions and D1, the account can be deleted, and `POST /api/reports` takes reports of a wrong reading or translation (Turnstile). Next come the adaptive knowledge model (P7), kana audio (P8), a placement test and mnemonics (P9), then words in learning (P10) and vocabulary (P11).
+**Status.** The code implements phases P0–P6 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md), [ADR 093](docs/adr/093-learning-only-words-in-learning.md)): `/` teaches hiragana and katakana one kana at a time with introductions, recall, recognition and spaced reviews, with progress in IndexedDB. Phase P6 removed the typing trainer: its screen, `/type`, answers 404, and its data are gone from the client, the sync and D1: what syncs is learning progress and settings only (sync format 2, IndexedDB schema 5; [ADR 096](docs/adr/096-learning-only-data-and-sync-format-2.md)). Since P5 a user can sign in with Google or GitHub on production: progress and settings sync through Pages Functions and D1, the account can be deleted, and `POST /api/reports` takes reports of a wrong reading or translation (Turnstile; the client's report dialog returns with words in P10). Next come the adaptive knowledge model (P7), kana audio (P8), a placement test and mnemonics (P9), then words in learning (P10) and vocabulary (P11).
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Max%20Strict-blue.svg)](https://www.typescriptlang.org/)
 [![FSD: Verified](https://img.shields.io/badge/Architecture-Feature--Sliced%20Design-orange.svg)](https://feature-sliced.design/)
-[![Bundle Budget](https://img.shields.io/badge/First%20Load-99.2%20KB%20%2F%20160%20KB-success.svg)](#-performance-budgets)
+[![Bundle Budget](https://img.shields.io/badge/First%20Load-99.9%20KB%20%2F%20160%20KB-success.svg)](#-performance-budgets)
 
 ---
 
 ## ✨ Features
 
-- **🌱 Learning on `/`:** two tracks (hiragana, katakana); kana unlock one at a time when the answers to the unlocked ones are confident (10 answers, median at or under the target time, accuracy ≥ 90%); a session is 25 tasks (introduction, recall by typing, recognition among 4 options); spaced reviews in boxes 0–5; a kana chart, a streak and a daily answer-time chart on `/stats`. Learning and typing keep separate data.
+- **🌱 Learning on `/`:** two tracks (hiragana, katakana); kana unlock one at a time when the answers to the unlocked ones are confident (10 answers, median at or under the target time, accuracy ≥ 90%); a session is 25 tasks (introduction, recall by typing, recognition among 4 options); spaced reviews in boxes 0–5; a kana chart, a streak and a daily answer-time chart on `/stats`.
 - **⚡ Zero-Latency Input:** Driven by an immutable Non-deterministic Finite Automaton (NFA) engine and fine-grained Preact signals. Keystrokes of recall update without component tree re-renders.
 - **🎯 Two-Tier Romaji Matching:**
   - **Strict IME Mode:** Strictly enforces official Microsoft IME / Google Japanese Input romaji keystrokes (e.g. `ti` → ち, `thi` → ティ, `who` → ウォ, `wo` → を).
@@ -155,14 +155,14 @@ Nekotype adheres to strict first-load asset caps, checked by `pnpm run budget` (
 | Asset                      | Budget Limit | Actual (gzip / woff2)  | Status                    |
 | -------------------------- | ------------ | ---------------------- | ------------------------- |
 | **Initial HTML**           | $\le 5$ KB   | **0.42 KB**            | ✅ Passed                 |
-| **Initial JavaScript**     | $\le 35$ KB  | **29.51 KB**           | ✅ Passed                 |
-| **Initial CSS**            | $\le 10$ KB  | **8.48 KB**            | ✅ Passed                 |
+| **Initial JavaScript**     | $\le 35$ KB  | **31.06 KB**           | ✅ Passed                 |
+| **Initial CSS**            | $\le 10$ KB  | **7.64 KB**            | ✅ Passed                 |
 | **Noto Sans JP 400**       | $\le 45$ KB  | **20.38 KB** (woff2)   | ✅ Passed                 |
 | **JetBrains Mono 400/500** | $\le 45$ KB  | **10.79 / 10.61 KB**   | ✅ Passed                 |
 | **Golos Text 400/500**     | $\le 45$ KB  | **9.42 / 9.56 KB**     | ✅ Passed                 |
-| **Total First Load**       | $\le 160$ KB | **99.17 KB**           | ✅ Passed (62% of budget) |
+| **Total First Load**       | $\le 160$ KB | **99.88 KB**           | ✅ Passed (62% of budget) |
 | **Lazy content chunk**     | $\le 40$ KB  | none shipped (P10)     | —                         |
-| **Lazy route chunk**       | $\le 25$ KB  | **11.81 KB** (largest) | ✅ Passed                 |
+| **Lazy route chunk**       | $\le 25$ KB  | **10.09 KB** (largest) | ✅ Passed                 |
 
 ---
 

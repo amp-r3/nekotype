@@ -1,6 +1,6 @@
 # ADR 046: Trainer Lifecycle and Vocabulary Loading
 
-- **Status:** In force. Amended by [ADR 058](058-learning-first.md) from P3: item 4 has no fallback pool, so there is nothing to type until a failed load succeeds.
+- **Status:** Superseded by [ADR 093](093-learning-only-words-in-learning.md): the trainer and its vocabulary loading left in P6. Amended by [ADR 058](058-learning-first.md) from P3: item 4 has no fallback pool, so there is nothing to type until a failed load succeeds.
 - **Context:** Leaving the training screen removed the settings watchers but left the session timers running: a time test could end on another page and write statistics, which `metrics.md` forbids. A vocabulary chunk that arrived late restarted the trainer whatever the user was doing, so it destroyed a running test; one failed load rewrote the content setting to Single Kana for good; the loading flag was shared by both kinds, so one load cleared the other's notice; notices were inserted conditionally and moved the text.
 - **Decision:**
   1. Stopping the trainer resets its session, which clears every timer.

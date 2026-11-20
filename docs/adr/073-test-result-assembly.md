@@ -1,6 +1,6 @@
 # ADR 073: Test Result Assembly
 
-- **Status:** In force.
+- **Status:** Superseded by [ADR 093](093-learning-only-words-in-learning.md): `TestResult` left with the typing trainer in P6.
 - **Context:** The session knew how to count a test but not what a saved result needs: the settings, an id, the versions. Statistics were written per prompt to `localStorage` through a `stats` hook, so a discarded test still changed them, against D23. P4 stores a `TestResult` per test, with the kana statistics and the records, in IndexedDB.
 - **Decision:**
   1. The session only reports. When a test ends and is kept (`complete` or `manual` in this ADR's scope) it calls `onEnd(EndedTest)` once: times, `tokens` and `erroredTokens` (the unfinished prompt included), `items`, `keystrokes`, `rejectedKeystrokes`, `assisted` and `kanaDelta` (committed tokens and errored ones per kana). The per-prompt `stats.record` and `flush` hooks are gone.

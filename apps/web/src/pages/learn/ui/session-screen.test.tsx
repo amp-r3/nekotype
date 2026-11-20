@@ -289,7 +289,7 @@ describe('learning session screen', () => {
     );
   });
 
-  it('writes no IndexedDB record inside a keystroke handler, and does not touch typing progress', async () => {
+  it('writes no IndexedDB record inside a keystroke handler', async () => {
     const env = setup(11);
     await mount(env.session);
     await toTask(env, 'recall');
@@ -304,6 +304,5 @@ describe('learning session screen', () => {
     env.timers.flush();
     await tick();
     expect(env.writes.length).toBeGreaterThan(before);
-    expect(localStorage.getItem('kanaflow:progress:v1')).toBeNull();
   });
 });

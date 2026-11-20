@@ -16,4 +16,4 @@
   - The merge functions, the stores' delta code and the two wrapper methods add 1.8 KB gzip to the initial JS. Three changes take back 1.5 KB of it (31.58 KB, 0.26 KB over the end of PR 5): the part checks of item 8; `packages/shared/src/runtime.ts` holds re-exports only (the settings guards moved to `settings-runtime.ts`), because a barrel with code of its own keeps every module it re-exports, with each export a lazy chunk uses, in the initial chunk; the memory fallback (`memory-db.ts`) is a chunk loaded only when IndexedDB cannot be opened.
   - `LATENCY_PATHS` lists `entities/learn/model/` and `shared/lib/idb/`, because recall is one of the three measured runs.
   - Nothing sends or receives yet; PR 7 adds the engine.
-- **Status:** In force. Extends [ADR 072](072-delta-split-per-mode.md) and [ADR 082](082-sync-acknowledgement-without-snapshot.md).
+- **Status:** In force. Extends [ADR 072](072-delta-split-per-mode.md) and [ADR 082](082-sync-acknowledgement-without-snapshot.md). Amended by [ADR 096](096-learning-only-data-and-sync-format-2.md): the local database is schema 5, with one `delta` record (`learn`) and no `results` or `records` store.

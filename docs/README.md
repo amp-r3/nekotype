@@ -30,7 +30,6 @@ Start here. Each folder has its own `README.md` with an index.
 | What does the real `/api/sync` cost on Cloudflare? (P5 PR 5) | [research/2026-11-18-p5-sync-endpoint.md](research/2026-11-18-p5-sync-endpoint.md) |
 | Which variants of the sync were measured after ADR 081?      | [research/2026-11-16-p5-sync-variants.md](research/2026-11-16-p5-sync-variants.md) |
 | Did P5 meet its sync limits on Cloudflare? (P5 PR 13)        | [research/2026-11-19-p5-acceptance.md](research/2026-11-19-p5-acceptance.md)       |
-| What does P6 build, in which order, and what is decided?     | [../p6-plan.md](../p6-plan.md)                                                     |
 | What does the interface look like? Tokens, components, logo  | [design/README.md](design/README.md)                                               |
 | Why was something decided?                                   | [spec/decisions.md](spec/decisions.md) (A-items), then [adr/](adr/README.md)       |
 | How the current code is structured                           | [architecture/README.md](architecture/README.md)                                   |

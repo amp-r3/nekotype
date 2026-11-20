@@ -1,6 +1,6 @@
 # ADR 066: The `/about` Page: Sources, Terms and Paged Phrase Credits
 
-- **Status:** In force. Amends [ADR 059](059-design-system-v10.md).
+- **Status:** In force. Amends [ADR 059](059-design-system-v10.md). Amended by [ADR 094](094-design-system-without-typing.md) (design decision 132): the page shows only Nekotype's terms until a phase ships content; sources, phrase credits and their lazy chunk go, and the reserved sections are kana audio (P8) and data on this device (P12).
 - **Context:** [Content pipeline](../spec/content.md) ("Attribution and reporting") fixes what `/about` says: the four content sources and their licences, the terms of Nekotype itself as in [NOTICE.md](../../NOTICE.md), and a generated list of every phrase used in typing (300–500) with its Tatoeba sentence id, link and author usernames. P6 adds a kana audio credit and P7 a description of the data stored on the device. The design system had only a placeholder `ScreenAbout` with invented copy. The design export may not be edited by hand ([Design system](../design/README.md)), so the screen was drawn in the design artifact (decision 99 in `docs/design/source/decisions.md`) and exported again.
 - **Decision:**
   1. **Order.** Sources and licences · kana audio (P6) · Nekotype's terms · data on this device (P7) · phrase authors. The long list is last. The P6 and P7 sections are not rendered before their phase.

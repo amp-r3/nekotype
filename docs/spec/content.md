@@ -81,14 +81,14 @@ type ContentManifest = {
 };
 ```
 
-`contentVersion` is the first 12 hex digits of the SHA-256 over `<file name>\n<file bytes>\n` for `packages/content/sources.json` and then for every chunk file in the order of their names (`manifest.json` is not part of it). It contains no date, so the build stays reproducible; a unit test recomputes it from the committed files. The manifest is small enough to ship in the initial bundle and is the source of `TestResult.contentVersion`.
+`contentVersion` is the first 12 hex digits of the SHA-256 over `<file name>\n<file bytes>\n` for `packages/content/sources.json` and then for every chunk file in the order of their names (`manifest.json` is not part of it). It contains no date, so the build stays reproducible; a unit test recomputes it from the committed files. It names the build of the content: a content report carries the `contentVersion` of the item it reports (see [Backend](backend.md)).
 
 ## Build checks
 
 - Every item MUST compile with the engine in both strictness modes. An item that fails (for example, an unknown character) is excluded and listed in `packages/content/build-report.json`. The build also writes `ru-coverage.json` and `audit-sample.md` next to it.
 - **Exclusion threshold:** counted per source, after the selection filters above, and over compile failures only. The build fails if compile failures exceed 5% of the selected items of any source.
 - The glyph set (the kana table, every character of the generated chunks, and `ーっッゃゅょャュョァィゥェォ、。`) updates `glyphs.txt` and the font subset ([ADR 071](../adr/071-glyph-set-from-generated-content.md)); the font budget is in [Budgets and quality](quality.md).
-- The manifest carries `contentVersion`, which is written into every `TestResult`.
+- The manifest carries `contentVersion`.
 - Chunks are split by type and script; each chunk is at most 40 KB gzip.
 
 ## Attribution and reporting
