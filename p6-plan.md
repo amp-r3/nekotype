@@ -16,7 +16,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | D   | `docs/p6-design`            | done   | #181         |
 | 1   | `p6-01-remove-type`         | done   | #182         |
 | 2   | `p6-02-content-out`         | —      | —            |
-| 3   | `p6-03-stats-settings`      | —      | —            |
+| 3   | `p6-03-stats-settings`      | done   | #184         |
 | 4   | `p6-04-learning-only-data`  | —      | —            |
 | 5   | `p6-05-drop-typing-columns` | —      | —            |
 | 6   | `p6-06-close`               | —      | —            |
