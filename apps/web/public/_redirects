@@ -3,14 +3,12 @@
 # Each client-side route is answered with the single page application (status 200: a rewrite, the
 # address does not change). The destination is `/`, not `/index.html`: Pages redirects
 # `/index.html` to `/` (308), so a rewrite to it ends as a redirect and a reload of /learn lands on
-# the trainer (ADR 039). A trailing slash is the same route.
+# the learning screen (ADR 039). A trailing slash is the same route.
 #
 # There is deliberately no catch-all: an unknown path or a missing /assets/* file falls through to
 # 404.html and a real 404 status. A test keeps this list equal to ROUTE_PATHS in
 # src/app/route-paths.ts.
 
-/type / 200
-/type/ / 200
 /stats / 200
 /stats/ / 200
 /settings / 200

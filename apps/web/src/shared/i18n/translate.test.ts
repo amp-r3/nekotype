@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { en, t, locale, setLocale, initLocale, loadDictionaryPart } from './index';
+import { en, t, locale, setLocale, initLocale } from './index';
 import { ru } from './ru';
-import { typeEn } from './parts/type/en';
-import { typeRu } from './parts/type/ru';
 import { statsEn } from './parts/stats/en';
 import { statsRu } from './parts/stats/ru';
 import { settingsEn } from './parts/settings/en';
@@ -18,13 +16,10 @@ export type _CheckedRuEnParity = _AssertParity<_RuEnCompileTimeParity>;
 
 const PIECES: readonly (readonly [string, Record<string, string>, Record<string, string>])[] = [
   ['core', en, ru],
-  ['type', typeEn, typeRu],
   ['stats', statsEn, statsRu],
   ['settings', settingsEn, settingsRu],
   ['about', aboutEn, aboutRu],
 ];
-
-await loadDictionaryPart('type');
 
 describe('i18n: translations and locale handling', () => {
   it.each(PIECES)(
@@ -47,12 +42,11 @@ describe('i18n: translations and locale handling', () => {
   it('translates strings for active locale with parameter interpolation', async () => {
     await setLocale('en');
     expect(t('app.title')).toBe('Nekotype');
-    expect(t('stage.revealed')).toBe('revealed:');
+    expect(t('learn.mastered', { done: 7, total: 104 })).toBe('mastered 7 of 104');
 
     await setLocale('ru');
     expect(t('app.title')).toBe('Nekotype');
-    expect(t('config.script.hiragana')).toBe('хирагана');
-    expect(t('stage.revealed')).toBe('ответ:');
+    expect(t('learn.mastered', { done: 7, total: 104 })).toBe('освоено 7 из 104');
 
     // Reset back to en
     await setLocale('en');

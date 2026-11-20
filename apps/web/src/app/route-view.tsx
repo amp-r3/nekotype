@@ -1,10 +1,10 @@
 import type { JSX } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { t } from '@/shared/i18n';
+import { useEnterForNext } from '@/shared/lib';
 import { Button, Notice } from '@/shared/ui';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { settingsReady } from '@/entities/settings';
-import { useEnterForNext } from '@/features/training';
 import { isRoutePath } from './route-paths';
 import { ensureRoute, failedRoutes, loadedRoutes } from './route-state';
 
@@ -15,7 +15,7 @@ export type RouteViewProps = {
 
 /** An address the app does not have: the neutral cat, a line of text and `go home` (design 404). */
 function NotFound({ onHome }: { readonly onHome: () => void }): JSX.Element {
-  // Enter is `go home` wherever the focus is, as on the results (a control or a link keeps its own).
+  // Enter is `go home` wherever the focus is (a control or a link keeps its own).
   useEnterForNext(onHome);
   return (
     <EmptyState

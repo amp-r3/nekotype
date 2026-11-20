@@ -44,15 +44,7 @@ describe('input-adapter: keydown', () => {
     }
   });
 
-  it('Ctrl+Enter and Cmd+Enter finish a zen test (frontend.md, Keyboard)', () => {
-    expect(classifyKeyDown(keyEvent({ key: 'Enter', ctrlKey: true }))).toEqual({ kind: 'finish' });
-    expect(classifyKeyDown(keyEvent({ key: 'Enter', metaKey: true }))).toEqual({ kind: 'finish' });
-    expect(classifyKeyDown(keyEvent({ key: 'Enter', ctrlKey: true, metaKey: true }))).toEqual({
-      kind: 'finish',
-    });
-  });
-
-  it('any other combination with Enter, and Enter alone, is left to the browser', () => {
+  it('Enter, alone or with any modifier, is left to the browser', () => {
     expect(classifyKeyDown(keyEvent({ key: 'Enter' }))).toEqual({ kind: 'ignore' });
     expect(classifyKeyDown(keyEvent({ key: 'Enter', altKey: true }))).toEqual({ kind: 'ignore' });
     // Alt makes it another shortcut (AltGr is Ctrl+Alt on Windows).

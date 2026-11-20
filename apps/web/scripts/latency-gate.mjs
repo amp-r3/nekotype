@@ -3,19 +3,15 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 // Paths whose change can move keystroke latency, or what the latency test measures through: the
-// input source and the session behind it, the trainer screen the test types on, the prompts and
-// their lazy chunks, the lazy loading of the dictionary and the routes, the engine, the test itself
-// and the build. A pull request that touches one runs the latency gate in CI; the others do not
+// input source, the learning session and the screen the test answers on (recall), the prompts, the
+// lazy loading of the dictionary and the routes, the engine, the test itself and the build. A pull request that touches one runs the latency gate in CI; the others do not
 // (ADR 074, narrowed by ADR 075). Prefixes of repository paths. Stylesheets, unit tests and
 // documents under them never count (`LATENCY_IGNORED`).
 export const LATENCY_PATHS = [
   'apps/web/src/shared/lib/input/',
-  'apps/web/src/features/training/',
-  'apps/web/src/pages/trainer/index.ts',
-  'apps/web/src/pages/trainer/ui/trainer-page.tsx',
-  'apps/web/src/pages/trainer/ui/test-stage.tsx',
-  'apps/web/src/pages/trainer/ui/live-line.tsx',
-  'apps/web/src/pages/trainer/results-loader.ts',
+  'apps/web/src/pages/learn/',
+  'apps/web/src/shared/ui/kana-task.tsx',
+  'apps/web/src/shared/ui/task-controller.ts',
   'apps/web/src/entities/prompt/',
   'apps/web/src/entities/learn/model/',
   'apps/web/src/shared/lib/idb/',

@@ -42,7 +42,6 @@ export function useSessionInput(
         onIntent: (intent) => {
           session.handleIntent(intent);
         },
-        canFinish: () => false,
       }),
     [session],
   );

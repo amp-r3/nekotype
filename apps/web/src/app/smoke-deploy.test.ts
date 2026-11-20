@@ -71,10 +71,17 @@ describe('smoke test of a deployment', () => {
 
   it('catches a route that is redirected instead of served (the 308 of ADR 039)', async () => {
     const fetchFn = healthy({
-      '/type': () => new Response(null, { status: 308, headers: { location: '/' } }),
+      '/stats': () => new Response(null, { status: 308, headers: { location: '/' } }),
     });
     const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn });
-    expect(failures).toEqual(['/type should answer 200 with the application, got 308 -> /']);
+    expect(failures).toEqual(['/stats should answer 200 with the application, got 308 -> /']);
+  });
+
+  it('catches a retired route that is served again: /type answers 404, as /learn does', async () => {
+    const fetchFn = healthy({ '/type': () => page(200, HTML) });
+    const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn });
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toContain('/type should answer 404');
   });
 
   it('catches a route that answers 404 or a page that is not the application', async () => {

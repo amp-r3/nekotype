@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { typeEn } from './parts/type/en';
 import { statsEn } from './parts/stats/en';
 import { settingsEn } from './parts/settings/en';
 import { aboutEn } from './parts/about/en';
@@ -11,7 +10,6 @@ import { aboutEn } from './parts/about/en';
 const SRC = join(import.meta.dirname, '..', '..');
 
 const PARTS: readonly (readonly [string, Record<string, string>, RegExp])[] = [
-  ['type', typeEn, /^(pages\/trainer|features\/training)\//],
   ['stats', statsEn, /^pages\/stats\//],
   // The "another account" dialog loads the settings part before it shows (design decision 118).
   ['settings', settingsEn, /^(pages\/settings|features\/sync\/ui)\//],
@@ -44,7 +42,7 @@ describe('dictionary parts: a key of a screen part is used only by that screen',
   });
 
   it('reads the sources of every screen', () => {
-    expect(files.some((file) => file.path === 'pages/trainer/ui/test-stage.tsx')).toBe(true);
+    expect(files.some((file) => file.path === 'pages/stats/ui/stats-page.tsx')).toBe(true);
     expect(files.some((file) => file.path === 'pages/learn/ui/learn-page.tsx')).toBe(true);
   });
 

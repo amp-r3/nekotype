@@ -10,8 +10,8 @@ The input layer feeds one stream of `KeyIntent`s from several sources (ADR 038, 
 [ input diff (Gboard) ]────────┼─► [ input-source ] ─► KeyIntent { kind: 'char', char: 'k' }
 [ On-Screen Touch Pad ]────────┘          │                              │
                                   notices │ (IME, layout)                ▼
-                                          ▼                         [ Session ]
-                                   [ TestStage ]                         │
+                                          ▼                         [ LearnSession ]
+                                   [ SessionScreen ]                         │
                                                                          ▼
                                                                  [ NFA Engine.step ]
 ```
@@ -20,14 +20,14 @@ The input layer feeds one stream of `KeyIntent`s from several sources (ADR 038, 
 - `beforeinput` of type `insertText` is handled and cancelled; when it cannot be cancelled (Gboard composition), `input` compares the field with the last value and processes only the characters added at its end. The field is cleared when a composition ends and after every input that is not part of one.
 - A letter outside the Latin alphabet is not translated by `event.code`: it is dropped without a mistake and asks for the layout. Kana or kanji ask to turn the IME off.
 - Latin text of a composition is held until the IME is shown to be off (a latin vowel, the end of a composition without kana, or a key typed directly); kana drop it (ADR 051). A latin vowel in a composition also hides the IME notice.
-- A repeated `keydown` is cancelled and is not input. Ctrl/Cmd+Enter is cancelled only when `Session.canFinish()` says it would end a test.
+- A repeated `keydown` is cancelled and is not input. A modifier combination (Ctrl/Cmd+Enter included) belongs to the browser.
 - Typing outside the field returns the focus to it, except in another text field or while a dialog is open.
 
 ## Implementing a Mobile / On-Screen Touch Keyboard
 
-1. Create a touch keyboard component in `apps/web/src/features/training/ui/touch-keyboard.tsx`.
+1. Create a touch keyboard component in `apps/web/src/pages/learn/ui/touch-keyboard.tsx`.
 2. When the user taps a virtual key button (e.g. `'k'`, `'a'`, or `Esc`), dispatch the intent directly:
    ```ts
-   controller.handleIntent({ kind: 'char', char: 'k' });
+   session.handleIntent({ kind: 'char', char: 'k' });
    ```
-3. No DOM `<input>` refocusing or composition hooks are needed for virtual keys; the session processes the intent directly.
+3. No DOM `<input>` refocusing or composition hooks are needed for virtual keys; the learning session processes the intent directly.

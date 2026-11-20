@@ -21,7 +21,7 @@ interface Engine {
   view(m: Matcher, s: MatchState): EngineView; // live conversion
   errorTarget(m: Matcher, s: MatchState): number; // token index for error attribution (D10, A34)
   canonical(m: Matcher, promptIndex: number): string; // hint text (Esc)
-  spellingsFor(key: KanaKey, strictness: Strictness): readonly string[]; // results screen, learning mode
+  spellingsFor(key: KanaKey, strictness: Strictness): readonly string[]; // learning mode
   canonicalFor(key: KanaKey): string;
 }
 

@@ -2,15 +2,6 @@
 
 Part of the [architecture description](README.md) of the current code.
 
-## The test screen (`pages/trainer`, ADR 041)
-
-- `pages/trainer/ui/test-stage.tsx` is the screen: the stage; the hidden field that takes the keyboard lives one level up in `trainer-page.tsx`, so it stays when the screen changes (`useTestInput` in `features/training/lib/use-test-input.ts` creates and binds the input source and keeps the focus; `useFinishButton` enables Finish; ADR 055), `LiveLine` (counter, kana per minute, kana accuracy), `TextStream`, one line for notices (layout, IME, the revealed romaji), the translation (English in both locales; two lines reserved together with the `source` link of a phrase, which points to `https://tatoeba.org/sentences/<id>` and stays when `showTranslation` is off; a press on the link does not move the focus from the field) and the hints. Every line whose text a keystroke changes is a signal passed as a text node, so the screen renders once.
-- `pages/trainer/lib/results-model.ts` shapes the results screen (the KPM comparisons with U+2212 for a minus, the up to five mistyped kana with the `spellingsFor` of the test's strictness); the default time and count tests are `DEFAULT_TIME_TEST` and `DEFAULT_COUNT_TEST` in `entities/settings`.
-- Report a problem (ADR 092): `ui/report-action.tsx` is the button in the translation line (hidden by a signal with the translation, disabled offline) and loads `ui/report-dialog.tsx` through `report-loader.ts` when pressed; each opening mounts the dialog under a new `key`, so it starts empty. `lib/turnstile.ts` adds Cloudflare's script when the dialog opens, picks the site key by host and wraps `window.turnstile`; `api/reports.ts` is `POST /api/reports`. Tests give the dialog a fake loader and sender (`dialogDeps`).
-- `features/training/ui/text-stream.tsx` renders the tokens of `session.stream` and has no child component; `lib/use-stream-binding.ts` gives the elements to the writer (`lib/stream-dom.ts`) and writes the rest to the DOM through signal effects.
-- While a test runs `useTestChrome` sets `data-testing` on the document; the stylesheet turns it into `opacity` and `visibility` for everything marked `data-chrome` (navigation, mode panel, footer). Restart has `nk-on-focus`: it shows when focused or hovered, and always on a touch screen. Tab and Shift keep the interface shown. `useEnterForNext` handles Enter on the results screen.
-- The page switches to the results on a `finished` computed value, so the start of a test (idle to running) does not render it. The render test counts every component render of the page from the first key: none for a key inside a prompt, the stream for a key that completes one.
-
 ## The learning screen (`pages/learn`)
 
 - `pages/learn` is the learning screen: the chart of the selected track (`KanaChart`: blocks side by side with captions, a legend, a details panel per kana — `KanaChartPanel`), `mastered X of N` and the streak on one row with the track switch (the streak is hidden until the first answer; a first-visit line takes its place), `continue` (focused when the screen is ready) and `review (N)`, then one reserved `Notice` line (loading, a failed read with `retry`, or progress that cannot be saved), where N counts the due kana — confident, box 1 or higher, `dueAt` passed (`isDueKana`, ADR 062) — exactly the due marks of the chart.
@@ -20,7 +11,7 @@ Part of the [architecture description](README.md) of the current code.
   - `lib` holds task choice, distractors, the review queue, the summary and the hook binding the session to the input source.
   - The session runtime and the summary panel are lazy chunks; the summary screen (its actions and the place of the panel) is part of the session runtime chunk, loaded before a session can end (ADR 067).
   - ADR 015 keeps the session in the page, which is its only consumer.
-- `shared/ui` holds `KanaTask`, `createTaskController`, `OptionCard` and `KanaChart` as presentational components: data, states and strings come as props, and they import nothing from `entities` or `pages`. The input source (`shared/lib/input`) serves both the trainer and the learning session.
+- `shared/ui` holds `KanaTask`, `createTaskController`, `OptionCard` and `KanaChart` as presentational components: data, states and strings come as props, and they import nothing from `entities` or `pages`. The input source (`shared/lib/input`) serves the learning session.
 
 ## The statistics screen (`pages/stats`)
 

@@ -142,6 +142,8 @@ export async function checkDeployment(
   await expectNotFound('/smoke-no-such-page', 'unknown ');
   // /learn was the learning screen's address before it moved to / (P3): it answers 404 now.
   await expectNotFound('/learn', 'retired ');
+  // /type was the typing trainer, removed in P6 (ADR 093): it answers 404 too.
+  await expectNotFound('/type', 'retired ');
 
   for (const path of assetPaths(entry)) {
     const { response, body } = await get(fetchFn, baseUrl, path);

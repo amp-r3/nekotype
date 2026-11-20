@@ -1,29 +1,22 @@
-import type { ContentKind, ScriptMode } from '@/entities/settings';
-import { chunksFor, loadChunk } from '@/entities/prompt';
-import type { ContentChunk } from '@/entities/prompt';
 import { preloadLocale } from '@/shared/i18n';
 import { prefetchSessionRuntime, prefetchSummaryPanel } from '@/pages/learn';
 import { routes } from './routes';
 import { ROUTE_PATHS } from './route-paths';
 
 export type PrefetchDeps = {
-  readonly content: ContentKind;
-  readonly script: ScriptMode;
   readonly loadRoute: (path: (typeof ROUTE_PATHS)[number]) => Promise<unknown>;
-  readonly loadChunk: (chunk: ContentChunk) => Promise<unknown>;
-  // The other lazy pieces: the results panel, the session summary and both whole dictionaries.
+  // The other lazy pieces: the session runtime, the session summary and both whole dictionaries.
   readonly loadExtras: readonly (() => Promise<unknown>)[];
 };
 
 /**
- * Fetches every lazy screen and the content chunks of the selected content and script, so the application stays
- * usable if the connection is lost after the first load (spec "Loading"). A failure is ignored: the
- * screen loads again, and reports an error itself, when it is opened.
+ * Fetches every lazy screen and the other lazy pieces, so the application stays usable if the
+ * connection is lost after the first load (spec "Loading"). A failure is ignored: the screen loads
+ * again, and reports an error itself, when it is opened.
  */
 export async function prefetch(deps: PrefetchDeps): Promise<void> {
   const requests = [
     ...ROUTE_PATHS.map((path) => deps.loadRoute(path)),
-    ...chunksFor(deps.content, deps.script).map((chunk) => deps.loadChunk(chunk)),
     ...deps.loadExtras.map((load) => load()),
   ];
   await Promise.allSettled(requests);
@@ -45,20 +38,12 @@ export function runWhenIdle(task: () => void, scheduler: IdleScheduler): void {
   }
 }
 
-export function schedulePrefetch(
-  settings: () => {
-    readonly content: ContentKind;
-    readonly script: ScriptMode;
-  },
-): void {
+export function schedulePrefetch(): void {
   runWhenIdle(
     () => {
       void prefetch({
-        ...settings(),
         loadRoute: (path) => routes[path].load(),
-        loadChunk,
         loadExtras: [
-          () => import('@/pages/trainer').then((module) => module.prefetchResultsPanel()),
           prefetchSummaryPanel,
           prefetchSessionRuntime,
           () => preloadLocale('en'),

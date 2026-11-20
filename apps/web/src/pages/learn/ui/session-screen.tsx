@@ -77,7 +77,7 @@ export function SessionScreen({
   onEnd,
 }: SessionScreenProps): JSX.Element | null {
   const { source, onReady } = useSessionInput(session, inputRef);
-  // A wrong layout or an IME beats the notice of the session, as on /type.
+  // A wrong layout or an IME beats the notice of the session.
   const notice = useComputed(() =>
     source.layoutNotice.value
       ? t('stage.switchLayout')
@@ -85,7 +85,7 @@ export function SessionScreen({
         ? t('stage.turnImeOff')
         : noticeText(session.notice.value),
   );
-  // The lead and the answer are two signals: the line is text nodes, as on /type.
+  // The lead and the answer are two signals: the line is text nodes.
   const revealed = useComputed(() => {
     const current = session.notice.value;
     return current.kind === 'revealed' ? current : null;

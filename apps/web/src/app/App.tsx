@@ -55,7 +55,6 @@ export function App(): JSX.Element {
             brandHref="/"
             items={[
               { href: '/', label: t('nav.learn') },
-              { href: '/type', label: t('nav.type') },
               { href: '/stats', label: t('nav.stats') },
               { href: '/settings', label: t('nav.settings') },
             ]}

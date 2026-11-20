@@ -1,6 +1,6 @@
 # Metrics and statistics
 
-Learning and typing are measured separately, and neither feeds the other (A39). Learning measures how fast and how reliably the learner recalls each kana; typing measures kana per minute (KPM) and per-kana accuracy on words and phrases. The keystroke-based WPM (keystrokes / 5) is removed (D12), and so are the speed tests on single kana (D25).
+Learning measures how fast and how reliably the learner recalls each kana. The keystroke-based WPM (keystrokes / 5) is removed (D12), and so are the speed tests on single kana (D25).
 
 ## Learning metrics
 
@@ -34,48 +34,6 @@ Learning and typing are measured separately, and neither feeds the other (A39). 
 **Daily median (A42).** Recall answer times are counted per track and local day in buckets of 100 ms: bucket `i` holds times from `100 × i` to `100 × i + 99` ms, and the cap puts longer times in bucket 100. The day's median is the midpoint (`100 × i + 50` ms) of the bucket that holds the ⌈n / 2⌉-th shortest answer time of the day. Days more than 365 days before the newest day of the track are dropped.
 
 **What learning writes.** Every answer updates the kana's recent recall answers, its learning counters and mixups, its box in a review, the runs of active days, the day's buckets and the unlocked kana. These changes are written to IndexedDB after each answer, outside the keystroke handler. A learning session changes no typing statistic, and a typing test changes no learning state.
-
-## Typing metrics
-
-| Metric        | Formula                                                                                                                                                   | Shown in                     |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| Token         | Every non-skip token counts as 1: kana, merged っX, standalone っ, ー, small kana                                                                         | —                            |
-| Test time     | From the first keystroke to the end of the test                                                                                                           | Results                      |
-| KPM           | Committed tokens / minutes. A token is committed when it is completed in every active NFA position. Committed tokens of an unfinished prompt are included | Live strip, results, history |
-| Kana accuracy | Committed tokens without errors / committed tokens                                                                                                        | Live strip, results, history |
-| Average KPM   | The mean KPM of the last 10 saved results with the same `personalBestKey` and `repeated` = false, before the current result (A43)                         | Results                      |
-| Personal best | See "Data model"                                                                                                                                          | Results, history, `/stats`   |
-
-The results screen compares KPM with the average and with the personal best, because typing speed often depends on touch typing rather than on knowing the kana. IPM, keystroke accuracy, the best streak, per-kana reaction times and the per-second chart are not part of the MVP.
-
-## Test end
-
-| Config        | Ends when                                                                        | `endReason` | Saved and counted as finished | Personal best |
-| ------------- | -------------------------------------------------------------------------------- | ----------- | ----------------------------- | ------------- |
-| Time          | The timer expires                                                                | `complete`  | Yes                           | Yes           |
-| Count         | The end of the stream is reached (`isComplete`), so a single `n` ends a final ん | `complete`  | Yes                           | Yes           |
-| Zen           | "Finish" button or Ctrl/Cmd+Enter                                                | `manual`    | Under the conditions below    | No            |
-| Time or count | 5 seconds without input                                                          | `idle`      | Under the conditions below    | No            |
-| Any           | The tab becomes hidden during a running test                                     | `hidden`    | Under the conditions below    | No            |
-| Any           | Restart (Tab, Enter) or in-app navigation                                        | —           | No                            | No            |
-
-**Conditions.** A test ended by `manual`, `idle` or `hidden` is saved only if at least one prompt is completed and `durationMs` is greater than 0. Otherwise it is discarded like a restart, and the application returns to a new test without a results screen.
-
-**Completed prompts (ADR 050).** When a zen test is finished by hand or a time test reaches its deadline, every prompt before the one on screen is completed, including one that ends in ん typed with a single `n`: the display has moved on once the live conversion reaches the end of the prompt. The partly typed prompt on screen is not completed. The live counter shows this number, so it equals the count in the result. A count test ends as in the table above.
-
-**Idle end (D24).**
-
-- The idle time is the code constant `IDLE_END_MS` = 5000. Zen is exempt. The check starts at the first keystroke, so a test that has not started never ends.
-- Any key handled by the input source resets it: accepted and rejected keys, Esc, and a key that is not input but is a typed character (a digit, a space, a mark, a letter of another keyboard layout, kana from an IME). A modifier pressed alone, a shortcut with Ctrl, Cmd or Alt, a named key (Tab, an arrow), the repeat of a held key and a key pressed in a dialog or in another text field do not.
-- `endedAt` is the time of the last keystroke, so the idle wait does not lower KPM. The same applies to `hidden`.
-- The results screen states that the test ended because of no input.
-- A keystroke only stores `lastKeyAt`. A single `Scheduler` timer re-arms itself for the remaining time when it fires, so the hot path creates no timers and triggers no renders.
-
-**Hidden tab.** A hidden tab cannot receive input and the browser may discard the page, so the test ends at once and is written immediately. Closing the tab follows the same path on a best-effort basis.
-
-**What a test writes (D23).** During a test all statistics stay in session memory. When the test is saved, its result, its kana statistics (attempts and errored attempts of every committed token, including those of an unfinished prompt) and its typing records are written in one IndexedDB transaction. When it is discarded, all of this is dropped and only the `started` counter is written. The `started` counter of typing is incremented in memory at the test's first keystroke and written at the test's end: with the result when it is saved, alone when the test is discarded; nothing is written during a test. `weakFocus` therefore uses the statistics as they stood when the test began.
-
-**Repeat (ADR 033).** The results screen offers "Repeat" next to "Next test". A repeat runs the prompts of the finished test in the same order with the same settings; when a time or zen test runs out of them, new prompts follow. Its result is saved and counted like any other, with `repeated` = true, except that it gives no personal best and stays out of the average, and out of the `/stats` chart and history unless "with repeats" is on, where the chart draws it as a hollow mark and the history marks it in the mode column (ADR 076). The prompt list is held in memory until the results screen closes. Restart during a repeat starts an ordinary test with new prompts.
 
 ## Data model
 
@@ -167,7 +125,6 @@ type Counters = { started: Record<Mode, number>; finished: Record<Mode, number> 
 
 ## Screens
 
-- **Typing results:** KPM (large) with the difference to the average and to the personal best, kana accuracy, time, and up to 5 kana with errors in this test, most errors first, with spellings from `spellingsFor`; the number is the errors of the kana in this test, rejected keys and hints (a kana with three wrong keys is `3`, however many times it was typed); the list comes from counts the session keeps in memory and reports at the end, and a standalone っ or ー, which has no kana key, is not listed. On a personal best: badge and the `content` cat. Actions: "Next test" (Enter) and "Repeat".
 - **Session summary:** see [Learning](learning.md#session-summary).
 - **Statistics (`/stats`, ADR 076):** one section at a time, `learning` or `typing`; the section with data opens first, learning when both have data; the section is kept in the URL hash (`/stats#learning`, `/stats#typing`), and a valid hash wins on load. A section without data shows a title, one line and one action instead of zeros; a guest without any data sees the empty state.
   - **Learning:** the current and best streak; mastered kana of each track; activity by day; the answer time of one track; the count of started and finished learning sessions.

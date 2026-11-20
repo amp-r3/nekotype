@@ -2,8 +2,6 @@
 export type KeyIntent =
   | { readonly kind: 'char'; readonly char: string }
   | { readonly kind: 'reveal' }
-  // Ctrl/Cmd+Enter: end a zen test by hand. A session that has no such test ignores it.
-  | { readonly kind: 'finish' }
   | { readonly kind: 'ignore' };
 
 /**
@@ -53,10 +51,7 @@ export function classifyKeyDown(event: KeyDownEventLike): InputClass {
   if (event.isComposing) {
     return { kind: 'ignore' };
   }
-  // The one modifier combination that is ours; every other one belongs to the browser.
-  if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key === 'Enter') {
-    return { kind: 'finish' };
-  }
+  // Modifier combinations belong to the browser.
   if (event.ctrlKey || event.metaKey || event.altKey) {
     return { kind: 'ignore' };
   }

@@ -16,7 +16,7 @@ describe('the sign-in link of the navigation', () => {
   beforeEach(async () => {
     await setLocale('en');
     await initSettings(Promise.resolve(createMemoryDb()));
-    window.history.replaceState(null, '', '/type');
+    window.history.replaceState(null, '', '/stats');
     stopRouter = startRouter();
     container = document.createElement('div');
     document.body.appendChild(container);
