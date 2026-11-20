@@ -4,7 +4,8 @@ import { defineConfig, devices } from '@playwright/test';
 // together with the real API code, a local D1 and a fake OAuth provider: `e2e/sync-server/` builds
 // and starts it. Chromium only; two devices are covered below the browser (ADR 052). A test
 // signs in as the user named in the cookie `e2e_user`; every test uses a name of its own, because
-// the database lives for the whole run.
+// the database lives for the whole run. That makes the tests independent, so two run at once on
+// the one server: each plays real learning sessions, about 20 seconds apiece (ADR 098).
 const port = Number(process.env['E2E_SYNC_PORT'] ?? 5274);
 const baseURL = `http://localhost:${String(port)}`;
 
@@ -15,7 +16,7 @@ export default defineConfig({
     timeout: 8000,
   },
   fullyParallel: false,
-  workers: 1,
+  workers: 2,
   reporter: 'list',
   use: {
     baseURL,

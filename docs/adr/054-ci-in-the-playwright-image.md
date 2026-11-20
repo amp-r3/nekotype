@@ -1,6 +1,6 @@
 # ADR 054: CI Runs in the Playwright Image, with a Time Limit
 
-- **Status:** In force. Amends [ADR 045](045-e2e-on-production-bundle-and-gated-deploy.md) and [ADR 052](052-e2e-scope-and-latency-on-main.md) on how CI gets its browsers.
+- **Status:** In force. Amends [ADR 045](045-e2e-on-production-bundle-and-gated-deploy.md) and [ADR 052](052-e2e-scope-and-latency-on-main.md) on how CI gets its browsers. Point 1 amended by [ADR 098](098-parallel-ci-jobs.md): only the jobs that start a browser run in the image.
 - **Context:** Every CI run executed `playwright install --with-deps chromium webkit`. The cache of `~/.cache/ms-playwright` held the browser binaries only, so the system libraries were installed with `apt` on every run: about 45 s normally, and in one run (PR #54) the step did not finish in over eight minutes. The step had no time limit.
 - **Decision:**
   1. The `deploy` job runs in the container `mcr.microsoft.com/playwright:v<version>-noble` with `--init --ipc=host`. Chromium, WebKit and their libraries are in the image; the cache step and the install step are removed. `setup-node` and `pnpm/action-setup` stay, so the Node and pnpm versions still come from the repository.
