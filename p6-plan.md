@@ -367,6 +367,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Preview URL:** nothing changes for the user; the CI step "Apply D1 migrations (preview)" passes.
 - **Done when:** CI is green including the preview migration; after the merge the maintainer does M4.
 - **Size:** about 100 lines.
+- **Production check (M4):** done 2026-11-20. The maintainer checked production after PR 5 was deployed: `user_stats` has no `kana_stats` and `typing_records`, the table `results` is gone, and a learning sync shows `synced`.
 
 ### PR 6 — Close the phase
 
