@@ -184,9 +184,12 @@ export function LearnPage(): JSX.Element {
             ariaLabel={t('learn.track.label')}
           />
 
-          {/* The line keeps its height while loading, so the buttons do not jump. */}
+          {/* The line keeps its height while loading, so the buttons do not jump. Below 640 px the
+              two lines stack under the switch, without the separator. */}
           {status !== 'error' && (
-            <p className={`text-fur-dim text-ui-body ${ready ? '' : 'invisible'}`}>
+            <p
+              className={`text-fur-dim text-ui-body max-sm:flex max-sm:flex-col max-sm:gap-1 ${ready ? '' : 'invisible'}`}
+            >
               <span data-testid="learn-mastered-count">
                 <Parts
                   parts={tParts('learn.mastered', { done: mastered, total: keys.length })}
@@ -195,7 +198,9 @@ export function LearnPage(): JSX.Element {
               </span>
               {answered && (
                 <>
-                  <span aria-hidden="true"> · </span>
+                  <span aria-hidden="true" className="max-sm:hidden">
+                    {' · '}
+                  </span>
                   <span data-testid="learn-streak">
                     <Parts
                       parts={tPluralParts('learn.streak', streak)}
@@ -209,13 +214,11 @@ export function LearnPage(): JSX.Element {
         </div>
 
         {ready && !answered && (
-          <p
-            className="text-fur-dim text-ui-body -mb-2 whitespace-nowrap"
-            data-testid="learn-first"
-          >
+          <p className="text-fur-dim text-ui-body -mb-2" data-testid="learn-first">
+            {/* The line may wrap; the kana never split across lines. */}
             <Parts
               parts={tParts('learn.first', { kana: vowels })}
-              valueClass="font-jp text-jp-body text-fur [word-spacing:0.15em]"
+              valueClass="font-jp text-jp-body text-fur whitespace-nowrap [word-spacing:0.15em]"
               lang="ja"
             />
           </p>

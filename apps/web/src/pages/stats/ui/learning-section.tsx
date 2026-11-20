@@ -1,6 +1,6 @@
 import type { JSX } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
-import { locale, t, tParts, tPlural } from '@/shared/i18n';
+import { locale, t, tParts, tPlural, tPluralParts } from '@/shared/i18n';
 import { Button, Notice, Parts } from '@/shared/ui';
 import { Stat } from '@/shared/ui/stat';
 import { learnTargetMs, learnTrack } from '@/entities/settings';
@@ -25,6 +25,8 @@ import { TrackSwitch } from './track-switch';
 import { useNarrow } from './use-narrow';
 
 const MONO = 'text-mono-romaji text-fur font-mono';
+/** Four equal columns, two below 640 px (design decision 137, `.stats__grid`). */
+const GRID = 'grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-x-12 sm:gap-y-8';
 /** The window of the active days count: fixed, so the number never depends on the map's width. */
 const ACTIVE_WINDOW = 30;
 
@@ -92,72 +94,75 @@ export function LearningSection({ today }: { readonly today: number }): JSX.Elem
     };
   });
 
+  // Blocks are `space-12` apart (`space-8` below 640 px); a block's title, caption, controls and
+  // content `space-4`, the caption set close under the title (design `.stats__blk`, `.stats__cap`).
   return (
-    <div className="grid grid-cols-2 gap-x-12 gap-y-8 sm:grid-cols-4 sm:gap-y-12">
-      <div className="col-span-2 flex flex-col gap-4 sm:col-span-4">
+    <div className="flex flex-col gap-12 max-sm:gap-8">
+      <section className="flex flex-col gap-4">
         <h2 className="text-ui-heading text-fur">{t('stats.streak.title')}</h2>
-        <p className="text-ui-caption text-fur-dim">{t('stats.streak.caption')}</p>
-      </div>
-
-      <div className="col-span-2 flex items-center gap-x-8 max-sm:justify-between sm:col-span-1 sm:flex-col sm:items-start sm:gap-y-4">
-        <div className="flex flex-col gap-1">
-          <div className="text-ui-caption text-fur-dim">{t('stats.learn.streakCurrent')}</div>
-          <div
-            className="text-fur text-mono-hero-sm sm:text-mono-hero font-mono tabular-nums"
-            data-testid="stats-streak"
-          >
-            {current}
+        <p className="text-ui-caption text-fur-dim -mt-3">{t('stats.streak.caption')}</p>
+        <div className={GRID}>
+          <div className="col-span-2 flex flex-wrap items-end gap-x-8 gap-y-2 sm:col-span-1 sm:flex-col sm:flex-nowrap sm:items-start sm:gap-y-4 sm:pt-4">
+            <div className="flex flex-col gap-1">
+              <div className="text-ui-caption text-fur-dim">{t('stats.learn.streakCurrent')}</div>
+              <div
+                className="text-fur text-mono-hero-sm sm:text-mono-hero font-mono tabular-nums"
+                data-testid="stats-streak"
+              >
+                {current}
+              </div>
+              <div className="text-ui-label text-fur-dim">
+                {tPlural('stats.learn.daysInRow', current)}
+              </div>
+            </div>
+            <div className="text-ui-label text-fur-dim flex flex-col gap-1 max-sm:pb-2">
+              <p>
+                <Parts parts={tPluralParts('stats.learn.streakBest', best)} valueClass={MONO} />
+              </p>
+              <p data-testid="stats-active-30">
+                <Parts
+                  parts={tParts('stats.learn.active30', {
+                    count: activeDaysIn(state, today, ACTIVE_WINDOW),
+                  })}
+                  valueClass={MONO}
+                />
+              </p>
+            </div>
           </div>
-          <div className="text-ui-label text-fur-dim">{t('stats.learn.daysInRow')}</div>
+          <div className="col-span-2 min-w-0 sm:col-span-3">
+            <ActivityMap days={activity} today={today} />
+          </div>
         </div>
-        <div className="text-ui-label text-fur-dim flex flex-col gap-1">
-          <p>
-            <Parts
-              parts={tParts('stats.learn.streakBest', {
-                days: `${best} ${tPlural('stats.learn.days', best)}`,
-              })}
-              valueClass={MONO}
-            />
-          </p>
-          <p data-testid="stats-active-30">
-            <Parts
-              parts={tParts('stats.learn.active30', {
-                count: activeDaysIn(state, today, ACTIVE_WINDOW),
-              })}
-              valueClass={MONO}
-            />
-          </p>
-        </div>
-      </div>
-      <div className="col-span-2 min-w-0 sm:col-span-3">
-        <ActivityMap days={activity} today={today} />
-      </div>
+      </section>
 
-      {(['hiragana', 'katakana'] as const).map((name) => (
+      <div className={GRID}>
+        {(['hiragana', 'katakana'] as const).map((name) => (
+          <Stat
+            key={name}
+            label={t('stats.learn.masteredTrack', { track: t(`learn.track.${name}`) })}
+            value={progress[name].mastered}
+            unit={t('stats.learn.masteredOf', { total: progress[name].total })}
+          />
+        ))}
         <Stat
-          key={name}
-          label={t('stats.learn.masteredTrack', { track: t(`learn.track.${name}`) })}
-          value={progress[name].mastered}
-          unit={t('stats.learn.masteredOf', { total: progress[name].total })}
+          label={t('stats.learn.sessionsStarted')}
+          value={counters.started}
+          testId="stats-started"
         />
-      ))}
-      <Stat
-        label={t('stats.learn.sessionsStarted')}
-        value={counters.started}
-        testId="stats-started"
-      />
-      <Stat
-        label={t('stats.learn.sessionsFinished')}
-        value={counters.finished}
-        testId="stats-finished"
-      />
+        <Stat
+          label={t('stats.learn.sessionsFinished')}
+          value={counters.finished}
+          testId="stats-finished"
+        />
+      </div>
 
-      <div className="col-span-2 flex flex-col gap-4 sm:col-span-4">
+      <section className="flex flex-col gap-4">
         <h2 className="text-ui-heading text-fur">{t('stats.learn.answerTime')}</h2>
-        <p className="text-ui-caption text-fur-dim">
+        <p className="text-ui-caption text-fur-dim -mt-3">
           {both ? caption : `${t(`learn.track.${track}`)} · ${caption}`}
         </p>
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+        {/* The first segment's text lines up with the left edge (design `.stats__fgroup`). */}
+        <div className="-ml-2 flex flex-wrap items-center gap-x-6 gap-y-4">
           {both && <TrackSwitch value={track} onChange={setChosen} />}
           <PeriodSwitch value={period} onChange={setPeriod} />
         </div>
@@ -194,7 +199,7 @@ export function LearningSection({ today }: { readonly today: number }): JSX.Elem
             {t('stats.learn.noPeriod')}
           </Notice>
         )}
-      </div>
+      </section>
     </div>
   );
 }

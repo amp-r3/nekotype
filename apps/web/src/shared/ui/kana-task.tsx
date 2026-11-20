@@ -129,7 +129,9 @@ export function KanaTask({
           </>
         )}
         {kind === 'recall' && (
-          <span className="nk-task__line">
+          // The line carries the kana's size too: the caret's height (--caret-h, 1.1em) is
+          // measured from it, so the caret stands as tall as the kana (design `.nk-task__line`).
+          <span className={cx('nk-task__line', solo)}>
             <span data-task-kana className={cx('nk-task__kana font-jp', solo)} lang="ja">
               {kana}
             </span>

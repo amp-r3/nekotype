@@ -105,7 +105,7 @@ export function SettingsPage(): JSX.Element {
   };
 
   return (
-    <section className="mx-auto flex w-full max-w-[640px] flex-col gap-12">
+    <section className="flex w-full max-w-[640px] flex-col gap-12">
       <h1 className="text-ui-title text-fur">{t('page.settings')}</h1>
 
       <Section title={t('settings.learn.title')}>

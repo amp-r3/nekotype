@@ -7,7 +7,9 @@ const OFL = 'OFL-1.1';
 const REPOSITORY = 'github.com/amp-r3/nekotype';
 const FONT_FAMILIES = 'Golos Text, JetBrains Mono, Noto Sans JP';
 
-const LINK = 'text-fur hover:text-eye underline underline-offset-2';
+// The system's link (design `nk-link`, as the footer's): `fur-dim`, a `line-strong` underline.
+const LINK =
+  'text-fur-dim hover:text-fur decoration-line-strong hover:decoration-fur-dim underline underline-offset-[3px] transition-colors';
 
 /** The terms of Nekotype itself, as in NOTICE.md. */
 export function TermsSection(): JSX.Element {

@@ -84,6 +84,12 @@ describe('learning section: with answers', () => {
       'active days in the last 30: 6',
     );
     expect(container.textContent).toContain('best: 3 days');
+    expect(container.textContent).toContain('3days in a row');
+    // Only the number of the best run is set in mono, not its unit.
+    const bestLine = Array.from(container.querySelectorAll('p')).find((p) =>
+      p.textContent.startsWith('best:'),
+    );
+    expect(bestLine?.querySelector('.font-mono')?.textContent).toBe('3');
     // The dotted days of the map are the days of the streak: today and the two before it.
     const dotted = Array.from(container.querySelectorAll('[data-testid="activity-cell"].is-run'));
     expect(dotted).toHaveLength(3);
