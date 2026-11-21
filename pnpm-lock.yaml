@@ -127,7 +127,7 @@ importers:
         version: 10.13.0(jiti@2.7.0)
       eslint-plugin-boundaries:
         specifier: ^7.4.0
-        version: 7.4.0(eslint@10.13.0(jiti@2.7.0))
+        version: 7.4.0(@typescript-eslint/parser@8.72.1(eslint@10.13.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.13.0(jiti@2.7.0))
       fake-indexeddb:
         specifier: ^6.2.7
         version: 6.2.7
@@ -217,6 +217,40 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5(@types/node@22.20.5)(@vitest/coverage-v8@5.0.5)(happy-dom@21.0.4)(vite@8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
+  packages/model:
+    dependencies:
+      '@nekotype/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@nekotype/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^22.13.10
+        version: 22.20.5
+      '@vitest/coverage-v8':
+        specifier: ^5.0.5
+        version: 5.0.5(vitest@5.0.5)
+      eslint:
+        specifier: ^10.13.0
+        version: 10.13.0(jiti@2.7.0)
+      ts-fsrs:
+        specifier: 6.0.0
+        version: 6.0.0
+      tsx:
+        specifier: ^4.20.0
+        version: 4.23.15
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      typescript-eslint:
+        specifier: ^8.72.1
+        version: 8.72.1(eslint@10.13.0(jiti@2.7.0))(typescript@6.0.3)
+      vitest:
+        specifier: ^5.0.5
+        version: 5.0.5(@types/node@22.20.5)(@vitest/coverage-v8@5.0.5)(happy-dom@21.0.4)(vite@8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
   packages/shared:
     dependencies:
       valibot:
@@ -244,6 +278,9 @@ importers:
       '@nekotype/engine':
         specifier: workspace:*
         version: link:../engine
+      '@nekotype/model':
+        specifier: workspace:*
+        version: link:../model
     devDependencies:
       '@types/node':
         specifier: ^22.13.10
@@ -3768,22 +3805,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.14.0(eslint-import-resolver-node@0.3.9)(eslint@10.13.0(jiti@2.7.0)):
+  eslint-module-utils@2.14.0(@typescript-eslint/parser@8.72.1(eslint@10.13.0(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.9)(eslint@10.13.0(jiti@2.7.0)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
+      '@typescript-eslint/parser': 8.72.1(eslint@10.13.0(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.13.0(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.9
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-boundaries@7.4.0(eslint@10.13.0(jiti@2.7.0)):
+  eslint-plugin-boundaries@7.4.0(@typescript-eslint/parser@8.72.1(eslint@10.13.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.13.0(jiti@2.7.0)):
     dependencies:
       '@boundaries/elements': 3.3.0
       chalk: 4.1.2
       eslint: 10.13.0(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.14.0(eslint-import-resolver-node@0.3.9)(eslint@10.13.0(jiti@2.7.0))
+      eslint-module-utils: 2.14.0(@typescript-eslint/parser@8.72.1(eslint@10.13.0(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.9)(eslint@10.13.0(jiti@2.7.0))
       handlebars: 4.7.10
     transitivePeerDependencies:
       - '@typescript-eslint/parser'

@@ -1,4 +1,4 @@
-import type { Grade, Memory } from './fsrs';
+import type { Grade, Memory } from './memory';
 
 /**
  * FSRS-7 with its default parameters, written from `FSRS7Algorithm` of ts-fsrs 6.0.0 (MIT), itself

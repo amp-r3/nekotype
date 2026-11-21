@@ -49,15 +49,16 @@ Next come the adaptive knowledge model (P7), the learning home and the progress 
 
 A pnpm workspace ([ADR 027](docs/adr/027-pnpm-workspace-layout-for-the-monorepo.md)); packages are consumed as TypeScript source, with no build step.
 
-| Path                | Package             | Contents                                                                                                                                                               |
-| ------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web/`         | `@nekotype/web`     | The Preact single-page app (Feature-Sliced Design), its tests, e2e tests, scripts, assets                                                                              |
-| `apps/api/`         | `@nekotype/api`     | The Hono application behind `/api/*` (Pages Functions), its D1 migrations and its tests in the Workers runtime; `functions/` mounts it                                 |
-| `apps/bench/`       | `@nekotype/bench`   | The CPU and D1 measurement of the real `/api/sync` on a test Pages project (P5); a tool run by hand, never deployed to production                                      |
-| `packages/engine/`  | `@nekotype/engine`  | The NFA romaji engine and the kana tables; imports nothing, runs in a browser or a Worker                                                                              |
-| `packages/shared/`  | `@nekotype/shared`  | Types (`Clock`, `Rng`, `Scheduler`, …), type guards, and the merge, patch and apply functions of the learning state, shared by the client and the API                  |
-| `packages/content/` | `@nekotype/content` | The content pipeline (build tool, never bundled): pinned sources, parsers, the word and phrase steps; `generate` writes the content chunks                             |
-| `packages/sim/`     | `@nekotype/sim`     | The learner simulation of the P7 research (a tool run by hand, never bundled): a reference learner, the current rule and candidate models; `sim` prints the comparison |
+| Path                | Package             | Contents                                                                                                                                                                                                    |
+| ------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/`         | `@nekotype/web`     | The Preact single-page app (Feature-Sliced Design), its tests, e2e tests, scripts, assets                                                                                                                   |
+| `apps/api/`         | `@nekotype/api`     | The Hono application behind `/api/*` (Pages Functions), its D1 migrations and its tests in the Workers runtime; `functions/` mounts it                                                                      |
+| `apps/bench/`       | `@nekotype/bench`   | The CPU and D1 measurement of the real `/api/sync` on a test Pages project (P5); a tool run by hand, never deployed to production                                                                           |
+| `packages/engine/`  | `@nekotype/engine`  | The NFA romaji engine and the kana tables; imports nothing, runs in a browser or a Worker                                                                                                                   |
+| `packages/shared/`  | `@nekotype/shared`  | Types (`Clock`, `Rng`, `Scheduler`, …), type guards, and the merge, patch and apply functions of the learning state, shared by the client and the API                                                       |
+| `packages/model/`   | `@nekotype/model`   | The knowledge model of P7: FSRS-6, the kana items and the grade of each answer (the fold, the planner and the forecast follow); pure, runs in a browser, a Worker and Node                                  |
+| `packages/content/` | `@nekotype/content` | The content pipeline (build tool, never bundled): pinned sources, parsers, the word and phrase steps; `generate` writes the content chunks                                                                  |
+| `packages/sim/`     | `@nekotype/sim`     | The learner simulation of the P7 research (a tool run by hand, never bundled): a reference learner, the current rule and candidate models; FSRS-6 comes from `@nekotype/model`; `sim` prints the comparison |
 
 Root scripts run the package scripts with `pnpm -r`; run one package directly with `pnpm --filter @nekotype/web run <script>`.
 

@@ -9,15 +9,10 @@ export const FSRS6_WEIGHTS: readonly number[] = [
   0.0614, 0.2629, 1.6483, 0.6014, 1.8729, 0.5425, 0.0912, 0.0658, 0.1542,
 ];
 
-/** 1 again, 2 hard, 3 good, 4 easy. */
+/** 1 again, 2 hard, 3 good, 4 easy (easy is never given by the model, D4). */
 export type Grade = 1 | 2 | 3 | 4;
 
-export interface Memory {
-  readonly difficulty: number;
-  readonly stability: number;
-  /** FSRS-7 only (`src/fsrs7.ts`): the stability of the fast trace. */
-  readonly fast?: number;
-}
+export type Memory = { readonly stability: number; readonly difficulty: number };
 
 const S_MIN = 0.001;
 const S_MAX = 36500;
@@ -96,3 +91,8 @@ export function createFsrs(weights: readonly number[]): Fsrs {
 
 /** FSRS-6 with the default weights. */
 export const { retrievability, intervalFor, firstMemory, nextMemory } = createFsrs(FSRS6_WEIGHTS);
+
+/** Days per day of stability until recall falls to `retention`: `intervalFor(1, retention)`. */
+export function intervalFactor(retention: number): number {
+  return intervalFor(1, retention);
+}

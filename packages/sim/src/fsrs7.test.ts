@@ -1,9 +1,7 @@
-import { FSRS6_DEFAULT_WEIGHTS, FSRS6_MODEL_BOUNDS, FSRS6Algorithm } from 'ts-fsrs/models/fsrs-6';
 import { FSRS7_DEFAULT_WEIGHTS, FSRS7_MODEL_BOUNDS, FSRS7Algorithm } from 'ts-fsrs/models/fsrs-7';
 import { describe, expect, it } from 'vitest';
-import { firstMemory, nextMemory } from './fsrs';
-import type { Grade, Memory } from './fsrs';
 import { FSRS7, FSRS7_WEIGHTS } from './fsrs7';
+import type { Grade, Memory } from './memory';
 
 // ts-fsrs 6.0.0 is a dev dependency of this package only: the reference the sim is checked against.
 
@@ -63,30 +61,6 @@ describe('FSRS-7', () => {
         expect(FSRS7.retrievability(m, ours)).toBeCloseTo(retention, 6);
         expect(ours / reference.next_interval(theirs, retention)).toBeCloseTo(1, 2);
       }
-    }
-  });
-});
-
-describe('FSRS-6 against ts-fsrs 6.0.0', () => {
-  // ts-fsrs 6.0.0 defaults to FSRS-7 in `DefaultScheduler`; the FSRS-6 model is a separate entry,
-  // with the short-term formula on (as `elapsed = 0`), which is what `src/fsrs.ts` implements.
-  const reference = new FSRS6Algorithm([...FSRS6_DEFAULT_WEIGHTS], true, FSRS6_MODEL_BOUNDS);
-
-  it('matches the FSRS-6 model entry with short-term reviews on', () => {
-    let ours: Memory = firstMemory(3);
-    let theirs = reference.next_state(null, 0, 3);
-    for (const [grade, elapsed] of [
-      [3, 0],
-      [3, 2],
-      [1, 10],
-      [1, 0],
-      [2, 3],
-      [4, 5],
-    ] as const) {
-      ours = nextMemory(ours, grade, elapsed, elapsed === 0);
-      theirs = reference.next_state(theirs, elapsed, grade);
-      expect(ours.stability).toBeCloseTo(theirs.stability, 6);
-      expect(ours.difficulty).toBeCloseTo(theirs.difficulty, 6);
     }
   });
 });

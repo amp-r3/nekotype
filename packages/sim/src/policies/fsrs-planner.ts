@@ -1,5 +1,11 @@
-import { createFsrs, FSRS6_WEIGHTS, firstMemory, nextMemory, retrievability } from '../fsrs';
-import type { Grade, Memory } from '../fsrs';
+import {
+  createFsrs,
+  FSRS6_WEIGHTS,
+  firstMemory,
+  nextMemory,
+  retrievability,
+} from '@nekotype/model';
+import type { Grade, Memory } from '../memory';
 import { FSRS7 } from '../fsrs7';
 import type { Item } from '../items';
 import { DAY_MS } from '../learner';
