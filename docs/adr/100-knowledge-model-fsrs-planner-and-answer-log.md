@@ -154,7 +154,7 @@
 
 - **Consequences:**
   - These change with this ADR:
-    - [decisions.md](../spec/decisions.md): A26, A36, A40 and A46 are superseded; A30, A38, A41 and A42 are amended; A47–A52 are added;
+    - [decisions.md](../spec/decisions.md): A26, A36, A40, A42 and A46 are superseded; A30, A38 and A41 are amended; A47–A52 are added;
     - [phases.md](../spec/phases.md): the acceptance criteria of P7;
     - [Learning goals](../spec/README.md#learning-goals): how retention is counted.
   - The spec files that describe the current code are rewritten in the pull requests of P7, with the code they describe. Until then they describe production:
