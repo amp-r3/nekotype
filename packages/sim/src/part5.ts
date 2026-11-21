@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks';
-import type { Memory } from './fsrs';
+import type { Memory } from './memory';
 import { FSRS7 } from './fsrs7';
 import { hiraganaItems } from './items';
 import { DAY_MS, REFERENCE } from './learner';

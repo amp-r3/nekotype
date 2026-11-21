@@ -89,6 +89,63 @@ export type Counters = {
   readonly finished: number;
 };
 
+// The learning log (ADR 100, point 7; P7 plan D2). The model folds it; nothing here is a state.
+
+export type TaskKind =
+  | 'recall' // shape → romaji
+  | 'recognition' // sound (romaji in P7) → one of 4 shapes
+  | 'contrast' // which of a confusable pair (P9)
+  | 'transfer' // か → カ (P9)
+  | 'build' // か + ゛ → が (P9)
+  | 'fluency' // one kana typed in a fluency run (P9)
+  | 'listening' // sound → shape (P10)
+  | 'dictation' // sound → romaji (P10)
+  | 'pair' // minimal pair か or が (P10)
+  | 'word'; // a word (P12)
+
+/** A word item of P12: `word:` and its reading in kana. */
+export type WordKey = `word:${string}`;
+
+/** Identity and order of an event (ADR 100, point 7). */
+export type EventId = {
+  /** Device clock, Unix ms, integer; never lower than the device's previous event. */
+  readonly at: number;
+  /** The log device id: a UUID created with the log on the device. */
+  readonly dev: string;
+  /** 1, 2, 3, … per `dev`. */
+  readonly n: number;
+};
+
+export type IntroductionEvent = EventId & { readonly t: 'intro'; readonly k: LearnKanaKey };
+
+export type AnswerEvent = EventId & {
+  readonly t: 'answer';
+  readonly task: TaskKind;
+  /** The kana asked: the composite of `build`, the katakana of `transfer`; a `WordKey` only for `word`. */
+  readonly k: LearnKanaKey | WordKey;
+  readonly ok: boolean;
+  /** Answer time, integer ms, 0–10,000 (recall: A37; other tasks: showing the task → the answer). */
+  readonly ms: number;
+  readonly hint: boolean;
+  /** The wrong answer given: the option chosen, or the kana the typed romaji matched (D18). */
+  readonly wrong: LearnKanaKey | null;
+  /** The other option of a two-option task (`contrast`, `pair`); null otherwise. */
+  readonly alt: LearnKanaKey | null;
+};
+
+/** `tz`: the device's UTC offset at the start, in minutes east of UTC (−720…840). */
+export type SessionStartEvent = EventId & { readonly t: 'start'; readonly tz: number };
+export type SessionEndEvent = EventId & { readonly t: 'end' };
+
+export type LogEvent = IntroductionEvent | AnswerEvent | SessionStartEvent | SessionEndEvent;
+
+/** An event before the log gave it its identity (D16). */
+export type EventDraft =
+  | Omit<IntroductionEvent, 'dev' | 'n'>
+  | Omit<AnswerEvent, 'dev' | 'n'>
+  | Omit<SessionStartEvent, 'dev' | 'n'>
+  | Omit<SessionEndEvent, 'dev' | 'n'>;
+
 // Sync batches (spec backend.md, "Request and response bodies")
 
 /** The fields of `LearnState`, holding only changes; increments for statistics and buckets. */

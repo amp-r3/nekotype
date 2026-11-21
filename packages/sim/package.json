@@ -16,7 +16,8 @@
     "part5": "tsx src/part5.ts"
   },
   "dependencies": {
-    "@nekotype/engine": "workspace:*"
+    "@nekotype/engine": "workspace:*",
+    "@nekotype/model": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

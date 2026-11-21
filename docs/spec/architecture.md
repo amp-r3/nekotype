@@ -12,6 +12,7 @@ nekotype/
 │   └── api/[[route]].ts   Pages Functions entry point; imports apps/api
 ├── packages/
 │   ├── engine/     @nekotype/engine: input engine, kana tables (with the sound of each kana from P10), visually-similar kana table; zero dependencies
+│   ├── model/      @nekotype/model: the knowledge model of P7 (FSRS-6, items, grades, then the fold, the planner and the forecast); pure TypeScript for the browser, a Worker and Node; entry points: . and /testing (event builders for tests)
 │   ├── content/    @nekotype/content: dictionary build scripts → JSON chunks; not part of the runtime
 │   └── shared/     @nekotype/shared; entry points: /types, /runtime (decay, merge rules, personal-best rule and key, constants), /schemas (valibot, server only), /testing (generated test data; for tests and measurements only)
 ├── docs/           spec/, adr/, architecture/, archive/ (index: docs/README.md)
@@ -24,16 +25,17 @@ The engine and all user data live in the browser. Pages Functions handle sign-in
 
 ## Dependency rules
 
-| Package          | May import                                                                | Must not import                                              |
-| ---------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `engine`         | nothing                                                                   | DOM, signals, storage, any package                           |
-| `shared/types`   | types from `engine`                                                       | runtime code                                                 |
-| `shared/runtime` | `shared/types`                                                            | `shared/schemas`, valibot, application code                  |
-| `shared/schemas` | `shared/types`, valibot                                                   | application code                                             |
-| `shared/testing` | `shared/types`, `shared/runtime`                                          | application code; `apps/web` imports it from test files only |
-| `content`        | `engine` (compile check for every item), `shared/types`, `shared/runtime` | `apps/*`                                                     |
-| `apps/web`       | `engine`, `shared/types`, `shared/runtime`                                | `shared/schemas`, `content`, `apps/api`                      |
-| `apps/api`       | `shared/*`; `engine` from v2 for server-side result validation            | `apps/web`                                                   |
+| Package          | May import                                                                             | Must not import                                                        |
+| ---------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `engine`         | nothing                                                                                | DOM, signals, storage, any package                                     |
+| `model`          | `engine`, types from `shared/types`                                                    | DOM, storage, network, clock, timers, `Math.random`, any other package |
+| `shared/types`   | types from `engine`                                                                    | runtime code                                                           |
+| `shared/runtime` | `shared/types`                                                                         | `shared/schemas`, valibot, application code                            |
+| `shared/schemas` | `shared/types`, valibot                                                                | application code                                                       |
+| `shared/testing` | `shared/types`, `shared/runtime`                                                       | application code; `apps/web` imports it from test files only           |
+| `content`        | `engine` (compile check for every item), `shared/types`, `shared/runtime`              | `apps/*`                                                               |
+| `apps/web`       | `engine`, `model` (lazy, never in the initial chunk), `shared/types`, `shared/runtime` | `shared/schemas`, `content`, `apps/api`                                |
+| `apps/api`       | `shared/*`; `engine` from v2 for server-side result validation                         | `apps/web`                                                             |
 
 The `apps/web` restriction on `shared/schemas` is enforced by an ESLint import rule, so valibot never reaches the client bundle. The same rule keeps `shared/testing` out of the application: only test files may import it.
 

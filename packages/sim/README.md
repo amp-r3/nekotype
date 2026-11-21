@@ -14,8 +14,8 @@ The learner simulation of the P7 research on the knowledge model. It is a tool r
 - Part 5: `src/fsrs7.ts` is FSRS-7 with its default weights (two traces, fractional days), `FSRS7_MODEL` its memory model for the planner; `reviewGapMs` keeps a learned kana from being due again within that many ms of its last answer.
 - `src/part5.ts` — the tables of part 5, A4 on FSRS-7 against FSRS-6 (`pnpm --filter @nekotype/sim run part5`, `PART=main|planner|calibration|forecast|rebuild|mastery` for one table).
 - `src/sensitivity.ts` — the reference constants moved by ±50%, one at a time (`pnpm --filter @nekotype/sim run sensitivity`, about 6 minutes).
-- `src/fsrs.ts` — FSRS-6, tested against values of ts-fsrs 6.0.0 (its FSRS-6 model entry with short-term reviews on).
-- `src/fsrs7.test.ts` checks FSRS-7 and FSRS-6 against ts-fsrs 6.0.0, a dev dependency of this package only; nothing in the sim imports it at run time.
+- FSRS-6 is `@nekotype/model` (`packages/model/src/fsrs.ts`, moved there in P7 PR 1; the research policies import it from there). `src/memory.ts` is the sim's `Memory`, FSRS-6's with the optional `fast` of FSRS-7.
+- `src/fsrs7.test.ts` checks FSRS-7 against ts-fsrs 6.0.0, a dev dependency of this package only; nothing in the sim imports it at run time. The FSRS-6 check is in the model's tests.
 
 ```bash
 pnpm --filter @nekotype/sim run sim          # 50 seeds per learner and policy, about 5 minutes
