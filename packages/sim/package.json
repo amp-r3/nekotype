@@ -11,7 +11,8 @@
     "test": "vitest run",
     "sim": "tsx src/main.ts",
     "sensitivity": "tsx src/sensitivity.ts",
-    "part3": "tsx src/part3.ts"
+    "part3": "tsx src/part3.ts",
+    "part4": "tsx src/part4.ts"
   },
   "dependencies": {
     "@nekotype/engine": "workspace:*"
