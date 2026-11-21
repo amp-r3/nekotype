@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "sim": "tsx src/main.ts",
-    "sensitivity": "tsx src/sensitivity.ts"
+    "sensitivity": "tsx src/sensitivity.ts",
+    "part3": "tsx src/part3.ts"
   },
   "dependencies": {
     "@nekotype/engine": "workspace:*"

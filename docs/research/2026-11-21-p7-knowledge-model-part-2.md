@@ -113,6 +113,8 @@ Over 60 days the current rule's review retention is 89% and A2's 92%. The curren
 
 ## Next parts
 
+[Part 3](2026-11-21-p7-knowledge-model-part-3.md) covers items 1–3.
+
 1. **A planner that holds retention:** lower the pace (fewer kana learning at once, more steps) when the review retention of the last days falls below the goal, tested on the slow-memory rows above.
 2. **Fitting the memory model to the learner:** FSRS parameters (or B's multipliers) fitted on the learner's own answers after enough of them, and how many answers that takes.
 3. **Unlocking by rows** and the forecast of the next row in sessions, with its accuracy. A2 introduces a new kana in almost every session, so "the next kana unlocks in N sessions" is nearly always "this session"; a forecast by row, or for the rest of the track, carries more information for the home of P8.

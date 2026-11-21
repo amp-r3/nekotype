@@ -1,6 +1,12 @@
 import type { Profile } from './learner';
 import { createCurrentPolicy } from './policies/current';
-import { createFsrsPlanner, HALF_LIFE_MODEL, PLANNER, PLANNER_A2 } from './policies/fsrs-planner';
+import {
+  createFsrsPlanner,
+  HALF_LIFE_MODEL,
+  PLANNER,
+  PLANNER_A2,
+  PLANNER_A4,
+} from './policies/fsrs-planner';
 import { simulate } from './run';
 import type { PolicyFactory, RunResult } from './run';
 
@@ -18,6 +24,8 @@ const POLICIES: readonly (readonly [string, PolicyFactory])[] = [
   ['A: FSRS-6, retention 0.95', createFsrsPlanner({ ...PLANNER, retention: 0.95 })],
   ['A2: FSRS-6, steps in time', createFsrsPlanner(PLANNER_A2)],
   ['B: half-life, steps in time', createFsrsPlanner(PLANNER_A2, HALF_LIFE_MODEL)],
+  ['A4: A2, look-ahead, 0.90, adapt', createFsrsPlanner(PLANNER_A4)],
+  ['B4: half-life, A4 planner', createFsrsPlanner(PLANNER_A4, HALF_LIFE_MODEL)],
 ];
 
 function quantile(values: readonly number[], q: number): number {
