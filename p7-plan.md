@@ -14,7 +14,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | PR  | Branch                        | Base        | Status | Pull request |
 | --- | ----------------------------- | ----------- | ------ | ------------ |
 | 1   | `p7-01-model-package`         | `main`      | done   | #206         |
-| 2   | `p7-02-fold`                  | `main`      | —      | —            |
+| 2   | `p7-02-fold`                  | `main`      | done   | #207         |
 | 3   | `p7-03-planner-sim`           | `main`      | —      | —            |
 | 4   | `p7-04-stats-view`            | `main`      | —      | —            |
 | 5   | `p7-05-forecast-cost`         | `main`      | —      | —            |
