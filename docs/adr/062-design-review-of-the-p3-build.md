@@ -1,6 +1,6 @@
 # ADR 062: Design Review of the P3 Build: Details Panel, Due Kana, Displayed Romaji
 
-- **Status:** In force. Amends [ADR 059](059-design-system-v10.md).
+- **Status:** In force. Amends [ADR 059](059-design-system-v10.md). Amended by [ADR 100](100-knowledge-model-fsrs-planner-and-answer-log.md) from P7: a kana is due by its predicted recall before the next session; the details panel and the displayed romaji stand.
 - **Context:** The maintainer reviewed the P3 build of `/` and found four questions that the code alone could not settle:
   - On a desktop the right half of `/` is empty.
   - The details of an activated kana read as loose text between the rows, and their `close` looks misaligned.

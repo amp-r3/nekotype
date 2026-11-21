@@ -75,7 +75,16 @@ The MVP is delivered in fifteen sequential phases. At the end of every phase `ve
      - the threshold at which katakana is suggested next to hiragana.
    - The note measures how accurate the forecast of the next unlock is on the simulated learners.
    - The current screens get the smallest change the new state needs: confidence and the boxes go, and the chart states, the tooltip, the session summary and `/stats` follow the model. P7 adds no design.
-   - The acceptance criteria are set by the ADR of the model.
+   - The model is decided by [ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md): FSRS-6 with the A4 planner, grades by task type, katakana suggested once the 46 basic hiragana are learned, a forecast of the next row in sessions as a range, and an answer log synced as sync format 3. The current learning data are reset (ADR 061).
+   - **Acceptance** ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md), point 10):
+     - the model and the planner are pure TypeScript with injected time and randomness, and the FSRS-6 code matches ts-fsrs 6.0.0;
+     - `packages/sim` runs on the production model; the reference beginner reads the 46 basic hiragana by day 8 with at least 90% review retention and at most 10 minutes a day (days 1–14), and the slow learners of part 3 stay within 2 points;
+     - the state is a pure fold of the log, and property tests show that two devices converge whatever the order of delivery, duplicates and failed syncs;
+     - every grade of ADR 100, point 4, has a test on synthetic answers;
+     - a sync writes at most 3 rows as D1 counts them; `POST /api/sync` with a 256 KB batch stays within the CPU line of ADR 086; the sync e2e covers two devices, one of them offline for a while;
+     - with a 4× CPU slowdown in Chromium, a fold of 40,000 answers takes at most 100 ms and a forecast at most 200 ms, outside keystroke handlers; the budgets and the latency test hold;
+     - the forecast of the next row is off by at most 1 session (median) for the reference learner in the sim;
+     - learning.md, metrics.md, storage-sync.md, backend.md and frontend.md describe the model, the log and the screens of P7.
 9. **P8 — Learning home and progress.**
    - Scope ([ADR 099](../adr/099-learning-home-methods-and-phases-after-p6.md)): `/` is rewritten as a learning home driven by the model:
      - the next action with its reason;
