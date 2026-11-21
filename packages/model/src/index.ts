@@ -43,5 +43,24 @@ export {
 export type { Fsrs, Grade, Memory } from './fsrs';
 export { effectsOf } from './grade';
 export type { Effect } from './grade';
-export { ITEMS, kanaOfReading, trackItems, trackRows } from './items';
+export { ITEMS, isWordKey, kanaOfReading, trackItems, trackRows } from './items';
 export type { KanaItem, RowId } from './items';
+export {
+  dueFrom,
+  horizonMs,
+  learningLimit,
+  pressure,
+  recallsToLearn,
+  requestedRetention,
+} from './learner';
+export { compareEvents, eventKey, localDay } from './order';
+export { createFold, foldLog } from './fold';
+export type {
+  ApplyResult,
+  Fold,
+  FoldOptions,
+  ItemState,
+  LearnerState,
+  ModelState,
+  Phase,
+} from './fold';
