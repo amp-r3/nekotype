@@ -1,6 +1,6 @@
 import type { Profile } from './learner';
 import { createCurrentPolicy } from './policies/current';
-import { createFsrsPlanner, PLANNER } from './policies/fsrs-planner';
+import { createFsrsPlanner, HALF_LIFE_MODEL, PLANNER, PLANNER_A2 } from './policies/fsrs-planner';
 import { simulate } from './run';
 import type { PolicyFactory, RunResult } from './run';
 
@@ -16,6 +16,8 @@ const POLICIES: readonly (readonly [string, PolicyFactory])[] = [
   ['current rule', createCurrentPolicy],
   ['A: FSRS-6, retention 0.90', createFsrsPlanner()],
   ['A: FSRS-6, retention 0.95', createFsrsPlanner({ ...PLANNER, retention: 0.95 })],
+  ['A2: FSRS-6, steps in time', createFsrsPlanner(PLANNER_A2)],
+  ['B: half-life, steps in time', createFsrsPlanner(PLANNER_A2, HALF_LIFE_MODEL)],
 ];
 
 function quantile(values: readonly number[], q: number): number {
@@ -48,7 +50,8 @@ const header = [
   'reads 104, day',
   'unlocked 46, day',
   'unlocked by day 7',
-  'retention',
+  'review retention',
+  'next-day recall of a new kana',
   'min/day, days 1–14',
 ];
 const lines = [`| ${header.join(' | ')} |`, `|${' --- |'.repeat(header.length)}`];
@@ -68,8 +71,12 @@ for (const [name, factory] of POLICIES) {
         0,
       ),
       `${spread(
-        results.map((r) => 100 * r.retention),
+        results.map((r) => 100 * r.reviewRetention),
         1,
+      )}%`,
+      `${spread(
+        results.map((r) => 100 * r.nextDay),
+        0,
       )}%`,
       spread(
         results.map((r) => r.minutesPerDay),

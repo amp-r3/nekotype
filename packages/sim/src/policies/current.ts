@@ -117,7 +117,7 @@ export function createCurrentPolicy(items: readonly Item[], rng: Rng): Policy {
         if (count >= SESSION_TASKS) return undefined;
         count += 1;
         const intro = states.findIndex((s) => s.unlocked && !s.introduced);
-        if (intro >= 0) return { item: intro, kind: 'introduction', options: [] };
+        if (intro >= 0) return { item: intro, kind: 'introduction', options: [], review: false };
         let candidates = states.flatMap((s, id) => (s.unlocked && s.introduced ? [id] : []));
         if (candidates.length > 1) candidates = candidates.filter((id) => id !== previous);
         const inFocus = candidates.filter(
@@ -130,8 +130,8 @@ export function createCurrentPolicy(items: readonly Item[], rng: Rng): Policy {
         previous = id;
         const task: Task =
           rng.next() < RECOGNITION_SHARE
-            ? { item: id, kind: 'recognition', options: options(id) }
-            : { item: id, kind: 'recall', options: [] };
+            ? { item: id, kind: 'recognition', options: options(id), review: false }
+            : { item: id, kind: 'recall', options: [], review: false };
         return task;
       },
       record(answer) {
@@ -154,7 +154,9 @@ export function createCurrentPolicy(items: readonly Item[], rng: Rng): Policy {
       next() {
         const id = due[index];
         index += 1;
-        return id === undefined ? undefined : { item: id, kind: 'recall', options: [] };
+        return id === undefined
+          ? undefined
+          : { item: id, kind: 'recall', options: [], review: true };
       },
       record(answer) {
         const s = state(answer.task.item);

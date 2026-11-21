@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { basicIds, hiraganaItems } from './items';
 import { createLearner, DAY_MS } from './learner';
 import { createCurrentPolicy } from './policies/current';
+import { createFsrsPlanner, HALF_LIFE_MODEL, PLANNER_A2 } from './policies/fsrs-planner';
 import { createRng } from './rng';
 import { simulate } from './run';
 
@@ -49,5 +50,32 @@ describe('simulate', () => {
     const result = simulate(createCurrentPolicy, 'beginner', 6, 5);
     expect(result.minutesPerDay).toBeLessThanOrEqual(12);
     expect(result.unlocked).toBeGreaterThan(5);
+  });
+});
+
+describe('candidates', () => {
+  it('the half-life model halves recall after one half-life and grows on a later-day recall', () => {
+    const m = HALF_LIFE_MODEL.first(1);
+    expect(HALF_LIFE_MODEL.recall(m, m.stability)).toBeCloseTo(0.5, 9);
+    const later = HALF_LIFE_MODEL.next(m, 3, 1, false);
+    expect(later.stability).toBeCloseTo(m.stability * 2.5, 9);
+    const longer = HALF_LIFE_MODEL.next(later, 3, 1, false);
+    expect(HALF_LIFE_MODEL.next(longer, 1, 1, false).stability).toBeCloseTo(
+      longer.stability * 0.3,
+      9,
+    );
+    // An error never takes the half-life below the first one.
+    expect(HALF_LIFE_MODEL.next(m, 1, 1, false).stability).toBe(m.stability);
+  });
+
+  it('every candidate is deterministic and unlocks the basic kana of a knower within 3 days', () => {
+    for (const factory of [
+      createFsrsPlanner(PLANNER_A2),
+      createFsrsPlanner(PLANNER_A2, HALF_LIFE_MODEL),
+    ]) {
+      const a = simulate(factory, 'knower', 9, 3);
+      expect(simulate(factory, 'knower', 9, 3)).toEqual(a);
+      expect(a.unlockedBasicDay).toBeLessThanOrEqual(3);
+    }
   });
 });

@@ -84,6 +84,8 @@ A first version of A graduated a kana after three recalls a few seconds apart. T
 
 ## Next parts
 
+[Part 2](2026-11-21-p7-knowledge-model-part-2.md) covers items 1–3 and part of 2.
+
 1. **Sensitivity:** the reference constants moved by ±50%, one at a time.
 2. **Candidate A variants:** FSRS parameters adapted to the learner from the observed answers, a stricter graduation, a lower requested retention for the first reviews only, and a different number of kana learned at once.
 3. **Candidate B:** another memory model, for example half-life regression with fixed weights, so the ranking is not about one family.
