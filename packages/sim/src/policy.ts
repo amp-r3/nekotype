@@ -35,4 +35,6 @@ export interface Policy {
   session(now: number, first: boolean): Session;
   /** Kana the policy has unlocked so far. */
   unlocked(): number;
+  /** The memory model chosen at each fit, when the policy fits one (part 3). */
+  readonly fits?: readonly string[];
 }

@@ -13,6 +13,26 @@ export const SKIP_CHANCE = 0.15;
 /** The goal of learning.md: the 46 basic hiragana; "reads" = expected recall ≥ 90% of them. */
 export const READS_SHARE = 0.9;
 
+/** How a forecast of introductions per session is made from the sessions so far. */
+export type Estimator = 'last 6 sessions' | 'last 3 days' | 'all sessions';
+export const ESTIMATORS: readonly Estimator[] = ['last 6 sessions', 'last 3 days', 'all sessions'];
+
+/** A forecast in sessions made at the start of a session, and the number of sessions it took. */
+export interface Outcome {
+  readonly forecast: number;
+  readonly actual: number;
+}
+
+/** The forecasts of one estimator over a run. */
+export interface ForecastErrors {
+  /** "The next row is fully unlocked in N sessions", made at every session. */
+  readonly row: readonly Outcome[];
+  /** "All 46 basic kana are unlocked in N sessions", made at every session until they are. */
+  readonly basic: readonly Outcome[];
+  /** Forecasts that could not be made (no introductions in the window). */
+  readonly missing: number;
+}
+
 export interface RunResult {
   readonly profile: Profile;
   /** First day (1-based) whose morning, before practice, the learner reads 90% of the 46 basic. */
@@ -37,6 +57,39 @@ export interface RunResult {
   readonly minutesPerDay: number;
   readonly sessions: number;
   readonly tasks: number;
+  readonly forecasts: Readonly<Record<Estimator, ForecastErrors>>;
+  readonly fits: readonly string[];
+}
+
+interface Pending {
+  readonly estimator: Estimator;
+  readonly target: 'row' | 'basic';
+  readonly ids: readonly number[];
+  readonly made: number;
+  readonly forecast: number;
+}
+
+/** Introductions per session estimated from the sessions before `index`, or 0. */
+function rate(
+  estimator: Estimator,
+  intros: readonly number[],
+  days: readonly number[],
+  day: number,
+): number {
+  let window: number[];
+  switch (estimator) {
+    case 'last 6 sessions':
+      window = intros.slice(-6);
+      break;
+    case 'last 3 days':
+      window = intros.filter((_, i) => (days[i] ?? 0) >= day - 3 && (days[i] ?? 0) < day);
+      if (window.length === 0) window = intros.slice(-6);
+      break;
+    case 'all sessions':
+      window = [...intros];
+      break;
+  }
+  return window.length === 0 ? 0 : window.reduce((a, b) => a + b, 0) / window.length;
 }
 
 export type PolicyFactory = (items: readonly Item[], rng: Rng) => Policy;
@@ -100,6 +153,54 @@ export function simulate(
   let practisedDays = 0;
   let sessions = 0;
   let tasks = 0;
+  const introduced = new Set<number>();
+  const intros: number[] = [];
+  const sessionDays: number[] = [];
+  const pending: Pending[] = [];
+  const empty = (): { row: Outcome[]; basic: Outcome[]; missing: number } => ({
+    row: [],
+    basic: [],
+    missing: 0,
+  });
+  const errors: Record<Estimator, ReturnType<typeof empty>> = {
+    'last 6 sessions': empty(),
+    'last 3 days': empty(),
+    'all sessions': empty(),
+  };
+  const rows = [...new Set(items.map((item) => item.row))].map((row) =>
+    items.filter((item) => item.row === row).map((item) => item.id),
+  );
+
+  function forecast(day: number): void {
+    const row = rows.find((ids) => ids.some((id) => !introduced.has(id)));
+    const targets = [
+      ['row', row ?? []],
+      ['basic', basic],
+    ] as const;
+    for (const [target, ids] of targets) {
+      const remaining = ids.filter((id) => !introduced.has(id)).length;
+      if (remaining === 0) continue;
+      for (const estimator of ESTIMATORS) {
+        const perSession = rate(estimator, intros, sessionDays, day);
+        if (perSession <= 0) {
+          errors[estimator].missing += 1;
+          continue;
+        }
+        const n = Math.max(1, Math.ceil(remaining / perSession));
+        pending.push({ estimator, target, ids, made: intros.length, forecast: n });
+      }
+    }
+  }
+
+  function settle(): void {
+    for (let i = pending.length - 1; i >= 0; i -= 1) {
+      const p = pending[i];
+      if (p === undefined || !p.ids.every((id) => introduced.has(id))) continue;
+      const actual = intros.length - p.made;
+      errors[p.estimator][p.target].push({ forecast: p.forecast, actual });
+      pending.splice(i, 1);
+    }
+  }
 
   for (let day = 0; day < days; day += 1) {
     const morning = start + day * DAY_MS + (SITTING_HOURS[0] - 1) * 3_600_000;
@@ -119,7 +220,13 @@ export function simulate(
         const session = policy.session(now, first);
         first = false;
         let count = 0;
+        let sessionIntros = 0;
         for (let task = session.next(now); task !== undefined; task = session.next(now)) {
+          if (count === 0) forecast(day);
+          if (task.kind === 'introduction') {
+            introduced.add(task.item);
+            sessionIntros += 1;
+          }
           const answer = perform(learner, items, task, now);
           const seenAt = lastSeen.get(task.item);
           if (
@@ -149,8 +256,12 @@ export function simulate(
           session.record(answer);
         }
         tasks += count;
-        if (count > 0) sessions += 1;
-        else if (session.kind === 'learning') break;
+        if (count > 0) {
+          sessions += 1;
+          intros.push(sessionIntros);
+          sessionDays.push(day);
+          settle();
+        } else if (session.kind === 'learning') break;
       }
     }
     if (dayMs > 0 && day < 14) {
@@ -177,5 +288,7 @@ export function simulate(
     minutesPerDay: practisedDays === 0 ? 0 : practisedMs / practisedDays / 60_000,
     sessions,
     tasks,
+    forecasts: errors,
+    fits: policy.fits ?? [],
   };
 }

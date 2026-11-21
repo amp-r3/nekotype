@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { basicIds, hiraganaItems } from './items';
 import { createLearner, DAY_MS } from './learner';
 import { createCurrentPolicy } from './policies/current';
-import { createFsrsPlanner, HALF_LIFE_MODEL, PLANNER_A2 } from './policies/fsrs-planner';
+import {
+  createFsrsPlanner,
+  FSRS6_MODEL,
+  HALF_LIFE_MODEL,
+  PLANNER_A2,
+  PLANNER_A4,
+} from './policies/fsrs-planner';
 import { createRng } from './rng';
 import { simulate } from './run';
 
@@ -72,10 +78,33 @@ describe('candidates', () => {
     for (const factory of [
       createFsrsPlanner(PLANNER_A2),
       createFsrsPlanner(PLANNER_A2, HALF_LIFE_MODEL),
+      createFsrsPlanner(PLANNER_A4),
     ]) {
       const a = simulate(factory, 'knower', 9, 3);
       expect(simulate(factory, 'knower', 9, 3)).toEqual(a);
       expect(a.unlockedBasicDay).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it('a fit whose only model is the default one changes nothing', () => {
+    const plain = simulate(createFsrsPlanner(PLANNER_A2), 'beginner', 4, 6);
+    const fitted = simulate(
+      createFsrsPlanner({ ...PLANNER_A2, fit: [FSRS6_MODEL], fitAfter: 20 }),
+      'beginner',
+      4,
+      6,
+    );
+    expect(fitted.fits.length).toBeGreaterThan(0);
+    expect({ ...fitted, fits: [] }).toEqual(plain);
+  });
+
+  it('records forecasts in sessions that the run settles', () => {
+    const result = simulate(createFsrsPlanner(PLANNER_A2), 'beginner', 2, 10);
+    const rows = result.forecasts['all sessions'].row;
+    expect(rows.length).toBeGreaterThan(10);
+    for (const { forecast, actual } of rows) {
+      expect(forecast).toBeGreaterThanOrEqual(1);
+      expect(actual).toBeGreaterThanOrEqual(1);
     }
   });
 });
