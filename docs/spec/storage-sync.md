@@ -27,8 +27,8 @@ Database `nekotype`, `meta.schemaVersion` = `SCHEMA_VERSION` (see "Schema change
 
 ## Schema changes
 
-- **Before the release (ADR 061, until the P12 release tag).** Nobody but the maintainer uses production, so a change to the IndexedDB schema resets the local data and no migration is written. `SCHEMA_VERSION` (an integer in `shared/lib`, next to `PRE_RELEASE`) grows in the pull request that changes a store or the format of its records, and each phase creates the stores it uses (schema 5, P6: `settings`, `delta`, `snapshot`, `outbox`, `meta`; a device of P5 is reset at its first start, with whatever it had not sent). `openDatabase()` opens the database without a version; when a store is missing, `meta.schemaVersion` differs from `SCHEMA_VERSION` or `meta` cannot be read, it closes the connection, deletes the database `nekotype`, creates it again at IndexedDB version 1 and writes `meta.schemaVersion`. This is silent (one `console.info` line). A failure to open, delete or create (blocked by another tab, refused by the browser) is the "IndexedDB unavailable" case: memory only, a notice, legacy keys kept. Another tab holding an old schema closes its connection on `versionchange`. `nekotype:locale` and the server are not reset.
-- **After the release.** `SCHEMA_VERSION` starts at 1 and is the IndexedDB version. A change raises it and adds a migration step in `onupgradeneeded` with a test on a fixture of the previous version; `PRE_RELEASE` is `false` and a mismatch is never answered by a reset. A test fails when the number of migration steps differs from `SCHEMA_VERSION − 1`. The release switch is part of P7 ([Phases](phases.md)).
+- **Before the release (ADR 061, until the P14 release tag).** Nobody but the maintainer uses production, so a change to the IndexedDB schema resets the local data and no migration is written. `SCHEMA_VERSION` (an integer in `shared/lib`, next to `PRE_RELEASE`) grows in the pull request that changes a store or the format of its records, and each phase creates the stores it uses (schema 5, P6: `settings`, `delta`, `snapshot`, `outbox`, `meta`; a device of P5 is reset at its first start, with whatever it had not sent). `openDatabase()` opens the database without a version; when a store is missing, `meta.schemaVersion` differs from `SCHEMA_VERSION` or `meta` cannot be read, it closes the connection, deletes the database `nekotype`, creates it again at IndexedDB version 1 and writes `meta.schemaVersion`. This is silent (one `console.info` line). A failure to open, delete or create (blocked by another tab, refused by the browser) is the "IndexedDB unavailable" case: memory only, a notice, legacy keys kept. Another tab holding an old schema closes its connection on `versionchange`. `nekotype:locale` and the server are not reset.
+- **After the release.** `SCHEMA_VERSION` starts at 1 and is the IndexedDB version. A change raises it and adds a migration step in `onupgradeneeded` with a test on a fixture of the previous version; `PRE_RELEASE` is `false` and a mismatch is never answered by a reset. A test fails when the number of migration steps differs from `SCHEMA_VERSION − 1`. The release switch is part of P14 ([Phases](phases.md)).
 
 ## Settings
 
@@ -38,7 +38,7 @@ type Settings = {
     strictness: Strictness;
     track: 'hiragana' | 'katakana';
     targetMs: number; // target answer time of confidence: 1000–3000 in steps of 250, default 1500
-    sound: boolean; // play the kana sound after each task (P8), default true
+    sound: boolean; // play the kana sound after each task (P10), default true
   };
   updatedAt: number;
 };

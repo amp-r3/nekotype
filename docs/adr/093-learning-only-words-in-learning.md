@@ -30,4 +30,4 @@
   - The device-matrix checks deferred from P2 apply to learning recall and move to P12 with the release.
   - The design export in `docs/design/source/` names audio P6 and the release P7; the next export from the design system artifact renames them. Removing the typing screens from the design system is part of P6.
   - [ADR 058](058-learning-first.md) is amended (points 1, 2, 6 and 8) and [ADR 092](092-report-dialog-turnstile-keys-by-host-and-fail-closed-secret.md) is amended (point 1: the dialog leaves with `/type` and returns with word tasks).
-- **Status:** In force.
+- **Status:** In force; points 6 and 8 amended by [ADR 099](099-learning-home-methods-and-phases-after-p6.md).

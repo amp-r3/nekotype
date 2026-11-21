@@ -287,14 +287,14 @@ describe('check-budget', () => {
     expect(failures).toEqual([expect.stringContaining('Lazy route chunk')]);
   });
 
-  it('fails on any content chunk, found by its source and not by file name (no content before P10)', () => {
+  it('fails on any content chunk, found by its source and not by file name (no content before P12)', () => {
     for (const src of [
       'src/entities/prompt/content/words-hiragana.json',
       'src/entities/prompt/content/phrases-mixed.json',
       'content/n5-words.ts',
     ]) {
       expect(failuresFor({ lazy: [{ src, kb: 1 }] }), src).toEqual([
-        expect.stringContaining('no content is shipped before P10'),
+        expect.stringContaining('no content is shipped before P12'),
       ]);
     }
     expect(failuresFor({ lazy: [{ src: 'src/pages/stats/index.ts', kb: 20 }] })).toEqual([]);

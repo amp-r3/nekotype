@@ -48,7 +48,7 @@ apps/web/src/
 
 ## Widgets layer consolidation
 
-Under standard FSD, the `widgets/` layer hosts multi-slice compositional blocks. The FSD linter (`steiger`) enforces `fsd/insignificant-slice`, requiring slices to have more than one consumer across the application, so the layer is not used: a block with one consumer lives in that consumer. The kana table and the binding of the engine to it (`pages/learn/lib/prompt`, which `entities/prompt` held until P6, ADR 096) are an example: `pages/learn` is their only consumer. The generated word and phrase chunks stay in `entities/prompt/content/`, data without code that steiger ignores; P10 gives it a home.
+Under standard FSD, the `widgets/` layer hosts multi-slice compositional blocks. The FSD linter (`steiger`) enforces `fsd/insignificant-slice`, requiring slices to have more than one consumer across the application, so the layer is not used: a block with one consumer lives in that consumer. The kana table and the binding of the engine to it (`pages/learn/lib/prompt`, which `entities/prompt` held until P6, ADR 096) are an example: `pages/learn` is their only consumer. The generated word and phrase chunks stay in `entities/prompt/content/`, data without code that steiger ignores; P12 gives it a home.
 
 > [!NOTE]
 > **When to Extract Widgets:** If a second full-page view is introduced (such as a historical stats dashboard, custom word list editor, or flashcard review page) that reuses these UI blocks, extract them back into `apps/web/src/widgets/<widget-name>/` with their own public APIs.

@@ -14,7 +14,7 @@ const SETTINGS_KEY = 'current';
 const _learnStrictness = signal<Strictness>('learner');
 const _learnTrack = signal<LearnTrack>('hiragana');
 const _learnTargetMs = signal<number>(DEFAULT_LEARN_TARGET_MS);
-// Played after each task from P8; stored so that the document round-trips.
+// Played after each task from P10; stored so that the document round-trips.
 const _learnSound = signal<boolean>(true);
 const _updatedAt = signal<number>(0);
 const _settingsReady = signal<boolean>(false);
