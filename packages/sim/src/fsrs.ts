@@ -15,6 +15,8 @@ export type Grade = 1 | 2 | 3 | 4;
 export interface Memory {
   readonly difficulty: number;
   readonly stability: number;
+  /** FSRS-7 only (`src/fsrs7.ts`): the stability of the fast trace. */
+  readonly fast?: number;
 }
 
 const S_MIN = 0.001;

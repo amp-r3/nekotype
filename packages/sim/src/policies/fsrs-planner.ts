@@ -1,5 +1,6 @@
 import { createFsrs, FSRS6_WEIGHTS, firstMemory, nextMemory, retrievability } from '../fsrs';
 import type { Grade, Memory } from '../fsrs';
+import { FSRS7 } from '../fsrs7';
 import type { Item } from '../items';
 import { DAY_MS } from '../learner';
 import type { Answer, Policy, Session, Task } from '../policy';
@@ -85,6 +86,11 @@ export interface PlannerParams {
   readonly link: boolean;
   /** A correct recall of a composite counts as a hard review of each learned part. */
   readonly creditParts: boolean;
+  /**
+   * Part 5: a learned kana is not due until this many ms after its last answer, so the look-ahead
+   * does not review it again and again within one sitting; 0 turns it off.
+   */
+  readonly reviewGapMs: number;
 }
 
 export const PLANNER: PlannerParams = {
@@ -107,6 +113,7 @@ export const PLANNER: PlannerParams = {
   katakana: 'after hiragana',
   link: false,
   creditParts: false,
+  reviewGapMs: 0,
 };
 
 /** A2: learning steps in time (30 s, doubled per correct recall), 5 to graduate, retention 0.95. */
@@ -142,6 +149,17 @@ export const FSRS6_MODEL: MemoryModel = {
   first: firstMemory,
   next: nextMemory,
   recall: (m, elapsed) => retrievability(m.stability, elapsed),
+};
+
+/**
+ * FSRS-7 with the default weights (part 5): two traces and fractional days, so it ignores
+ * `sameDay`.
+ */
+export const FSRS7_MODEL: MemoryModel = {
+  name: 'FSRS-7',
+  first: FSRS7.firstMemory,
+  next: (m, g, elapsed) => FSRS7.nextMemory(m, g, elapsed),
+  recall: FSRS7.retrievability,
 };
 
 /** FSRS-6 with three changes to its default weights: the fitted part of candidate A3. */
@@ -454,7 +472,12 @@ function build(
     const ids = core.states.map((_, id) => id).filter((id) => id !== previous);
     const ahead = now + horizonMs();
     const due = ids
-      .filter((id) => state(id).phase === 'graduated' && recallAt(id, ahead) < retentionNow())
+      .filter(
+        (id) =>
+          state(id).phase === 'graduated' &&
+          now - state(id).lastAt >= params.reviewGapMs &&
+          recallAt(id, ahead) < retentionNow(),
+      )
       .sort((a, b) => recallAt(a, ahead) - recallAt(b, ahead));
     const learning = ids
       .filter((id) => state(id).phase === 'learning')
