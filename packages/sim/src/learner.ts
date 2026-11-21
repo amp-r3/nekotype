@@ -28,6 +28,13 @@ export interface ReferenceParams {
   readonly familiarity: number;
   /** A kana learned before and forgotten is relearned this many times faster. */
   readonly savings: number;
+  /**
+   * Part 4: a katakana first studied while its hiragana is recalled (above 50%) starts with this
+   * much more stability (0: the scripts are learned apart).
+   */
+  readonly transfer: number;
+  /** Part 4: a correct recall of a composite strengthens each part with this share of a recall. */
+  readonly partsShare: number;
 }
 
 export const REFERENCE: ReferenceParams = {
@@ -38,6 +45,8 @@ export const REFERENCE: ReferenceParams = {
   lapseKeep: 0.3,
   familiarity: 0.3,
   savings: 4,
+  transfer: 0,
+  partsShare: 0,
 };
 
 interface Trace {
@@ -104,7 +113,10 @@ export function createLearner(
 
   function study(id: number, now: number): void {
     const t = trace(id);
-    const fresh = (params.firstStability * t.savings) / d(id);
+    const item = items[id];
+    const pair = item?.track === 'katakana' ? item.pair : undefined;
+    const boost = pair !== undefined && probability(pair, now) > 0.5 ? 1 + params.transfer : 1;
+    const fresh = (params.firstStability * t.savings * boost) / d(id);
     t.stability = t.seen ? Math.max(t.stability, fresh) : fresh;
     t.seen = true;
     t.last = now;
@@ -139,6 +151,11 @@ export function createLearner(
       if (rng.next() < p) {
         const ms = answerMs(id, p);
         strengthen(id, p, 1, now);
+        if (params.partsShare > 0) {
+          for (const part of items[id]?.parts ?? []) {
+            if (trace(part).seen) strengthen(part, probability(part, now), params.partsShare, now);
+          }
+        }
         return { ok: true, ms, confusedWith: undefined };
       }
       const similar = items[id]?.similar ?? [];

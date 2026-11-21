@@ -32,7 +32,13 @@ import type { Rng } from '../rng';
  * - Fitting (when `fit` is not empty, part 3): at the first session of each day, once `fitAfter`
  *   counted answers are logged (`fitOn`: recalls more than 2 hours after the previous exposure, or
  *   scheduled reviews only), the planner replays every kana's answers under each model of `fit`,
- *   keeps the one with the highest likelihood of the counted answers and takes its memory states. It changes the memory model, not the phases.
+ *   keeps the one with the highest likelihood of the counted answers and takes its memory states.
+ *   It changes the memory model, not the phases.
+ * - Part 4: the state is a fold of the answers (`apply`), so a log of answers rebuilds it; the
+ *   gaps between sessions come from the answers too. `clone` copies the state for a forecast that
+ *   plays the planner forward. `grading` changes how an answer becomes a grade. With both tracks,
+ *   `katakana` says when katakana are introduced and `link` lets a katakana whose hiragana is learned
+ *   start further on. `creditParts` lets a correct composite count as a weak review of its parts.
  */
 
 export interface PlannerParams {
@@ -63,6 +69,22 @@ export interface PlannerParams {
    * last 10 gaps of over an hour between the learner's sessions instead (12 hours until known).
    */
   readonly horizon: number | 'observed';
+  /**
+   * How an answer becomes a grade: `time` (a slow recall is hard, a recognition hard), `binary`
+   * (every correct answer good), `recognition good`, or `recognition none` (a recognition changes
+   * no memory, only the phase).
+   */
+  readonly grading: 'time' | 'binary' | 'recognition good' | 'recognition none';
+  /**
+   * When katakana are introduced with both tracks: after every hiragana is introduced, once the 46
+   * basic hiragana are learned, or each one once its hiragana is learned. The last two alternate
+   * the tracks.
+   */
+  readonly katakana: 'after hiragana' | 'after basic' | 'paired';
+  /** A katakana whose hiragana is learned starts as a recalled kana and graduates 2 recalls sooner. */
+  readonly link: boolean;
+  /** A correct recall of a composite counts as a hard review of each learned part. */
+  readonly creditParts: boolean;
 }
 
 export const PLANNER: PlannerParams = {
@@ -81,6 +103,10 @@ export const PLANNER: PlannerParams = {
   fitAfter: 100,
   fitOn: 'recalls',
   horizon: 0,
+  grading: 'time',
+  katakana: 'after hiragana',
+  link: false,
+  creditParts: false,
 };
 
 /** A2: learning steps in time (30 s, doubled per correct recall), 5 to graduate, retention 0.95. */
@@ -194,7 +220,7 @@ export const HALF_LIFE_GRID: readonly MemoryModel[] = [0.01, 0.02, 0.04].flatMap
 
 type Phase = 'new' | 'learning' | 'graduated';
 
-interface State {
+export interface State {
   phase: Phase;
   memory: Memory | undefined;
   lastAt: number;
@@ -234,197 +260,308 @@ function replay(
   return { memories, likelihood };
 }
 
-function gradeOf(answer: Answer, targetMs: number): Grade {
+function gradeOf(answer: Answer, params: PlannerParams): Grade | undefined {
   if (!answer.ok) return 1;
-  if (answer.task.kind === 'recognition') return 2;
-  return answer.ms <= targetMs ? 3 : 2;
+  const recognition = answer.task.kind === 'recognition';
+  switch (params.grading) {
+    case 'binary':
+      return 3;
+    case 'recognition good':
+      return recognition || answer.ms <= params.targetMs ? 3 : 2;
+    case 'recognition none':
+      if (recognition) return undefined;
+      return answer.ms <= params.targetMs ? 3 : 2;
+    case 'time':
+      if (recognition) return 2;
+      return answer.ms <= params.targetMs ? 3 : 2;
+  }
 }
 
-export function createFsrsPlanner(
-  params: PlannerParams = PLANNER,
-  model: MemoryModel = FSRS6_MODEL,
-) {
-  return (items: readonly Item[], rng: Rng): Policy => {
-    const states: State[] = items.map(() => ({
+/** Everything the planner learns from answers: plain data, so it can be copied and merged. */
+export interface PlannerCore {
+  states: State[];
+  taskIndex: number;
+  logScale: number;
+  observed: number;
+  fitAnswers: number;
+  fittedDay: number;
+  gaps: number[];
+  lastAnswerAt: number | undefined;
+}
+
+/** The planner with the hooks of part 4. */
+export interface Planner extends Policy {
+  /** Applies an answer outside a session: a replayed log rebuilds the state this way. */
+  apply(answer: Answer): void;
+  /** A planner with a copy of this one's state and its own random source. */
+  clone(rng: Rng): Planner;
+  /** The planner's predicted recall of a kana; 0 for a kana not introduced. */
+  predict(item: number, now: number): number;
+  /** A copy of the state. */
+  snapshot(): PlannerCore;
+  /** Replaces the state. */
+  adopt(core: PlannerCore): void;
+  /** Ids of the kana introduced so far. */
+  introduced(): readonly number[];
+}
+
+export function freshCore(items: readonly Item[], goal: number): PlannerCore {
+  return {
+    states: items.map(() => ({
       phase: 'new',
       memory: undefined,
       lastAt: 0,
       streak: 0,
       lastTask: -Infinity,
       log: [],
-    }));
-    let taskIndex = 0;
-    let logScale = 0;
-    let observed = params.goal;
-    let current = model;
-    let fitAnswers = 0;
-    let fittedDay = -1;
-    /** The model chosen at each fit, for the research note. */
-    const fits: string[] = [];
-    const gaps: number[] = [];
-    let lastSession: number | undefined;
+    })),
+    taskIndex: 0,
+    logScale: 0,
+    observed: goal,
+    fitAnswers: 0,
+    fittedDay: -1,
+    gaps: [],
+    lastAnswerAt: undefined,
+  };
+}
 
-    function horizonMs(): number {
-      if (params.horizon !== 'observed') return params.horizon;
-      const recent = gaps.slice(-10).sort((a, b) => a - b);
-      return recent[Math.floor(recent.length / 2)] ?? 12 * 3_600_000;
-    }
+export function createFsrsPlanner(
+  params: PlannerParams = PLANNER,
+  model: MemoryModel = FSRS6_MODEL,
+): (items: readonly Item[], rng: Rng) => Planner {
+  return (items, rng) => build(params, items, freshCore(items, params.goal), model, rng, []);
+}
 
-    /** 0 while review retention holds the goal, 1 when it is 10 points below. */
-    const pressure = (): number =>
-      params.adapt > 0 ? Math.min(1, Math.max(0, (params.goal - observed) / 0.1)) : 0;
-    const retentionNow = (): number => params.retention + pressure() * (0.98 - params.retention);
-    const learnMaxNow = (): number =>
-      Math.max(1, Math.round(params.learnMax - pressure() * (params.learnMax - 1)));
-    const graduateNow = (): number => params.graduate + Math.round(2 * pressure());
+function build(
+  params: PlannerParams,
+  items: readonly Item[],
+  initial: PlannerCore,
+  model: MemoryModel,
+  rng: Rng,
+  fits: string[],
+): Planner {
+  let core = initial;
+  let current = model;
 
-    function refit(now: number): void {
-      const day = Math.floor(now / DAY_MS);
-      if (params.fit.length === 0 || day === fittedDay || fitAnswers < params.fitAfter) return;
-      fittedDay = day;
-      let best: { model: MemoryModel; memories: (Memory | undefined)[]; likelihood: number } = {
-        model: current,
-        ...replay(states, current),
-      };
-      for (const candidate of params.fit) {
-        const result = replay(states, candidate);
-        if (result.likelihood > best.likelihood) best = { model: candidate, ...result };
-      }
-      current = best.model;
-      for (const [id, memory] of best.memories.entries()) {
-        const s = states[id];
-        if (s !== undefined) s.memory = memory;
-      }
-      fits.push(`${day + 1}: ${current.name}`);
-    }
+  function horizonMs(): number {
+    if (params.horizon !== 'observed') return params.horizon;
+    const recent = core.gaps.slice(-10).sort((a, b) => a - b);
+    return recent[Math.floor(recent.length / 2)] ?? 12 * 3_600_000;
+  }
 
-    const state = (id: number): State => {
-      const s = states[id];
-      if (s === undefined) throw new Error(`no item ${id}`);
-      return s;
+  /** 0 while review retention holds the goal, 1 when it is 10 points below. */
+  const pressure = (): number =>
+    params.adapt > 0 ? Math.min(1, Math.max(0, (params.goal - core.observed) / 0.1)) : 0;
+  const retentionNow = (): number => params.retention + pressure() * (0.98 - params.retention);
+  const learnMaxNow = (): number =>
+    Math.max(1, Math.round(params.learnMax - pressure() * (params.learnMax - 1)));
+  const graduateNow = (): number => params.graduate + Math.round(2 * pressure());
+
+  function refit(now: number): void {
+    const day = Math.floor(now / DAY_MS);
+    if (params.fit.length === 0 || day === core.fittedDay || core.fitAnswers < params.fitAfter)
+      return;
+    core.fittedDay = day;
+    let best: { model: MemoryModel; memories: (Memory | undefined)[]; likelihood: number } = {
+      model: current,
+      ...replay(core.states, current),
     };
-
-    const recallAt = (id: number, now: number): number => {
-      const { memory, lastAt } = state(id);
-      if (memory === undefined) return 0;
-      return current.recall(memory, (Math.exp(logScale) * (now - lastAt)) / DAY_MS);
-    };
-
-    function options(id: number): number[] {
-      const chosen = new Set([id]);
-      const similar = items[id]?.similar.find((o) => state(o).phase !== 'new');
-      if (similar !== undefined) chosen.add(similar);
-      const pool = states.flatMap((s, other) =>
-        s.phase !== 'new' && !chosen.has(other) ? [other] : [],
-      );
-      while (chosen.size < 4 && pool.length > 0) {
-        const [pick] = pool.splice(Math.floor(rng.next() * pool.length), 1);
-        if (pick !== undefined) chosen.add(pick);
-      }
-      for (let other = 0; chosen.size < 4 && other < items.length; other += 1) chosen.add(other);
-      return [...chosen];
+    for (const candidate of params.fit) {
+      const result = replay(core.states, candidate);
+      if (result.likelihood > best.likelihood) best = { model: candidate, ...result };
     }
-
-    function nextNew(): number | undefined {
-      const learning = states.filter((s) => s.phase === 'learning').length;
-      if (learning >= learnMaxNow()) return undefined;
-      return items.find(
-        (item) =>
-          state(item.id).phase === 'new' &&
-          item.parts.every((part) => state(part).phase === 'graduated'),
-      )?.id;
+    current = best.model;
+    for (const [id, memory] of best.memories.entries()) {
+      const s = core.states[id];
+      if (s !== undefined) s.memory = memory;
     }
+    fits.push(`${day + 1}: ${current.name}`);
+  }
 
-    function pick(now: number, previous: number): Task | undefined {
-      const ids = states.map((_, id) => id).filter((id) => id !== previous);
-      const ahead = now + horizonMs();
-      const due = ids
-        .filter((id) => state(id).phase === 'graduated' && recallAt(id, ahead) < retentionNow())
-        .sort((a, b) => recallAt(a, ahead) - recallAt(b, ahead));
-      const learning = ids
-        .filter((id) => state(id).phase === 'learning')
-        .sort((a, b) => state(a).lastTask - state(b).lastTask);
-      const ready = learning.filter((id) => {
-        const { lastTask, lastAt, streak } = state(id);
-        return params.gapMs > 0
-          ? now - lastAt >= params.gapMs * 2 ** streak
-          : taskIndex - lastTask >= params.gap * 2 ** streak;
-      });
-      const fresh = nextNew();
-      const id = due[0] ?? ready[0] ?? fresh ?? learning[0];
-      if (id === undefined) return undefined;
-      if (id === fresh) return { item: id, kind: 'introduction', options: [], review: false };
-      const review = state(id).phase === 'graduated';
-      const recognition = !review && rng.next() < params.recognitionShare;
-      return recognition
-        ? { item: id, kind: 'recognition', options: options(id), review }
-        : { item: id, kind: 'recall', options: [], review };
+  const state = (id: number): State => {
+    const s = core.states[id];
+    if (s === undefined) throw new Error(`no item ${id}`);
+    return s;
+  };
+
+  const recallAt = (id: number, now: number): number => {
+    const { memory, lastAt } = state(id);
+    if (memory === undefined) return 0;
+    return current.recall(memory, (Math.exp(core.logScale) * (now - lastAt)) / DAY_MS);
+  };
+
+  const linked = (id: number): boolean => {
+    const item = items[id];
+    return (
+      params.link &&
+      item?.track === 'katakana' &&
+      item.pair !== undefined &&
+      state(item.pair).phase === 'graduated'
+    );
+  };
+
+  function options(id: number): number[] {
+    const track = items[id]?.track;
+    const chosen = new Set([id]);
+    const similar = items[id]?.similar.find((o) => state(o).phase !== 'new');
+    if (similar !== undefined) chosen.add(similar);
+    const pool = core.states.flatMap((s, other) =>
+      s.phase !== 'new' && !chosen.has(other) && items[other]?.track === track ? [other] : [],
+    );
+    while (chosen.size < 4 && pool.length > 0) {
+      const [pick] = pool.splice(Math.floor(rng.next() * pool.length), 1);
+      if (pick !== undefined) chosen.add(pick);
     }
+    for (let other = 0; chosen.size < 4 && other < items.length; other += 1) chosen.add(other);
+    return [...chosen];
+  }
 
-    function record(answer: Answer): void {
-      const { item, kind } = answer.task;
-      const s = state(item);
-      s.lastTask = taskIndex;
-      taskIndex += 1;
-      const grade = gradeOf(answer, params.targetMs);
-      const counted =
-        params.fitOn === 'reviews'
-          ? answer.task.review
-          : kind === 'recall' && answer.at - s.lastAt > FIT_MIN_GAP;
-      if (counted) fitAnswers += 1;
-      if (params.fit.length > 0) s.log.push({ grade, at: answer.at, counted });
-      if (answer.task.review && params.adapt > 0)
-        observed += params.adapt * ((answer.ok ? 1 : 0) - observed);
-      if (kind === 'introduction') {
-        s.phase = 'learning';
-        s.memory = current.first(1);
-        s.lastAt = answer.at;
-        s.streak = 0;
-        return;
-      }
-      const sameDay = Math.floor(answer.at / DAY_MS) === Math.floor(s.lastAt / DAY_MS);
-      if (params.calibration > 0 && kind === 'recall' && !sameDay && s.memory !== undefined) {
-        const predicted = recallAt(item, answer.at);
-        const outcome = answer.ok ? 1 : 0;
-        logScale = Math.min(3, Math.max(-3, logScale + params.calibration * (predicted - outcome)));
-      }
-      const memory = s.memory ?? current.first(grade);
-      const elapsed = (answer.at - s.lastAt) / DAY_MS;
-      s.memory = s.memory === undefined ? memory : current.next(memory, grade, elapsed, sameDay);
+  function eligible(item: Item): boolean {
+    if (state(item.id).phase !== 'new') return false;
+    if (!item.parts.every((part) => state(part).phase === 'graduated')) return false;
+    if (item.track === 'hiragana') return true;
+    switch (params.katakana) {
+      case 'after hiragana':
+        return items.every(
+          (other) => other.track !== 'hiragana' || state(other.id).phase !== 'new',
+        );
+      case 'after basic':
+        return items.every(
+          (other) =>
+            other.track !== 'hiragana' ||
+            other.category !== 'basic' ||
+            state(other.id).phase === 'graduated',
+        );
+      case 'paired':
+        return item.pair === undefined
+          ? items.every((other) => other.track !== 'hiragana' || state(other.id).phase !== 'new')
+          : state(item.pair).phase === 'graduated';
+    }
+  }
+
+  function nextNew(): number | undefined {
+    const learning = core.states.filter((s) => s.phase === 'learning').length;
+    if (learning >= learnMaxNow()) return undefined;
+    const hira = items.find((item) => item.track === 'hiragana' && eligible(item));
+    const kata = items.find((item) => item.track === 'katakana' && eligible(item));
+    if (hira === undefined || kata === undefined) return (hira ?? kata)?.id;
+    const count = (track: string): number =>
+      items.filter((item) => item.track === track && state(item.id).phase !== 'new').length;
+    return count('katakana') < count('hiragana') - 10 ? kata.id : hira.id;
+  }
+
+  function pick(now: number, previous: number): Task | undefined {
+    const ids = core.states.map((_, id) => id).filter((id) => id !== previous);
+    const ahead = now + horizonMs();
+    const due = ids
+      .filter((id) => state(id).phase === 'graduated' && recallAt(id, ahead) < retentionNow())
+      .sort((a, b) => recallAt(a, ahead) - recallAt(b, ahead));
+    const learning = ids
+      .filter((id) => state(id).phase === 'learning')
+      .sort((a, b) => state(a).lastTask - state(b).lastTask);
+    const ready = learning.filter((id) => {
+      const { lastTask, lastAt, streak } = state(id);
+      return params.gapMs > 0
+        ? now - lastAt >= params.gapMs * 2 ** streak
+        : core.taskIndex - lastTask >= params.gap * 2 ** streak;
+    });
+    const fresh = nextNew();
+    const id = due[0] ?? ready[0] ?? fresh ?? learning[0];
+    if (id === undefined) return undefined;
+    if (id === fresh) return { item: id, kind: 'introduction', options: [], review: false };
+    const review = state(id).phase === 'graduated';
+    const recognition = !review && rng.next() < params.recognitionShare;
+    return recognition
+      ? { item: id, kind: 'recognition', options: options(id), review }
+      : { item: id, kind: 'recall', options: [], review };
+  }
+
+  function update(s: State, grade: Grade, at: number): void {
+    const sameDay = Math.floor(at / DAY_MS) === Math.floor(s.lastAt / DAY_MS);
+    const memory = s.memory ?? current.first(grade);
+    const elapsed = (at - s.lastAt) / DAY_MS;
+    s.memory = s.memory === undefined ? memory : current.next(memory, grade, elapsed, sameDay);
+    s.lastAt = at;
+  }
+
+  function record(answer: Answer): void {
+    const { item, kind } = answer.task;
+    const s = state(item);
+    if (core.lastAnswerAt !== undefined && answer.at - core.lastAnswerAt > 3_600_000)
+      core.gaps.push(answer.at - core.lastAnswerAt);
+    core.lastAnswerAt = answer.at;
+    s.lastTask = core.taskIndex;
+    core.taskIndex += 1;
+    const grade = gradeOf(answer, params);
+    const counted =
+      params.fitOn === 'reviews'
+        ? answer.task.review
+        : kind === 'recall' && answer.at - s.lastAt > FIT_MIN_GAP;
+    if (counted) core.fitAnswers += 1;
+    if (params.fit.length > 0 && grade !== undefined) s.log.push({ grade, at: answer.at, counted });
+    if (answer.task.review && params.adapt > 0)
+      core.observed += params.adapt * ((answer.ok ? 1 : 0) - core.observed);
+    if (kind === 'introduction') {
+      const link = linked(item);
+      s.phase = 'learning';
+      s.memory = current.first(link ? 3 : 1);
       s.lastAt = answer.at;
-      if (s.phase === 'graduated' && !answer.ok) {
-        s.phase = 'learning';
-        s.streak = 0;
-      } else if (s.phase === 'learning') {
-        s.streak = answer.ok && kind === 'recall' ? s.streak + 1 : answer.ok ? s.streak : 0;
-        if (s.streak >= graduateNow()) s.phase = 'graduated';
+      s.streak = link ? 2 : 0;
+      return;
+    }
+    const sameDay = Math.floor(answer.at / DAY_MS) === Math.floor(s.lastAt / DAY_MS);
+    if (params.calibration > 0 && kind === 'recall' && !sameDay && s.memory !== undefined) {
+      const predicted = recallAt(item, answer.at);
+      const outcome = answer.ok ? 1 : 0;
+      core.logScale = Math.min(
+        3,
+        Math.max(-3, core.logScale + params.calibration * (predicted - outcome)),
+      );
+    }
+    if (grade !== undefined) update(s, grade, answer.at);
+    if (params.creditParts && answer.ok && kind === 'recall') {
+      for (const part of items[item]?.parts ?? []) {
+        const p = state(part);
+        if (p.phase === 'graduated') update(p, 2, answer.at);
       }
     }
+    if (s.phase === 'graduated' && !answer.ok) {
+      s.phase = 'learning';
+      s.streak = 0;
+    } else if (s.phase === 'learning') {
+      s.streak = answer.ok && kind === 'recall' ? s.streak + 1 : answer.ok ? s.streak : 0;
+      if (s.streak >= graduateNow()) s.phase = 'graduated';
+    }
+  }
 
-    return {
-      name: `${model.name} + planner`,
-      fits,
-      session(now) {
-        refit(now);
-        if (lastSession !== undefined && now - lastSession > 3_600_000)
-          gaps.push(now - lastSession);
-        lastSession = now;
-        let count = 0;
-        let previous = -1;
-        return {
-          kind: 'learning',
-          next(now) {
-            if (count >= params.sessionTasks) return undefined;
-            const task = pick(now, previous);
-            if (task === undefined) return undefined;
-            count += 1;
-            previous = task.item;
-            return task;
-          },
-          record,
-        } satisfies Session;
-      },
-      unlocked: () => states.filter((s) => s.phase !== 'new').length,
-    };
+  return {
+    name: `${model.name} + planner`,
+    fits,
+    session(now) {
+      refit(now);
+      let count = 0;
+      let previous = -1;
+      return {
+        kind: 'learning',
+        next(now) {
+          if (count >= params.sessionTasks) return undefined;
+          const task = pick(now, previous);
+          if (task === undefined) return undefined;
+          count += 1;
+          previous = task.item;
+          return task;
+        },
+        record,
+      } satisfies Session;
+    },
+    unlocked: () => core.states.filter((s) => s.phase !== 'new').length,
+    apply: record,
+    clone: (other) => build(params, items, structuredClone(core), current, other, []),
+    predict: recallAt,
+    snapshot: () => structuredClone(core),
+    adopt(next) {
+      core = structuredClone(next);
+    },
+    introduced: () => core.states.flatMap((s, id) => (s.phase === 'new' ? [] : [id])),
   };
 }

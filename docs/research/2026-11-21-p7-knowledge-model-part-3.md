@@ -131,6 +131,8 @@ Next-day recall of a new kana rises from 35% (A2) to 46% (A4). A kana that gradu
 
 ## Next parts
 
+[Part 4](2026-11-21-p7-knowledge-model-part-4.md) covers all four.
+
 1. **A forecast that plays the planner forward**, and a range instead of a number. The unit of a forecast is decided with the model ADR.
 2. **Evidence by task type, answer time and hints,** and the tasks of ADR 099 as far as they change the memory state.
 3. **Katakana**, transfer and the credit from composites to their parts.

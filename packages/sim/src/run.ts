@@ -1,8 +1,9 @@
-import { basicIds, hiraganaItems } from './items';
+import { basicIds, bothTracks, hiraganaItems } from './items';
 import type { Item } from './items';
 import { createLearner, DAY_MS, REFERENCE } from './learner';
 import type { Learner, Profile, ReferenceParams } from './learner';
 import type { Answer, Policy, Task } from './policy';
+import type { Planner } from './policies/fsrs-planner';
 import { createRng } from './rng';
 import type { Rng } from './rng';
 
@@ -13,14 +14,113 @@ export const SKIP_CHANCE = 0.15;
 /** The goal of learning.md: the 46 basic hiragana; "reads" = expected recall ≥ 90% of them. */
 export const READS_SHARE = 0.9;
 
-/** How a forecast of introductions per session is made from the sessions so far. */
-export type Estimator = 'last 6 sessions' | 'last 3 days' | 'all sessions';
-export const ESTIMATORS: readonly Estimator[] = ['last 6 sessions', 'last 3 days', 'all sessions'];
+/**
+ * How a forecast in sessions is made: from the kana introduced per session so far, or (`forward`,
+ * part 4) by playing the planner forward: the learner answers as the planner's memory model
+ * predicts (`forward`), or with the learner's observed share of correct answers on learning tasks
+ * and on reviews (`forward, observed`); `forward, corrected` multiplies the observed one by the
+ * median ratio of actual to forecast sessions of its last 10 settled forecasts for the same target.
+ */
+export type Estimator =
+  | 'last 6 sessions'
+  | 'last 3 days'
+  | 'all sessions'
+  | 'forward'
+  | 'forward, observed'
+  | 'forward, corrected';
+export type RateEstimator = Exclude<
+  Estimator,
+  'forward' | 'forward, observed' | 'forward, corrected'
+>;
+export const ESTIMATORS: readonly RateEstimator[] = [
+  'last 6 sessions',
+  'last 3 days',
+  'all sessions',
+];
 
 /** A forecast in sessions made at the start of a session, and the number of sessions it took. */
 export interface Outcome {
   readonly forecast: number;
   readonly actual: number;
+  /** The forward forecast's 10th and 90th percentiles. */
+  readonly low: number | undefined;
+  readonly high: number | undefined;
+}
+
+/** Options of a run beyond the learner (part 4). */
+export interface SimOptions {
+  /** Runs of the forward forecast; 0 turns it off. It needs a planner with `clone`. */
+  readonly forward?: number;
+  /** Forecasts only at the first session of each day, instead of at every session. */
+  readonly daily?: boolean;
+  /** Both tracks instead of hiragana only. */
+  readonly tracks?: 'hiragana' | 'both';
+}
+
+/** The longest forecast the forward estimator plays, in sessions. */
+const FORWARD_MAX = 60;
+
+function isPlanner(policy: Policy): policy is Planner {
+  return 'clone' in policy && 'predict' in policy;
+}
+
+/** The learner's observed share of correct answers, on learning tasks and on reviews. */
+interface Accuracy {
+  readonly learning: number;
+  readonly review: number;
+}
+
+/**
+ * Sessions until every kana of `ids` is introduced, playing a copy of the planner forward: the
+ * learner answers as the planner's own model predicts, or with the observed `accuracy`; the
+ * current sitting runs to `sittingEnd`,
+ * and the next sittings start every `gapMs` and last `sittingMs`. FORWARD_MAX + 1 when not reached.
+ */
+function playForward(
+  planner: Planner,
+  ids: readonly number[],
+  now: number,
+  sittingEnd: number,
+  gapMs: number,
+  sittingMs: number,
+  rng: Rng,
+  accuracy: Accuracy | undefined,
+): number {
+  const copy = planner.clone(rng);
+  const done = (): boolean => {
+    const known = new Set(copy.introduced());
+    return ids.every((id) => known.has(id));
+  };
+  let sessions = 0;
+  let start = sittingEnd - sittingMs;
+  let end = sittingEnd;
+  let t = now;
+  while (sessions <= FORWARD_MAX) {
+    while (t < end) {
+      const session = copy.session(t, false);
+      let count = 0;
+      for (let task = session.next(t); task !== undefined; task = session.next(t)) {
+        const p = copy.predict(task.item, t);
+        const modelled = task.kind === 'recognition' ? p + (1 - p) / 4 : p;
+        const observed = task.review ? accuracy?.review : accuracy?.learning;
+        const chance = observed ?? modelled;
+        const ok = task.kind === 'introduction' || rng.next() < chance;
+        const ms = task.kind === 'introduction' ? 1800 : ok ? 1200 : 2500;
+        const answer: Answer = { task, ok, ms, at: t, wrong: undefined };
+        session.record(answer);
+        t += durationOf(answer);
+        count += 1;
+      }
+      if (count === 0) break;
+      sessions += 1;
+      if (done()) return sessions;
+      if (sessions > FORWARD_MAX) break;
+    }
+    start += gapMs;
+    end = start + sittingMs;
+    t = start;
+  }
+  return FORWARD_MAX + 1;
 }
 
 /** The forecasts of one estimator over a run. */
@@ -37,8 +137,12 @@ export interface RunResult {
   readonly profile: Profile;
   /** First day (1-based) whose morning, before practice, the learner reads 90% of the 46 basic. */
   readonly readsBasicDay: number | undefined;
-  /** The same for 90% of the whole track (104 kana). */
+  /** The same for 90% of the whole track (104 kana; with both tracks, all 229). */
   readonly readsTrackDay: number | undefined;
+  /** With both tracks: the same for the 46 basic katakana. */
+  readonly readsKatakanaDay: number | undefined;
+  /** With both tracks: first day the 46 basic katakana are unlocked. */
+  readonly unlockedKatakanaDay: number | undefined;
   /** First day the policy has unlocked all 46 basic kana. */
   readonly unlockedBasicDay: number | undefined;
   /** Kana unlocked at the end of day 7. */
@@ -67,11 +171,13 @@ interface Pending {
   readonly ids: readonly number[];
   readonly made: number;
   readonly forecast: number;
+  readonly low: number | undefined;
+  readonly high: number | undefined;
 }
 
 /** Introductions per session estimated from the sessions before `index`, or 0. */
 function rate(
-  estimator: Estimator,
+  estimator: RateEstimator,
   intros: readonly number[],
   days: readonly number[],
   day: number,
@@ -94,7 +200,7 @@ function rate(
 
 export type PolicyFactory = (items: readonly Item[], rng: Rng) => Policy;
 
-function perform(learner: Learner, items: readonly Item[], task: Task, now: number): Answer {
+export function perform(learner: Learner, items: readonly Item[], task: Task, now: number): Answer {
   switch (task.kind) {
     case 'introduction': {
       learner.study(task.item, now);
@@ -116,7 +222,7 @@ function perform(learner: Learner, items: readonly Item[], task: Task, now: numb
  * Time a task takes on screen: reading the prompt, the answer, the 400 ms pause, reading the right
  * answer after an error, and an introduction's reading.
  */
-function durationOf(answer: Answer): number {
+export function durationOf(answer: Answer): number {
   const reading = answer.task.kind === 'introduction' ? 3000 : 0;
   const error = answer.ok ? 0 : 1500;
   return 1000 + answer.ms + 400 + reading + error;
@@ -128,9 +234,21 @@ export function simulate(
   seed: number,
   days: number,
   reference: ReferenceParams = REFERENCE,
+  options: SimOptions = {},
 ): RunResult {
-  const items = hiraganaItems();
+  const items = options.tracks === 'both' ? bothTracks() : hiraganaItems();
   const basic = basicIds(items);
+  const kataBasic = options.tracks === 'both' ? basicIds(items, 'katakana') : [];
+  let readsKatakanaDay: number | undefined;
+  let unlockedKatakanaDay: number | undefined;
+  const sittingStarts: number[] = [];
+  let sittingEnd = 0;
+  const forwardRng = createRng(seed ^ 0x1b873593);
+  const outcomes: { learning: boolean[]; review: boolean[] } = { learning: [], review: [] };
+  const share = (list: readonly boolean[]): number | undefined => {
+    const recent = list.slice(-200);
+    return recent.length < 20 ? undefined : recent.filter(Boolean).length / recent.length;
+  };
   const rng = createRng(seed);
   const routine = createRng(seed ^ 0x5bd1e995);
   const start = 0;
@@ -166,12 +284,15 @@ export function simulate(
     'last 6 sessions': empty(),
     'last 3 days': empty(),
     'all sessions': empty(),
+    forward: empty(),
+    'forward, observed': empty(),
+    'forward, corrected': empty(),
   };
   const rows = [...new Set(items.map((item) => item.row))].map((row) =>
     items.filter((item) => item.row === row).map((item) => item.id),
   );
 
-  function forecast(day: number): void {
+  function forecast(day: number, now: number): void {
     const row = rows.find((ids) => ids.some((id) => !introduced.has(id)));
     const targets = [
       ['row', row ?? []],
@@ -187,7 +308,59 @@ export function simulate(
           continue;
         }
         const n = Math.max(1, Math.ceil(remaining / perSession));
-        pending.push({ estimator, target, ids, made: intros.length, forecast: n });
+        pending.push({
+          estimator,
+          target,
+          ids,
+          made: intros.length,
+          forecast: n,
+          low: undefined,
+          high: undefined,
+        });
+      }
+      const runs = options.forward ?? 0;
+      if (runs > 0 && isPlanner(policy)) {
+        const gaps = sittingStarts
+          .slice(-11)
+          .flatMap((t, i, all) => (i === 0 ? [] : [t - (all[i - 1] ?? t)]))
+          .sort((a, b) => a - b);
+        const gapMs = gaps[Math.floor(gaps.length / 2)] ?? 12 * 3_600_000;
+        const learning = share(outcomes.learning);
+        const review = share(outcomes.review);
+        const accuracy =
+          learning === undefined ? undefined : { learning, review: review ?? learning };
+        const play = (observed: boolean): number[] =>
+          Array.from({ length: runs }, () =>
+            playForward(
+              policy,
+              ids,
+              now,
+              sittingEnd,
+              gapMs,
+              SITTING_MS,
+              forwardRng,
+              observed ? accuracy : undefined,
+            ),
+          ).sort((a, b) => a - b);
+        const quantiles = (played: readonly number[]): [number, number, number] => {
+          const at = (q: number): number => played[Math.round(q * (played.length - 1))] ?? 0;
+          return [at(0.5), at(0.1), at(0.9)];
+        };
+        const model = quantiles(play(false));
+        const observed = quantiles(play(true));
+        const ratios = errors['forward, observed'][target]
+          .slice(-10)
+          .map((o) => o.actual / o.forecast)
+          .sort((a, b) => a - b);
+        const ratio = ratios.length >= 3 ? (ratios[Math.floor(ratios.length / 2)] ?? 1) : 1;
+        const corrected = observed.map((n) => Math.max(1, Math.round(n * ratio)));
+        for (const [estimator, [forecast, low, high]] of [
+          ['forward', model],
+          ['forward, observed', observed],
+          ['forward, corrected', corrected],
+        ] as const) {
+          pending.push({ estimator, target, ids, made: intros.length, forecast, low, high });
+        }
       }
     }
   }
@@ -197,7 +370,12 @@ export function simulate(
       const p = pending[i];
       if (p === undefined || !p.ids.every((id) => introduced.has(id))) continue;
       const actual = intros.length - p.made;
-      errors[p.estimator][p.target].push({ forecast: p.forecast, actual });
+      errors[p.estimator][p.target].push({
+        forecast: p.forecast,
+        actual,
+        low: p.low,
+        high: p.high,
+      });
       pending.splice(i, 1);
     }
   }
@@ -209,20 +387,28 @@ export function simulate(
       readsBasicDay = day + 1;
     const all = items.reduce((sum, item) => sum + learner.recallProbability(item.id, morning), 0);
     if (readsTrackDay === undefined && all >= READS_SHARE * items.length) readsTrackDay = day + 1;
+    if (kataBasic.length > 0 && readsKatakanaDay === undefined) {
+      const kata = kataBasic.reduce((sum, id) => sum + learner.recallProbability(id, morning), 0);
+      if (kata >= READS_SHARE * kataBasic.length) readsKatakanaDay = day + 1;
+    }
 
     let dayMs = 0;
     for (const hour of SITTING_HOURS) {
       if (routine.next() < SKIP_CHANCE) continue;
       let now = start + day * DAY_MS + hour * 3_600_000;
       const end = now + SITTING_MS;
+      sittingStarts.push(now);
+      sittingEnd = end;
       let first = true;
+      let firstOfDay = dayMs === 0;
       while (now < end) {
         const session = policy.session(now, first);
         first = false;
         let count = 0;
         let sessionIntros = 0;
         for (let task = session.next(now); task !== undefined; task = session.next(now)) {
-          if (count === 0) forecast(day);
+          if (count === 0 && (options.daily !== true || firstOfDay)) forecast(day, now);
+          firstOfDay = false;
           if (task.kind === 'introduction') {
             introduced.add(task.item);
             sessionIntros += 1;
@@ -237,6 +423,8 @@ export function simulate(
             retentionAnswers += 1;
             if (answer.ok) retained += 1;
           }
+          if (task.kind !== 'introduction')
+            (task.review ? outcomes.review : outcomes.learning).push(answer.ok);
           if (task.review) {
             reviews += 1;
             if (answer.ok) reviewsOk += 1;
@@ -268,8 +456,17 @@ export function simulate(
       practisedMs += dayMs;
       practisedDays += 1;
     }
-    if (unlockedBasicDay === undefined && policy.unlocked() >= basic.length)
-      unlockedBasicDay = day + 1;
+    const basicDone =
+      options.tracks === 'both'
+        ? basic.every((id) => introduced.has(id))
+        : policy.unlocked() >= basic.length;
+    if (unlockedBasicDay === undefined && basicDone) unlockedBasicDay = day + 1;
+    if (
+      kataBasic.length > 0 &&
+      unlockedKatakanaDay === undefined &&
+      kataBasic.every((id) => introduced.has(id))
+    )
+      unlockedKatakanaDay = day + 1;
     if (day === 6) unlockedWeek = policy.unlocked();
   }
 
@@ -277,6 +474,8 @@ export function simulate(
     profile,
     readsBasicDay,
     readsTrackDay,
+    readsKatakanaDay,
+    unlockedKatakanaDay,
     unlockedBasicDay,
     unlockedWeek,
     unlocked: policy.unlocked(),
