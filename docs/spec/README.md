@@ -57,7 +57,7 @@ The knowledge model (P7) and every later phase are measured against these target
 
 - **Daily time.** The path is built for 10–15 minutes a day; a session takes about 5 minutes, so two or three fit in a day.
 - **Pace.** A beginner at that daily time reads the 46 basic hiragana within about 7 days, and the rest of the track follows at a similar pace.
-- **Retention.** At least 90% of review answers are correct.
+- **Retention.** At least 90% of review answers are correct: the scheduled reviews of kana the model holds as learned. The first answers on a new kana on the days after its introduction are learning, not reviews ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md)).
 - **Placement.** A learner who knows kana is placed in at most 3 minutes and never meets a kana they have shown they know as new.
 - **Visible progress.** Every session ends with something the learner can see: a new kana, a kana that got stronger, or a word they can now read.
 - **Sound.** From P10 a learner hears every kana from its introduction onward.
