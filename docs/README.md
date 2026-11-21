@@ -12,32 +12,33 @@ Start here. Each folder has its own `README.md` with an index.
 
 ## Where to find
 
-| Question                                                         | Go to                                                                                        |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| What does the MVP include and what changes from v1?              | [spec/README.md](spec/README.md)                                                             |
-| Which romaji inputs are accepted? How does the engine work?      | [spec/engine.md](spec/engine.md)                                                             |
-| How are answer time and confidence computed?                     | [spec/metrics.md](spec/metrics.md)                                                           |
-| Monorepo layout and dependency rules                             | [spec/architecture.md](spec/architecture.md)                                                 |
-| Input source, text stream, hot path, keyboard                    | [spec/frontend.md](spec/frontend.md)                                                         |
-| Learning: unlocking, sessions, reviews, Leitner boxes            | [spec/learning.md](spec/learning.md)                                                         |
-| Word and phrase sources, licences, attribution                   | [spec/content.md](spec/content.md)                                                           |
-| IndexedDB, sync batches, merge rules                             | [spec/storage-sync.md](spec/storage-sync.md)                                                 |
-| API, D1 schema, auth, free-tier limits                           | [spec/backend.md](spec/backend.md)                                                           |
-| Size and latency budgets, tests, CI                              | [spec/quality.md](spec/quality.md)                                                           |
-| What is built in which phase, and acceptance criteria            | [spec/phases.md](spec/phases.md)                                                             |
-| What comes after the MVP?                                        | [spec/backlog.md](spec/backlog.md)                                                           |
-| What did a benchmark or investigation find? (P5 sync CPU)        | [research/2026-11-16-p5-sync-cpu.md](research/2026-11-16-p5-sync-cpu.md)                     |
-| What does the real `/api/sync` cost on Cloudflare? (P5 PR 5)     | [research/2026-11-18-p5-sync-endpoint.md](research/2026-11-18-p5-sync-endpoint.md)           |
-| Which variants of the sync were measured after ADR 081?          | [research/2026-11-16-p5-sync-variants.md](research/2026-11-16-p5-sync-variants.md)           |
-| Did P5 meet its sync limits on Cloudflare? (P5 PR 13)            | [research/2026-11-19-p5-acceptance.md](research/2026-11-19-p5-acceptance.md)                 |
-| Which kana learning methods beyond recall have evidence?         | [research/2026-11-21-kana-learning-methods.md](research/2026-11-21-kana-learning-methods.md) |
-| How do candidate knowledge models do on simulated learners? (P7) | [research/2026-11-21-p7-knowledge-model.md](research/2026-11-21-p7-knowledge-model.md)       |
-| What does the interface look like? Tokens, components, logo      | [design/README.md](design/README.md)                                                         |
-| Why was something decided?                                       | [spec/decisions.md](spec/decisions.md) (A-items), then [adr/](adr/README.md)                 |
-| How the current code is structured                               | [architecture/README.md](architecture/README.md)                                             |
-| Licences of the code, brand and fonts                            | [../NOTICE.md](../NOTICE.md), [../BRAND.md](../BRAND.md)                                     |
-| Setup, scripts, git hooks, deployment                            | [../README.md](../README.md)                                                                 |
-| Rules for AI agents                                              | [../AGENTS.md](../AGENTS.md)                                                                 |
+| Question                                                             | Go to                                                                                                |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| What does the MVP include and what changes from v1?                  | [spec/README.md](spec/README.md)                                                                     |
+| Which romaji inputs are accepted? How does the engine work?          | [spec/engine.md](spec/engine.md)                                                                     |
+| How are answer time and confidence computed?                         | [spec/metrics.md](spec/metrics.md)                                                                   |
+| Monorepo layout and dependency rules                                 | [spec/architecture.md](spec/architecture.md)                                                         |
+| Input source, text stream, hot path, keyboard                        | [spec/frontend.md](spec/frontend.md)                                                                 |
+| Learning: unlocking, sessions, reviews, Leitner boxes                | [spec/learning.md](spec/learning.md)                                                                 |
+| Word and phrase sources, licences, attribution                       | [spec/content.md](spec/content.md)                                                                   |
+| IndexedDB, sync batches, merge rules                                 | [spec/storage-sync.md](spec/storage-sync.md)                                                         |
+| API, D1 schema, auth, free-tier limits                               | [spec/backend.md](spec/backend.md)                                                                   |
+| Size and latency budgets, tests, CI                                  | [spec/quality.md](spec/quality.md)                                                                   |
+| What is built in which phase, and acceptance criteria                | [spec/phases.md](spec/phases.md)                                                                     |
+| What comes after the MVP?                                            | [spec/backlog.md](spec/backlog.md)                                                                   |
+| What did a benchmark or investigation find? (P5 sync CPU)            | [research/2026-11-16-p5-sync-cpu.md](research/2026-11-16-p5-sync-cpu.md)                             |
+| What does the real `/api/sync` cost on Cloudflare? (P5 PR 5)         | [research/2026-11-18-p5-sync-endpoint.md](research/2026-11-18-p5-sync-endpoint.md)                   |
+| Which variants of the sync were measured after ADR 081?              | [research/2026-11-16-p5-sync-variants.md](research/2026-11-16-p5-sync-variants.md)                   |
+| Did P5 meet its sync limits on Cloudflare? (P5 PR 13)                | [research/2026-11-19-p5-acceptance.md](research/2026-11-19-p5-acceptance.md)                         |
+| Which kana learning methods beyond recall have evidence?             | [research/2026-11-21-kana-learning-methods.md](research/2026-11-21-kana-learning-methods.md)         |
+| How do candidate knowledge models do on simulated learners? (P7)     | [research/2026-11-21-p7-knowledge-model.md](research/2026-11-21-p7-knowledge-model.md)               |
+| Which planner and memory model hold up across learners? (P7, part 2) | [research/2026-11-21-p7-knowledge-model-part-2.md](research/2026-11-21-p7-knowledge-model-part-2.md) |
+| What does the interface look like? Tokens, components, logo          | [design/README.md](design/README.md)                                                                 |
+| Why was something decided?                                           | [spec/decisions.md](spec/decisions.md) (A-items), then [adr/](adr/README.md)                         |
+| How the current code is structured                                   | [architecture/README.md](architecture/README.md)                                                     |
+| Licences of the code, brand and fonts                                | [../NOTICE.md](../NOTICE.md), [../BRAND.md](../BRAND.md)                                             |
+| Setup, scripts, git hooks, deployment                                | [../README.md](../README.md)                                                                         |
+| Rules for AI agents                                                  | [../AGENTS.md](../AGENTS.md)                                                                         |
 
 ## Decision logs
 

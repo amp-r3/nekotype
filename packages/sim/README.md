@@ -6,10 +6,12 @@ The learner simulation of the P7 research on the knowledge model. It is a tool r
 - `src/run.ts` — the harness: two sittings a day of about 5 minutes, sometimes one skipped, and the metrics.
 - `src/policies/current.ts` — the current rule of `docs/spec/learning.md` (confidence, one kana at a time, Leitner boxes).
 - `src/policies/fsrs-planner.ts` — candidate A: FSRS-6 with default parameters per kana and a session planner.
+- `src/policies/fsrs-planner.ts` also holds A2 (`PLANNER_A2`: learning steps in time) and candidate B's memory (`HALF_LIFE_MODEL`).
+- `src/sensitivity.ts` — the reference constants moved by ±50%, one at a time (`pnpm --filter @nekotype/sim run sensitivity`, about 6 minutes).
 - `src/fsrs.ts` — FSRS-6, tested against values of ts-fsrs 6.0.0.
 
 ```bash
-pnpm --filter @nekotype/sim run sim          # 50 seeds per learner and policy, about 3.5 minutes
+pnpm --filter @nekotype/sim run sim          # 50 seeds per learner and policy, about 5 minutes
 SEEDS=200 pnpm --filter @nekotype/sim run sim
 ```
 

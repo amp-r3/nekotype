@@ -1,7 +1,7 @@
 import { basicIds, hiraganaItems } from './items';
 import type { Item } from './items';
-import { createLearner, DAY_MS } from './learner';
-import type { Learner, Profile } from './learner';
+import { createLearner, DAY_MS, REFERENCE } from './learner';
+import type { Learner, Profile, ReferenceParams } from './learner';
 import type { Answer, Policy, Task } from './policy';
 import { createRng } from './rng';
 import type { Rng } from './rng';
@@ -28,6 +28,11 @@ export interface RunResult {
   /** Correct share of answers on a kana last seen on an earlier day (reviews in the broad sense). */
   readonly retention: number;
   readonly retentionAnswers: number;
+  /** Correct share of scheduled reviews of kana the policy holds as learned: the retention goal. */
+  readonly reviewRetention: number;
+  readonly reviews: number;
+  /** Correct share of the first answer on a kana on a day after the day of its introduction. */
+  readonly nextDay: number;
   /** Minutes of practice per practised day over the first 14 days. */
   readonly minutesPerDay: number;
   readonly sessions: number;
@@ -69,13 +74,14 @@ export function simulate(
   profile: Profile,
   seed: number,
   days: number,
+  reference: ReferenceParams = REFERENCE,
 ): RunResult {
   const items = hiraganaItems();
   const basic = basicIds(items);
   const rng = createRng(seed);
   const routine = createRng(seed ^ 0x5bd1e995);
   const start = 0;
-  const learner = createLearner(items, profile, start, rng);
+  const learner = createLearner(items, profile, start, rng, reference);
   const policy = factory(items, createRng(seed ^ 0x27d4eb2f));
   const lastSeen = new Map<number, number>();
 
@@ -84,6 +90,11 @@ export function simulate(
   let unlockedBasicDay: number | undefined;
   let unlockedWeek = 0;
   let retained = 0;
+  let reviewsOk = 0;
+  let reviews = 0;
+  let nextDayOk = 0;
+  let nextDayAnswers = 0;
+  const introducedDay = new Map<number, number>();
   let retentionAnswers = 0;
   let practisedMs = 0;
   let practisedDays = 0;
@@ -119,6 +130,17 @@ export function simulate(
             retentionAnswers += 1;
             if (answer.ok) retained += 1;
           }
+          if (task.review) {
+            reviews += 1;
+            if (answer.ok) reviewsOk += 1;
+          }
+          const introDay = introducedDay.get(task.item);
+          if (task.kind === 'introduction') introducedDay.set(task.item, day);
+          else if (introDay !== undefined && introDay < day) {
+            nextDayAnswers += 1;
+            if (answer.ok) nextDayOk += 1;
+            introducedDay.delete(task.item);
+          }
           lastSeen.set(task.item, now);
           const ms = durationOf(answer);
           now += ms;
@@ -149,6 +171,9 @@ export function simulate(
     unlocked: policy.unlocked(),
     retention: retentionAnswers === 0 ? 1 : retained / retentionAnswers,
     retentionAnswers,
+    reviewRetention: reviews === 0 ? 1 : reviewsOk / reviews,
+    reviews,
+    nextDay: nextDayAnswers === 0 ? 1 : nextDayOk / nextDayAnswers,
     minutesPerDay: practisedDays === 0 ? 0 : practisedMs / practisedDays / 60_000,
     sessions,
     tasks,

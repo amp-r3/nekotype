@@ -18,6 +18,10 @@ import type { Rng } from '../rng';
  *   when none of these exists or after `sessionTasks`.
  * - Grades: a wrong answer is 1; a recall within the target time 3, slower 2; a correct recognition
  *   2, as weaker evidence.
+ * - Calibration (when `calibration` > 0): one factor for the learner scales elapsed time in the
+ *   predicted recall. After each recall on a later day than the last exposure it moves by
+ *   `calibration × (predicted − outcome)` in log space, so a learner who forgets faster than FSRS
+ *   predicts gets earlier reviews. It changes when a kana is due, not the FSRS state.
  */
 
 export interface PlannerParams {
@@ -28,6 +32,10 @@ export interface PlannerParams {
   readonly sessionTasks: number;
   readonly recognitionShare: number;
   readonly targetMs: number;
+  /** When above 0, the gap of a learning kana is this many ms (doubled per correct recall) instead of tasks. */
+  readonly gapMs: number;
+  /** Learning rate of the calibration factor; 0 turns it off. */
+  readonly calibration: number;
 }
 
 export const PLANNER: PlannerParams = {
@@ -38,6 +46,48 @@ export const PLANNER: PlannerParams = {
   sessionTasks: 30,
   recognitionShare: 0.25,
   targetMs: 1500,
+  gapMs: 0,
+  calibration: 0,
+};
+
+/** A2: learning steps in time (30 s, doubled per correct recall), 5 to graduate, retention 0.95. */
+export const PLANNER_A2: PlannerParams = {
+  ...PLANNER,
+  gapMs: 30_000,
+  graduate: 5,
+  retention: 0.95,
+};
+
+/** The memory model the planner schedules with; `stability` is in days. */
+export interface MemoryModel {
+  readonly name: string;
+  first(g: Grade): Memory;
+  next(m: Memory, g: Grade, elapsed: number, sameDay: boolean): Memory;
+  recall(m: Memory, elapsed: number): number;
+}
+
+export const FSRS6_MODEL: MemoryModel = {
+  name: 'FSRS-6',
+  first: firstMemory,
+  next: nextMemory,
+  recall: (m, elapsed) => retrievability(m.stability, elapsed),
+};
+
+/**
+ * Candidate B's memory: a half-life `h` in days, recall `2^(−t/h)`, and fixed multipliers in the
+ * manner of SM-2: a recall on a later day multiplies `h` by 2.5 (good) or 1.8 (hard), a recall the
+ * same day by 1.2, an error keeps 30% of it. It knows nothing of FSRS or of the reference learner.
+ */
+export const HALF_LIFE_MODEL: MemoryModel = {
+  name: 'half-life',
+  first: (g) => ({ difficulty: 1, stability: g === 1 ? 0.02 : 0.1 }),
+  next(m, g, _elapsed, sameDay) {
+    const h = m.stability;
+    if (g === 1) return { difficulty: 1, stability: Math.max(0.02, h * 0.3) };
+    const gain = sameDay ? 1.2 : g === 2 ? 1.8 : 2.5;
+    return { difficulty: 1, stability: h * gain };
+  },
+  recall: (m, elapsed) => 2 ** (-elapsed / m.stability),
 };
 
 type Phase = 'new' | 'learning' | 'graduated';
@@ -57,7 +107,10 @@ function gradeOf(answer: Answer, targetMs: number): Grade {
   return answer.ms <= targetMs ? 3 : 2;
 }
 
-export function createFsrsPlanner(params: PlannerParams = PLANNER) {
+export function createFsrsPlanner(
+  params: PlannerParams = PLANNER,
+  model: MemoryModel = FSRS6_MODEL,
+) {
   return (items: readonly Item[], rng: Rng): Policy => {
     const states: State[] = items.map(() => ({
       phase: 'new',
@@ -67,6 +120,7 @@ export function createFsrsPlanner(params: PlannerParams = PLANNER) {
       lastTask: -Infinity,
     }));
     let taskIndex = 0;
+    let logScale = 0;
 
     const state = (id: number): State => {
       const s = states[id];
@@ -76,7 +130,8 @@ export function createFsrsPlanner(params: PlannerParams = PLANNER) {
 
     const recallAt = (id: number, now: number): number => {
       const { memory, lastAt } = state(id);
-      return memory === undefined ? 0 : retrievability(memory.stability, (now - lastAt) / DAY_MS);
+      if (memory === undefined) return 0;
+      return model.recall(memory, (Math.exp(logScale) * (now - lastAt)) / DAY_MS);
     };
 
     function options(id: number): number[] {
@@ -112,17 +167,21 @@ export function createFsrsPlanner(params: PlannerParams = PLANNER) {
       const learning = ids
         .filter((id) => state(id).phase === 'learning')
         .sort((a, b) => state(a).lastTask - state(b).lastTask);
-      const ready = learning.filter(
-        (id) => taskIndex - state(id).lastTask >= params.gap * 2 ** state(id).streak,
-      );
+      const ready = learning.filter((id) => {
+        const { lastTask, lastAt, streak } = state(id);
+        return params.gapMs > 0
+          ? now - lastAt >= params.gapMs * 2 ** streak
+          : taskIndex - lastTask >= params.gap * 2 ** streak;
+      });
       const fresh = nextNew();
       const id = due[0] ?? ready[0] ?? fresh ?? learning[0];
       if (id === undefined) return undefined;
-      if (id === fresh) return { item: id, kind: 'introduction', options: [] };
-      const recognition = state(id).phase === 'learning' && rng.next() < params.recognitionShare;
+      if (id === fresh) return { item: id, kind: 'introduction', options: [], review: false };
+      const review = state(id).phase === 'graduated';
+      const recognition = !review && rng.next() < params.recognitionShare;
       return recognition
-        ? { item: id, kind: 'recognition', options: options(id) }
-        : { item: id, kind: 'recall', options: [] };
+        ? { item: id, kind: 'recognition', options: options(id), review }
+        : { item: id, kind: 'recall', options: [], review };
     }
 
     function record(answer: Answer): void {
@@ -132,16 +191,21 @@ export function createFsrsPlanner(params: PlannerParams = PLANNER) {
       taskIndex += 1;
       if (kind === 'introduction') {
         s.phase = 'learning';
-        s.memory = firstMemory(1);
+        s.memory = model.first(1);
         s.lastAt = answer.at;
         s.streak = 0;
         return;
       }
-      const grade = gradeOf(answer, params.targetMs);
-      const memory = s.memory ?? firstMemory(grade);
-      const elapsed = (answer.at - s.lastAt) / DAY_MS;
       const sameDay = Math.floor(answer.at / DAY_MS) === Math.floor(s.lastAt / DAY_MS);
-      s.memory = s.memory === undefined ? memory : nextMemory(memory, grade, elapsed, sameDay);
+      if (params.calibration > 0 && kind === 'recall' && !sameDay && s.memory !== undefined) {
+        const predicted = recallAt(item, answer.at);
+        const outcome = answer.ok ? 1 : 0;
+        logScale = Math.min(3, Math.max(-3, logScale + params.calibration * (predicted - outcome)));
+      }
+      const grade = gradeOf(answer, params.targetMs);
+      const memory = s.memory ?? model.first(grade);
+      const elapsed = (answer.at - s.lastAt) / DAY_MS;
+      s.memory = s.memory === undefined ? memory : model.next(memory, grade, elapsed, sameDay);
       s.lastAt = answer.at;
       if (s.phase === 'graduated' && !answer.ok) {
         s.phase = 'learning';
@@ -153,7 +217,7 @@ export function createFsrsPlanner(params: PlannerParams = PLANNER) {
     }
 
     return {
-      name: 'FSRS-6 + planner',
+      name: `${model.name} + planner`,
       session() {
         let count = 0;
         let previous = -1;

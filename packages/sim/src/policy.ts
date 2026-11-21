@@ -7,6 +7,8 @@ export interface Task {
   readonly kind: TaskKind;
   /** The 4 options of a recognition task, the answer among them. */
   readonly options: readonly number[];
+  /** A scheduled review of a kana the policy holds as learned: what the retention goal counts. */
+  readonly review: boolean;
 }
 
 export interface Answer {
