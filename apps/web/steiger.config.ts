@@ -12,7 +12,7 @@ export default defineConfig([
   },
   {
     // The generated word and phrase chunks (packages/content writes them, ADR 093): data without
-    // code, loaded by no slice before P10, which gives them a home again.
+    // code, loaded by no slice before P12, which gives them a home again.
     ignores: ['src/entities/prompt/content/**'],
   },
   {

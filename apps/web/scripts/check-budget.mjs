@@ -15,7 +15,7 @@ export const BUDGETS = {
 
 // A lazy chunk is a content chunk when its source lives under a `content` directory (the generated
 // JSON of `entities/prompt/content/`); every other lazy chunk is a route chunk. No content is
-// shipped before P10 (ADR 093), so a content chunk in the build is a failure.
+// shipped before P12 (ADR 093), so a content chunk in the build is a failure.
 const CONTENT_SOURCE = /(^|\/)content\//;
 
 // The global the probe publishes; it appears in no other place of the application.
@@ -215,7 +215,7 @@ export function checkBudget(distDir) {
     if (CONTENT_SOURCE.test(chunk.src)) {
       line('lazy content', chunk.file, s);
       failures.push(
-        `Content chunk ${chunk.file} is in the build: no content is shipped before P10 (ADR 093)`,
+        `Content chunk ${chunk.file} is in the build: no content is shipped before P12 (ADR 093)`,
       );
       continue;
     }

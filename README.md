@@ -6,7 +6,9 @@
 
 > A lightweight, keyboard-first web app for learning Hiragana and Katakana from zero, with adaptive unlocking, spaced reviews and progress tracking, instantaneous feedback, dual-tier romaji matching and zero latency.
 
-**Status.** The code implements phases P0–P6 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md), [ADR 093](docs/adr/093-learning-only-words-in-learning.md)): `/` teaches hiragana and katakana one kana at a time with introductions, recall, recognition and spaced reviews, with progress in IndexedDB. Phase P6 removed the typing trainer: its screen, `/type`, answers 404, and its data are gone from the client, the sync and D1: what syncs is learning progress and settings only (sync format 2, IndexedDB schema 5; [ADR 096](docs/adr/096-learning-only-data-and-sync-format-2.md)). Since P5 a user can sign in with Google or GitHub on production: progress and settings sync through Pages Functions and D1, the account can be deleted, and `POST /api/reports` takes reports of a wrong reading or translation (Turnstile; the client's report dialog returns with words in P10). Next come the adaptive knowledge model (P7), kana audio (P8), a placement test and mnemonics (P9), then words in learning (P10) and vocabulary (P11).
+**Status.** The code implements phases P0–P6 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md), [ADR 093](docs/adr/093-learning-only-words-in-learning.md), [ADR 099](docs/adr/099-learning-home-methods-and-phases-after-p6.md)): `/` teaches hiragana and katakana one kana at a time with introductions, recall, recognition and spaced reviews, with progress in IndexedDB. Phase P6 removed the typing trainer: its screen, `/type`, answers 404, and its data are gone from the client, the sync and D1: what syncs is learning progress and settings only (sync format 2, IndexedDB schema 5; [ADR 096](docs/adr/096-learning-only-data-and-sync-format-2.md)). Since P5 a user can sign in with Google or GitHub on production: progress and settings sync through Pages Functions and D1, the account can be deleted, and `POST /api/reports` takes reports of a wrong reading or translation (Turnstile; the client's report dialog returns with words in P12).
+
+Next come the adaptive knowledge model (P7), the learning home and the progress screen (P8), more learning methods (P9), kana audio (P10), a placement test and mnemonics (P11), then words in learning (P12) and vocabulary (P13).
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Max%20Strict-blue.svg)](https://www.typescriptlang.org/)
@@ -161,7 +163,7 @@ Nekotype adheres to strict first-load asset caps, checked by `pnpm run budget` (
 | **JetBrains Mono 400/500** | $\le 45$ KB  | **10.79 / 10.61 KB**   | ✅ Passed                 |
 | **Golos Text 400/500**     | $\le 45$ KB  | **9.42 / 9.56 KB**     | ✅ Passed                 |
 | **Total First Load**       | $\le 160$ KB | **99.88 KB**           | ✅ Passed (62% of budget) |
-| **Lazy content chunk**     | $\le 40$ KB  | none shipped (P10)     | —                         |
+| **Lazy content chunk**     | $\le 40$ KB  | none shipped (P12)     | —                         |
 | **Lazy route chunk**       | $\le 25$ KB  | **10.09 KB** (largest) | ✅ Passed                 |
 
 ---

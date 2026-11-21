@@ -105,7 +105,7 @@ Shown at the end of a learning or review session; a chunk of its own:
 
 ## Audio
 
-From P8 the session plays the sound of the task's kana after every task, introductions included, through the injected `AudioProvider` ([Architecture](architecture.md)) while `settings.learn.sound` is on. A sound that fails to load or play is skipped and never delays the next task. Until P8 the provider plays nothing.
+From P10 the session plays the sound of the task's kana after every task, introductions included, through the injected `AudioProvider` ([Architecture](architecture.md)) while `settings.learn.sound` is on. A sound that fails to load or play is skipped and never delays the next task. Until P10 the provider plays nothing.
 
 ## Constants
 
