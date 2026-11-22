@@ -18,7 +18,7 @@ const baseURL = `http://localhost:${port}`;
 export default defineConfig({
   testDir: './e2e',
   // The sync tests have a configuration and a server of their own (playwright.sync.config.ts).
-  testIgnore: [/latency\.spec\.ts/, /[\\/]sync[\\/]/],
+  testIgnore: [/latency\.spec\.ts/, /model-cost\.spec\.ts/, /[\\/]sync[\\/]/],
   timeout: 30000,
   expect: {
     timeout: 5000,

@@ -29,12 +29,30 @@ export interface Session {
   record(answer: Answer): void;
 }
 
+/** `raw` is the median before the correction by the history; the rest follow it. */
+export interface ForecastAnswer {
+  readonly raw: number;
+  readonly low: number;
+  readonly median: number;
+  readonly high: number;
+}
+
 export interface Policy {
   readonly name: string;
   /** The session the learner starts now; `first` is true for the first session of a sitting. */
   session(now: number, first: boolean): Session;
   /** Kana the policy has unlocked so far. */
   unlocked(): number;
+  /**
+   * The production model's forecast of the sessions until every item of `ids` (one row) is
+   * introduced, made at `now`; `history` holds the settled raw forecasts. Only the production
+   * policy has it (P7 plan, D8): the harness asks, and counts what really happened.
+   */
+  forecast?(
+    ids: readonly number[],
+    now: number,
+    history: readonly { readonly forecast: number; readonly actual: number }[],
+  ): ForecastAnswer | undefined;
   /** The memory model chosen at each fit, when the policy fits one (part 3). */
   readonly fits?: readonly string[];
 }

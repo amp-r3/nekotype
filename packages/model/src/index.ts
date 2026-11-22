@@ -71,3 +71,5 @@ export type { ChartState, KanaView, LearnView } from './view';
 export type { DayLog, KanaLog, LogStats, RecallStat } from './stats';
 export { strongerSince } from './stronger';
 export type { Stronger } from './stronger';
+export { forecastRow, habitsOf, nextRow, outlineSession } from './forecast';
+export type { Forecast, Habits, Outline, SettledForecast } from './forecast';

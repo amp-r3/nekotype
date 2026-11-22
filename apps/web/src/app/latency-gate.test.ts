@@ -19,9 +19,13 @@ describe('latency gate on pull requests (ADR 074)', () => {
       'apps/web/src/app/prefetch.ts',
       'apps/web/vite.config.ts',
       'apps/web/e2e/latency.spec.ts',
+      'apps/web/e2e/model-cost.spec.ts',
+      'apps/web/src/app/model-probe.ts',
       'apps/web/scripts/latency-gate.mjs',
       'apps/web/scripts/latency-gate.d.mts',
       'packages/engine/src/matcher/compile.ts',
+      'packages/model/src/fold.ts',
+      'packages/model/src/testing/synthetic-log.ts',
       'pnpm-lock.yaml',
     ]) {
       expect(latencyRelevant([file]), file).toEqual([file]);
@@ -40,6 +44,8 @@ describe('latency gate on pull requests (ADR 074)', () => {
         'apps/web/src/app/App.test.tsx',
         'apps/web/src/pages/learn/lib/prompt/canonical.test.ts',
         'packages/engine/README.md',
+        'packages/model/src/fold.test.ts',
+        'packages/model/README.md',
         'apps/web/src/pages/stats/ui/stats-page.tsx',
         'apps/web/src/pages/about/ui/about-page.tsx',
         'apps/web/src/pages/settings/ui/settings-page.tsx',

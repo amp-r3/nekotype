@@ -1,5 +1,6 @@
 import type { LearnKanaKey, Rng, Track } from '@nekotype/shared/types';
 import { DAY_MS, RECOGNITION_SHARE, STEP_MS, TRACK_LAG } from './constants';
+import { itemSlots } from './fold';
 import type { ItemState, ModelState } from './fold';
 import { intervalFactor } from './fsrs';
 import { ITEMS, trackItems } from './items';
@@ -27,47 +28,53 @@ function rankOf(key: LearnKanaKey): number {
     : (item.track === 'hiragana' ? 0 : 1000) + item.index;
 }
 
-type Candidate = {
-  readonly key: LearnKanaKey;
-  /** Due: the lowest predicted recall first, so the highest of this. Learning: the oldest `lastTask`, negated. */
-  readonly score: number;
-  readonly rank: number;
-};
-
-function better(a: Candidate, b: Candidate | null): boolean {
-  return b === null || a.score > b.score || (a.score === b.score && a.rank < b.rank);
+/**
+ * Whether `key` with `score` goes before `best` with `bestScore`: the higher score, then the lower
+ * rank. Due: the lowest predicted recall first, so the highest score. Learning: the oldest
+ * `lastTask`, negated. The rank is looked up only on a tie: the forecast plays up to 18,000 tasks.
+ */
+function better(
+  key: LearnKanaKey,
+  score: number,
+  best: LearnKanaKey | null,
+  bestScore: number,
+): boolean {
+  return best === null || score > bestScore || (score === bestScore && rankOf(key) < rankOf(best));
 }
 
-function parts(key: LearnKanaKey): readonly LearnKanaKey[] {
-  return ITEMS.get(key)?.parts ?? [];
+function partsLearned(state: ModelState, parts: readonly LearnKanaKey[]): boolean {
+  for (const part of parts) if (state.items.get(part)?.phase !== 'learned') return false;
+  return true;
 }
 
-/** The first new kana of `track` whose parts are all learned, in track order. */
-function firstEligible(state: ModelState, track: Track): LearnKanaKey | null {
-  for (const item of trackItems(track)) {
+/**
+ * The first new kana of `track` whose parts are all learned, in track order. `introduced`: the
+ * kana of the track in the state; when it is all of them, no kana is new.
+ */
+function firstEligible(state: ModelState, track: Track, introduced: number): LearnKanaKey | null {
+  const items = trackItems(track);
+  if (introduced === items.length) return null;
+  for (const item of items) {
     if (state.items.has(item.key)) continue;
-    if (parts(item.key).every((part) => state.items.get(part)?.phase === 'learned')) {
-      return item.key;
-    }
+    if (partsLearned(state, item.parts)) return item.key;
   }
   return null;
 }
 
-function introduced(state: ModelState, track: Track): number {
-  let count = 0;
-  for (const key of state.items.keys()) if (ITEMS.get(key)?.track === track) count += 1;
-  return count;
-}
-
 function introduction(state: ModelState, track: Track): LearnKanaKey | null {
-  const own = firstEligible(state, track);
   const other: Track = track === 'hiragana' ? 'katakana' : 'hiragana';
-  const otherCount = introduced(state, other);
-  if (otherCount > 0 && introduced(state, track) - otherCount > TRACK_LAG) {
-    const lagging = firstEligible(state, other);
+  // Introduced kana of each track, from the slots' tracks.
+  let ownCount = 0;
+  let otherCount = 0;
+  for (const slot of itemSlots(state.items).slots) {
+    if (slot.track === track) ownCount += 1;
+    else if (slot.track === other) otherCount += 1;
+  }
+  if (otherCount > 0 && ownCount - otherCount > TRACK_LAG) {
+    const lagging = firstEligible(state, other, otherCount);
     if (lagging !== null) return lagging;
   }
-  return own;
+  return firstEligible(state, track, ownCount);
 }
 
 /** The next task of a session; null when there is nothing to offer, which ends the session. */
@@ -76,47 +83,64 @@ export function nextTask(state: ModelState, ctx: PlanContext): PlannedTask | nul
   const ahead = now + horizonMs(state);
   const factor = intervalFactor(requestedRetention(state));
 
-  let due: Candidate | null = null;
-  let ready: Candidate | null = null;
-  let waiting: Candidate | null = null;
+  // The best of each list as a key and its score: no object per kana.
+  let due: LearnKanaKey | null = null;
+  let dueScore = 0;
+  let ready: LearnKanaKey | null = null;
+  let readyScore = 0;
+  let waiting: LearnKanaKey | null = null;
+  let waitingScore = 0;
   let learning = 0;
-  let previousState: { readonly item: ItemState; readonly due: boolean } | null = null;
+  let previousItem: ItemState | null = null;
+  let previousDue = false;
 
-  for (const [key, item] of state.items) {
+  // The items as an array (a fold keeps it beside its map); a key has one slot, so the previous
+  // kana's slot is found once and compared by reference.
+  const { slots, slotOf } = itemSlots(state.items);
+  const previousSlot = previous === null ? undefined : slotOf(previous);
+  for (const slot of slots) {
+    const { key, item } = slot;
     const isDue =
       item.phase === 'learned' && item.lastAt + item.memory.stability * factor * DAY_MS <= ahead;
     if (item.phase === 'learning') learning += 1;
-    if (key === previous) {
-      previousState = { item, due: isDue };
+    if (slot === previousSlot) {
+      previousItem = item;
+      previousDue = isDue;
       continue;
     }
-    const rank = rankOf(key);
     if (isDue) {
-      const candidate = { key, score: (ahead - item.lastAt) / item.memory.stability, rank };
-      if (better(candidate, due)) due = candidate;
+      const score = (ahead - item.lastAt) / item.memory.stability;
+      if (better(key, score, due, dueScore)) {
+        due = key;
+        dueScore = score;
+      }
     } else if (item.phase === 'learning') {
-      const candidate = { key, score: -item.lastTask, rank };
+      const score = -item.lastTask;
       const isReady = now - item.lastAt >= STEP_MS * 2 ** item.streak;
       if (isReady) {
-        if (better(candidate, ready)) ready = candidate;
-      } else if (better(candidate, waiting)) {
-        waiting = candidate;
+        if (better(key, score, ready, readyScore)) {
+          ready = key;
+          readyScore = score;
+        }
+      } else if (better(key, score, waiting, waitingScore)) {
+        waiting = key;
+        waitingScore = score;
       }
     }
   }
 
-  if (due !== null) return { kind: 'recall', key: due.key, review: true };
-  if (ready !== null) return learningTask(ready.key, ctx);
+  if (due !== null) return { kind: 'recall', key: due, review: true };
+  if (ready !== null) return learningTask(ready, ctx);
   if (learning < learningLimit(state)) {
     const key = introduction(state, ctx.track);
     if (key !== null) return { kind: 'introduction', key };
   }
-  if (waiting !== null) return learningTask(waiting.key, ctx);
+  if (waiting !== null) return learningTask(waiting, ctx);
 
   // Nothing else is left: the previous kana again, when it is due or learning.
-  if (previous !== null && previousState !== null) {
-    if (previousState.due) return { kind: 'recall', key: previous, review: true };
-    if (previousState.item.phase === 'learning') return learningTask(previous, ctx);
+  if (previous !== null && previousItem !== null) {
+    if (previousDue) return { kind: 'recall', key: previous, review: true };
+    if (previousItem.phase === 'learning') return learningTask(previous, ctx);
   }
   return null;
 }

@@ -9,11 +9,13 @@ const baseURL = `http://localhost:${port}`;
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: /latency\.spec\.ts/,
+  testMatch: /(latency|model-cost)\.spec\.ts/,
   timeout: 180000,
   expect: {
     timeout: 5000,
   },
+  // One worker: the two files measure CPU time under throttling and must not compete for the CPU.
+  workers: 1,
   fullyParallel: false,
   reporter: 'list',
   use: {

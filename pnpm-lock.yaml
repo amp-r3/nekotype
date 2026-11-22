@@ -97,6 +97,9 @@ importers:
       '@nekotype/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@nekotype/model':
+        specifier: workspace:*
+        version: link:../../packages/model
       '@nekotype/shared':
         specifier: workspace:*
         version: link:../../packages/shared

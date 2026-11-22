@@ -1,8 +1,9 @@
-import { createFold, ITEMS, nextTask, SESSION_TASKS } from '@nekotype/model';
+import { createFold, forecastRow, habitsOf, ITEMS, nextTask, SESSION_TASKS } from '@nekotype/model';
 import type { Fold } from '@nekotype/model';
 import type { LearnKanaKey, LogEvent, Track } from '@nekotype/shared/types';
 import type { Item } from '../items';
 import { recognitionOptions } from '../options';
+import { createRng } from '../rng';
 import type { Answer, Policy, Session, Task } from '../policy';
 import type { PolicyFactory } from '../run';
 
@@ -31,6 +32,8 @@ export function createProductionPolicy(track: Track = 'hiragana'): PolicyFactory
       if (key === undefined) throw new Error(`no key for item ${id}`);
       return key;
     };
+    // The forecast draws from a stream of its own: asking for one never changes the run.
+    const forecastRng = createRng(0x2545f491);
     const fold: Fold = createFold({ targetMs: TARGET_MS, stats: false });
     let n = 0;
     const emit = (event: LogEvent): void => {
@@ -104,6 +107,19 @@ export function createProductionPolicy(track: Track = 'hiragana'): PolicyFactory
         };
       },
       unlocked: () => fold.state.items.size,
+      forecast(ids, now, history) {
+        const first = ids[0];
+        const row = first === undefined ? undefined : ITEMS.get(keyOfId(first))?.row;
+        if (row === undefined) return undefined;
+        const { raw, low, median, high } = forecastRow(fold.state, row, {
+          now,
+          track,
+          rng: forecastRng,
+          habits: habitsOf(fold.state),
+          history,
+        });
+        return { raw, low, median, high };
+      },
     };
     return policy;
   };

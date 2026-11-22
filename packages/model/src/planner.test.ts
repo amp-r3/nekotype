@@ -379,6 +379,12 @@ describe('introductions', () => {
     expect(next?.kind).toBe('introduction');
     expect(next?.key).not.toBe(GA);
   });
+
+  it('introduce nothing while the only new kana waits for its parts', () => {
+    const rest = Object.entries(everything()).filter(([key]) => key !== GA);
+    const state = stateOf({ ...Object.fromEntries(rest), [KA]: learning({ lastAt: NOW - 1000 }) });
+    expect(nextTask(state, ctx())).toEqual({ kind: 'recall', key: KA, review: false });
+  });
 });
 
 describe('the other track', () => {

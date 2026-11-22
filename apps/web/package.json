@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@nekotype/engine": "workspace:*",
+    "@nekotype/model": "workspace:*",
     "@nekotype/shared": "workspace:*",
     "@preact/signals": "^2.11.4",
     "preact": "^11.1.0"

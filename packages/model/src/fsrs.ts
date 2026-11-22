@@ -46,10 +46,37 @@ export function createFsrs(weights: readonly number[]): Fsrs {
 
   const initDifficulty = (g: Grade): number => w(4) - Math.exp((g - 1) * w(5)) + 1;
 
+  // The parts of the formulas that do not depend on the memory, computed once: the fold calls
+  // `nextMemory` for every answer. Each is the same expression, so the results are the same.
+  const W6 = w(6);
+  const W9 = w(9);
+  const W10 = w(10);
+  const W11 = w(11);
+  const W12 = w(12);
+  const W13 = w(13);
+  const W14 = w(14);
+  const W19 = w(19);
+  const HARD = w(15);
+  const EASY = w(16);
+  const EXP_W8 = Math.exp(w(8));
+  const LAPSE_DIVISOR = Math.exp(w(17) * w(18));
+  /** `w7 × D0(4)` and `1 − w7` of the mean reversion. */
+  const REVERT_TARGET = w(7) * initDifficulty(4);
+  const REVERT_KEEP = 1 - w(7);
+  /** The short-term factor `exp(w17 × (g − 3 + w18))` per grade. */
+  const shortTerm = (g: Grade): number => Math.exp(w(17) * (g - 3 + w(18)));
+  const SHORT_TERM: readonly [number, number, number, number, number] = [
+    0,
+    shortTerm(1),
+    shortTerm(2),
+    shortTerm(3),
+    shortTerm(4),
+  ];
+
   function nextDifficulty(d: number, g: Grade): number {
-    const delta = -w(6) * (g - 3);
+    const delta = -W6 * (g - 3);
     const next = d + (delta * (10 - d)) / 9;
-    return clamp(w(7) * initDifficulty(4) + (1 - w(7)) * next, 1, 10);
+    return clamp(REVERT_TARGET + REVERT_KEEP * next, 1, 10);
   }
 
   return {
@@ -63,25 +90,18 @@ export function createFsrs(weights: readonly number[]): Fsrs {
       const { difficulty: d, stability: s } = m;
       let stability: number;
       if (sameDay) {
-        const inc = s ** -w(19) * Math.exp(w(17) * (g - 3 + w(18)));
+        const inc = s ** -W19 * SHORT_TERM[g];
         stability = s * (g >= 2 ? Math.max(inc, 1) : inc);
       } else {
         const r = retrievability(s, elapsed);
         if (g === 1) {
-          const forget = w(11) * d ** -w(12) * ((s + 1) ** w(13) - 1) * Math.exp((1 - r) * w(14));
-          stability = clamp(s / Math.exp(w(17) * w(18)), S_MIN, forget);
+          const forget = W11 * d ** -W12 * ((s + 1) ** W13 - 1) * Math.exp((1 - r) * W14);
+          stability = clamp(s / LAPSE_DIVISOR, S_MIN, forget);
         } else {
-          const hard = g === 2 ? w(15) : 1;
-          const easy = g === 4 ? w(16) : 1;
+          const hard = g === 2 ? HARD : 1;
+          const easy = g === 4 ? EASY : 1;
           stability =
-            s *
-            (1 +
-              Math.exp(w(8)) *
-                (11 - d) *
-                s ** -w(9) *
-                (Math.exp((1 - r) * w(10)) - 1) *
-                hard *
-                easy);
+            s * (1 + EXP_W8 * (11 - d) * s ** -W9 * (Math.exp((1 - r) * W10) - 1) * hard * easy);
         }
       }
       return { difficulty: nextDifficulty(d, g), stability: clamp(stability, S_MIN, S_MAX) };

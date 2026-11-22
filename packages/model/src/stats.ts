@@ -1,6 +1,5 @@
 import type { AnswerEvent, LearnKanaKey, Track } from '@nekotype/shared/types';
 import { RECENT_RECALLS } from './constants';
-import { ITEMS } from './items';
 
 export type RecallStat = { readonly ms: number; readonly ok: boolean };
 export type KanaLog = {
@@ -25,40 +24,74 @@ export type LogStats = {
   readonly finished: number;
 };
 
+type MutableKana = { recall: RecallStat[]; recognitions: number; recognitionErrors: number };
 type MutableDay = { answers: number; recall: Record<Track, number[]> };
 
 /**
- * What the fold keeps for `LogStats`. A `KanaLog` is replaced on change. A day is changed in place
- * only while `owned`; a snapshot or a clone shares every day and empties `owned`, and the next
- * change of a shared day copies it first. That keeps `snapshot()` at O(kana + days).
+ * What the fold keeps for `LogStats`. A `KanaLog` is changed in place: it is small, so a snapshot
+ * or a clone copies it. A day is changed in place only while `owned`; a snapshot or a clone shares
+ * every day and empties `owned`, and the next change of a shared day copies it first. That keeps
+ * `snapshot()` at O(kana + days).
  */
 export type StatsData = {
-  readonly kana: Map<LearnKanaKey, KanaLog>;
+  readonly kana: Map<LearnKanaKey, MutableKana>;
   readonly days: Map<number, MutableDay>;
   readonly owned: Set<number>;
+  /** The owned day of the last answer, or null: most answers fall on the day of the one before. */
+  last: { readonly day: number; readonly entry: MutableDay } | null;
   started: number;
   finished: number;
 };
 
 export function emptyStats(): StatsData {
-  return { kana: new Map(), days: new Map(), owned: new Set(), started: 0, finished: 0 };
+  return {
+    kana: new Map(),
+    days: new Map(),
+    owned: new Set(),
+    last: null,
+    started: 0,
+    finished: 0,
+  };
+}
+
+function copyKana(from: ReadonlyMap<LearnKanaKey, KanaLog>): Map<LearnKanaKey, MutableKana> {
+  const copy = new Map<LearnKanaKey, MutableKana>();
+  for (const [key, log] of from) {
+    copy.set(key, {
+      recall: [...log.recall],
+      recognitions: log.recognitions,
+      recognitionErrors: log.recognitionErrors,
+    });
+  }
+  return copy;
+}
+
+/** Shares every day: the next change of one copies it first. */
+function share(s: StatsData): void {
+  s.owned.clear();
+  s.last = null;
 }
 
 /** An independent copy; the days are shared until either side changes one. */
 export function copyStats(s: StatsData): StatsData {
-  s.owned.clear();
+  share(s);
   return {
-    kana: new Map(s.kana),
+    kana: copyKana(s.kana),
     days: new Map(s.days),
     owned: new Set(),
+    last: null,
     started: s.started,
     finished: s.finished,
   };
 }
 
 function ownedDay(s: StatsData, day: number): MutableDay {
+  if (s.last !== null && s.last.day === day) return s.last.entry;
   const have = s.days.get(day);
-  if (have !== undefined && s.owned.has(day)) return have;
+  if (have !== undefined && s.owned.has(day)) {
+    s.last = { day, entry: have };
+    return have;
+  }
   const next: MutableDay =
     have === undefined
       ? { answers: 0, recall: { hiragana: [], katakana: [] } }
@@ -68,37 +101,43 @@ function ownedDay(s: StatsData, day: number): MutableDay {
         };
   s.days.set(day, next);
   s.owned.add(day);
+  s.last = { day, entry: next };
   return next;
 }
 
-/** An answer of the fold, on the local `day` of its device. `key` is null for a word. */
+/**
+ * An answer of the fold, on the local `day` of its device. `key` is the kana asked and `track` its
+ * track (from `ITEMS`); both are null for a word.
+ */
 export function noteAnswer(
   s: StatsData,
   a: AnswerEvent,
   key: LearnKanaKey | null,
+  track: Track | null,
   day: number,
 ): void {
   const entry = ownedDay(s, day);
   entry.answers += 1;
   if (key === null) return;
   if (a.task === 'recall') {
-    const track = ITEMS.get(key)?.track;
-    if (track !== undefined) entry.recall[track].push(a.ms);
-    const have = s.kana.get(key);
-    const recall = [...(have?.recall ?? []), { ms: a.ms, ok: a.ok }].slice(-RECENT_RECALLS);
-    s.kana.set(key, {
-      recall,
-      recognitions: have?.recognitions ?? 0,
-      recognitionErrors: have?.recognitionErrors ?? 0,
-    });
+    if (track !== null) entry.recall[track].push(a.ms);
+    const log = kanaLog(s, key);
+    log.recall.push({ ms: a.ms, ok: a.ok });
+    // Cut to the last RECENT_RECALLS.
+    if (log.recall.length > RECENT_RECALLS) log.recall.shift();
   } else if (a.task === 'recognition') {
-    const have = s.kana.get(key);
-    s.kana.set(key, {
-      recall: have?.recall ?? [],
-      recognitions: (have?.recognitions ?? 0) + 1,
-      recognitionErrors: (have?.recognitionErrors ?? 0) + (a.ok ? 0 : 1),
-    });
+    const log = kanaLog(s, key);
+    log.recognitions += 1;
+    if (!a.ok) log.recognitionErrors += 1;
   }
+}
+
+function kanaLog(s: StatsData, key: LearnKanaKey): MutableKana {
+  const have = s.kana.get(key);
+  if (have !== undefined) return have;
+  const log: MutableKana = { recall: [], recognitions: 0, recognitionErrors: 0 };
+  s.kana.set(key, log);
+  return log;
 }
 
 export function noteSession(s: StatsData, kind: 'start' | 'end'): void {
@@ -106,7 +145,7 @@ export function noteSession(s: StatsData, kind: 'start' | 'end'): void {
   else s.finished += 1;
 }
 
-/** The live statistics: valid until the next change. */
+/** The live statistics: valid until the next change (a `KanaLog` changes in place). */
 export function liveStats(s: StatsData): LogStats {
   return {
     kana: s.kana,
@@ -122,9 +161,9 @@ export function liveStats(s: StatsData): LogStats {
 
 /** Statistics that later changes do not touch. */
 export function snapshotStats(s: StatsData): LogStats {
-  s.owned.clear();
+  share(s);
   return {
-    kana: new Map(s.kana),
+    kana: copyKana(s.kana),
     days: new Map(s.days),
     started: s.started,
     finished: s.finished,
