@@ -149,6 +149,16 @@ describe('POST /api/sync, format 3', () => {
     expect(counting.log.statements).toBe(4);
   });
 
+  it('reads a few rows however many the user has: the id comes from the end of the key', async () => {
+    const { cookie, id } = await newUser();
+    for (let row = 1; row <= 300; row += 1) await seedRow(id, row, B, '{}');
+    const counting = countingDb(env.DB);
+    expect((await post(setup({ db: counting.db }), cookie, batch(1))).status).toBe(200);
+    expect((await batchRows(id)).map((row) => row.id)).toContain(301);
+    // A walk of the user's rows would read 300 and more.
+    expect(counting.log.rowsRead).toBeLessThan(20);
+  });
+
   it('writes nothing for a seq it has applied, and a resent batch adds no row', async () => {
     const { id, cookie } = await newUser();
     const s = setup();

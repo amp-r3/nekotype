@@ -107,7 +107,9 @@ export interface BatchWrite {
  * Step 3: one `batch()`. The `UPDATE` is guarded by `version`; the insert of the batch runs only
  * when that `UPDATE` applied: the version is the one the `UPDATE` writes and this device's `seq`
  * in `device_seq` is the batch's, which a request that lost the race cannot show (a competing write
- * that raised the version did not write this `seq`). Resolves to whether the `UPDATE` applied.
+ * that raised the version did not write this `seq`). The id is a scalar subquery in the select list:
+ * as the source of a `FROM` next to the `WHERE EXISTS` it made SQLite read every row of the user.
+ * Resolves to whether the `UPDATE` applied.
  */
 export async function writeBatch(db: D1Database, write: BatchWrite): Promise<boolean> {
   const statements = [
@@ -123,8 +125,7 @@ export async function writeBatch(db: D1Database, write: BatchWrite): Promise<boo
       db
         .prepare(
           `INSERT INTO sync_batches (user_id, id, device_id, seq, log, created_at)
-           SELECT ?1, next, ?2, ?3, ?4, ?5
-           FROM (SELECT COALESCE(MAX(id), 0) + 1 AS next FROM sync_batches WHERE user_id = ?1)
+           SELECT ?1, (SELECT COALESCE(MAX(id), 0) + 1 FROM sync_batches WHERE user_id = ?1), ?2, ?3, ?4, ?5
            WHERE EXISTS (
              SELECT 1 FROM user_stats
              WHERE user_id = ?1 AND version = ?6 AND json_extract(device_seq, ?7) = ?3
