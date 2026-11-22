@@ -1,6 +1,6 @@
 # The knowledge model
 
-Part of the [architecture description](README.md) of the current code. [ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md) decides the model; [ADR 101](../adr/101-model-package.md) its package. After P7 PR 3 the package holds FSRS-6, the kana items, the grade table, the fold and the planner. The statistics and the forecast are added by the next pull requests; nothing in `apps/web` imports the package yet.
+Part of the [architecture description](README.md) of the current code. [ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md) decides the model; [ADR 101](../adr/101-model-package.md) its package. After P7 PR 4 the package holds FSRS-6, the kana items, the grade table, the fold with its statistics, the planner and the learn view. The forecast is added by the next pull request; nothing in `apps/web` imports the package yet.
 
 ## The package
 
@@ -15,6 +15,9 @@ Part of the [architecture description](README.md) of the current code. [ADR 100]
 | `learner.ts`   | The learner values of candidate A4 over the state: `pressure`, `requestedRetention`, `learningLimit`, `recallsToLearn`, `horizonMs`, `dueFrom` |
 | `planner.ts`   | `nextTask(state, ctx)`: candidate A4 over the state (below)                                                                                    |
 | `fold.ts`      | `createFold`, `foldLog`: the state as a fold of the log (below)                                                                                |
+| `stats.ts`     | `LogStats` (last recall answers, recognition counts, days, session counters) and the data the fold keeps for it                                |
+| `view.ts`      | `describe(state, stats)`: the plain `LearnView` the screens read (chart states, due times, confusions, `opensNext`)                            |
+| `stronger.ts`  | `strongerSince(before, after)`: kana whose chart state rose or whose stability doubled                                                         |
 | `grade.ts`     | `effectsOf(answer, targetMs, learned)`: the table of ADR 100, point 4, as memory updates and confusion changes; a grade is never stored        |
 
 ## FSRS-6
@@ -29,13 +32,21 @@ Items are derived from `kanaRows` of the engine and keyed as the app keys them (
 
 ## The fold
 
-The state is never stored, synced or migrated: it is `foldLog(events, { targetMs })`, or a `Fold` that takes events one by one with `apply`. The result of `foldLog` depends on the set of events only: it drops repeated `dev:n`, sorts by `compareEvents` and applies. `apply` takes an event that sorts after the last one applied and returns `applied`; a key seen before gives `duplicate`, an earlier position `out-of-order`, and in both cases nothing changes (the caller folds the whole log again on `out-of-order`).
+The state is never stored, synced or migrated: it is `foldLog(events, { targetMs, stats })`, or a `Fold` that takes events one by one with `apply`. The result of `foldLog` depends on the set of events only: it drops repeated `dev:n`, sorts by `compareEvents` and applies. `apply` takes an event that sorts after the last one applied and returns `applied`; a key seen before gives `duplicate`, an earlier position `out-of-order`, and in both cases nothing changes (the caller folds the whole log again on `out-of-order`).
 
-`ModelState` holds `items` (phase, FSRS-6 memory, `lastAt`, `lastDay`, `streak`, `lastTask` per kana), `learner` (task count, gaps, sittings, task intervals, `observed`, the last 200 outcomes, the `tz` of each device), `confusions` (asked → given → count above 0) and `targetMs`. `fold.state` is live and valid until the next `apply`; `snapshot()` copies the maps and lists, so a later `apply` does not change it; `clone()` gives an independent fold.
+`ModelState` holds `items` (phase, FSRS-6 memory, `lastAt`, `lastDay`, `streak`, `lastTask` per kana), `learner` (task count, gaps, sittings, task intervals, `observed`, the last 200 outcomes, the `tz` of each device), `confusions` (asked → given → count above 0) and `targetMs`. `fold.state` is live and valid until the next `apply`; `snapshot()` copies the maps and lists (and the statistics), so a later `apply` does not change it; `clone()` gives an independent fold; `clone({ stats: false })` is what the forecast will use.
 
-Each event is applied by the rules of D5 in the P7 plan: an event with an unknown kana is counted in `ignored` and skipped; a session start sets the device's zone; an introduction of a kana that is not new is ignored; an answer on a new kana introduces it first. A review is a `recall` on a kana that is learned before the answer; only reviews move `observed`. The same-day formula follows the local day of the writing device (`tz` of its last session start, 0 without one). A word answer has no outcome of its own (it is not on one kana) and grades the learned kana of its reading. Statistics (`stats` of the fold) come with PR 4.
+Each event is applied by the rules of D5 in the P7 plan: an event with an unknown kana is counted in `ignored` and skipped; a session start sets the device's zone; an introduction of a kana that is not new is ignored; an answer on a new kana introduces it first. A review is a `recall` on a kana that is learned before the answer; only reviews move `observed`. The same-day formula follows the local day of the writing device (`tz` of its last session start, 0 without one). A word answer has no outcome of its own (it is not on one kana) and grades the learned kana of its reading. Statistics are kept only with `stats: true` (otherwise `fold.stats` is null).
 
 `fold.properties.test.ts` runs 200 seeded logs of 2–3 devices: any order of delivery with repeats, incremental `apply`, and devices exchanging batches with 30% failed syncs all end in the snapshot of one `foldLog` of every event.
+
+## Statistics and the view
+
+With `stats: true` the fold also keeps `LogStats` (`fold.stats`, live; `snapshot().stats`, a copy): per kana the last 10 `recall` answers (`ms`, `ok`) and the count of `recognition` answers and their errors, never decayed; per local day (the zone of the writing device) the number of answers of any task and the `recall` times of each track; and the numbers of session starts and ends. An introduction is not an answer, so a day with only introductions is not active; a word answer counts in `answers` and in no kana. Days are never dropped. A day is shared between a snapshot or a clone and the live fold until the live fold changes it, and is copied then: a snapshot costs O(kana + days), not O(answers).
+
+`describe(state, stats)` turns a state and its statistics into a `LearnView`, plain data that the screens read without loading the model: for each of the 229 kana its chart state (`locked` = no entry; `learning` = phase learning, a lapsed kana included; `learned`; `mastered` = learned with stability of at least `MASTERED_STABILITY_DAYS`, 21), `dueFrom` (the planner's, from `dueFrom` of `learner.ts`), `nextReviewAt` (`lastAt` plus the stability in days, when predicted recall reaches 0.90), the stability of a learned or mastered kana, the recent recall answers with their median time and accuracy, the recognition counts and the confusions (kana given instead of it, highest count first, then track order). It also gives `opensNext` per track (the first new kana whose parts are learned), the mastered and introduced counts per track, and `suggestKatakana` (all 46 basic hiragana learned, ADR 100, point 5). "Due" on a screen is `dueFrom !== null && now >= dueFrom`, decided by the page with its clock; the streaks are computed from the keys of `stats.days` in `entities/learn` in a later pull request.
+
+`strongerSince(before, after)` compares two views and lists, in track order, the kana whose chart state rose and the learned or mastered kana whose stability at least doubled.
 
 ## The planner
 

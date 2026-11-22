@@ -31,7 +31,7 @@ export function createProductionPolicy(track: Track = 'hiragana'): PolicyFactory
       if (key === undefined) throw new Error(`no key for item ${id}`);
       return key;
     };
-    const fold: Fold = createFold({ targetMs: TARGET_MS });
+    const fold: Fold = createFold({ targetMs: TARGET_MS, stats: false });
     let n = 0;
     const emit = (event: LogEvent): void => {
       if (fold.apply(event) !== 'applied') {
