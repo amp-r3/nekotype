@@ -1,26 +1,32 @@
-// Resets the remote D1 `nekotype-bench` to the application's schema and writes a user, a session and
-// the year-long `user_stats` row of ADR 078. The Pages project of the bench serves the real
-// application, so the requests of `measure.ts` are signed in like a user's.
-// D1 allows 100 KB per statement, so each large column is appended in chunks.
+// Resets the remote D1 `nekotype-bench` to the application's schema and writes a user, a session,
+// settings and a year of log: `syntheticLog({ answers: 40_000, seed: 1 })` of another device cut into
+// SEED_PAGES rows of `sync_batches` (p7-plan.md, D24). The Pages project of the bench serves the
+// real application, so the requests of `measure.ts` are signed in like a user's.
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { KANA_KEYS, generateYear } from '@nekotype/shared/testing';
-import type { Year } from '@nekotype/shared/testing';
+import { syntheticLog } from '@nekotype/model/testing';
+import { encodePage } from '@nekotype/shared/runtime';
 import type { ValidSettings } from '@nekotype/shared/types';
 
 const USER_ID = 'bench-user';
 /** The session token `measure.ts` sends; D1 keeps its SHA-256 digest only. */
 export const SESSION_TOKEN = 'bench-session-token';
-const CHUNK_CHARS = 20_000; // up to 60 KB of UTF-8 for kana
+/** Rows of `sync_batches` the seed writes; the seeded device is the author of all of them. */
+export const SEED_PAGES = 700;
+const SEED_ANSWERS = 40_000;
+const SEED_DEVICE = '5eed5eed-5eed-4eed-8eed-5eed5eed5eed';
+/** The device `measure.ts` sends as: it has no `device_seq` entry, so its first `seq` is 1. */
+export const BENCH_DEVICE = 'be9c0be9-0be9-4be9-8be9-0be90be90be9';
 const migrations = fileURLToPath(new URL('../../api/migrations', import.meta.url));
 
 /** Drops the tables of the application and creates them again with its own migrations. */
 function schema(): string {
   const drops = [
+    'sync_batches',
     'content_reports',
     'user_settings',
     'user_stats',
@@ -46,53 +52,45 @@ export function benchSettings(updatedAt: number): ValidSettings {
 
 const quote = (text: string): string => `'${text.replaceAll("'", "''")}'`;
 
-function newestDays(learn: Year['learn']): Record<string, number> {
-  const newest: Record<string, number> = {};
-  for (const track of ['hiragana', 'katakana'] as const) {
-    newest[track] = Math.max(...Object.keys(learn.recallBuckets[track]).map(Number));
-  }
-  return newest;
-}
-
-export function seedSql(seed = 1): { sql: string; sizes: Record<string, number> } {
-  const year = generateYear({ seed, keys: KANA_KEYS });
-  const { recent, recallBuckets, ...rest } = year.learn;
-  const columns: [string, string][] = [
-    ['counters', JSON.stringify(year.counters)],
-    ['learn', JSON.stringify(rest)],
-    ['learn_recent', JSON.stringify(recent)],
-    ['learn_buckets', JSON.stringify(recallBuckets)],
-    ['bucket_newest', JSON.stringify(newestDays(year.learn))],
-    ['device_seq', JSON.stringify(year.deviceSeq)],
-  ];
+export function seedSql(seed = 1): { sql: string; events: number; bytes: number } {
+  const events = syntheticLog({ answers: SEED_ANSWERS, seed }).map((event) => ({
+    ...event,
+    dev: SEED_DEVICE,
+  }));
   const sessionHash = createHash('sha256').update(SESSION_TOKEN).digest('hex');
+  const rows: string[] = [];
+  let bytes = 0;
+  for (let id = 1; id <= SEED_PAGES; id += 1) {
+    const page = events.slice(
+      Math.floor(((id - 1) * events.length) / SEED_PAGES),
+      Math.floor((id * events.length) / SEED_PAGES),
+    );
+    if (page.length === 0) throw new Error('the seed has fewer events than pages');
+    const log = JSON.stringify(encodePage(page));
+    bytes += log.length;
+    rows.push(
+      `INSERT INTO sync_batches (user_id, id, device_id, seq, log, created_at) VALUES (${quote(USER_ID)}, ${id}, ${quote(SEED_DEVICE)}, ${id}, ${quote(log)}, ${id});`,
+    );
+  }
+  const deviceSeq = JSON.stringify({ [SEED_DEVICE]: { seq: SEED_PAGES, at: 0 } });
   const lines = [
     schema(),
     `INSERT INTO users (id, email, display_name, avatar_url, created_at) VALUES (${quote(USER_ID)}, NULL, NULL, NULL, 0);`,
     `INSERT INTO sessions (id_hash, user_id, expires_at) VALUES (${quote(sessionHash)}, ${quote(USER_ID)}, 4102444800000);`,
     // The settings row exists, as for any user who has synced once: a change updates it in place.
     `INSERT INTO user_settings (user_id, json, updated_at) VALUES (${quote(USER_ID)}, ${quote(JSON.stringify(benchSettings(0)))}, 0);`,
-    `INSERT INTO user_stats (user_id, counters, learn, learn_recent, learn_buckets, bucket_newest, device_seq, last_sync_at, version) VALUES (${quote(USER_ID)}, '', '', '', '', '', '', 0, 0);`,
+    `INSERT INTO user_stats (user_id, counters, learn, learn_recent, learn_buckets, bucket_newest, device_seq, last_sync_at, version) VALUES (${quote(USER_ID)}, '', '', '', '', '', ${quote(deviceSeq)}, 0, 0);`,
+    ...rows,
   ];
-  const sizes: Record<string, number> = {};
-  for (const [column, text] of columns) {
-    sizes[column] = new TextEncoder().encode(text).length;
-    for (let at = 0; at < text.length; at += CHUNK_CHARS) {
-      const chunk = text.slice(at, at + CHUNK_CHARS);
-      lines.push(
-        `UPDATE user_stats SET ${column} = ${column} || ${quote(chunk)} WHERE user_id = ${quote(USER_ID)};`,
-      );
-    }
-  }
-  return { sql: lines.join('\n'), sizes };
+  return { sql: lines.join('\n'), events: events.length, bytes };
 }
 
 export function seed(): void {
-  const { sql, sizes } = seedSql();
+  const { sql, events, bytes } = seedSql();
   const dir = mkdtempSync(join(tmpdir(), 'nekotype-bench-'));
   const file = join(dir, 'seed.sql');
   writeFileSync(file, sql);
-  console.log('column sizes (bytes):', sizes);
+  console.log(`seed: ${events} events in ${SEED_PAGES} rows, ${bytes} bytes of log`);
   const root = fileURLToPath(new URL('..', import.meta.url));
   execFileSync(
     'pnpm',

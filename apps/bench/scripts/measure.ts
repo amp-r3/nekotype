@@ -1,30 +1,31 @@
 // Deploys the bench to the Pages project `nekotype-bench`, tails it and measures one request of the
-// real `/api/sync` in a cold and a warm isolate (p5-plan.md, PR 1, PR 5 and PR 13). Usage: `pnpm --filter @nekotype/bench run measure [--out file.json] [--only name,name]`.
+// real `/api/sync` in a cold and a warm isolate (p5-plan.md, PR 1, PR 5 and PR 13; p7-plan.md, D24). Usage: `pnpm --filter @nekotype/bench run measure [--out file.json] [--only name,name]`.
 import { execFileSync, spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { DEVICE_ID, LAST_SEQ } from '@nekotype/shared/testing';
 import { batchBody } from './batches';
 import type { Batch } from './batches';
-import { SESSION_TOKEN, seed } from './seed';
+import { BENCH_DEVICE, SESSION_TOKEN, seed } from './seed';
 
 const PROJECT = 'nekotype-bench';
 const DEPLOYMENTS = 5; // cold: the first request after each of 5 fresh deployments
 const WARM_REQUESTS = 50;
 const TAIL_WARMUP_MS = 10_000;
 const EVENT_WAIT_MS = 30_000;
-/** One row of the table: a batch sent to `POST /api/sync`, or a `GET` of it. */
-type Kind = { readonly name: string; readonly part: string | null; readonly batch: Batch | null };
-// The real endpoint of `apps/api` (PR 5), on the year-long row of ADR 078.
+/** One row of the table: a batch sent to `POST /api/sync`, or the first `GET` page of a new device. */
+type Kind = { readonly name: string; readonly batch: Batch | null };
+// The real endpoint of `apps/api` (P7 PR 6) on the year of log of D24.
 const KINDS: readonly Kind[] = [
-  { name: 'learning', part: null, batch: 'learning' },
-  { name: 'capped', part: null, batch: 'capped' },
-  { name: 'finished', part: null, batch: 'finished' },
-  { name: 'get', part: null, batch: null },
-  { name: 'get-recent', part: 'recent', batch: null },
-  { name: 'get-buckets', part: 'buckets', batch: null },
-  { name: 'get-rest', part: 'rest', batch: null },
+  { name: 'session', batch: 'session' },
+  { name: 'capped', batch: 'capped' },
+  { name: 'settings', batch: 'settings' },
+  { name: 'pull', batch: null },
 ];
+/** The pass line of ADR 086 as D24 sets it, in milliseconds of warm median `cpuTime`. */
+const LINES: Record<string, number | undefined> = { session: 8, capped: 12, settings: 8 };
+const MAX_ROWS_WRITTEN = 3;
+/** A device that has never synced: the `GET` starts at the first row. */
+const NEW_DEVICE = '0e0e0e0e-0e0e-4e0e-8e0e-0e0e0e0e0e0e';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 
@@ -195,11 +196,13 @@ type Sample = {
   responseBytes: number;
 };
 
-let nextSeq = LAST_SEQ + 1;
+let nextSeq = 1;
 
 async function send(kind: Kind, url: string, events: Map<string, TailEvent>): Promise<Sample> {
-  const query = new URLSearchParams({ deviceId: DEVICE_ID });
-  if (kind.part !== null) query.set('part', kind.part);
+  const query = new URLSearchParams({
+    deviceId: kind.batch === null ? NEW_DEVICE : BENCH_DEVICE,
+  });
+  if (kind.batch === null) query.set('after', '0');
   const address = `${url}/api/sync?${query}`;
   const signedIn = { cookie: `nt_session=${SESSION_TOKEN}`, origin: new URL(url).origin };
   const response =
@@ -247,7 +250,7 @@ async function measureKind(kind: Kind): Promise<KindResult> {
   const { name } = kind;
   console.log(`\n== ${name}: seeding`);
   seed();
-  nextSeq = LAST_SEQ + 1;
+  nextSeq = 1;
   const cold: Sample[] = [];
   const warm: Sample[] = [];
   for (let i = 1; i <= DEPLOYMENTS; i += 1) {
@@ -271,8 +274,8 @@ function cpu(samples: readonly Sample[]): number[] {
 
 function report(results: readonly KindResult[]): string {
   const lines = [
-    '| request | cold cpuTime (ms, 5 deployments) | warm median | warm p95 | warm max | statements | rows_read | rows_written | response | not ok |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| request | cold cpuTime (ms, 5 deployments) | warm median | warm p95 | warm max | statements | rows_read | rows_written | response | not ok | pass |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
   ];
   for (const { kind, cold, warm } of results) {
     const w = cpu(warm);
@@ -288,8 +291,16 @@ function report(results: readonly KindResult[]): string {
       (sample) => sample.status !== 200 || (sample.outcome !== null && sample.outcome !== 'ok'),
     ).length;
     const noEvent = all.filter((sample) => sample.cpuTime === null).length;
+    const line = LINES[kind];
+    const maxWritten = Math.max(...all.map((sample) => sample.rowsWritten));
+    const pass =
+      line === undefined
+        ? 'recorded'
+        : percentile(w, 50) <= line && notOk === 0 && maxWritten <= MAX_ROWS_WRITTEN
+          ? 'yes'
+          : 'NO';
     lines.push(
-      `| ${kind} | ${cold.map((s) => s.cpuTime ?? '?').join(', ')} | ${percentile(w, 50)} | ${percentile(w, 95)} | ${Math.max(...w)} | ${counted((s) => s.statements)} | ${counted((s) => s.rowsRead)} | ${counted((s) => s.rowsWritten)} | ${first?.responseBytes ?? '?'} B | ${notOk} of ${all.length}, ${noEvent} without event |`,
+      `| ${kind} | ${cold.map((s) => s.cpuTime ?? '?').join(', ')} | ${percentile(w, 50)} | ${percentile(w, 95)} | ${Math.max(...w)} | ${counted((s) => s.statements)} | ${counted((s) => s.rowsRead)} | ${counted((s) => s.rowsWritten)} | ${first?.responseBytes ?? '?'} B | ${notOk} of ${all.length}, ${noEvent} without event | ${pass} |`,
     );
   }
   return lines.join('\n');
