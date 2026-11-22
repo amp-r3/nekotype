@@ -14,6 +14,8 @@ export default defineConfig({
   expect: {
     timeout: 5000,
   },
+  // One worker: the two files measure CPU time under throttling and must not compete for the CPU.
+  workers: 1,
   fullyParallel: false,
   reporter: 'list',
   use: {
