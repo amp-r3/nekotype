@@ -9,7 +9,7 @@ Measured on 2026-11-23 with `apps/bench` against the Pages project `nekotype-ben
 - **`capped`:** as many answers as the body limit allows: 5,195 events, 262,100 bytes of the 262,144.
 - **`settings`:** a batch without a log, 208 bytes.
 - **`pull`:** the first `GET ?after=0` page of a new device: 100 rows, 263,680 bytes. Recorded, not gated.
-- Every statement of a request is counted, the session lookup included (`countingDb`).
+- Every statement of a request is counted in the `statements` column, the session lookup included (`countingDb`). The row columns add up only the results that carry `meta` (`batch()`, `run()`, `all()`); statements run with `first()` (the session lookup, the read of `user_stats` with its `more` check) return a bare row and add no rows. So `rows read` is a lower bound, and `settings` shows 1–2 rows.
 
 ## Result
 
@@ -34,9 +34,17 @@ All 220 requests were answered `200`. The tail reported an event, with the outco
 | `pull` page                    | recorded              | warm median 6 ms, 102 rows read | —    |
 | Cold requests, warm p95        | recorded, do not gate | cold 9–31 ms, warm p95 4–21 ms  | —    |
 
-## Observation: rows read grow with the table
+## Observation: rows read grew with the table (fixed in #213)
 
-A batch reads 703 rows on the first request and one more on each next one (757 at the end of 55 requests). The seeded table has 700 rows, so a `POST` reads about every row of the user: the `MAX(id) + 1` of the insert is not answered from the end of the primary key. D24 gates no read count and the free tier allows 5 million rows read a day, so this passes; but the cost grows by one row per batch for the life of an account. If it matters, the candidate is a counter in `user_stats` instead of `MAX(id)`, a change of ADR 102 for the maintainer to decide.
+A batch with a log read 703 rows on the first request and one more on each next one (757 at the end of 55 requests), while the seeded table had 700 rows: the insert walked every row of the user. The `settings` batch has no insert and read 1–2 rows. A local check (700 rows, the API test pool) found the cause, which is not `MAX(id) + 1` alone: the id came from `FROM (SELECT COALESCE(MAX(id), 0) + 1 …)` next to the `WHERE EXISTS` guard of the insert, and that form loses SQLite's shortcut of reading the maximum from the end of the key.
+
+| Form of the insert                                      | rows read |
+| ------------------------------------------------------- | --------- |
+| `FROM` subquery with `WHERE EXISTS` (as measured)       | 703       |
+| `FROM` subquery without `EXISTS`                        | 2         |
+| scalar subquery in the select list, with `WHERE EXISTS` | 3         |
+
+The fix (a scalar subquery, the guard unchanged) is in [#213](https://github.com/amp-r3/nekotype/pull/213). The CPU figures above were measured before it; D24 gates no read count, and the pass does not depend on it.
 
 ## Verdict
 
