@@ -1,6 +1,6 @@
 import { kanaRows } from '@nekotype/engine';
 import type { RowCategory } from '@nekotype/engine';
-import type { LearnKanaKey, Track } from '@nekotype/shared/types';
+import type { LearnKanaKey, Track, WordKey } from '@nekotype/shared/types';
 
 export type RowId = `${Track}:${string}`; // `${track}:${row id of the kana table}`, e.g. 'hiragana:k'
 
@@ -126,6 +126,11 @@ export function trackRows(
   track: Track,
 ): readonly { readonly id: RowId; readonly keys: readonly LearnKanaKey[] }[] {
   return BUILT.rows[track];
+}
+
+/** Whether an event's `k` names a word rather than a kana. */
+export function isWordKey(key: LearnKanaKey | WordKey): key is WordKey {
+  return key.startsWith('word:');
 }
 
 /** The learnable kana of a reading, longest match first (two characters, then one); others are skipped. */

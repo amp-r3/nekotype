@@ -1,6 +1,6 @@
-import type { AnswerEvent, LearnKanaKey, WordKey } from '@nekotype/shared/types';
+import type { AnswerEvent, LearnKanaKey } from '@nekotype/shared/types';
 import type { Grade } from './fsrs';
-import { ITEMS, kanaOfReading } from './items';
+import { ITEMS, isWordKey, kanaOfReading } from './items';
 
 export type { Grade } from './fsrs';
 
@@ -19,10 +19,6 @@ export type Effect =
       readonly given: LearnKanaKey;
       readonly delta: 1 | -1;
     };
-
-function isWordKey(key: LearnKanaKey | WordKey): key is WordKey {
-  return key.startsWith('word:');
-}
 
 /**
  * The memory updates and confusion changes of one answer: the table of ADR 100, point 4. A
