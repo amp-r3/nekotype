@@ -14,6 +14,8 @@ import { effectsOf } from './grade';
 import { ITEMS, isWordKey } from './items';
 import { recallsToLearn } from './learner';
 import { compareEvents, eventKey, localDay } from './order';
+import { copyStats, emptyStats, liveStats, noteAnswer, noteSession, snapshotStats } from './stats';
+import type { LogStats, StatsData } from './stats';
 
 export type Phase = 'learning' | 'learned'; // a new kana has no entry
 
@@ -58,7 +60,7 @@ export type ModelState = {
   readonly targetMs: number;
 };
 
-export type FoldOptions = { readonly targetMs: number };
+export type FoldOptions = { readonly targetMs: number; readonly stats: boolean };
 export type ApplyResult = 'applied' | 'duplicate' | 'out-of-order';
 
 export interface Fold {
@@ -66,12 +68,14 @@ export interface Fold {
   apply(event: LogEvent): ApplyResult;
   /** Live and read-only: valid until the next `apply`. The planner reads it. */
   readonly state: ModelState;
+  /** Live statistics (D7); null when `stats` is false. */
+  readonly stats: LogStats | null;
   readonly last: EventId | null;
   /** Events skipped by rule 1. */
   readonly ignored: number;
-  /** A copy that later applies do not change, for signals: O(kana). */
-  snapshot(): { readonly state: ModelState };
-  /** An independent fold with the same state. */
+  /** Copies that later applies do not change, for signals: O(kana + days). */
+  snapshot(): { readonly state: ModelState; readonly stats: LogStats | null };
+  /** An independent fold with the same state; the forecast clones with `stats: false`. */
   clone(options?: Partial<FoldOptions>): Fold;
 }
 
@@ -94,6 +98,8 @@ type Data = {
   readonly learner: MutableLearner;
   readonly confusions: Map<LearnKanaKey, Map<LearnKanaKey, number>>;
   readonly seen: Set<string>;
+  /** Null when the fold keeps no statistics. */
+  readonly stats: StatsData | null;
   last: EventId | null;
   ignored: number;
 };
@@ -122,18 +128,20 @@ function copyConfusions(
   return copy;
 }
 
-function copyData(d: Data): Data {
+/** `stats`: whether the copy keeps statistics (empty ones when `d` had none). */
+function copyData(d: Data, stats: boolean): Data {
   return {
     items: new Map(d.items),
     learner: copyLearner(d.learner),
     confusions: copyConfusions(d.confusions),
     seen: new Set(d.seen),
+    stats: stats ? (d.stats === null ? emptyStats() : copyStats(d.stats)) : null,
     last: d.last,
     ignored: d.ignored,
   };
 }
 
-function emptyData(): Data {
+function emptyData(stats: boolean): Data {
   return {
     items: new Map(),
     learner: {
@@ -149,6 +157,7 @@ function emptyData(): Data {
     },
     confusions: new Map(),
     seen: new Set(),
+    stats: stats ? emptyStats() : null,
     last: null,
     ignored: 0,
   };
@@ -215,6 +224,7 @@ function build(data: Data, options: FoldOptions): Fold {
     }
 
     const day = dayOf(a);
+    if (data.stats !== null) noteAnswer(data.stats, a, key, day);
     const learned = (k: LearnKanaKey): boolean => items.get(k)?.phase === 'learned';
     for (const effect of effectsOf(a, targetMs, learned)) {
       if (effect.kind === 'confusion') {
@@ -258,6 +268,9 @@ function build(data: Data, options: FoldOptions): Fold {
 
       if (event.t === 'start') {
         learner.tz[event.dev] = event.tz;
+        if (data.stats !== null) noteSession(data.stats, 'start');
+      } else if (event.t === 'end') {
+        if (data.stats !== null) noteSession(data.stats, 'end');
       } else if (event.t === 'intro') {
         if (!ITEMS.has(event.k)) {
           data.ignored += 1;
@@ -267,7 +280,7 @@ function build(data: Data, options: FoldOptions): Fold {
           learner.tasks += 1;
           learner.lastTaskAt = event.at;
         }
-      } else if (event.t === 'answer') {
+      } else {
         if (!isWordKey(event.k) && !ITEMS.has(event.k)) {
           data.ignored += 1;
         } else {
@@ -280,6 +293,9 @@ function build(data: Data, options: FoldOptions): Fold {
       return 'applied';
     },
     state,
+    get stats() {
+      return data.stats === null ? null : liveStats(data.stats);
+    },
     get last() {
       return data.last;
     },
@@ -287,20 +303,22 @@ function build(data: Data, options: FoldOptions): Fold {
       return data.ignored;
     },
     snapshot() {
-      const copy = copyData(data);
+      const copy = copyData(data, false);
       return {
         state: { items: copy.items, learner: copy.learner, confusions: copy.confusions, targetMs },
+        stats: data.stats === null ? null : snapshotStats(data.stats),
       };
     },
     clone(over = {}) {
-      return build(copyData(data), { ...options, ...over });
+      const next = { ...options, ...over };
+      return build(copyData(data, next.stats), next);
     },
   };
   return fold;
 }
 
 export function createFold(options: FoldOptions): Fold {
-  return build(emptyData(), options);
+  return build(emptyData(options.stats), options);
 }
 
 /** Drops repeated `eventKey`s, sorts by `compareEvents` and applies. */

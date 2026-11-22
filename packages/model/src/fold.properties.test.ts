@@ -6,7 +6,7 @@ import { createFold, foldLog } from './fold';
 import type { Fold } from './fold';
 import { answer, end, intro, start } from './testing';
 
-const OPTIONS = { targetMs: 1500 };
+const OPTIONS = { targetMs: 1500, stats: true };
 const KEYS: readonly LearnKanaKey[] = [
   'hiragana:あ',
   'hiragana:い',

@@ -17,7 +17,7 @@ const THREE: readonly LearnKanaKey[] = [KA, KI, TA];
 
 /** A fold that numbers and spaces events itself: `at` and `n` grow with every call. */
 function session(startAt = 0) {
-  const fold = createFold({ targetMs: TARGET });
+  const fold = createFold({ targetMs: TARGET, stats: false });
   let at = startAt;
   let n = 0;
   const next = (step = 1000) => ({ at: (at += step), n: (n += 1) });
@@ -220,7 +220,7 @@ describe('local days', () => {
   it('uses the zone of the device that wrote the event for the same-day formula', () => {
     // 23:30 and 00:30 UTC: one local day at +60 minutes (00:30 and 01:30), two at UTC.
     const run = (tz: number) => {
-      const fold = createFold({ targetMs: TARGET });
+      const fold = createFold({ targetMs: TARGET, stats: false });
       const t0 = DAY_MS - HOUR / 2;
       fold.apply(start(tz, { at: t0 - 1, n: 1 }));
       fold.apply(intro(KA, { at: t0, n: 2 }));
@@ -236,7 +236,7 @@ describe('local days', () => {
   });
 
   it('keeps a zone per device and tz 0 for a device with no start', () => {
-    const fold = createFold({ targetMs: TARGET });
+    const fold = createFold({ targetMs: TARGET, stats: false });
     fold.apply(start(-300, { dev: 'a', at: 1, n: 1 }));
     fold.apply(start(540, { dev: 'b', at: 2, n: 1 }));
     expect(fold.state.learner.tz).toEqual({ a: -300, b: 540 });
@@ -324,7 +324,7 @@ describe('credit, pairs and confusions', () => {
 
 describe('ignored events', () => {
   it('skips an unknown kana, counts it and never throws', () => {
-    const fold = createFold({ targetMs: TARGET });
+    const fold = createFold({ targetMs: TARGET, stats: false });
     expect(fold.apply(intro('hiragana:x', { n: 1 }))).toBe('applied');
     expect(fold.apply(answer('katakana:zz', { at: 1, n: 2 }))).toBe('applied');
     expect(fold.ignored).toBe(2);
@@ -336,7 +336,7 @@ describe('ignored events', () => {
 
 describe('apply', () => {
   it('returns duplicate and out-of-order and changes nothing', () => {
-    const fold = createFold({ targetMs: TARGET });
+    const fold = createFold({ targetMs: TARGET, stats: false });
     expect(fold.apply(intro(KA, { at: 10, n: 2 }))).toBe('applied');
     const before = fold.snapshot();
     expect(fold.apply(intro(KA, { at: 10, n: 2 }))).toBe('duplicate');
@@ -358,18 +358,18 @@ describe('foldLog, snapshot, clone', () => {
   ];
 
   it('equals applying the sorted events one by one, in any order, with repeats', () => {
-    const one = createFold({ targetMs: TARGET });
+    const one = createFold({ targetMs: TARGET, stats: false });
     for (const e of log) one.apply(e);
     const shuffled = [log[3], log[0], log[4], log[3], log[1], log[2], log[0]].flatMap((e) =>
       e === undefined ? [] : [e],
     );
-    const all = foldLog(shuffled, { targetMs: TARGET });
+    const all = foldLog(shuffled, { targetMs: TARGET, stats: false });
     expect(all.snapshot()).toEqual(one.snapshot());
     expect(all.last).toEqual(one.last);
   });
 
   it('gives a snapshot that a later apply does not change', () => {
-    const fold = foldLog(log, { targetMs: TARGET });
+    const fold = foldLog(log, { targetMs: TARGET, stats: false });
     const snap = fold.snapshot();
     const frozen = structuredClone({
       items: [...snap.state.items],
@@ -386,7 +386,7 @@ describe('foldLog, snapshot, clone', () => {
   });
 
   it('gives a clone that is independent of the original', () => {
-    const fold = foldLog(log, { targetMs: TARGET });
+    const fold = foldLog(log, { targetMs: TARGET, stats: false });
     const copy: Fold = fold.clone({ targetMs: 99 });
     const before = fold.snapshot();
     expect(copy.state.targetMs).toBe(99);

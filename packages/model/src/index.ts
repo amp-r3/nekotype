@@ -66,3 +66,8 @@ export type {
 } from './fold';
 export { nextTask } from './planner';
 export type { PlanContext, PlannedTask } from './planner';
+export { describe } from './view';
+export type { ChartState, KanaView, LearnView } from './view';
+export type { DayLog, KanaLog, LogStats, RecallStat } from './stats';
+export { strongerSince } from './stronger';
+export type { Stronger } from './stronger';

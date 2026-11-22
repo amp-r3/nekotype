@@ -67,7 +67,7 @@ function stateOf(
   items: Readonly<Record<string, ItemState>>,
   learner: Partial<ModelState['learner']> = {},
 ): ModelState {
-  const base = createFold({ targetMs: 1500 }).state;
+  const base = createFold({ targetMs: 1500, stats: false }).state;
   const map = new Map<LearnKanaKey, ItemState>();
   for (const [name, value] of Object.entries(items)) {
     const key = KEYS.get(name);
