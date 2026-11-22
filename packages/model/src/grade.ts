@@ -1,6 +1,7 @@
 import type { AnswerEvent, LearnKanaKey } from '@nekotype/shared/types';
 import type { Grade } from './fsrs';
 import { ITEMS, isWordKey, kanaOfReading } from './items';
+import type { KanaItem } from './items';
 
 export type { Grade } from './fsrs';
 
@@ -20,30 +21,34 @@ export type Effect =
       readonly delta: 1 | -1;
     };
 
-/** Receives the effects of one answer in the order of `effectsOf`. */
+/**
+ * Receives the effects of one answer in the order of `effectsOf`, and says whether a kana is
+ * learned at that point.
+ */
 export interface EffectSink {
   grade(key: LearnKanaKey, grade: Grade, main: boolean): void;
   confusion(asked: LearnKanaKey, given: LearnKanaKey, delta: 1 | -1): void;
+  learned(key: LearnKanaKey): boolean;
 }
 
 /**
  * The effects of `effectsOf`, in its order, given to `sink` one at a time: the fold applies them
- * without a list per answer. Each `learned` call comes after the effects before it are applied; no
+ * without a list per answer. Each `sink.learned` call comes after the effects before it are applied; no
  * effect changes the answer it reads (a credit, a pair or a word's kana is never the kana asked, and
- * only the main grade moves a phase), so the result is the one of `effectsOf`. Not part of the
- * package's index.
+ * only the main grade moves a phase), so the result is the one of `effectsOf`. `item`: the entry
+ * of `answer.k` in `ITEMS`, which the fold has already looked up. Not part of the package's index.
  */
 export function eachEffect(
   answer: AnswerEvent,
   targetMs: number,
-  learned: (key: LearnKanaKey) => boolean,
   sink: EffectSink,
+  item: KanaItem | undefined,
 ): void {
   const { k, ok, task } = answer;
   if (isWordKey(k)) {
     if (task !== 'word' || !ok) return;
     for (const key of kanaOfReading(k.slice('word:'.length))) {
-      if (learned(key)) sink.grade(key, 2, false);
+      if (sink.learned(key)) sink.grade(key, 2, false);
     }
     return;
   }
@@ -78,8 +83,9 @@ export function eachEffect(
     case 'build': {
       sink.grade(k, byTime, true);
       // Credit: the learned parts.
-      const parts = ITEMS.get(k)?.parts;
-      if (parts !== undefined) for (const key of parts) if (learned(key)) sink.grade(key, 2, false);
+      const parts = item?.parts;
+      if (parts !== undefined)
+        for (const key of parts) if (sink.learned(key)) sink.grade(key, 2, false);
       return;
     }
     case 'recognition':
@@ -96,8 +102,8 @@ export function eachEffect(
       return;
     case 'transfer': {
       sink.grade(k, 2, true);
-      const pair = ITEMS.get(k)?.pair ?? null;
-      if (pair !== null && learned(pair)) sink.grade(pair, 2, false);
+      const pair = item?.pair ?? null;
+      if (pair !== null && sink.learned(pair)) sink.grade(pair, 2, false);
       return;
     }
     case 'fluency':
@@ -125,13 +131,20 @@ export function effectsOf(
   learned: (key: LearnKanaKey) => boolean,
 ): readonly Effect[] {
   const effects: Effect[] = [];
-  eachEffect(answer, targetMs, learned, {
-    grade(key, grade, main) {
-      effects.push({ kind: 'grade', key, grade, main });
+  const item = isWordKey(answer.k) ? undefined : ITEMS.get(answer.k);
+  eachEffect(
+    answer,
+    targetMs,
+    {
+      grade(key, grade, main) {
+        effects.push({ kind: 'grade', key, grade, main });
+      },
+      confusion(asked, given, delta) {
+        effects.push({ kind: 'confusion', asked, given, delta });
+      },
+      learned,
     },
-    confusion(asked, given, delta) {
-      effects.push({ kind: 'confusion', asked, given, delta });
-    },
-  });
+    item,
+  );
   return effects;
 }

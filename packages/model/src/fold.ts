@@ -13,6 +13,7 @@ import type { Grade, Memory } from './fsrs';
 import { eachEffect } from './grade';
 import type { EffectSink } from './grade';
 import { ITEMS, isWordKey } from './items';
+import type { KanaItem } from './items';
 import { recallsToLearn } from './learner';
 import { compareEvents, eventKey, localDay } from './order';
 import { copyStats, emptyStats, liveStats, noteAnswer, noteSession, snapshotStats } from './stats';
@@ -69,7 +70,7 @@ export interface Fold {
   apply(event: LogEvent): ApplyResult;
   /** Live and read-only: valid until the next `apply`. The planner reads it. */
   readonly state: ModelState;
-  /** Live statistics (D7); null when `stats` is false. */
+  /** Live statistics (D7), valid until the next `apply` as `state` is; null when `stats` is false. */
   readonly stats: LogStats | null;
   readonly last: EventId | null;
   /** Events skipped by rule 1. */
@@ -85,31 +86,35 @@ const OBSERVED_START = 0.9;
 /**
  * The last `max` values pushed, oldest first. A push moves the start instead of shifting the list
  * (the long lists take a push on every task and are read only now and then); the list is cut when
- * read, and kept until the next push.
+ * read, and kept until the next push. A class, as the fold is: see `LiveFold`.
  */
-type Kept<T> = { push(value: T): void; list(): readonly T[] };
+class Kept<T> {
+  private readonly max: number;
+  private values: T[];
+  private start = 0;
+  private cut: readonly T[] | null = null;
 
-function kept<T>(max: number, from: readonly T[]): Kept<T> {
-  let values = [...from];
-  let start = 0;
-  let list: readonly T[] | null = null;
-  return {
-    push(value) {
-      values.push(value);
-      if (values.length - start > max) {
-        start = values.length - max;
-        if (start >= max) {
-          values = values.slice(start);
-          start = 0;
-        }
+  constructor(max: number, from: readonly T[]) {
+    this.max = max;
+    this.values = [...from];
+  }
+
+  push(value: T): void {
+    this.values.push(value);
+    if (this.values.length - this.start > this.max) {
+      this.start = this.values.length - this.max;
+      if (this.start >= this.max) {
+        this.values = this.values.slice(this.start);
+        this.start = 0;
       }
-      list = null;
-    },
-    list() {
-      list ??= values.slice(start);
-      return list;
-    },
-  };
+    }
+    this.cut = null;
+  }
+
+  list(): readonly T[] {
+    this.cut ??= this.values.slice(this.start);
+    return this.cut;
+  }
 }
 
 /** The lists of the learner that take a push on every task. */
@@ -182,7 +187,8 @@ type Data = {
   readonly seen: Map<string, SeenNumbers>;
   /** Null when the fold keeps no statistics. */
   readonly stats: StatsData | null;
-  last: EventId | null;
+  /** The last event applied, kept as it came: `Fold.last` copies its identity when asked. */
+  last: LogEvent | null;
   ignored: number;
 };
 
@@ -206,9 +212,9 @@ const START: LearnerState = {
 /** A fold's learner from `from` (copied) and its lists. */
 function learnerOf(from: LearnerState): { learner: MutableLearner; lists: LearnerLists } {
   const lists: LearnerLists = {
-    taskMs: kept(TASK_MS_KEPT, from.taskMs),
-    learning: kept(OUTCOMES_KEPT, from.outcomes.learning),
-    review: kept(OUTCOMES_KEPT, from.outcomes.review),
+    taskMs: new Kept(TASK_MS_KEPT, from.taskMs),
+    learning: new Kept(OUTCOMES_KEPT, from.outcomes.learning),
+    review: new Kept(OUTCOMES_KEPT, from.outcomes.review),
   };
   const learner: MutableLearner = {
     tasks: from.tasks,
@@ -316,25 +322,200 @@ export function itemSlots(items: ReadonlyMap<LearnKanaKey, ItemState>): ItemSlot
   return { slots, slotOf: (key) => slots.find((slot) => slot.key === key) };
 }
 
-function build(data: Data, options: FoldOptions): Fold {
-  const { targetMs } = options;
-  const { items, learner, lists, confusions } = data;
-  const state: ModelState = { items, learner, confusions, targetMs };
-
+/**
+ * The fold. A class rather than closures: every fold shares one `apply` and one `grade`, so the
+ * calls to them (`foldLog`, the forecast's plays, `eachEffect`) stay monomorphic; a closure per
+ * fold made the optimized `foldLog` give up on each new fold. It is also the sink of `eachEffect`.
+ */
+class LiveFold implements Fold, EffectSink {
+  readonly state: ModelState;
+  private readonly data: Data;
+  private readonly options: FoldOptions;
   // The map's slots, in its order: `introduce` adds a key to both, `grade` changes both.
-  const slots: KeptSlot[] = [];
-  const slotByKey = new Map<LearnKanaKey, KeptSlot>();
-  for (const [key, item] of items) {
-    const slot = newSlot(key, item);
-    slots.push(slot);
-    slotByKey.set(key, slot);
-  }
-  KEPT_SLOTS.set(items, { slots, slotOf: (key) => slotByKey.get(key) });
+  private readonly slots: KeptSlot[] = [];
+  private readonly slotByKey = new Map<LearnKanaKey, KeptSlot>();
+  // The zone of the last `dev` asked: a log is long runs of one device, and a session start
+  // forgets it.
+  private zoneDev: string | null = null;
+  private zone = 0;
+  // The `n`s of the last `dev` applied, for the same reason.
+  private seenDev: string | null = null;
+  private seenOf: SeenNumbers | undefined = undefined;
+  // `recallsToLearn` reads only `observed`, which moves on reviews alone.
+  private recallsObserved = Number.NaN;
+  private recalls = 0;
+  // The answer being applied: what the grades read. `answerSlot` is the slot of the kana it asked,
+  // the only one a main grade names.
+  private answerAt = 0;
+  private answerDay = 0;
+  private correctRecall = false;
+  private answerSlot: KeptSlot | undefined = undefined;
 
-  const dayOf = (e: EventId): number => localDay(e.at, learner.tz[e.dev] ?? 0);
+  constructor(data: Data, options: FoldOptions) {
+    this.data = data;
+    this.options = options;
+    const { items, learner, confusions } = data;
+    this.state = { items, learner, confusions, targetMs: options.targetMs };
+    const { slots, slotByKey } = this;
+    for (const [key, item] of items) {
+      const slot = newSlot(key, item);
+      slots.push(slot);
+      slotByKey.set(key, slot);
+    }
+    KEPT_SLOTS.set(items, { slots, slotOf: (key) => slotByKey.get(key) });
+  }
+
+  apply(event: LogEvent): ApplyResult {
+    const { data } = this;
+    const { learner } = data;
+    const ns = this.seenNumbers(event.dev);
+    if (ns !== undefined && hasSeen(ns, event.n)) return 'duplicate';
+    if (data.last !== null && compareEvents(event, data.last) <= 0) return 'out-of-order';
+    if (ns === undefined) {
+      const added = emptySeen();
+      addSeen(added, event.n);
+      data.seen.set(event.dev, added);
+      this.seenDev = event.dev;
+      this.seenOf = added;
+    } else {
+      addSeen(ns, event.n);
+    }
+    data.last = event;
+
+    if (event.t === 'start') {
+      learner.tz[event.dev] = event.tz;
+      this.zoneDev = null;
+      if (data.stats !== null) noteSession(data.stats, 'start');
+    } else if (event.t === 'end') {
+      if (data.stats !== null) noteSession(data.stats, 'end');
+    } else if (event.t === 'intro') {
+      const kana = ITEMS.get(event.k);
+      if (kana === undefined) {
+        data.ignored += 1;
+      } else {
+        this.noteTask(event.at);
+        if (!this.slotByKey.has(kana.key)) this.introduce(kana.key, event);
+        learner.tasks += 1;
+        learner.lastTaskAt = event.at;
+      }
+    } else {
+      const kana = isWordKey(event.k) ? undefined : ITEMS.get(event.k);
+      if (kana === undefined && !isWordKey(event.k)) {
+        data.ignored += 1;
+      } else {
+        this.noteTask(event.at);
+        this.applyAnswer(event, kana);
+        learner.tasks += 1;
+        learner.lastTaskAt = event.at;
+      }
+    }
+    return 'applied';
+  }
+
+  get stats(): LogStats | null {
+    return this.data.stats === null ? null : liveStats(this.data.stats);
+  }
+
+  get last(): EventId | null {
+    const { last } = this.data;
+    return last === null ? null : { at: last.at, dev: last.dev, n: last.n };
+  }
+
+  get ignored(): number {
+    return this.data.ignored;
+  }
+
+  snapshot(): { readonly state: ModelState; readonly stats: LogStats | null } {
+    const { data } = this;
+    return {
+      state: {
+        items: new Map(data.items),
+        learner: copyLearner(data.learner),
+        confusions: copyConfusions(data.confusions),
+        targetMs: this.options.targetMs,
+      },
+      stats: data.stats === null ? null : snapshotStats(data.stats),
+    };
+  }
+
+  clone(over: Partial<FoldOptions> = {}): Fold {
+    const next = { ...this.options, ...over };
+    return new LiveFold(copyData(this.data, next.stats), next);
+  }
+
+  /** Rule 7, and rule 8 for the main kana: one new `ItemState` per grade. */
+  grade(key: LearnKanaKey, g: Grade, main: boolean): void {
+    const slot = main ? this.answerSlot : this.slotByKey.get(key);
+    if (slot === undefined) return;
+    const { item } = slot;
+    const elapsed = Math.max(0, this.answerAt - item.lastAt) / DAY_MS;
+    const memory = nextMemory(item.memory, g, elapsed, this.answerDay === item.lastDay);
+    let { phase, streak, lastTask } = item;
+    if (main) {
+      // Rule 8: the phase and the streak of the kana the task asked.
+      if (g === 1) {
+        phase = 'learning';
+        streak = 0;
+      } else if (phase === 'learning' && this.correctRecall) {
+        streak += 1;
+      }
+      if (phase === 'learning' && streak >= this.recallsNow()) phase = 'learned';
+      lastTask = this.data.learner.tasks;
+    }
+    const next: ItemState = {
+      phase,
+      memory,
+      lastAt: this.answerAt,
+      lastDay: this.answerDay,
+      streak,
+      lastTask,
+    };
+    slot.item = next;
+    this.data.items.set(slot.key, next);
+  }
+
+  confusion(asked: LearnKanaKey, given: LearnKanaKey, delta: 1 | -1): void {
+    const { confusions } = this.data;
+    const row = confusions.get(asked) ?? new Map<LearnKanaKey, number>();
+    const count = Math.max(0, (row.get(given) ?? 0) + delta);
+    if (count > 0) row.set(given, count);
+    else row.delete(given);
+    if (row.size > 0) confusions.set(asked, row);
+    else confusions.delete(asked);
+  }
+
+  learned(key: LearnKanaKey): boolean {
+    return this.data.items.get(key)?.phase === 'learned';
+  }
+
+  private dayOf(e: EventId): number {
+    if (e.dev !== this.zoneDev) {
+      this.zone = this.data.learner.tz[e.dev] ?? 0;
+      this.zoneDev = e.dev;
+    }
+    return localDay(e.at, this.zone);
+  }
+
+  private seenNumbers(dev: string): SeenNumbers | undefined {
+    if (dev !== this.seenDev) {
+      this.seenOf = this.data.seen.get(dev);
+      this.seenDev = dev;
+    }
+    return this.seenOf;
+  }
+
+  private recallsNow(): number {
+    const { observed } = this.data.learner;
+    if (observed !== this.recallsObserved) {
+      this.recalls = recallsToLearn(this.state);
+      this.recallsObserved = observed;
+    }
+    return this.recalls;
+  }
 
   /** Rule 3: the learner's clock moves on every task. */
-  function noteTask(at: number): void {
+  private noteTask(at: number): void {
+    const { learner } = this.data;
     const { lastTaskAt } = learner;
     if (lastTaskAt === null) {
       learner.sittingStart = at;
@@ -348,82 +529,36 @@ function build(data: Data, options: FoldOptions): Fold {
       }
       learner.sittingStart = at;
     } else {
-      lists.taskMs.push(gap);
+      this.data.lists.taskMs.push(gap);
     }
   }
 
   /** Rule 4 for a kana that is new: never called for one in the map. */
-  function introduce(key: LearnKanaKey, e: EventId): void {
+  private introduce(key: LearnKanaKey, e: EventId): KeptSlot {
     const item: ItemState = {
       phase: 'learning',
       memory: firstMemory(1),
       lastAt: e.at,
-      lastDay: dayOf(e),
+      lastDay: this.dayOf(e),
       streak: 0,
-      lastTask: learner.tasks,
+      lastTask: this.data.learner.tasks,
     };
     const slot = newSlot(key, item);
-    slots.push(slot);
-    slotByKey.set(key, slot);
-    items.set(key, item);
+    this.slots.push(slot);
+    this.slotByKey.set(key, slot);
+    this.data.items.set(key, item);
+    return slot;
   }
 
-  function addConfusion(asked: LearnKanaKey, given: LearnKanaKey, delta: 1 | -1): void {
-    const row = confusions.get(asked) ?? new Map<LearnKanaKey, number>();
-    const count = Math.max(0, (row.get(given) ?? 0) + delta);
-    if (count > 0) row.set(given, count);
-    else row.delete(given);
-    if (row.size > 0) confusions.set(asked, row);
-    else confusions.delete(asked);
-  }
-
-  const learned = (k: LearnKanaKey): boolean => items.get(k)?.phase === 'learned';
-
-  // The answer being applied: what the sink's grades read.
-  let answerAt = 0;
-  let answerDay = 0;
-  let correctRecall = false;
-
-  /** Rule 7, and rule 8 for the main kana: one new `ItemState` per grade. */
-  function grade(key: LearnKanaKey, g: Grade, main: boolean): void {
-    const slot = slotByKey.get(key);
-    if (slot === undefined) return;
-    const { item } = slot;
-    const elapsed = Math.max(0, answerAt - item.lastAt) / DAY_MS;
-    const memory = nextMemory(item.memory, g, elapsed, answerDay === item.lastDay);
-    let { phase, streak, lastTask } = item;
-    if (main) {
-      // Rule 8: the phase and the streak of the kana the task asked.
-      if (g === 1) {
-        phase = 'learning';
-        streak = 0;
-      } else if (phase === 'learning' && correctRecall) {
-        streak += 1;
-      }
-      if (phase === 'learning' && streak >= recallsToLearn(state)) phase = 'learned';
-      lastTask = learner.tasks;
-    }
-    const next: ItemState = {
-      phase,
-      memory,
-      lastAt: answerAt,
-      lastDay: answerDay,
-      streak,
-      lastTask,
-    };
-    slot.item = next;
-    items.set(key, next);
-  }
-
-  const sink: EffectSink = { grade, confusion: addConfusion };
-
-  /** `key`: the kana asked and `track` its track; both null for a word. */
-  function applyAnswer(a: AnswerEvent, key: LearnKanaKey | null, track: Track | null): void {
-    if (key !== null && !items.has(key)) introduce(key, a);
-
-    // Rule 6: outcomes and `observed`, read from the phase before the answer.
-    if (key !== null) {
-      if (items.get(key)?.phase === 'learned' && a.task === 'recall') {
+  /** `kana`: the entry of the kana asked; undefined for a word. */
+  private applyAnswer(a: AnswerEvent, kana: KanaItem | undefined): void {
+    const { data } = this;
+    const { learner, lists } = data;
+    let slot: KeptSlot | undefined;
+    if (kana !== undefined) {
+      slot = this.slotByKey.get(kana.key) ?? this.introduce(kana.key, a);
+      // Rule 6: outcomes and `observed`, read from the phase before the answer.
+      if (slot.item.phase === 'learned' && a.task === 'recall') {
         learner.observed += ADAPT_RATE * ((a.ok ? 1 : 0) - learner.observed);
         lists.review.push(a.ok);
       } else {
@@ -431,87 +566,20 @@ function build(data: Data, options: FoldOptions): Fold {
       }
     }
 
-    const day = dayOf(a);
-    if (data.stats !== null) noteAnswer(data.stats, a, key, track, day);
-    answerAt = a.at;
-    answerDay = day;
-    correctRecall = a.task === 'recall' && a.ok;
-    eachEffect(a, targetMs, learned, sink);
+    const day = this.dayOf(a);
+    if (data.stats !== null) {
+      noteAnswer(data.stats, a, kana?.key ?? null, kana?.track ?? null, day);
+    }
+    this.answerAt = a.at;
+    this.answerDay = day;
+    this.correctRecall = a.task === 'recall' && a.ok;
+    this.answerSlot = slot;
+    eachEffect(a, this.options.targetMs, this, kana);
   }
-
-  const fold: Fold = {
-    apply(event) {
-      const ns = data.seen.get(event.dev);
-      if (ns !== undefined && hasSeen(ns, event.n)) return 'duplicate';
-      if (data.last !== null && compareEvents(event, data.last) <= 0) return 'out-of-order';
-      if (ns === undefined) {
-        const added = emptySeen();
-        addSeen(added, event.n);
-        data.seen.set(event.dev, added);
-      } else {
-        addSeen(ns, event.n);
-      }
-      data.last = { at: event.at, dev: event.dev, n: event.n };
-
-      if (event.t === 'start') {
-        learner.tz[event.dev] = event.tz;
-        if (data.stats !== null) noteSession(data.stats, 'start');
-      } else if (event.t === 'end') {
-        if (data.stats !== null) noteSession(data.stats, 'end');
-      } else if (event.t === 'intro') {
-        if (!ITEMS.has(event.k)) {
-          data.ignored += 1;
-        } else {
-          noteTask(event.at);
-          if (!items.has(event.k)) introduce(event.k, event);
-          learner.tasks += 1;
-          learner.lastTaskAt = event.at;
-        }
-      } else {
-        const key = isWordKey(event.k) ? null : event.k;
-        const track = key === null ? null : (ITEMS.get(key)?.track ?? null);
-        if (key !== null && track === null) {
-          data.ignored += 1;
-        } else {
-          noteTask(event.at);
-          applyAnswer(event, key, track);
-          learner.tasks += 1;
-          learner.lastTaskAt = event.at;
-        }
-      }
-      return 'applied';
-    },
-    state,
-    get stats() {
-      return data.stats === null ? null : liveStats(data.stats);
-    },
-    get last() {
-      return data.last;
-    },
-    get ignored() {
-      return data.ignored;
-    },
-    snapshot() {
-      return {
-        state: {
-          items: new Map(items),
-          learner: copyLearner(learner),
-          confusions: copyConfusions(confusions),
-          targetMs,
-        },
-        stats: data.stats === null ? null : snapshotStats(data.stats),
-      };
-    },
-    clone(over = {}) {
-      const next = { ...options, ...over };
-      return build(copyData(data, next.stats), next);
-    },
-  };
-  return fold;
 }
 
 export function createFold(options: FoldOptions): Fold {
-  return build(emptyData(options.stats), options);
+  return new LiveFold(emptyData(options.stats), options);
 }
 
 function isList(events: Iterable<LogEvent>): events is readonly LogEvent[] {
@@ -557,5 +625,5 @@ export function foldFromState(state: ModelState, options: FoldOptions): Fold {
     last: null,
     ignored: 0,
   };
-  return build(data, options);
+  return new LiveFold(data, options);
 }
