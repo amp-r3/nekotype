@@ -18,8 +18,8 @@ import type {
   LearnKanaKey,
   LearnStat,
   RecallAnswer,
-  SyncRequest,
-  SyncResponse,
+  SyncRequestV2,
+  SyncResponseV2,
   Track,
 } from '@nekotype/shared/types';
 import { readForSync, writeSync } from '../db/sync';
@@ -37,7 +37,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const DEVICE_SEQ_TTL_MS = 90 * DAY_MS;
 
 export type SyncOutcome =
-  | { readonly kind: 'ok'; readonly response: SyncResponse }
+  | { readonly kind: 'ok'; readonly response: SyncResponseV2 }
   /** `seq` > last + 1. */
   | { readonly kind: 'gap'; readonly lastSeq: number }
   /** The interval since the last applied sync has not elapsed. */
@@ -124,7 +124,7 @@ function byKey<T>(
 /** Steps 1–3 for one attempt: the write that the stored row and the batch give, or the early answer. */
 function planWrite(
   userId: string,
-  request: SyncRequest,
+  request: SyncRequestV2,
   row: StoredRow,
   options: SyncOptions,
 ): { early: SyncOutcome } | { write: SyncWrite; lastSeq: number } {
@@ -229,7 +229,7 @@ function planWrite(
 }
 
 /** The keys a batch needs from the stored row. */
-export function readPlan(request: SyncRequest): ReadPlan {
+export function readPlan(request: SyncRequestV2): ReadPlan {
   const { learn } = request.delta;
   const touched = touchedKeys(learn);
   return {
@@ -247,7 +247,7 @@ export function readPlan(request: SyncRequest): ReadPlan {
 export async function applySync(
   db: D1Database,
   userId: string,
-  request: SyncRequest,
+  request: SyncRequestV2,
   options: SyncOptions,
 ): Promise<SyncOutcome> {
   for (let attempt = 0; attempt < 2; attempt += 1) {

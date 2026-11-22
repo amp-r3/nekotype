@@ -39,7 +39,7 @@ import type {
   RecallAnswer,
   Rng,
   Snapshot,
-  SyncRequest,
+  SyncRequestV2,
   Track,
 } from './types';
 
@@ -468,7 +468,7 @@ describe('the per-key patch equals the full merge (acceptance 17)', () => {
         counters: { started: 5, finished: 4 },
         learn,
       };
-      const request: SyncRequest = {
+      const request: SyncRequestV2 = {
         v: 2,
         deviceId: 'd',
         seq: intIn(rng, 2, 9),

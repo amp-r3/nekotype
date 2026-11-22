@@ -5,7 +5,7 @@ import type {
   LearnKanaKey,
   Scheduler,
   Snapshot,
-  SyncRequest,
+  SyncRequestV2,
   TimeoutHandle,
   ValidSettings,
 } from '@nekotype/shared/types';
@@ -173,7 +173,7 @@ export const errorResponse = (
     extra.retryAfter === undefined ? {} : { 'Retry-After': String(extra.retryAfter) },
   );
 
-const isSyncRequestLike = (value: unknown): value is SyncRequest =>
+const isSyncRequestLike = (value: unknown): value is SyncRequestV2 =>
   isObject(value) && typeof value['deviceId'] === 'string' && typeof value['seq'] === 'number';
 
 /** The server of backend.md for one user: `seq` rules, `version`, and the parts of the snapshot. */
@@ -186,7 +186,7 @@ export function createFakeServer() {
   let beforePart: ((part: string) => void) | null = null;
   let beforeResponse: ((request: RecordedRequest) => void) | null = null;
 
-  const apply = (request: SyncRequest): void => {
+  const apply = (request: SyncRequestV2): void => {
     snapshot = applyBatch(snapshot, request);
     version += 1;
     seqs.set(request.deviceId, request.seq);
@@ -260,7 +260,7 @@ export function createFakeServer() {
       });
     },
     /** Another device's batch, applied directly. */
-    externalWrite: (request: SyncRequest) => {
+    externalWrite: (request: SyncRequestV2) => {
       apply(request);
     },
     onPart: (hook: ((part: string) => void) | null) => {

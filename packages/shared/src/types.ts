@@ -146,6 +146,35 @@ export type EventDraft =
   | Omit<SessionStartEvent, 'dev' | 'n'>
   | Omit<SessionEndEvent, 'dev' | 'n'>;
 
+// The log as it travels and is stored (P7 plan, D11): one page is a sync batch, a D1 row and an
+// IndexedDB record.
+
+/** `dt`: `at` minus the previous event's `at` in the page (0 for the first); '' stands for null. */
+export type EncodedEvent =
+  | readonly [dt: number, t: 'i', k: LearnKanaKey]
+  | readonly [
+      dt: number,
+      t: 'a',
+      task: TaskKind,
+      k: LearnKanaKey | WordKey,
+      ok: 0 | 1,
+      ms: number,
+      hint: 0 | 1,
+      wrong: LearnKanaKey | '',
+      alt: LearnKanaKey | '',
+    ]
+  | readonly [dt: number, t: 's', tz: number]
+  | readonly [dt: number, t: 'e'];
+
+export type LogPage = {
+  readonly dev: string;
+  /** `n` of the first event; the others follow without gaps. */
+  readonly n0: number;
+  /** `at` of the first event. */
+  readonly at0: number;
+  readonly e: readonly EncodedEvent[];
+};
+
 // Sync batches (spec backend.md, "Request and response bodies")
 
 /** The fields of `LearnState`, holding only changes; increments for statistics and buckets. */
@@ -172,7 +201,7 @@ export type SyncDelta = {
   readonly settings: ValidSettings | null;
 };
 
-export type SyncRequest = {
+export type SyncRequestV2 = {
   /** Batch format version. */
   readonly v: 2;
   readonly deviceId: string;
@@ -180,10 +209,34 @@ export type SyncRequest = {
   readonly delta: SyncDelta;
 };
 
+/** Sync format 3 (P7 plan, D12): the log as batches. */
+export type SyncRequest = {
+  readonly v: 3;
+  readonly deviceId: string;
+  readonly seq: number;
+  /** The highest row id the device has pulled (`meta.pulledId`). */
+  readonly after: number;
+  /** The own events not acknowledged yet, or null. */
+  readonly log: LogPage | null;
+  readonly settings: ValidSettings | null;
+};
+/** `POST /api/sync`: the last applied `seq`, and whether other devices wrote rows after `after`. */
+export type SyncResponse = { readonly lastSeq: number; readonly more: boolean };
+export type PulledRow = { readonly id: number; readonly log: LogPage };
+/** `GET /api/sync?deviceId=&after=`: rows of other devices after `after`. */
+export type PullResponse = {
+  /** The highest id the page examined, own rows included: the next `after`. */
+  readonly last: number;
+  /** Rows after `last` exist. */
+  readonly more: boolean;
+  readonly settings: ValidSettings | null;
+  readonly rows: readonly PulledRow[];
+};
+
 /** `outbox/current` on the device: the one batch awaiting acknowledgement (p5-plan.md, D15). */
 export type Outbox = {
   readonly seq: number;
-  readonly request: SyncRequest;
+  readonly request: SyncRequestV2;
 };
 
 /** The server's view of one user: what a sync acknowledgement keeps in step (ADR 082). */
@@ -195,10 +248,10 @@ export type Snapshot = {
 };
 
 /** `POST /api/sync`, and `GET /api/sync` without `part`. */
-export type SyncResponse = { readonly lastSeq: number; readonly version: number };
+export type SyncResponseV2 = { readonly lastSeq: number; readonly version: number };
 
 /** `GET /api/sync?part=…`; the client stores the three parts only when `version` is the same. */
-export type SnapshotRest = SyncResponse & {
+export type SnapshotRest = SyncResponseV2 & {
   readonly part: 'rest';
   readonly settings: ValidSettings | null;
   readonly counters: Counters;

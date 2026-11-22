@@ -37,3 +37,12 @@ The client side of [Storage and sync](../spec/storage-sync.md) and [backend.md](
 - **Account deletion**: `deleteAccount()` sends `DELETE /api/me`; only an answer of `204` counts. Then it stops the engine and clears the device exactly as sign-out does (the settings return to their defaults, Q3); any other answer, offline included, returns false and changes nothing. The button is disabled offline (`Needs a connection.`) and with an expired session (`Sign in again to delete the account.`).
 
 The tests drive the account and the engine together on one fake server (`model/account.test.ts`): the guest merge, an expired session resumed under the same `deviceId` and `seq`, and sign-out followed by sign-in to the same account.
+
+## The server, format 3 (`apps/api`)
+
+The client above still sends format 2; the server also accepts format 3 until the switch of P7 ([ADR 102](../adr/102-sync-format-3-server.md), [Backend](../spec/backend.md#sync-format-3)). The pieces:
+
+- **`packages/shared/src/log-codec.ts`** is the one definition of a log page: `encodePage`, `decodePage` and `isLogPage` (the bounds of every event). The client will check every page it reads with it and the server every batch.
+- **`routes/sync.ts`** dispatches `POST` on the `v` of the body and `GET` on `after` or `part`.
+- **`sync/apply-log.ts`** is the `seq` rule, the rate limit and the `device_seq` bookkeeping of a batch of format 3; **`db/batches.ts`** holds its SQL: the read of step 1, the guarded `batch()` of step 3 and the page of a pull, whose body is assembled from the stored texts.
+- The table `sync_batches` (migration `0004`) has one `WITHOUT ROWID` row per batch; nothing in the API parses an event.

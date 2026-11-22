@@ -37,7 +37,8 @@ export { touchedKeys, patchRecent, patchBuckets, splitLearnDelta } from './learn
 export type { BucketsPatch, TouchedKeys } from './learn-patch';
 export { emptyLearnState, mergeLearn, patchLearn } from './learn-state';
 export type { LearnPatch, StatPatch, StoredLearn } from './learn-state';
-export { SYNC_FORMAT_VERSION, outboxDelta } from './sync-format';
+export { LOG_PAGE_EVENTS, MAX_PAGE_EVENTS, isLogPage, encodePage, decodePage } from './log-codec';
+export { SYNC_FORMAT_VERSION, SYNC_FORMAT_V2, outboxDelta } from './sync-format';
 export {
   MAX_SYNC_BODY_BYTES,
   BATCH_CAPS,

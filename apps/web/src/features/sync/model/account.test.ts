@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { MeResponse, SyncRequest } from '@nekotype/shared/types';
+import type { MeResponse, SyncRequestV2 } from '@nekotype/shared/types';
 import { isObject } from '@nekotype/shared/runtime';
 import type { Db } from '@/shared/lib';
 import { createMemoryDb } from '@/shared/lib';
@@ -34,10 +34,10 @@ const me = (id: string, displayName: string | null = 'shiro'): MeResponse => ({
 const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
-const isSyncRequest = (value: unknown): value is SyncRequest =>
+const isSyncRequest = (value: unknown): value is SyncRequestV2 =>
   isObject(value) && typeof value['seq'] === 'number' && isObject(value['delta']);
 
-const bodyOf = (request: { body: string | null }): SyncRequest => {
+const bodyOf = (request: { body: string | null }): SyncRequestV2 => {
   const parsed: unknown = JSON.parse(request.body ?? 'null');
   if (!isSyncRequest(parsed)) throw new Error('not a sync request');
   return parsed;

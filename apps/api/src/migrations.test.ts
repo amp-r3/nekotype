@@ -146,3 +146,41 @@ describe('migration 0003', () => {
     expect(left).toEqual({ n: 0 });
   });
 });
+
+// Migration 0004 is additive (P7 plan, D13): the table of the batches of sync format 3, next to
+// the columns of format 2.
+describe('migration 0004 (sync_batches)', () => {
+  it('creates a table whose primary key is the table, and keeps the columns of format 2', async () => {
+    const columns = await env.DB.prepare(
+      "SELECT name, pk FROM pragma_table_info('sync_batches') ORDER BY cid",
+    ).all<{ name: string; pk: number }>();
+    expect(columns.results.map((column) => column.name)).toEqual([
+      'user_id',
+      'id',
+      'device_id',
+      'seq',
+      'log',
+      'created_at',
+    ]);
+    expect(columns.results.filter((column) => column.pk > 0).map((column) => column.name)).toEqual([
+      'user_id',
+      'id',
+    ]);
+    const table = await env.DB.prepare(
+      "SELECT sql FROM sqlite_master WHERE name = 'sync_batches'",
+    ).first<{ sql: string }>();
+    expect(table?.sql).toMatch(/WITHOUT ROWID/);
+    const stats = await env.DB.prepare("SELECT name FROM pragma_table_info('user_stats')").all<{
+      name: string;
+    }>();
+    expect(stats.results.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'counters',
+        'learn',
+        'learn_recent',
+        'learn_buckets',
+        'bucket_newest',
+      ]),
+    );
+  });
+});

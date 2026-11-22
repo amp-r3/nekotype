@@ -1,7 +1,7 @@
-import type { Counters, LearnDelta, SyncRequest, ValidSettings } from '@nekotype/shared/types';
+import type { Counters, LearnDelta, SyncRequestV2, ValidSettings } from '@nekotype/shared/types';
 import {
   BATCH_CAPS,
-  SYNC_FORMAT_VERSION,
+  SYNC_FORMAT_V2,
   emptyLearnState,
   splitLearnDelta,
 } from '@nekotype/shared/runtime';
@@ -46,7 +46,7 @@ export type BatchInput = {
 };
 
 export type Batch = {
-  readonly request: SyncRequest;
+  readonly request: SyncRequestV2;
   /** What the batch left out because of the caps: it stays in `delta/learn`. */
   readonly rest: LearnChanges;
 };
@@ -60,8 +60,8 @@ export const bodyBytes = (text: string): number => new TextEncoder().encode(text
  */
 export function buildBatch(input: BatchInput, maxBytes: number): Batch | null {
   const { head, rest } = splitLearnDelta(input.learn.learn, BATCH_CAPS);
-  const request: SyncRequest = {
-    v: SYNC_FORMAT_VERSION,
+  const request: SyncRequestV2 = {
+    v: SYNC_FORMAT_V2,
     deviceId: input.deviceId,
     seq: input.seq,
     delta: { counters: input.learn.counters, learn: head, settings: input.settings },

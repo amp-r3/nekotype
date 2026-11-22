@@ -25,7 +25,7 @@ import type {
   LearnDelta,
   LearnKanaKey,
   Snapshot,
-  SyncRequest,
+  SyncRequestV2,
   ValidSettings,
 } from '@nekotype/shared/types';
 import { describe, expect, it } from 'vitest';
@@ -99,7 +99,7 @@ function request(
     counters?: Counters;
     settings?: ValidSettings | null;
   } = {},
-): SyncRequest {
+): SyncRequestV2 {
   return {
     v: 2,
     deviceId: over.deviceId ?? A,
@@ -497,7 +497,7 @@ describe('POST /api/sync: settings', () => {
 });
 
 describe('two devices', () => {
-  const generated = (seed: number, deviceId: string): SyncRequest => ({
+  const generated = (seed: number, deviceId: string): SyncRequestV2 => ({
     ...generateBatch({ seed, keys: KANA_KEYS, kind: 'learning' }),
     deviceId,
     seq: 1,
