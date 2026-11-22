@@ -16,8 +16,8 @@ import type {
   SnapshotBuckets,
   SnapshotRecent,
   SnapshotRest,
-  SyncRequest,
-  SyncResponse,
+  SyncRequestV2,
+  SyncResponseV2,
   ValidSettings,
 } from './types';
 
@@ -29,7 +29,7 @@ export const MAX_SYNC_BODY_BYTES = 256 * 1024;
 /** The caps on the learning part of a batch (p5-plan.md, Q1; ADR 082): kana, and days per track. */
 export const BATCH_CAPS = { kana: 60, days: 31 } as const;
 
-export function isSyncResponse(value: unknown): value is SyncResponse {
+export function isSyncResponse(value: unknown): value is SyncResponseV2 {
   return isObject(value) && isCount(value['lastSeq']) && isCount(value['version']);
 }
 
@@ -96,7 +96,7 @@ export function mergeSettings(
  * of the stored columns and the client calls this on an acknowledgement whose `version` is the
  * stored one plus 1; a property test keeps the two equal.
  */
-export function applyBatch(snapshot: Snapshot, request: SyncRequest): Snapshot {
+export function applyBatch(snapshot: Snapshot, request: SyncRequestV2): Snapshot {
   const { delta } = request;
   return {
     settings: mergeSettings(snapshot.settings, delta.settings, request.seq),

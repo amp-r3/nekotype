@@ -1,6 +1,7 @@
 import * as v from 'valibot';
 import { BATCH_CAPS } from './sync-runtime';
-import { SYNC_FORMAT_VERSION } from './sync-format';
+import { isLogPage } from './log-codec';
+import { SYNC_FORMAT_V2, SYNC_FORMAT_VERSION } from './sync-format';
 import { RECENT_ANSWERS, isActiveDays, isLearnKanaKey } from './learn-runtime';
 import type {
   Counters,
@@ -8,10 +9,12 @@ import type {
   LearnEntry,
   LearnKanaKey,
   LearnStat,
+  LogPage,
   RecallAnswer,
   ReportRequest,
   SyncDelta,
   SyncRequest,
+  SyncRequestV2,
   ValidSettings,
 } from './types';
 
@@ -157,11 +160,23 @@ const syncDeltaSchema = v.strictObject({
 
 // Requests
 
+const seq = v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER));
+
+export const syncRequestV2Schema = v.strictObject({
+  v: v.literal(SYNC_FORMAT_V2),
+  deviceId: deviceIdSchema,
+  seq,
+  delta: syncDeltaSchema,
+}) satisfies v.GenericSchema<unknown, SyncRequestV2>;
+
+/** Sync format 3 (P7 plan, D12, D14): the events are checked by the codec's guard, not by valibot. */
 export const syncRequestSchema = v.strictObject({
   v: v.literal(SYNC_FORMAT_VERSION),
   deviceId: deviceIdSchema,
-  seq: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)),
-  delta: syncDeltaSchema,
+  seq,
+  after: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(Number.MAX_SAFE_INTEGER)),
+  log: v.nullable(v.custom<LogPage>(isLogPage, 'not a log page')),
+  settings: v.nullable(settingsSchema),
 }) satisfies v.GenericSchema<unknown, SyncRequest>;
 
 export const reportRequestSchema = v.strictObject({
@@ -172,7 +187,13 @@ export const reportRequestSchema = v.strictObject({
   turnstileToken: v.pipe(v.string(), v.minLength(1), v.maxLength(2048)),
 }) satisfies v.GenericSchema<unknown, ReportRequest>;
 
-/** The validated batch, or `null`: the server answers `400` and logs nothing of the body. */
+/** The validated batch of format 2, or `null`: the server answers `400` and logs nothing of the body. */
+export function parseSyncRequestV2(input: unknown): SyncRequestV2 | null {
+  const parsed = v.safeParse(syncRequestV2Schema, input);
+  return parsed.success ? parsed.output : null;
+}
+
+/** The validated batch of format 3, or `null`. */
 export function parseSyncRequest(input: unknown): SyncRequest | null {
   const parsed = v.safeParse(syncRequestSchema, input);
   return parsed.success ? parsed.output : null;
@@ -181,6 +202,13 @@ export function parseSyncRequest(input: unknown): SyncRequest | null {
 export function parseReportRequest(input: unknown): ReportRequest | null {
   const parsed = v.safeParse(reportRequestSchema, input);
   return parsed.success ? parsed.output : null;
+}
+
+/** The `after` of a pull: a non-negative integer in its decimal form, or `null`. */
+export function parseAfter(input: unknown): number | null {
+  if (typeof input !== 'string' || !/^\d{1,16}$/.test(input)) return null;
+  const after = Number(input);
+  return Number.isSafeInteger(after) ? after : null;
 }
 
 export function parseDeviceId(input: unknown): string | null {

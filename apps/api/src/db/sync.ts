@@ -1,4 +1,6 @@
 import type { Track } from '@nekotype/shared/types';
+import { settingsStatement } from './batches';
+import type { SettingsWrite } from './batches';
 import { corrupt, isRow, numberOf, textOf } from './rows';
 import type { Row } from './rows';
 
@@ -191,12 +193,7 @@ export interface SyncWrite {
   readonly learnPatch: string;
   readonly recentPatch: string | null;
   readonly bucketsPatch: string | null;
-  readonly settings: {
-    readonly json: string;
-    readonly updatedAt: number;
-    /** The first batch of a device keeps the account's settings (`mergeSettings`). */
-    readonly keepStored: boolean;
-  } | null;
+  readonly settings: SettingsWrite | null;
 }
 
 /**
@@ -238,18 +235,7 @@ export async function writeSync(db: D1Database, write: SyncWrite): Promise<boole
       .bind(...values),
   ];
   if (write.settings !== null) {
-    const { json, updatedAt, keepStored } = write.settings;
-    statements.push(
-      db
-        .prepare(
-          keepStored
-            ? 'INSERT OR IGNORE INTO user_settings (user_id, json, updated_at) VALUES (?1, ?2, ?3)'
-            : `INSERT INTO user_settings (user_id, json, updated_at) VALUES (?1, ?2, ?3)
-               ON CONFLICT(user_id) DO UPDATE SET json = excluded.json, updated_at = excluded.updated_at
-               WHERE excluded.updated_at > user_settings.updated_at`,
-        )
-        .bind(write.userId, json, updatedAt),
-    );
+    statements.push(settingsStatement(db, write.userId, write.settings));
   }
   const written = await db.batch(statements);
   return (written[0]?.meta.changes ?? 0) > 0;

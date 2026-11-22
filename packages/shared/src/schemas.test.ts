@@ -1,8 +1,13 @@
 import * as v from 'valibot';
 import { describe, expect, it } from 'vitest';
 import { KANA_KEYS, generateBatch } from './testing';
-import { isObject, isSettings, BATCH_CAPS, SYNC_FORMAT_VERSION } from './runtime';
-import { deviceIdSchema, reportRequestSchema, settingsSchema, syncRequestSchema } from './schemas';
+import { isObject, isSettings, BATCH_CAPS, SYNC_FORMAT_V2 } from './runtime';
+import {
+  deviceIdSchema,
+  reportRequestSchema,
+  settingsSchema,
+  syncRequestV2Schema,
+} from './schemas';
 
 const ID = '0192f0a0-0000-7000-8000-000000000001';
 
@@ -38,11 +43,11 @@ describe('the schemas agree with the guards of shared/runtime', () => {
   );
 });
 
-describe('syncRequestSchema', () => {
+describe('syncRequestV2Schema', () => {
   const kinds = ['learning', 'capped'] as const;
   it.each(kinds)('accepts the generated %s batch', (kind) => {
     const batch = generateBatch({ seed: 7, keys: KANA_KEYS, kind });
-    expect(v.safeParse(syncRequestSchema, batch).success).toBe(true);
+    expect(v.safeParse(syncRequestV2Schema, batch).success).toBe(true);
   });
 
   const learning = generateBatch({ seed: 7, keys: KANA_KEYS, kind: 'learning' });
@@ -65,10 +70,10 @@ describe('syncRequestSchema', () => {
   };
 
   it('rejects an unknown key at any depth', () => {
-    expect(ok(syncRequestSchema, { ...learning, extra: 1 })).toBe(false);
+    expect(ok(syncRequestV2Schema, { ...learning, extra: 1 })).toBe(false);
     expect(
       ok(
-        syncRequestSchema,
+        syncRequestV2Schema,
         mutate((batch) => {
           batch['delta'] = { ...delta(batch), learn: { ...learnOf(batch), extra: {} } };
         }),
@@ -77,29 +82,29 @@ describe('syncRequestSchema', () => {
   });
 
   it('checks the envelope: format version, device and seq', () => {
-    expect(SYNC_FORMAT_VERSION).toBe(2);
-    expect(ok(syncRequestSchema, { ...learning, v: 1 })).toBe(false);
-    expect(ok(syncRequestSchema, { ...learning, v: 3 })).toBe(false);
-    expect(ok(syncRequestSchema, { ...learning, deviceId: 'device-a' })).toBe(false);
-    expect(ok(syncRequestSchema, { ...learning, seq: 0 })).toBe(false);
-    expect(ok(syncRequestSchema, { ...learning, seq: 1.5 })).toBe(false);
-    expect(ok(syncRequestSchema, { ...learning, seq: 1 })).toBe(true);
+    expect(SYNC_FORMAT_V2).toBe(2);
+    expect(ok(syncRequestV2Schema, { ...learning, v: 1 })).toBe(false);
+    expect(ok(syncRequestV2Schema, { ...learning, v: 3 })).toBe(false);
+    expect(ok(syncRequestV2Schema, { ...learning, deviceId: 'device-a' })).toBe(false);
+    expect(ok(syncRequestV2Schema, { ...learning, seq: 0 })).toBe(false);
+    expect(ok(syncRequestV2Schema, { ...learning, seq: 1.5 })).toBe(false);
+    expect(ok(syncRequestV2Schema, { ...learning, seq: 1 })).toBe(true);
   });
 
   it('rejects typing data: results, kanaStats and a typing block of the settings', () => {
-    expect(ok(syncRequestSchema, { ...learning, results: [] })).toBe(false);
+    expect(ok(syncRequestV2Schema, { ...learning, results: [] })).toBe(false);
     expect(
-      ok(syncRequestSchema, { ...learning, delta: { ...learning.delta, kanaStats: {} } }),
+      ok(syncRequestV2Schema, { ...learning, delta: { ...learning.delta, kanaStats: {} } }),
     ).toBe(false);
     const typing = { script: 'both' };
     expect(
-      ok(syncRequestSchema, {
+      ok(syncRequestV2Schema, {
         ...learning,
         delta: { ...learning.delta, settings: { ...settings, typing } },
       }),
     ).toBe(false);
     expect(
-      ok(syncRequestSchema, {
+      ok(syncRequestV2Schema, {
         ...learning,
         delta: { ...learning.delta, counters: { started: { typing: 0, learn: 1 }, finished: 1 } },
       }),
@@ -109,7 +114,7 @@ describe('syncRequestSchema', () => {
   it('caps the kana of the learning part at 60 and the days of a track at 31', () => {
     const capped = generateBatch({ seed: 7, keys: KANA_KEYS, kind: 'capped' });
     expect(Object.keys(capped.delta.learn.entries).length).toBe(BATCH_CAPS.kana);
-    expect(ok(syncRequestSchema, capped)).toBe(true);
+    expect(ok(syncRequestV2Schema, capped)).toBe(true);
 
     const extraKey = KANA_KEYS.katakana[40] ?? '';
     const stat = { recognitions: 1, recognitionErrors: 0, mixups: {} };
@@ -124,7 +129,7 @@ describe('syncRequestSchema', () => {
       },
     };
     expect(Object.keys(overKana.delta.learn.stats)).toHaveLength(BATCH_CAPS.kana + 1);
-    expect(ok(syncRequestSchema, overKana)).toBe(false);
+    expect(ok(syncRequestV2Schema, overKana)).toBe(false);
 
     const days: Record<string, Record<string, number>> = {};
     for (let day = 0; day <= BATCH_CAPS.days; day += 1) days[String(20_000 + day)] = { '5': 1 };
@@ -138,7 +143,7 @@ describe('syncRequestSchema', () => {
         },
       },
     };
-    expect(ok(syncRequestSchema, overDays)).toBe(false);
+    expect(ok(syncRequestV2Schema, overDays)).toBe(false);
   });
 
   it('bounds kana keys, recall answers, buckets and counts', () => {
@@ -147,42 +152,42 @@ describe('syncRequestSchema', () => {
         batch['delta'] = { ...delta(batch), learn: { ...learnOf(batch), ...patch } };
       });
     const answer = { at: 1, ms: 1000, ok: true };
-    expect(ok(syncRequestSchema, withLearn({ recent: { 'hiragana:あ': [answer] } }))).toBe(true);
+    expect(ok(syncRequestV2Schema, withLearn({ recent: { 'hiragana:あ': [answer] } }))).toBe(true);
     expect(
-      ok(syncRequestSchema, withLearn({ recent: { 'hiragana:あ': Array(11).fill(answer) } })),
+      ok(syncRequestV2Schema, withLearn({ recent: { 'hiragana:あ': Array(11).fill(answer) } })),
     ).toBe(false);
     expect(
       ok(
-        syncRequestSchema,
+        syncRequestV2Schema,
         withLearn({ recent: { 'hiragana:あ': [{ ...answer, ms: Number.POSITIVE_INFINITY }] } }),
       ),
     ).toBe(false);
-    expect(ok(syncRequestSchema, withLearn({ recent: { 'latin:a': [answer] } }))).toBe(false);
+    expect(ok(syncRequestV2Schema, withLearn({ recent: { 'latin:a': [answer] } }))).toBe(false);
     expect(
-      ok(syncRequestSchema, withLearn({ recent: { [`hiragana:${'x'.repeat(16)}`]: [answer] } })),
+      ok(syncRequestV2Schema, withLearn({ recent: { [`hiragana:${'x'.repeat(16)}`]: [answer] } })),
     ).toBe(false);
     expect(
       ok(
-        syncRequestSchema,
+        syncRequestV2Schema,
         withLearn({ recallBuckets: { hiragana: { '20000': { '100': 1 } }, katakana: {} } }),
       ),
     ).toBe(true);
     expect(
       ok(
-        syncRequestSchema,
+        syncRequestV2Schema,
         withLearn({ recallBuckets: { hiragana: { '20000': { '101': 1 } }, katakana: {} } }),
       ),
     ).toBe(false);
     expect(
       ok(
-        syncRequestSchema,
+        syncRequestV2Schema,
         withLearn({ recallBuckets: { hiragana: { '20000': { '5': -1 } }, katakana: {} } }),
       ),
     ).toBe(false);
-    expect(ok(syncRequestSchema, withLearn({ activeDays: [[5, 3]] }))).toBe(false);
+    expect(ok(syncRequestV2Schema, withLearn({ activeDays: [[5, 3]] }))).toBe(false);
     expect(
       ok(
-        syncRequestSchema,
+        syncRequestV2Schema,
         withLearn({
           activeDays: [
             [1, 3],
@@ -193,7 +198,7 @@ describe('syncRequestSchema', () => {
     ).toBe(false);
     expect(
       ok(
-        syncRequestSchema,
+        syncRequestV2Schema,
         withLearn({
           activeDays: [
             [1, 3],
@@ -231,7 +236,7 @@ describe('kana keys in JSON paths', () => {
     const entry = { box: 1, dueAt: 0, updatedAt: 0 };
     for (const key of ['hiragana:a"b', 'hiragana:a\\b']) {
       const learn = { ...batch.delta.learn, entries: { [key]: entry } };
-      expect(ok(syncRequestSchema, { ...batch, delta: { ...batch.delta, learn } })).toBe(false);
+      expect(ok(syncRequestV2Schema, { ...batch, delta: { ...batch.delta, learn } })).toBe(false);
     }
   });
 });

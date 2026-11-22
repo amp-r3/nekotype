@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Outbox, Snapshot, SyncRequest } from '@nekotype/shared/types';
+import type { Outbox, Snapshot, SyncRequestV2 } from '@nekotype/shared/types';
 import { isObject, isSnapshot } from '@nekotype/shared/runtime';
 import { createMemoryDb } from '@/shared/lib';
 import {
@@ -23,7 +23,7 @@ import {
 } from './test-util';
 import type { Rig } from './test-util';
 
-const isSyncRequest = (value: unknown): value is SyncRequest =>
+const isSyncRequest = (value: unknown): value is SyncRequestV2 =>
   isObject(value) && value['v'] === 2 && typeof value['seq'] === 'number';
 
 const entry = (updatedAt: number) => ({ box: 1, dueAt: updatedAt + 1000, updatedAt }) as const;
@@ -34,7 +34,7 @@ async function sync(rig: Rig): Promise<void> {
   await rig.engine.idle();
 }
 
-const body = (request: { body: string | null }): SyncRequest => {
+const body = (request: { body: string | null }): SyncRequestV2 => {
   const parsed: unknown = JSON.parse(request.body ?? 'null');
   if (!isSyncRequest(parsed)) throw new Error('not a sync request');
   return parsed;
@@ -144,7 +144,7 @@ describe('an acknowledgement', () => {
 
   it('with another version reads the three parts, and again when their versions differ', async () => {
     const rig = await createRig();
-    const other: SyncRequest = {
+    const other: SyncRequestV2 = {
       v: 2,
       deviceId: 'dev-b',
       seq: 1,
@@ -436,7 +436,7 @@ describe('the hidden page', () => {
     // 1500 entries of about 65 bytes each are over 60 KB.
     const entries: Record<string, ReturnType<typeof entry>> = {};
     for (let i = 0; i < 1500; i += 1) entries[`hiragana:k${String(i).padStart(4, '0')}`] = entry(i);
-    const request: SyncRequest = {
+    const request: SyncRequestV2 = {
       ...outbox.request,
       delta: { ...outbox.request.delta, learn: learnDelta({ entries }) },
     };

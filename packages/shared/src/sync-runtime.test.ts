@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   MAX_SYNC_BODY_BYTES,
-  SYNC_FORMAT_VERSION,
+  SYNC_FORMAT_V2,
   applyBatch,
   emptyLearnState,
   isSnapshot,
@@ -13,7 +13,7 @@ import {
   outboxDelta,
 } from './runtime';
 import { KANA_KEYS, generateYear } from './testing';
-import type { Snapshot, SyncRequest, ValidSettings } from './types';
+import type { Snapshot, SyncRequestV2, ValidSettings } from './types';
 
 const year = generateYear({ seed: 3, keys: KANA_KEYS });
 const snapshot: Snapshot = {
@@ -31,7 +31,7 @@ function settings(updatedAt: number, targetMs = 1500): ValidSettings {
 
 describe('constants', () => {
   it('are the values of the spec', () => {
-    expect(SYNC_FORMAT_VERSION).toBe(2);
+    expect(SYNC_FORMAT_V2).toBe(2);
     expect(MAX_SYNC_BODY_BYTES).toBe(262_144);
   });
 });
@@ -63,7 +63,7 @@ describe('guards', () => {
     const delta = { counters: 'not checked here' };
     const batch = {
       seq: 1,
-      request: { v: SYNC_FORMAT_VERSION, delta },
+      request: { v: SYNC_FORMAT_V2, delta },
     };
     expect(outboxDelta(batch)).toBe(delta);
     expect(outboxDelta(undefined)).toBeNull();
@@ -113,7 +113,7 @@ describe('mergeSettings', () => {
 });
 
 describe('applyBatch', () => {
-  const request: SyncRequest = {
+  const request: SyncRequestV2 = {
     v: 2,
     deviceId: 'd',
     seq: 1,

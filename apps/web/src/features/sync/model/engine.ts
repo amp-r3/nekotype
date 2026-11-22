@@ -3,7 +3,7 @@ import type {
   Outbox,
   Scheduler,
   Snapshot,
-  SyncResponse,
+  SyncResponseV2,
   TimeoutHandle,
 } from '@nekotype/shared/types';
 import {
@@ -241,7 +241,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
   const acknowledge = async (
     api: SyncApi,
     outbox: Outbox,
-    response: SyncResponse,
+    response: SyncResponseV2,
   ): Promise<boolean> => {
     const [stored, version] = await Promise.all([
       db.get(SNAPSHOT_STORE, SYNC_KEY),

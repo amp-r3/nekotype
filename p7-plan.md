@@ -18,7 +18,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | 3   | `p7-03-planner-sim`           | `main`      | done   | #208         |
 | 4   | `p7-04-stats-view`            | `main`      | done   | #209         |
 | 5   | `p7-05-forecast-cost`         | `main`      | done   | #210         |
-| 6   | `p7-06-sync-format-3-server`  | `main`      | —      | —            |
+| 6   | `p7-06-sync-format-3-server`  | `main`      | done   | #211         |
 | 7   | `p7-07-sync-bench`            | `main`      | —      | —            |
 | 8   | `p7-08-log-store`             | `p7-switch` | —      | —            |
 | 9   | `p7-09-learning-on-the-model` | `p7-switch` | —      | —            |
@@ -668,13 +668,16 @@ CREATE TABLE sync_batches (
 ) WITHOUT ROWID;
 ```
 
-The insert of a batch:
+The insert of a batch (the guard is changed from the first version of this plan with the maintainer's consent, ADR 102, point 4: a request whose `UPDATE` lost to a write that raised `version` by one would still have passed `version` = read + 1, and its retry would have inserted the batch a second time; `device_seq` shows only the winner's `seq`):
 
 ```sql
 INSERT INTO sync_batches (user_id, id, device_id, seq, log, created_at)
 SELECT ?1, next, ?2, ?3, ?4, ?5
 FROM (SELECT COALESCE(MAX(id), 0) + 1 AS next FROM sync_batches WHERE user_id = ?1)
-WHERE (SELECT version FROM user_stats WHERE user_id = ?1) = ?6; -- ?6: the version read in step 1, plus one
+WHERE EXISTS (
+  SELECT 1 FROM user_stats
+  WHERE user_id = ?1 AND version = ?6 AND json_extract(device_seq, ?7) = ?3
+); -- ?6: the version read in step 1, plus one; ?7: the path of this device's `seq` in `device_seq`
 ```
 
 `apps/api/migrations/0005_drop_learning_columns.sql` (PR 14):

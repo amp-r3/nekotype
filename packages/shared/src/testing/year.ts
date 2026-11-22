@@ -1,5 +1,5 @@
 import { BATCH_CAPS } from '../sync-runtime';
-import { SYNC_FORMAT_VERSION } from '../sync-format';
+import { SYNC_FORMAT_V2 } from '../sync-format';
 import type {
   Counters,
   DayBuckets,
@@ -9,7 +9,7 @@ import type {
   LearnState,
   LearnStat,
   RecallAnswer,
-  SyncRequest,
+  SyncRequestV2,
   Track,
 } from '../types';
 import type { KanaKeys } from './kana-keys';
@@ -188,11 +188,11 @@ export function generateBatch(options: {
   seed: number;
   keys: KanaKeys;
   kind: BatchKind;
-}): SyncRequest {
+}): SyncRequestV2 {
   const rng = seededRng(options.seed);
   const { keys } = options;
   const lastDay = YEAR_FIRST_DAY + 364;
-  const base = { v: SYNC_FORMAT_VERSION, deviceId: DEVICE_ID, seq: LAST_SEQ + 1 } as const;
+  const base = { v: SYNC_FORMAT_V2, deviceId: DEVICE_ID, seq: LAST_SEQ + 1 } as const;
 
   if (options.kind === 'learning') {
     // 30 kana of one track and one new day: the day also pushes the oldest day out.

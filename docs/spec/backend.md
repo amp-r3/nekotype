@@ -12,7 +12,9 @@ The backend is a Hono application running as Cloudflare Pages Functions on the `
 | D1 database size                                                                                                       | 500 MB                                    | Sufficient for the MVP                                                                                                                                      |
 | [D1 over-limit behaviour](https://developers.cloudflare.com/changelog/post/2026-09-01-d1-free-tier-limit-enforcement/) | Queries fail until midnight UTC           | The client keeps data in `outbox` and `delta` and retries later; the application keeps working locally                                                      |
 
-**Row budget per learning sync:** `user_stats` 1 + `user_settings` 0–1 = 1–2 rows; the acceptance limit is 2. A learning session adds no row of its own, and the sessions between two syncs travel in one batch.
+**Row budget per sync of format 3:** `user_stats` 1 + `sync_batches` 1 + `user_settings` 0–1 = at most 3 rows. A learner-year of about 40,000 answers is about 2 MB of `sync_batches`, so the 500 MB of a free database hold about 250 learner-years; compaction is not planned unless a limit breaks (ADR 100, point 7).
+
+**Row budget per learning sync of format 2** (until it leaves the server in P7 PR 13): `user_stats` 1 + `user_settings` 0–1 = 1–2 rows; the acceptance limit is 2. A learning session adds no row of its own, and the sessions between two syncs travel in one batch.
 
 ## D1 schema
 
@@ -46,6 +48,17 @@ CREATE TABLE user_stats (
   device_seq TEXT NOT NULL, last_sync_at INTEGER NOT NULL,
   version INTEGER NOT NULL DEFAULT 0
 );
+-- one row per accepted batch of sync format 3: a page of the learner's answer log (ADR 100, 102).
+-- WITHOUT ROWID: the primary key is the table, so an insert writes one row and no index row.
+CREATE TABLE sync_batches (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  id INTEGER NOT NULL,     -- per user, increasing: the user's MAX(id) + 1, never reused
+  device_id TEXT NOT NULL, -- the sync deviceId of the batch
+  seq INTEGER NOT NULL,
+  log TEXT NOT NULL,       -- the batch's LogPage, as JSON
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, id)
+) WITHOUT ROWID;
 CREATE TABLE content_reports (
   id TEXT PRIMARY KEY, user_id TEXT, item_id TEXT NOT NULL, content_version TEXT NOT NULL,
   reason TEXT NOT NULL, comment TEXT, created_at INTEGER NOT NULL
@@ -62,16 +75,17 @@ CREATE TABLE content_reports (
 
 ## API
 
-| Method and path                    | Purpose                                                                                                                                                                                                   |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/auth/:provider`          | Start OAuth (`google` with PKCE, `github`): state cookie and redirect                                                                                                                                     |
-| `GET /api/auth/:provider/callback` | Verify state, fetch profile, create or find user, set session, redirect to `/`                                                                                                                            |
-| `POST /api/auth/logout`            | Delete session and cookie                                                                                                                                                                                 |
-| `GET /api/me`                      | Profile or 401                                                                                                                                                                                            |
-| `DELETE /api/me`                   | Delete the account and all its data; one `batch()`: `content_reports.user_id` is set to NULL for its reports, then the `users` row is deleted and the foreign keys cascade; the session cookie is cleared |
-| `POST /api/sync`                   | Body: `deviceId`, `seq`, batch. Response: the last applied seq for this deviceId and the `version` of the user's data; no snapshot (ADR 082)                                                              |
-| `GET /api/sync?deviceId=&part=`    | Without `part`: the last applied seq and `version`, used after a `409` and to check for other devices' writes. `part` = `rest`, `recent` or `buckets`: one part of the snapshot with `version`            |
-| `POST /api/reports`                | Content reports from guests and signed-in users; requires a valid Cloudflare Turnstile token; one report and at most 8 KB per request                                                                     |
+| Method and path                    | Purpose                                                                                                                                                                                                                                    |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /api/auth/:provider`          | Start OAuth (`google` with PKCE, `github`): state cookie and redirect                                                                                                                                                                      |
+| `GET /api/auth/:provider/callback` | Verify state, fetch profile, create or find user, set session, redirect to `/`                                                                                                                                                             |
+| `POST /api/auth/logout`            | Delete session and cookie                                                                                                                                                                                                                  |
+| `GET /api/me`                      | Profile or 401                                                                                                                                                                                                                             |
+| `DELETE /api/me`                   | Delete the account and all its data; one `batch()`: `content_reports.user_id` is set to NULL for its reports, then the `users` row is deleted and the foreign keys cascade; the session cookie is cleared                                  |
+| `POST /api/sync`                   | Body: `v`, `deviceId`, `seq`, batch (format 2) or `after`, `log`, `settings` (format 3, see [Sync format 3](#sync-format-3)). Response: the last applied seq for this deviceId and the `version` of the user's data; no snapshot (ADR 082) |
+| `GET /api/sync?deviceId=&after=`   | Format 3: the rows of other devices after `after`, at most 100 rows and 256 KB per page, with the account's settings; see [Sync format 3](#sync-format-3)                                                                                  |
+| `GET /api/sync?deviceId=&part=`    | Without `part`: the last applied seq and `version`, used after a `409` and to check for other devices' writes. `part` = `rest`, `recent` or `buckets`: one part of the snapshot with `version`                                             |
+| `POST /api/reports`                | Content reports from guests and signed-in users; requires a valid Cloudflare Turnstile token; one report and at most 8 KB per request                                                                                                      |
 
 ### Request and response bodies
 
@@ -165,6 +179,21 @@ Two devices of one user can sync at the same moment, and the update of `user_sta
 A sync of a batch within the caps uses at most 13 of the 50 statements D1 allows: the session lookup, at most 4 reads and 2 writes, repeated at most once by the retry. A learning sync writes at most 2 rows. `GET /api/sync` assembles each part from the stored column strings by concatenation and never parses them; `part=rest` reads the settings in the same statement as the columns, so every part carries the `version` of one read. A device's entry in `device_seq` that was not updated for 90 days is removed by the next write, and so are the bucket days that leave the 365-day window.
 
 A batch that lost still writes its settings, because `batch()` runs every statement. This is harmless: the upsert is idempotent. A lost attempt spends extra rows, so the row budget above applies to the uncontended case.
+
+### Sync format 3
+
+Until P7 PR 13 the server accepts formats 2 and 3: `POST` dispatches on the `v` of the body (2 or 3; any other value is `400`), `GET` on its query (`after` is format 3, `part` or neither is format 2). Format 3 is the log of the learner's answers ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md), [ADR 102](../adr/102-sync-format-3-server.md)); the server stores batches and never computes a state from them.
+
+**`POST /api/sync`**, body `{ v: 3, deviceId, seq, after, log, settings }`: `after` is the highest row id the device has pulled, `log` a `LogPage` (the own events not acknowledged yet) or `null`, `settings` as in format 2. A `LogPage` is `{ dev, n0, at0, e }`: one device's consecutive events, 1 to 8,192, each a tuple with its time relative to the previous one; its bounds are one guard shared by the client and the server. Response `{ lastSeq, more }`: the last applied `seq`, and whether other devices wrote rows after `after`. The body is at most 256 KB.
+
+1. One statement reads `device_seq`, `last_sync_at` and `version` of `user_stats`, and `more` (a row of another device with an id above `after`).
+2. The `seq` rule of [Batches](storage-sync.md#batches): `seq` ≤ last is answered with the stored `lastSeq` and writes nothing; `seq` > last + 1 is `409 seq_gap`; only a batch to apply is rate-limited (`429`).
+3. One `batch()`: the `UPDATE user_stats` (`device_seq` with this device's `{ seq, at }`, without entries older than 90 days; `last_sync_at`; `version + 1`) guarded by `version`; when `log` is not null, the insert into `sync_batches`; when `settings` is not null, the upsert with `keepStored` on `seq` = 1. The insert takes `MAX(id) + 1` of the user and runs only when the `UPDATE` applied: the stored `version` is the one it writes and the stored `seq` of this device is the batch's, so a request that lost the race adds no row.
+4. If the `UPDATE` reports `meta.changes` = 0, repeat from step 1 once; a second loss is `503 conflict`.
+
+A sync of format 3 writes at most 3 rows (`user_stats`, `sync_batches`, and `user_settings` when its row exists) and runs at most 5 statements (the session lookup, the read and at most 3 writes), at most 9 with the retry.
+
+**`GET /api/sync?deviceId=&after=`** answers `{ last, more, settings, rows: [{ id, log }] }`. One `batch()` reads the next 101 rows of the user after `after` and the settings. The page walks the rows in order, at most 100: a row of `deviceId` is skipped, other rows are added while their `log` texts total at most 256 KB, and at least one is always added. `last` is the id of the last row walked (`after` when none), the next `after`; `more` says that a row was left. The body is put together from the stored texts without parsing them.
 
 ## Authentication and security
 
