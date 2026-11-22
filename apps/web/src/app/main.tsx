@@ -7,6 +7,13 @@ import { effect } from '@preact/signals';
 import { startRouter } from '@/shared/lib';
 import './styles/index.css';
 
+// The test build's probe of the model's cost; dead code in the production build.
+if (__LATENCY_PROBE__) {
+  void import('./model-probe').then((probe) => {
+    probe.installModelProbe();
+  });
+}
+
 const ready = initApp();
 startRouter();
 

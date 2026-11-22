@@ -1,6 +1,5 @@
 import type { AnswerEvent, LearnKanaKey, Track } from '@nekotype/shared/types';
 import { RECENT_RECALLS } from './constants';
-import { ITEMS } from './items';
 
 export type RecallStat = { readonly ms: number; readonly ok: boolean };
 export type KanaLog = {
@@ -71,21 +70,28 @@ function ownedDay(s: StatsData, day: number): MutableDay {
   return next;
 }
 
-/** An answer of the fold, on the local `day` of its device. `key` is null for a word. */
+/**
+ * An answer of the fold, on the local `day` of its device. `key` is the kana asked and `track` its
+ * track (from `ITEMS`); both are null for a word.
+ */
 export function noteAnswer(
   s: StatsData,
   a: AnswerEvent,
   key: LearnKanaKey | null,
+  track: Track | null,
   day: number,
 ): void {
   const entry = ownedDay(s, day);
   entry.answers += 1;
   if (key === null) return;
   if (a.task === 'recall') {
-    const track = ITEMS.get(key)?.track;
-    if (track !== undefined) entry.recall[track].push(a.ms);
+    if (track !== null) entry.recall[track].push(a.ms);
     const have = s.kana.get(key);
-    const recall = [...(have?.recall ?? []), { ms: a.ms, ok: a.ok }].slice(-RECENT_RECALLS);
+    // The old list and this answer in one new list (a `KanaLog` is never changed in place), cut
+    // to the last RECENT_RECALLS.
+    const before = have?.recall ?? [];
+    const recall = before.slice(Math.max(0, before.length + 1 - RECENT_RECALLS));
+    recall.push({ ms: a.ms, ok: a.ok });
     s.kana.set(key, {
       recall,
       recognitions: have?.recognitions ?? 0,

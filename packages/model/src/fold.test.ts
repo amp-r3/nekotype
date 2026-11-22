@@ -346,6 +346,20 @@ describe('apply', () => {
     expect(fold.last).toEqual({ at: 10, dev: 'd1', n: 2 });
     expect(fold.apply(answer(KA, { at: 10, dev: 'z', n: 1 }))).toBe('applied');
   });
+
+  it('knows a repeated n of any number, as a set would, in a clone too', () => {
+    // Whole numbers from 0 up are kept as bits; any other number (and a large one) in a set.
+    const odd = [0, -0, 8192, 2 ** 22, 2 ** 40, 1.5, -3, Number.NaN];
+    const fold = createFold({ targetMs: TARGET, stats: false });
+    let at = 0;
+    const applied = odd.map((n) => fold.apply(end({ at: (at += 1), n })));
+    expect(applied).toEqual(['applied', 'duplicate', ...odd.slice(2).map(() => 'applied')]);
+    const clone = fold.clone();
+    for (const f of [fold, clone]) {
+      for (const n of odd) expect(f.apply(end({ at: (at += 1), n })), `n ${n}`).toBe('duplicate');
+      expect(f.apply(end({ at: (at += 1), n: 1 }))).toBe('applied');
+    }
+  });
 });
 
 describe('foldLog, snapshot, clone', () => {

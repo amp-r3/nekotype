@@ -318,6 +318,35 @@ export function simulate(
           high: undefined,
         });
       }
+      if (target === 'row' && options.forward !== undefined && policy.forecast !== undefined) {
+        // The production model forecasts itself; `forward, observed` holds the raw median it keeps
+        // as history and `forward, corrected` the corrected one with its range.
+        const history = errors['forward, observed'].row.map((o) => ({
+          forecast: o.forecast,
+          actual: o.actual,
+        }));
+        const made = policy.forecast(ids, now, history);
+        if (made !== undefined) {
+          pending.push({
+            estimator: 'forward, observed',
+            target,
+            ids,
+            made: intros.length,
+            forecast: made.raw,
+            low: undefined,
+            high: undefined,
+          });
+          pending.push({
+            estimator: 'forward, corrected',
+            target,
+            ids,
+            made: intros.length,
+            forecast: made.median,
+            low: made.low,
+            high: made.high,
+          });
+        }
+      }
       const runs = options.forward ?? 0;
       if (runs > 0 && isPlanner(policy)) {
         const gaps = sittingStarts
