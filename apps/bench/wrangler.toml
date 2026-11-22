@@ -1,4 +1,4 @@
-# The measurement project of P5 PR 1 (p5-plan.md, M1). Not the application's project.
+# The measurement project of P5 PR 1 and P7 PR 7 (p5-plan.md, p7-plan.md, M1). Not the application's project.
 name = "nekotype-bench"
 pages_build_output_dir = "public"
 compatibility_date = "2026-11-01"
@@ -11,4 +11,4 @@ SYNC_MIN_INTERVAL_MS = "0"
 [[d1_databases]]
 binding = "DB"
 database_name = "nekotype-bench"
-database_id = "d49b1f07-7287-4b0f-be91-3bf2d1938f14"
+database_id = "6a5dd4bf-393d-4563-9e0c-1bf36e2e0bd0"

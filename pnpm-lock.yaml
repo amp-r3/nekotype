@@ -66,6 +66,9 @@ importers:
 
   apps/bench:
     dependencies:
+      '@nekotype/model':
+        specifier: workspace:*
+        version: link:../../packages/model
       '@nekotype/shared':
         specifier: workspace:*
         version: link:../../packages/shared

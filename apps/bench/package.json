@@ -12,6 +12,7 @@
     "measure": "tsx scripts/measure.ts"
   },
   "dependencies": {
+    "@nekotype/model": "workspace:*",
     "@nekotype/shared": "workspace:*"
   },
   "devDependencies": {
