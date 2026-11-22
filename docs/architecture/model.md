@@ -1,6 +1,6 @@
 # The knowledge model
 
-Part of the [architecture description](README.md) of the current code. [ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md) decides the model; [ADR 101](../adr/101-model-package.md) its package. After P7 PR 2 the package holds FSRS-6, the kana items, the grade table and the fold. The planner, the statistics and the forecast are added by the next pull requests; nothing in `apps/web` imports the package yet.
+Part of the [architecture description](README.md) of the current code. [ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md) decides the model; [ADR 101](../adr/101-model-package.md) its package. After P7 PR 3 the package holds FSRS-6, the kana items, the grade table, the fold and the planner. The statistics and the forecast are added by the next pull requests; nothing in `apps/web` imports the package yet.
 
 ## The package
 
@@ -13,6 +13,7 @@ Part of the [architecture description](README.md) of the current code. [ADR 100]
 | `items.ts`     | `ITEMS`: the 229 kana of both tracks with row, category, `index` in the track, `parts` and `pair`; `trackItems`, `trackRows`, `kanaOfReading`  |
 | `order.ts`     | `compareEvents` (by `at`, `dev`, `n`), `eventKey` (`dev:n`), `localDay(at, tz)` in plain arithmetic (no `Date`)                                |
 | `learner.ts`   | The learner values of candidate A4 over the state: `pressure`, `requestedRetention`, `learningLimit`, `recallsToLearn`, `horizonMs`, `dueFrom` |
+| `planner.ts`   | `nextTask(state, ctx)`: candidate A4 over the state (below)                                                                                    |
 | `fold.ts`      | `createFold`, `foldLog`: the state as a fold of the log (below)                                                                                |
 | `grade.ts`     | `effectsOf(answer, targetMs, learned)`: the table of ADR 100, point 4, as memory updates and confusion changes; a grade is never stored        |
 
@@ -35,3 +36,11 @@ The state is never stored, synced or migrated: it is `foldLog(events, { targetMs
 Each event is applied by the rules of D5 in the P7 plan: an event with an unknown kana is counted in `ignored` and skipped; a session start sets the device's zone; an introduction of a kana that is not new is ignored; an answer on a new kana introduces it first. A review is a `recall` on a kana that is learned before the answer; only reviews move `observed`. The same-day formula follows the local day of the writing device (`tz` of its last session start, 0 without one). A word answer has no outcome of its own (it is not on one kana) and grades the learned kana of its reading. Statistics (`stats` of the fold) come with PR 4.
 
 `fold.properties.test.ts` runs 200 seeded logs of 2–3 devices: any order of delivery with repeats, incremental `apply`, and devices exchanging batches with 30% failed syncs all end in the snapshot of one `foldLog` of every event.
+
+## The planner
+
+`nextTask(state, { now, track, previous, rng })` returns the next `PlannedTask` of a session (`introduction`, `recall` with `review`, `recognition`) or null, which ends the session; the session itself (30 tasks at most, `SESSION_TASKS`) is the caller's. It reads the state and draws from `rng` only for the kind of a learning task, once. One pass over the introduced kana finds the best candidate of each list; the interval factor of the requested retention is computed once per call.
+
+The order is: a **due** kana (learned, `lastAt + stability × intervalFactor(r) × DAY_MS ≤ now + h`, where `r` is the requested retention and `h` the median gap between sittings, 12 hours until one is known; the lowest predicted recall at `now + h` first), a **ready** learning kana (`now − lastAt ≥ STEP_MS × 2^streak`, the oldest `lastTask` first), an **introduction** while fewer than `learningLimit` kana are learning, then any **other learning** kana. Ties go to track order, hiragana first. The previous task's kana is left out of the three kana lists; when all four are empty it is taken if it is due or learning, otherwise the result is null. An introduction takes the first new kana of the selected track whose parts are all learned; the other track supplies it only when it has an introduced kana, trails the selected track by more than `TRACK_LAG` introduced kana and has an eligible one. A due kana is a recall that counts as a review; a learning kana is a recognition when the draw is below `RECOGNITION_SHARE`, otherwise a recall.
+
+`packages/sim` runs this planner: `createProductionPolicy` in `src/policies/production.ts` maps the simulator's items to keys, keeps a `Fold` and writes each task and answer as an event; it holds no rule of the fold or the planner. `pnpm --filter @nekotype/sim run p7` prints the acceptance tables (`PART=main|planner`; `forecast` and `cost` come with PR 5).

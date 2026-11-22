@@ -13,11 +13,13 @@
     "sensitivity": "tsx src/sensitivity.ts",
     "part3": "tsx src/part3.ts",
     "part4": "tsx src/part4.ts",
-    "part5": "tsx src/part5.ts"
+    "part5": "tsx src/part5.ts",
+    "p7": "tsx src/p7.ts"
   },
   "dependencies": {
     "@nekotype/engine": "workspace:*",
-    "@nekotype/model": "workspace:*"
+    "@nekotype/model": "workspace:*",
+    "@nekotype/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

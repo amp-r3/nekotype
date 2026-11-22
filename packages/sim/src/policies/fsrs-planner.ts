@@ -9,6 +9,7 @@ import type { Grade, Memory } from '../memory';
 import { FSRS7 } from '../fsrs7';
 import type { Item } from '../items';
 import { DAY_MS } from '../learner';
+import { recognitionOptions } from '../options';
 import type { Answer, Policy, Session, Task } from '../policy';
 import type { Rng } from '../rng';
 
@@ -424,22 +425,6 @@ function build(
     );
   };
 
-  function options(id: number): number[] {
-    const track = items[id]?.track;
-    const chosen = new Set([id]);
-    const similar = items[id]?.similar.find((o) => state(o).phase !== 'new');
-    if (similar !== undefined) chosen.add(similar);
-    const pool = core.states.flatMap((s, other) =>
-      s.phase !== 'new' && !chosen.has(other) && items[other]?.track === track ? [other] : [],
-    );
-    while (chosen.size < 4 && pool.length > 0) {
-      const [pick] = pool.splice(Math.floor(rng.next() * pool.length), 1);
-      if (pick !== undefined) chosen.add(pick);
-    }
-    for (let other = 0; chosen.size < 4 && other < items.length; other += 1) chosen.add(other);
-    return [...chosen];
-  }
-
   function eligible(item: Item): boolean {
     if (state(item.id).phase !== 'new') return false;
     if (!item.parts.every((part) => state(part).phase === 'graduated')) return false;
@@ -501,7 +486,12 @@ function build(
     const review = state(id).phase === 'graduated';
     const recognition = !review && rng.next() < params.recognitionShare;
     return recognition
-      ? { item: id, kind: 'recognition', options: options(id), review }
+      ? {
+          item: id,
+          kind: 'recognition',
+          options: recognitionOptions(items, id, (other) => state(other).phase !== 'new', rng),
+          review,
+        }
       : { item: id, kind: 'recall', options: [], review };
   }
 
