@@ -20,7 +20,14 @@ vi.mock('@/shared/lib', async () => {
 
 const { StatsPage } = await import('./stats-page');
 
-const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+const settle = (): Promise<void> => sleep(30);
+/** Waits until the loading line is gone: the log and the lazy model chunk both have to arrive. */
+async function loaded(container: HTMLElement): Promise<void> {
+  for (let i = 0; i < 200 && container.textContent.includes(t('route.loading')); i++) {
+    await sleep(10);
+  }
+}
 
 describe('stats page: loading and error', () => {
   let container: HTMLDivElement;
@@ -50,7 +57,7 @@ describe('stats page: loading and error', () => {
     await act(() => {
       retry?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
-    await act(settle);
+    await act(() => loaded(container));
     expect(container.textContent).not.toContain(t('learn.loadError'));
     expect(container.textContent).toContain(t('stats.empty.title'));
   });

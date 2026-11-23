@@ -2,10 +2,10 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
-import { getDatabase } from '@/shared/lib';
 import { t, loadDictionaryPart } from '@/shared/i18n';
 import { learnTrack } from '@/entities/settings';
-import { initialLearnState, localDay } from '@/entities/learn';
+import { initLearn, localDay } from '@/entities/learn';
+import { seedStatsLog } from '../lib/test-util';
 import { StatsPage } from './stats-page';
 
 // The route brings the strings of the screen; here the test does.
@@ -26,7 +26,7 @@ vi.stubGlobal(
   },
 );
 
-// A file of its own: the learning store is read once per page load, so the record is seeded before
+// A file of its own: the learning store is read once per page load, so the log is seeded before
 // the page first renders.
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
@@ -41,29 +41,22 @@ describe('learning section: with answers', () => {
 
   it('shows the streak with its dotted days, the totals and a chart with gaps', async () => {
     const today = localDay(Date.now());
-    const base = initialLearnState();
-    const db = await getDatabase();
-    await db.put('delta', 'learn', {
-      learn: {
-        ...base,
-        activeDays: [
-          [today - 9, today - 7],
-          [today - 2, today],
-        ],
-        // Days 9, 8 and 2 and 0 ago have answers on hiragana; nothing on katakana.
-        recallBuckets: {
-          hiragana: {
-            [String(today - 9)]: { '10': 3 },
-            [String(today - 8)]: { '12': 2 },
-            [String(today - 2)]: { '14': 1 },
-            [String(today)]: { '11': 4 },
-          },
-          katakana: {},
-        },
-      },
-      counters: { started: 5, finished: 4 },
-    });
+    // Hiragana recall 9, 8, 2 and 0 days ago; recognition only 7 and 1 days ago; no katakana.
+    await seedStatsLog(
+      [
+        { day: today - 9, hiragana: [1000, 1100, 1200] },
+        { day: today - 8, hiragana: [1500, 1600] },
+        { day: today - 7, recognitions: 2 },
+        { day: today - 2, hiragana: [1300] },
+        { day: today - 1, recognitions: 1 },
+        { day: today, hiragana: [1000, 1200, 1400, 1600] },
+      ],
+      { started: 5, finished: 4 },
+    );
 
+    // The log and the model chunk load before the page renders: a slow first import of the
+    // model must not leave the test on the loading line.
+    await initLearn(() => 1500);
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<StatsPage />, container);
