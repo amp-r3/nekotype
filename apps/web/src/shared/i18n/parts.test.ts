@@ -16,12 +16,11 @@ describe('tParts', () => {
   });
 
   it('keeps a parameter at the start or the end, and a missing one as text', () => {
-    expect(tParts('learn.review', { n: 3 })).toEqual([
-      { text: 'review (', param: false },
+    expect(tParts('learn.due', { n: 3 })).toEqual([
+      { text: 'due: ', param: false },
       { text: '3', param: true },
-      { text: ')', param: false },
     ]);
-    expect(tParts('learn.review')).toEqual([{ text: 'review ({n})', param: false }]);
+    expect(tParts('learn.due')).toEqual([{ text: 'due: {n}', param: false }]);
   });
 
   it('joins back to the string `t` gives', () => {

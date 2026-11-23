@@ -1,86 +1,94 @@
 import { describe, it, expect } from 'vitest';
-import type { LearnEntry, LearnKanaKey, RecallAnswer } from '@nekotype/shared/types';
-import { cellInfos, initialLearnState, keyOf } from '@/entities/learn';
+import type { LearnKanaKey } from '@nekotype/shared/types';
+import { cellInfos, keyOf } from '@/entities/learn';
 import type { KanaCellInfo } from '@/entities/learn';
 import { chartBlockLabels, chartLegend, chartModel, kanaPanelLines, kanaStateLines } from './chart';
+import { answer, intro, learnedEvents, viewOfEvents } from './test-util';
 
-const NOW = new Date(2026, 4, 10, 12).getTime();
-const DAY = new Date(2026, 4, 11).getTime();
-const answers = (n: number, ms = 1000): RecallAnswer[] =>
-  Array.from({ length: n }, (_, i) => ({ at: i, ms, ok: true }));
-const entry = (box: LearnEntry['box'], dueAt: number): LearnEntry => ({ box, dueAt, updatedAt: 1 });
-
+const START = new Date(2026, 4, 1, 12).getTime();
 const a = keyOf('hiragana', 'あ');
 const i = keyOf('hiragana', 'い');
 const u = keyOf('hiragana', 'う');
 const e = keyOf('hiragana', 'え');
 
-function cellOf(key: LearnKanaKey): KanaCellInfo {
-  const found = infos().get(key);
+// あ: learned, ten fast recalls, five recognitions with three errors (い twice, え once);
+// い: learned; う: introduced with three slow recalls; え: introduced and not answered.
+const view = viewOfEvents([
+  intro(a, { at: START }),
+  ...[i, i, e, a, a].map((wrong, n) =>
+    answer(a, {
+      at: START + 1000 + n * 1000,
+      task: 'recognition',
+      ok: wrong === a,
+      wrong: wrong === a ? null : wrong,
+    }),
+  ),
+  ...Array.from({ length: 10 }, (_, n) =>
+    answer(a, { at: START + 100_000 + n * 40_000, ms: n < 5 ? 1000 : 800 }),
+  ),
+  ...learnedEvents('い', START + 900_000),
+  intro(u, { at: START + 1_200_000 }),
+  ...Array.from({ length: 3 }, (_, n) =>
+    answer(u, { at: START + 1_200_100 + n * 40_000, ms: 2000 }),
+  ),
+  intro(e, { at: START + 1_800_000 }),
+]);
+
+/** A moment before `a` is due, and one after `i` is. */
+const BEFORE = (view.kana.get(a)?.dueFrom ?? 0) - 1;
+const AFTER = (view.kana.get(i)?.dueFrom ?? 0) + 1;
+
+function cellOf(key: LearnKanaKey, now = AFTER): KanaCellInfo {
+  const found = cellInfos('hiragana', view, now).get(key);
   if (found === undefined) throw new Error(`no cell ${key}`);
   return found;
 }
 
-function infos() {
-  const base = initialLearnState();
-  return cellInfos(
-    'hiragana',
-    {
-      ...base,
-      entries: { [a]: entry(2, DAY), [i]: entry(1, NOW - 1), [u]: entry(0, 0) },
-      recent: { [a]: answers(10), [i]: answers(10, 900), [u]: answers(6, 2000) },
-      stats: { [a]: { recognitions: 18, recognitionErrors: 4, mixups: { [i]: 4, [e]: 2 } } },
-    },
-    1500,
-    NOW,
-  );
-}
-
 describe('kanaStateLines', () => {
   it('gives the kana and romaji, the state with the next review, the median and accuracy', () => {
-    expect(kanaStateLines(cellOf(a))).toEqual([
+    expect(kanaStateLines(cellOf(a, BEFORE))).toEqual([
       'あ · a',
-      expect.stringMatching(/^confident · next review: .+/),
-      'median 1000 ms · accuracy 100%',
+      expect.stringMatching(/^learned · next review: .+/),
+      'median 900 ms · accuracy 100%',
     ]);
   });
   it('marks a due kana', () => {
-    expect(kanaStateLines(cellOf(i))[1]).toBe('confident · review due');
+    expect(kanaStateLines(cellOf(i))[1]).toBe('learned · review due');
   });
   it('adds the number of answers while there are fewer than 10', () => {
     expect(kanaStateLines(cellOf(u))).toEqual([
       'う · u',
       'learning',
-      'median 2000 ms · accuracy 100% · 6 of 10 answers',
+      'median 2000 ms · accuracy 100% · 3 of 10 answers',
     ]);
   });
-  it('says a kana is not introduced', () => {
-    expect(kanaStateLines(cellOf(e))).toEqual(['え · e', 'learning', 'not introduced yet']);
+  it('shows no median for an introduced kana with no recall answer yet', () => {
+    expect(kanaStateLines(cellOf(e))).toEqual(['え · e', 'learning']);
   });
   it('gives a locked kana no romaji, and names the one that opens next', () => {
-    expect(kanaStateLines(cellOf(keyOf('hiragana', 'か')))).toEqual(['か', 'locked · opens next']);
+    expect(kanaStateLines(cellOf(keyOf('hiragana', 'お')))).toEqual(['お', 'locked · opens next']);
     expect(kanaStateLines(cellOf(keyOf('hiragana', 'き')))).toEqual(['き', 'locked']);
   });
 });
 
 describe('kanaPanelLines', () => {
-  it('holds the state, the median and accuracy, the mixups, most first, and the recognition accuracy', () => {
-    const lines = kanaPanelLines(cellOf(a));
-    expect(lines[0]?.text).toMatch(/^confident · next review: .+/);
+  it('holds the state, the median and accuracy, the confusions, most first, and the recognition accuracy', () => {
+    const lines = kanaPanelLines(cellOf(a, BEFORE));
+    expect(lines[0]?.text).toMatch(/^learned · next review: .+/);
     expect(lines.slice(1)).toEqual([
-      { text: 'median 1000 ms · accuracy 100%', dim: true },
+      { text: 'median 900 ms · accuracy 100%', dim: true },
       {
-        text: 'mixed up with い ×4, え ×2',
+        text: 'mixed up with い ×2, え ×1',
         segments: [
           { text: 'mixed up with ' },
           { text: 'い', kana: true },
-          { text: ' ×4' },
+          { text: ' ×2' },
           { text: ', ' },
           { text: 'え', kana: true },
-          { text: ' ×2' },
+          { text: ' ×1' },
         ],
       },
-      { text: 'recognition accuracy 78% (14 of 18)', dim: true },
+      { text: 'recognition accuracy 40% (2 of 5)', dim: true },
     ]);
   });
   it('says so when there is nothing yet', () => {
@@ -104,7 +112,7 @@ describe('chart captions and legend', () => {
       labels: {
         locked: 'locked',
         learning: 'learning',
-        confident: 'confident',
+        learned: 'learned',
         mastered: 'mastered',
         due: 'review due',
       },
@@ -114,7 +122,7 @@ describe('chart captions and legend', () => {
 
 describe('chartModel', () => {
   it('makes the aria-label from the lines and names the vowel row', () => {
-    const rows = chartModel('hiragana', infos());
+    const rows = chartModel('hiragana', cellInfos('hiragana', view, AFTER));
     expect(rows[0]?.label).toBe('vowels');
     const cell = rows[0]?.cells[1];
     expect(cell?.label).toBe(cell?.lines.join(', '));

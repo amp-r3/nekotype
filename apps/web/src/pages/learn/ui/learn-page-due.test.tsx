@@ -2,21 +2,18 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
-import type { RecallAnswer } from '@nekotype/shared/types';
 import { getDatabase } from '@/shared/lib';
 import { t } from '@/shared/i18n';
-import { initialCounters, initialLearnState, keyOf } from '@/entities/learn';
 import { LearnPage } from './learn-page';
+import { key, seedLog } from '../lib/test-util';
 
-// A file of its own: the learning store is read once per page load, so the record is seeded before
+// A file of its own: the learning store is read once per page load, so the log is seeded before
 // the page first renders.
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
 const DAY = 24 * 3600 * 1000;
-const answers = (ms: number): RecallAnswer[] =>
-  Array.from({ length: 10 }, (_, i) => ({ at: i + 1, ms, ok: true }));
 
-describe('learn page: review (N) and the due marks', () => {
+describe('learn page: due: N and the due marks', () => {
   let container: HTMLDivElement;
 
   afterEach(() => {
@@ -24,25 +21,41 @@ describe('learn page: review (N) and the due marks', () => {
     container.remove();
   });
 
-  it('counts exactly the kana that carry the due mark (ADR 062)', async () => {
-    const now = Date.now();
-    const a = keyOf('hiragana', 'あ');
-    const i = keyOf('hiragana', 'い');
-    const u = keyOf('hiragana', 'う');
-    const learn = {
-      ...initialLearnState(),
-      entries: {
-        // Due and confident: marked and counted.
-        [a]: { box: 2, dueAt: now - DAY, updatedAt: 1 },
-        // Due by date but slow, so learning: neither marked nor counted.
-        [i]: { box: 1, dueAt: now - DAY, updatedAt: 1 },
-        // Confident, not due yet.
-        [u]: { box: 3, dueAt: now + DAY, updatedAt: 1 },
-      },
-      recent: { [a]: answers(900), [i]: answers(2400), [u]: answers(900) },
-    };
+  it('counts the due kana of both tracks and marks the learned ones among them', async () => {
     const db = await getDatabase();
-    await db.put('delta', 'learn', { learn, counters: initialCounters() });
+    await seedLog(db, Date.now() - 30 * DAY, (store, clock) => {
+      for (const kana of ['あ', 'い']) {
+        store.introduce(key(kana));
+        for (let i = 0; i < 5; i++) {
+          clock.time += 40_000;
+          store.recordAnswer({
+            task: 'recall',
+            key: key(kana),
+            ok: true,
+            keystrokes: [{ t: 700, accepted: true }],
+            hint: false,
+            wrong: null,
+            alt: null,
+          });
+        }
+      }
+      // A katakana kana learned a month ago counts too: `continue` reviews both tracks.
+      store.introduce('katakana:ア');
+      for (let i = 0; i < 5; i++) {
+        clock.time += 40_000;
+        store.recordAnswer({
+          task: 'recall',
+          key: 'katakana:ア',
+          ok: true,
+          keystrokes: [{ t: 700, accepted: true }],
+          hint: false,
+          wrong: null,
+          alt: null,
+        });
+      }
+      // Introduced and not learned: it carries no due mark and is not counted.
+      store.introduce(key('う'));
+    });
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -50,10 +63,12 @@ describe('learn page: review (N) and the due marks', () => {
     await act(settle);
 
     const marked = container.querySelectorAll('[data-testid="kana-cell"][data-due="true"]');
-    expect(Array.from(marked).map((cell) => cell.textContent)).toEqual(['あ']);
-    const review = Array.from(container.querySelectorAll('button')).find(
-      (button) => button.textContent === t('learn.review', { n: 1 }),
+    expect(Array.from(marked).map((cell) => cell.textContent)).toEqual(['あ', 'い']);
+    expect(container.querySelector('[data-testid="learn-due"]')?.textContent).toBe(
+      t('learn.due', { n: 3 }),
     );
-    expect(review?.hasAttribute('disabled')).toBe(false);
+    // Introduced kana are shown whatever their state; the rest is locked.
+    const open = container.querySelectorAll('[data-testid="kana-cell"]:not([data-state="locked"])');
+    expect(Array.from(open).map((cell) => cell.textContent)).toEqual(['あ', 'い', 'う']);
   });
 });

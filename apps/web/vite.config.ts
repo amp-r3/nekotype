@@ -51,7 +51,12 @@ export default defineConfig({
           // lists between chunks (about 1.8 KB less than the default split). A barrel that holds
           // code of its own keeps every module it re-exports in this chunk, so barrels stay
           // re-exports only (packages/engine/src/data/index.ts).
-          groups: [{ name: 'index', tags: ['$initial'] }],
+          // The model is a chunk of its own (P7 plan, D22): the learn store loads it by a dynamic
+          // import and the session runtime shares it. `check-budget.mjs` finds it by this name.
+          groups: [
+            { name: 'index', tags: ['$initial'] },
+            { name: 'model', test: /packages[\\/]model[\\/]src[\\/]/ },
+          ],
         },
       },
     },

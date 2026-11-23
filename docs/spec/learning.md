@@ -1,103 +1,86 @@
 # Learning
 
-Learning is the core of the product ([ADR 058](../adr/058-learning-first.md)): it teaches hiragana and katakana from zero on `/`. Kana unlock one at a time as the learner becomes confident with the ones already unlocked; a learning session mixes recall and recognition tasks and favours weak kana; Leitner boxes schedule reviews once a kana is confident. Learning uses the input engine and a romaji buffer of its own, with a session and no timer. Answer time, errors, confidence and the streak are defined in [Metrics](metrics.md#learning-metrics); the data model is in [Metrics](metrics.md#data-model).
+Learning is the core of the product ([ADR 058](../adr/058-learning-first.md)): it teaches hiragana and katakana from zero on `/`. A knowledge model ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md)) decides what each task of a session is: it introduces new kana, brings learning kana back after a few minutes and reviews learned kana before they are forgotten. A session mixes recall and recognition tasks. Learning uses the input engine and a romaji buffer of its own, with a session and no timer. Answer time, errors, grades and the streak are defined in [Metrics](metrics.md#learning-metrics); the data model is in [Metrics](metrics.md#data-model).
 
 ## Tracks
 
-- Hiragana and katakana are independent tracks (A7): an answer in one never changes the other. Either can be started at any time, and both can be learned in parallel. `settings.learn.track` selects the track shown on `/`.
-- A track's kana are the entries of the selectable rows of the kana table (`allKanaRows` in `packages/engine`), in table order, which is also the unlock order: the basic rows (vowels, k, s, t, n, h, m, y, r, w_n), the dakuten and handakuten rows (g, z, d, b, p), the yōon rows (ky, sh, ch, ny, hy, my, ry, gy, j, by, py) and, in katakana only, the extended rows (ext_fa, ext_va, ext_wi, ext_ti, ext_che). Hiragana has 104 kana, katakana 125.
+- Hiragana and katakana are separate tracks, each with items of its own (A7, amended by [ADR 099](../adr/099-learning-home-methods-and-phases-after-p6.md)): an answer in one does not change the memory of the other. Either can be started at any time. `settings.learn.track` selects the track shown on `/` and the one new kana come from; a session reviews the due kana of both tracks ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md), point 5).
+- The model suggests katakana once the 46 basic hiragana are learned. In P7 the suggestion is a value of the model (`suggestKatakana`) that nothing shows yet; P8 shows it.
+- A track's kana are the entries of the selectable rows of the kana table (`allKanaRows` in `packages/engine`), in table order, which is also the order of introduction: the basic rows (vowels, k, s, t, n, h, m, y, r, w_n), the dakuten and handakuten rows (g, z, d, b, p), the yōon rows (ky, sh, ch, ny, hy, my, ry, gy, j, by, py) and, in katakana only, the extended rows (ext_fa, ext_va, ext_wi, ext_ti, ext_che). Hiragana has 104 kana, katakana 125.
 - っ, ー, small kana, ゐ and ゑ are not learned: they belong to no selectable row (see "Tokens" in [Input engine rules](engine.md)).
 
 ## Unlocking
 
-- The five vowels of each track are unlocked from the start.
-- The next kana unlocks when every unlocked kana of the track is confident. It is the first locked kana, in track order, whose dependencies are all confident; a kana whose dependencies are not is skipped and stays locked. A newly unlocked kana is not confident, so kana unlock one at a time (A36).
+- The planner introduces a new kana when fewer than `LEARN_MAX` = 4 kana are learning (fewer under pressure, see "Memory") and every kana it is built from is learned. It takes the first such kana of the selected track in track order; once both tracks have an introduced kana, it takes the first of the other track when that track is more than `TRACK_LAG` = 10 introduced kana behind. Nothing is unlocked in advance: a kana the planner has not introduced is locked.
 - **Dependencies** are derived from the kana table, not listed by hand:
   - a kana with a dakuten or handakuten depends on its base kana, found by Unicode canonical decomposition: が → か, ぱ → は, ヴ → ウ;
   - a kana of two characters (yōon, extended katakana) depends on the full-size form of each character: きゃ → き, や; ファ → フ, ア; ヴァ → ヴ, ア.
 
-  In the current table this changes the order in one row: ヴァ and ヴィ come before ヴ in `ext_va`, so ヴ unlocks first and they follow once it is confident.
+  In the current table this changes the order in one row: ヴァ and ヴィ come before ヴ in `ext_va`, so ヴ is introduced first and they follow once it is learned.
 
-- Unlocking is evaluated after every answer and whenever the learning state is loaded or merged with a sync snapshot. The unlocked set never shrinks: a kana that loses its confidence stays unlocked and holds back the next unlock until it is confident again.
+- An introduced kana never goes back to locked: a kana that is forgotten returns to learning and is trained again.
 
 ## Learning session
 
-"Continue" starts a learning session of the selected track. It is always available.
+"Continue" starts a learning session. It is always available. There is one kind of session: reviews, learning steps and introductions mix in it ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md), point 2).
 
-- A session has `SESSION_TASKS` = 25 tasks.
-- **Introduction.** Each unlocked kana that has not been introduced gets an introduction task: at the start of the session, in track order, or as the next task when the kana unlocks during the session. The kana and its displayed romaji (see "Displayed romaji") are shown large; the user types that romaji once with a ghost hint. Only the shown spelling is accepted: another spelling of the kana is a rejected key, which flashes the caret and is not recorded (ADR 062). An introduction is not an answer: nothing is timed and errors are not recorded. It creates the kana's `LearnEntry` in box 0 and is one of the session's tasks.
-- **Other tasks** take an introduced, unlocked kana and a task type:
-  1. The kana of the previous task is left out when another kana is available.
-  2. Kana with fewer than 10 recall answers, and kana that are not confident, are **in focus** (ADR 063). A kana that lost its confidence holds back the next unlock, so it is trained like a new one until it is confident again. The task takes a kana in focus with probability `FOCUS_SHARE` = 0.5 when there are kana both in and out of focus, with probability 1 when every candidate is in focus, and 0 when none is (A40). Kana in focus are equally likely; a kana out of focus is chosen with probability proportional to its weight.
-  3. The **weight** of a kana out of focus is `1 + 4 × min(1, slow + err)`, with `slow = clamp((m − T) / T, 0, 1)` and `err = clamp((1 − a) / 0.5, 0, 1)`, where `m` is the median answer time and `a` the accuracy of its last 10 recall answers, and `T` is the target answer time. A confident kana without errors weighs 1; a kana twice as slow as the target, or wrong in half its answers, weighs 5.
-  4. The task is a recognition task with probability `RECOGNITION_SHARE` = 1/3, and a recall task otherwise.
-- **Recall.** The kana is shown; the user types its romaji in the learning strictness (`settings.learn.strictness`, relaxed by default), with the romaji buffer next to the kana. A rejected key flashes the caret; Esc shows the displayed romaji, and on a touch screen, which has no Esc, a "Show the romaji" button does the same; either counts as an error. The answer ends when the kana is typed in full.
-- **Recognition.** The displayed romaji is shown; the user picks the kana from 4 numbered options by click, tap or keys 1–4. A wrong choice is recorded in the kana's `mixups` and reveals the right option.
+- A session has `SESSION_TASKS` = 30 tasks and ends early, with its summary, when the planner has nothing to offer. The session writes a `start` event when it begins and an `end` event when it reaches its summary; leaving it early writes no `end`.
+- **The planner chooses each task when it is shown**, from the model's state: the due kana with the lowest predicted recall (a recall); a learning kana whose step has passed, the one waiting longest first; an introduction; a learning kana whose step has not passed. The kana of the previous task is left out when another is available. A task on a learning kana is a recognition task with probability `RECOGNITION_SHARE` = 0.25 and a recall task otherwise; a review is always recall. Random choices use the injected `Rng`, so a session is reproducible in tests.
+- **Introduction.** The kana and its displayed romaji (see "Displayed romaji") are shown large; the user types that romaji once with a ghost hint. Only the shown spelling is accepted: another spelling of the kana is a rejected key, which flashes the caret and is not recorded (ADR 062). An introduction is not an answer: nothing is timed and errors are not recorded. It is an `intro` event of the log and puts the kana in learning.
+- **Recall.** The kana is shown; the user types its romaji in the learning strictness (`settings.learn.strictness`, relaxed by default), with the romaji buffer next to the kana. A rejected key flashes the caret; Esc shows the displayed romaji, and on a touch screen, which has no Esc, a "Show the romaji" button does the same; either counts as an error. The answer ends when the kana is typed in full. The wrong answer given is the kana that the typed romaji matched: the accepted prefix plus the first rejected key, when that is exactly one spelling of exactly one kana of the track in the strictness; otherwise none (Esc alone gives none).
+- **Recognition.** The displayed romaji is shown; the user picks the kana from 4 numbered options by click, tap or keys 1–4. A wrong choice is recorded as the wrong answer given and reveals the right option. The time from showing the task to the choice is recorded.
+- **Recording is deferred.** The key handler of a task finishes its view (the buffer, the caret, the hold timer, the sound) and does nothing else; the record is made by a timer a moment later, before the next task is chosen. No fold, grade or IndexedDB call runs in a keystroke handler ([Frontend](frontend.md#hot-path-d16)). An answer recorded is in the log whatever the learner does next, including leaving the session.
 - **After an answer** the result stays on screen for `ANSWER_PAUSE_MS` = 400 and the next task follows. After a wrong recognition choice the next task waits for Enter, Space or a click, so the right option can be read. Keys pressed before the next task is shown are ignored.
 - **Displayed romaji.** Wherever learning shows a kana's romaji (the introduction, the recognition prompt, the romaji revealed by Esc, the chart's tooltip and details), it is `canonicalFor`, except ん and ン, shown as `n`: one `n` completes them at the end of a task, so `nn` would teach a keystroke the learner does not need (ADR 062). Recall accepts every spelling of the learning strictness.
-- Random choices use the injected `Rng`, so a session is reproducible in tests.
-- **Screen.** Every task is drawn by the design system's `KanaTask` ([Frontend](frontend.md#hot-path-d16), ADR 059): a session line with the session kind and progress (`learning · 7 of 25`, `review · 3 of 5`), the task, one reserved notice line and a line of key hints. There is no timer, and the answer time is not shown. The navigation and the footer are not rendered during a session; "Leave session" in the session line returns to the chart without a confirmation.
-- The session ends after its last task with the summary. A session is not resumable (A30): leaving it early keeps every recorded answer, because the learning state is written after each answer ([Storage and sync](storage-sync.md)), but the summary, held in memory, is lost.
+- **Screen.** Every task is drawn by the design system's `KanaTask` ([Frontend](frontend.md#hot-path-d16), ADR 059): a session line with the progress (`learning · 7 of 30`), the task, one reserved notice line and a line of key hints. There is no timer, and the answer time is not shown. The navigation and the footer are not rendered during a session; "Leave session" in the session line returns to the chart without a confirmation.
+- The session ends after its last task with the summary. A session is not resumable (A30): leaving it early keeps every recorded answer, because each answer is in the log, but the summary, held in memory, is lost.
 
-## Reviews
+## Memory and phases
 
-"Review (N)" starts a review session of the selected track: one recall task per due kana, oldest `dueAt` first, at most `REVIEW_TASKS` = 20. N is the number of due kana of the track, which is the number of due marks on its chart; with N = 0 the action is unavailable. Reviews are recall only (A30): choosing from four options is too easy to move a kana up a box. A review answer is recorded like any recall answer, so it counts toward confidence, and it moves the kana's box (see "Boxes"). A kana that unlocks during a review session is introduced in the next learning session.
+Every introduced kana has a phase and a memory ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md), points 1–2); the state is a fold of the log, never stored.
+
+- **Learning.** A kana comes back 30 s after its last answer; the step doubles after each correct recall (30 s, 1, 2, 4, 8 min). It is learned after 5 correct recalls in a row (`GRADUATE`); an error sets the count to 0, a correct recognition keeps it.
+- **Learned.** A learned kana is due when its predicted recall would fall below the requested retention (`RETENTION` = 0.90) by the expected start of the next session: now plus the median of the learner's last 10 gaps of over an hour between two answers, or 12 hours until there is one. A failed review puts the kana back in learning.
+- **Mastered** is a learned kana whose stability is at least 21 days (A52).
+- **Pressure.** A moving average of the outcomes of reviews (rate 0.05, starting at 0.90) below 0.90 raises the requested retention towards 0.98, lowers the number of kana learning at once from 4 towards 1 and adds up to 2 recalls before a kana is learned.
+- A review is a recall; a late review has no penalty. A learned kana is never reviewed on a calendar schedule: the model's predicted recall decides.
 
 ## Recognition options
 
 Three distractors are picked in this order, skipping duplicates and any kana that fails the rule below:
 
-1. at most one from the user's `mixups` for this kana, highest count first;
+1. at most one from the kana that were given instead of this one (its confusions, from the log), highest count first;
 2. at most one from the visually-similar kana table in `packages/engine` (curated pairs such as さ/ち, ぬ/め, わ/ね/れ, シ/ツ, ソ/ン);
 3. from the same row;
-4. from the rest of the track, unlocked kana first, then in track order.
+4. from the rest of the track, introduced kana first, then in track order.
 
 A distractor MUST be of the same script and MUST NOT share any accepted spelling with the correct answer in the current strictness (for example じ/ぢ, ず/づ, お/を in relaxed mode). Spellings come from `spellingsFor`. Option positions are shuffled with `Rng`.
 
-## Boxes
-
-| Box | Review interval | Entry condition                                       |
-| --- | --------------- | ----------------------------------------------------- |
-| 0   | —               | introduced, never confident                           |
-| 1   | 1 day           | confident for the first time; or an error in a review |
-| 2   | 3 days          | correct review from box 1                             |
-| 3   | 7 days          | correct review from box 2                             |
-| 4   | 14 days         | correct review from box 3                             |
-| 5   | 30 days         | correct review from box 4                             |
-
-- A kana in box 0 enters box 1 as soon as it is confident; this is checked whenever unlocking is.
-- A **review** is a task in a review session. Only reviews move a kana from box 1 upward or send it back to box 1. Learning-session answers for a kana in box 1 or higher count toward its confidence but do not change its box, even when it is due.
-- A correct review is a recall answer without errors. Its answer time counts toward confidence, not toward the box.
-- An error in a review sends the kana back to box 1 and is one of its last 10 recall answers.
-- A correct review from box 5 keeps the kana in box 5.
-- **Due date:** `dueAt` is the start of the local calendar day that lies the box's interval after the day of the answer, so a daily review does not slip by the time of day. A late review has no penalty. A kana in box 0 has `dueAt` = 0. A kana is due when it is in box 1 or higher, `dueAt` has passed and it is confident (ADR 062). A kana that lost its confidence is learning: it is not reviewed, and the learning session trains it until it is confident again; then it is due if its date has passed.
-- Boxes do not gate unlocking: it depends on confidence alone (A36).
-
 ## `/` screen
 
-- Track switch, "Mastered X of N", the current streak, "Continue" and "Review (N)". N is the number of the track's kana; X is the number of its mastered cells.
+- Track switch, one primary "Continue", and the progress line: "mastered X of N" (N is the number of the selected track's kana, X its mastered kana), the current streak and, when there is any, "due: n" (n is the number of due kana of both tracks, which is what "Continue" reviews; the part is hidden at 0). A first-visit line stays until the first answer.
 - **Kana chart** of the selected track, one cell per kana, laid out by rows as in the design system:
 
-  | State     | Condition                           |
-  | --------- | ----------------------------------- |
-  | Locked    | not unlocked                        |
-  | Learning  | unlocked, not confident, in any box |
-  | Confident | confident, box 1–3                  |
-  | Mastered  | confident, box 4 or 5               |
+  | State    | Condition                          |
+  | -------- | ---------------------------------- |
+  | Locked   | not introduced                     |
+  | Learning | introduced, learning               |
+  | Learned  | learned, stability under 21 days   |
+  | Mastered | learned, stability 21 days or more |
 
-  A due kana (see "Boxes") also carries a due mark; a learning kana never does. A kana in box 4 or 5 that has lost its confidence shows as learning, because it holds back the next unlock.
+  A due kana (learned or mastered, due by the model) also carries a due mark; a learning kana never does. The locked kana that opens next is named in its tooltip.
 
 - The state is not conveyed by colour alone: each state and the due mark have a marker that does not depend on colour, and the cell's tooltip and `aria-label` name them.
-- The tooltip gives the median answer time and the accuracy of the last 10 recall answers ("n of 10" while there are fewer) and, for a confident or mastered kana, the next review date or that the review is due.
-- Activating a cell (click, tap, Enter or Space) opens a details panel under its row with the tooltip's lines, the kana's mixups, highest count first, and its recognition accuracy (ADR 062). The tooltip is not shown on a cell whose panel is open.
-- Learning and review sessions count in the `learn` counters. The daily median and the best streak are on `/stats` ([Metrics](metrics.md#screens)).
+- The tooltip gives the median answer time and the accuracy of the last 10 recall answers ("n of 10" while there are fewer) and, for a learned or mastered kana, the date its predicted recall reaches 0.90 or that the review is due.
+- Activating a cell of an introduced kana (click, tap, Enter or Space) opens a details panel under its row with the tooltip's lines, the kana's confusions, highest count first, and its recognition accuracy (ADR 062). A locked cell has no panel. The tooltip is not shown on a cell whose panel is open.
+- Sessions count in the `learn` counters, read from the log. The daily median and the best streak are on `/stats` ([Metrics](metrics.md#screens)).
 
 ## Session summary
 
-Shown at the end of a learning or review session; a chunk of its own:
+Shown at the end of a learning session; a chunk of its own. It lists kana of both tracks:
 
-- kana unlocked during the session;
-- kana that became confident: not confident at the start, confident at the end;
+- kana introduced during the session;
+- kana learned during the session: locked or learning at the start, learned or mastered at the end;
 - faster and slower kana: for each kana that had 10 recall answers at the start, the change in the median answer time of its last 10 recall answers from the start of the session to its end; changes of at least 100 ms are listed, at most 5 each way, largest first;
 - confused kana: kana chosen instead of the right one in recognition, and kana with errors in recall.
 
@@ -109,4 +92,4 @@ From P10 the session plays the sound of the task's kana after every task, introd
 
 ## Constants
 
-`SESSION_TASKS` = 25, `REVIEW_TASKS` = 20, `FOCUS_SHARE` = 0.5, `RECOGNITION_SHARE` = 1/3, `ANSWER_PAUSE_MS` = 400 and the box intervals are code constants. The confidence thresholds are in [Metrics](metrics.md#learning-metrics); of them, only the target answer time is a setting.
+`SESSION_TASKS` = 30, `RECOGNITION_SHARE` = 0.25, `LEARN_MAX` = 4, `GRADUATE` = 5, `RETENTION` = 0.90, `TRACK_LAG` = 10, `MASTERED_STABILITY_DAYS` = 21 and the others of `packages/model/src/constants.ts` are code constants ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md)); `ANSWER_PAUSE_MS` = 400 is the session's. The target answer time, which separates a good grade from a hard one ([Metrics](metrics.md#learning-metrics)), is the only setting.

@@ -421,8 +421,11 @@ const store = createLearnStore({
 
 let watching = false;
 
-/** Binds the target answer time (`settings.learn.targetMs`) and loads the state; `/learn` calls it. */
-export function initLearn(targetMs: () => number): Promise<void> {
+/**
+ * Binds the target answer time (`settings.learn.targetMs`) and loads the state. The old store of
+ * `/stats` and the sync until PR 11 (P7 plan, D21): no screen of learning records into it.
+ */
+export function legacyInitLearn(targetMs: () => number): Promise<void> {
   targetMsSource = targetMs;
   if (!watching) {
     watching = true;
@@ -438,13 +441,10 @@ export function initLearn(targetMs: () => number): Promise<void> {
   return store.init();
 }
 
-export const learnState: ReadonlySignal<LearnState> = store.state;
-export const learnCounters: ReadonlySignal<Counters> = store.counters;
-export const learnStatus: ReadonlySignal<LearnStatus> = store.status;
-export const learnReady: ReadonlySignal<boolean> = store.ready;
-export const retryLearn = store.retry;
-export const introduce = store.introduce;
-export const recordRecall = store.recordRecall;
-export const recordRecognition = store.recordRecognition;
-export const countSession = store.countSession;
-export const resetLearning = store.reset;
+export const legacyLearnState: ReadonlySignal<LearnState> = store.state;
+export const legacyLearnCounters: ReadonlySignal<Counters> = store.counters;
+export const legacyLearnStatus: ReadonlySignal<LearnStatus> = store.status;
+export const legacyLearnReady: ReadonlySignal<boolean> = store.ready;
+export const legacyRetryLearn = store.retry;
+export const legacyIntroduce = store.introduce;
+export const legacyResetLearning = store.reset;

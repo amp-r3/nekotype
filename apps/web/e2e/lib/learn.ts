@@ -1,8 +1,8 @@
 import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { allKanaRows } from '@nekotype/engine';
-import { seedLearning } from './app';
-import { reviewState } from './kana';
+import { seedLog } from './app';
+import { learnedLog } from './kana';
 
 // The romaji the page asks for or accepts, worked out from what the page shows (ADR 045): the kana
 // on screen, through the kana table.
@@ -57,14 +57,18 @@ export async function answer(page: Page, tapOptions: boolean): Promise<void> {
 /** The hidden field of a learning session: every key of recall goes through it. */
 export const FIELD = 'input[aria-label="Kana answer input"]';
 
+/** A month: long enough for any learned kana to be due again. */
+const MONTH_MS = 30 * 864e5;
+
 /**
- * Opens a review session of one task whose kana is due, so the screen is on recall, and waits until
- * the hidden field has the focus: a key pressed before the task is on screen is ignored by design.
+ * Starts a session whose first task is the recall of `kana`: it was learned a month ago, so it is
+ * the one due kana, and the planner takes it first. Waits until the hidden field has the focus: a
+ * key pressed before the task is on screen is ignored by design.
  */
 export async function openRecall(page: Page, kana = 'あ'): Promise<void> {
-  await seedLearning(page, '/', reviewState(kana));
-  await page.getByRole('button', { name: 'review (1)' }).click();
-  await expect(page.getByTestId('task-session')).toHaveText('review · 1 of 1');
+  await seedLog(page, '/', learnedLog([kana], MONTH_MS));
+  await page.getByRole('button', { name: 'continue' }).click();
+  await expect(page.getByTestId('task-session')).toHaveText('learning · 1 of 30');
   await expect(page.getByTestId('kana-task')).toHaveAttribute('data-kind', 'recall');
   await expect(page.locator(FIELD)).toBeFocused();
 }

@@ -1,6 +1,5 @@
 import { kanaRows, similarKana } from '@nekotype/engine';
-import type { LearnKanaKey, LearnStat, Rng, Track } from '@nekotype/shared/types';
-import { isLearnKanaKey } from '@nekotype/shared/runtime';
+import type { LearnKanaKey, Rng, Track } from '@nekotype/shared/types';
 import { keyOf, keysOfTrack } from '@/entities/learn';
 import { spellingsFor } from './prompt';
 import type { Strictness } from './prompt';
@@ -11,9 +10,10 @@ export type OptionsInput = {
   readonly track: Track;
   /** The right answer. */
   readonly answer: LearnKanaKey;
-  readonly unlocked: readonly LearnKanaKey[];
-  /** The answer's recognition statistics, for its mixups. */
-  readonly stat: LearnStat | undefined;
+  /** Kana of the track that are introduced; they come before the rest as filler. */
+  readonly introduced: readonly LearnKanaKey[];
+  /** Kana given instead of the answer, most first (`KanaView.confusions`). */
+  readonly confusions: readonly { readonly key: LearnKanaKey; readonly count: number }[];
   readonly strictness: Strictness;
   readonly rng: Rng;
 };
@@ -30,12 +30,12 @@ function isDistinct(answer: LearnKanaKey, other: LearnKanaKey, strictness: Stric
 }
 
 /**
- * Three distractors (learning.md, "Recognition options"): at most one mixup (highest count first),
+ * Three distractors (learning.md, "Recognition options"): at most one confusion (highest count first),
  * at most one visually similar kana, then kana of the same row, then the rest of the track with
- * the unlocked ones first.
+ * the introduced ones first.
  */
 export function distractorsFor(input: OptionsInput): LearnKanaKey[] {
-  const { track, answer, unlocked, stat, strictness, rng } = input;
+  const { track, answer, introduced, confusions, strictness, rng } = input;
   const need = OPTION_COUNT - 1;
   const inTrack = new Set(keysOfTrack(track));
   const chosen: LearnKanaKey[] = [];
@@ -46,13 +46,7 @@ export function distractorsFor(input: OptionsInput): LearnKanaKey[] {
     return true;
   };
 
-  const order = new Map(keysOfTrack(track).map((key, index) => [key, index]));
-  const mixups: [LearnKanaKey, number][] = [];
-  for (const [key, count] of Object.entries(stat?.mixups ?? {})) {
-    if (isLearnKanaKey(key) && inTrack.has(key)) mixups.push([key, count]);
-  }
-  mixups.sort((a, b) => b[1] - a[1] || (order.get(a[0]) ?? 0) - (order.get(b[0]) ?? 0));
-  for (const [key] of mixups) if (take(key)) break;
+  for (const { key } of confusions) if (take(key)) break;
 
   for (const kana of similarKana(kanaOfKey(answer))) if (take(keyOf(track, kana))) break;
 
@@ -60,7 +54,7 @@ export function distractorsFor(input: OptionsInput): LearnKanaKey[] {
   const sameRow = (row?.kana ?? []).map((kana) => keyOf(track, kana));
   for (const key of shuffled(sameRow, rng)) take(key);
 
-  const open = new Set(unlocked);
+  const open = new Set(introduced);
   const rest = keysOfTrack(track);
   for (const key of rest.filter((candidate) => open.has(candidate))) take(key);
   for (const key of rest) take(key);

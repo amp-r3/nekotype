@@ -75,14 +75,14 @@ export function SummaryPanel({ summary }: SummaryPanelProps): JSX.Element {
         <p className="text-fur-dim text-ui-body">{t('learn.summary.empty')}</p>
       )}
       <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-x-12 gap-y-8 max-sm:grid-cols-1 max-sm:gap-6">
-        {summary.unlocked.length > 0 && (
-          <Section title={t('learn.summary.unlocked')} testId="summary-unlocked">
-            <Kana keys={summary.unlocked} />
+        {summary.introduced.length > 0 && (
+          <Section title={t('learn.summary.introduced')} testId="summary-introduced">
+            <Kana keys={summary.introduced} />
           </Section>
         )}
-        {summary.confident.length > 0 && (
-          <Section title={t('learn.summary.confident')} testId="summary-confident">
-            <Kana keys={summary.confident} />
+        {summary.learned.length > 0 && (
+          <Section title={t('learn.summary.learned')} testId="summary-learned">
+            <Kana keys={summary.learned} />
           </Section>
         )}
         {summary.faster.length > 0 && (

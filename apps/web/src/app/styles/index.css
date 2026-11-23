@@ -469,7 +469,7 @@ button.nk-cell {
   border-color: var(--line-strong);
 }
 
-.nk-cell.is-confident {
+.nk-cell.is-st-learned {
   background: var(--heat-fur-3);
 }
 

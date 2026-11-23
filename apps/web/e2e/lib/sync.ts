@@ -33,10 +33,10 @@ export async function expectSyncStatus(page: Page, status: string): Promise<void
   ).toHaveText(status);
 }
 
-/** Plays the 25 tasks of the learning session on screen, correctly, up to its summary. */
+/** Plays the 30 tasks of the learning session on screen, correctly, up to its summary. */
 export async function answerSession(page: Page): Promise<void> {
-  for (let n = 1; n <= 25; n++) {
-    await expect(page.getByTestId('task-session')).toHaveText(`learning · ${String(n)} of 25`);
+  for (let n = 1; n <= 30; n++) {
+    await expect(page.getByTestId('task-session')).toHaveText(`learning · ${String(n)} of 30`);
     // A key pressed before the hidden field has the focus is ignored by design.
     await expect(page.getByLabel('Kana answer input')).toBeFocused();
     await answer(page, false);
@@ -44,7 +44,7 @@ export async function answerSession(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'session summary' })).toBeVisible();
 }
 
-/** One learning session of 25 tasks on `/`, started from the table and played correctly. */
+/** One learning session of 30 tasks on `/`, started from the table and played correctly. */
 export async function playLearningSession(page: Page): Promise<void> {
   await page.goto('/');
   await expect(page.getByTestId('learn-mastered-count')).toBeVisible();

@@ -2,11 +2,9 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, createRef } from 'preact';
 import { act } from 'preact/test-utils';
-import { createMemoryDb } from '@/shared/lib';
-import { createLearnStore } from '@/entities/learn';
 import { createLearnSession } from '../model/session';
 import type { LearnSession } from '../model/session';
-import { Clock0, Timers, seededRng } from './test-util';
+import { Clock0, Timers, readyStore, seededRng } from './test-util';
 import { useSessionInput } from './use-session-input';
 
 function Probe({ session }: { session: LearnSession }) {
@@ -23,19 +21,13 @@ describe('useSessionInput', () => {
     container.remove();
   });
 
-  it('does not count a session as finished when the screen unmounts during the last pause', async () => {
+  it('does not end a session when the screen unmounts during the last pause', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     const clock = new Clock0();
     const timers = new Timers();
-    const db = createMemoryDb();
-    const store = createLearnStore({
-      db: () => Promise.resolve(db),
-      clock,
-      scheduler: timers,
-      targetMs: () => 1500,
-    });
-    const countSession = vi.spyOn(store, 'countSession');
+    const store = await readyStore(clock, timers);
+    const endSession = vi.spyOn(store, 'endSession');
     const session = createLearnSession({
       track: 'hiragana',
       store,
@@ -44,7 +36,6 @@ describe('useSessionInput', () => {
       rng: seededRng(1),
       audio: { play: vi.fn() },
       strictness: () => 'learner',
-      targetMs: () => 1500,
       tasks: 1,
     });
     await act(() => {
@@ -66,7 +57,7 @@ describe('useSessionInput', () => {
     });
     timers.flush();
 
-    expect(countSession).not.toHaveBeenCalledWith('finished');
+    expect(endSession).not.toHaveBeenCalled();
     expect(session.phase.value).toBe('idle');
   });
 });

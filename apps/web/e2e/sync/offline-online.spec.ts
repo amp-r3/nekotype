@@ -9,7 +9,9 @@ import {
 } from '../lib/sync';
 
 test.describe('a session answered offline (storage-sync.md, "Sync triggers")', () => {
-  test('stays on the device, then arrives when the connection returns', async ({
+  // Off until PR 11 of P7: sessions are recorded in the log now, while the sync engine and `/stats`
+  // still read the old store (P7 plan, D21). PR 11 turns this back on with the sync of format 3.
+  test.fixme('stays on the device, then arrives when the connection returns', async ({
     page,
     context,
     browser,

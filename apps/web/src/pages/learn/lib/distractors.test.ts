@@ -12,15 +12,15 @@ function options(
   track: Track,
   answer: LearnKanaKey,
   strictness: Strictness,
-  unlocked: readonly LearnKanaKey[] = keysOfTrack(track).slice(0, 5),
-  mixups: Record<LearnKanaKey, number> = {},
+  introduced: readonly LearnKanaKey[] = keysOfTrack(track).slice(0, 5),
+  confusions: readonly { key: LearnKanaKey; count: number }[] = [],
   seed = 1,
 ) {
   return recognitionOptions({
     track,
     answer,
-    unlocked,
-    stat: { recognitions: 0, recognitionErrors: 0, mixups },
+    introduced,
+    confusions,
     strictness,
     rng: seededRng(seed),
   });
@@ -31,10 +31,10 @@ describe('recognition options', () => {
     for (const track of ['hiragana', 'katakana'] as const) {
       const keys = keysOfTrack(track);
       for (let count = 5; count <= keys.length; count++) {
-        const unlocked = keys.slice(0, count);
-        for (const answer of unlocked) {
+        const introduced = keys.slice(0, count);
+        for (const answer of introduced) {
           for (const strictness of STRICTNESS) {
-            const list = options(track, answer, strictness, unlocked);
+            const list = options(track, answer, strictness, introduced);
             expect(list).toHaveLength(4);
             expect(new Set(list).size).toBe(4);
             expect(list).toContain(answer);
@@ -59,8 +59,8 @@ describe('recognition options', () => {
             const list = distractorsFor({
               track,
               answer,
-              unlocked: keys,
-              stat: undefined,
+              introduced: keys,
+              confusions: [],
               strictness,
               rng: seededRng(seed),
             });
@@ -77,9 +77,9 @@ describe('recognition options', () => {
   it('never offers お beside を or じ beside ぢ in relaxed mode', () => {
     const keys = keysOfTrack('hiragana');
     for (const seed of [1, 2, 3, 4, 5]) {
-      const forWo = options('hiragana', key('を'), 'learner', keys, {}, seed);
+      const forWo = options('hiragana', key('を'), 'learner', keys, [], seed);
       expect(forWo).not.toContain(key('お'));
-      const forJi = options('hiragana', key('じ'), 'learner', keys, {}, seed);
+      const forJi = options('hiragana', key('じ'), 'learner', keys, [], seed);
       expect(forJi).not.toContain(key('ぢ'));
     }
   });
@@ -89,8 +89,11 @@ describe('recognition options', () => {
     const list = distractorsFor({
       track: 'hiragana',
       answer: key('さ'),
-      unlocked: keys,
-      stat: { recognitions: 5, recognitionErrors: 2, mixups: { [key('ふ')]: 1, [key('へ')]: 3 } },
+      introduced: keys,
+      confusions: [
+        { key: key('へ'), count: 3 },
+        { key: key('ふ'), count: 1 },
+      ],
       strictness: 'learner',
       rng: seededRng(1),
     });
@@ -105,12 +108,12 @@ describe('recognition options', () => {
     const list = distractorsFor({
       track: 'hiragana',
       answer: key('ぬ'),
-      unlocked: keys,
-      stat: {
-        recognitions: 5,
-        recognitionErrors: 5,
-        mixups: { [key('ふ')]: 3, [key('へ')]: 2, [key('ほ')]: 1 },
-      },
+      introduced: keys,
+      confusions: [
+        { key: key('ふ'), count: 3 },
+        { key: key('へ'), count: 2 },
+        { key: key('ほ'), count: 1 },
+      ],
       strictness: 'learner',
       rng: seededRng(1),
     });
@@ -123,21 +126,21 @@ describe('recognition options', () => {
     const list = distractorsFor({
       track: 'hiragana',
       answer: key('あ'),
-      unlocked: keysOfTrack('hiragana').slice(0, 5),
-      stat: { recognitions: 1, recognitionErrors: 1, mixups: { 'katakana:ア': 5 } },
+      introduced: keysOfTrack('hiragana').slice(0, 5),
+      confusions: [{ key: 'katakana:ア', count: 5 }],
       strictness: 'learner',
       rng: seededRng(1),
     });
     expect(list.every((k) => k.startsWith('hiragana:'))).toBe(true);
   });
 
-  it('takes the row-mates first, then unlocked kana of the rest of the track', () => {
-    // ん has no similar kana; its row (w_n) gives わ and を, the first unlocked kana gives あ.
+  it('takes the row-mates first, then introduced kana of the rest of the track', () => {
+    // ん has no similar kana; its row (w_n) gives わ and を, the first introduced kana gives あ.
     const list = distractorsFor({
       track: 'hiragana',
       answer: key('ん'),
-      unlocked: keysOfTrack('hiragana').slice(0, 5),
-      stat: undefined,
+      introduced: keysOfTrack('hiragana').slice(0, 5),
+      confusions: [],
       strictness: 'learner',
       rng: seededRng(1),
     });
@@ -147,8 +150,8 @@ describe('recognition options', () => {
 
   it('is reproducible with the same seed', () => {
     const keys = keysOfTrack('hiragana');
-    expect(options('hiragana', key('か'), 'learner', keys, {}, 7)).toEqual(
-      options('hiragana', key('か'), 'learner', keys, {}, 7),
+    expect(options('hiragana', key('か'), 'learner', keys, [], 7)).toEqual(
+      options('hiragana', key('か'), 'learner', keys, [], 7),
     );
   });
 
@@ -156,7 +159,7 @@ describe('recognition options', () => {
     const keys = keysOfTrack('hiragana');
     const positions = new Set<number>();
     for (let seed = 1; seed <= 60; seed++) {
-      positions.add(options('hiragana', key('か'), 'learner', keys, {}, seed).indexOf(key('か')));
+      positions.add(options('hiragana', key('か'), 'learner', keys, [], seed).indexOf(key('か')));
     }
     expect(positions.size).toBe(4);
   });
