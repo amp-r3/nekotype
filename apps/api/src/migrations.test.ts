@@ -26,11 +26,30 @@ const P5_NEW_USER_COUNTERS = {
   finished: { typing: 0, learn: 0 },
 };
 
+const FORMAT_2_COLUMNS = ['counters', 'learn', 'learn_recent', 'learn_buckets', 'bucket_newest'];
+
+async function userStatsColumns(): Promise<string[]> {
+  const { results } = await env.DB.prepare(
+    "SELECT name FROM pragma_table_info('user_stats') ORDER BY cid",
+  ).all<{ name: string }>();
+  return results.map((column) => column.name);
+}
+
+// The columns of sync format 2, which 0005 dropped.
+async function restoreFormat2Columns(): Promise<void> {
+  const columns = await userStatsColumns();
+  const missing = FORMAT_2_COLUMNS.filter((name) => !columns.includes(name));
+  if (missing.length === 0) return;
+  await env.DB.batch(
+    missing.map((name) =>
+      env.DB.prepare(`ALTER TABLE user_stats ADD COLUMN ${name} TEXT NOT NULL DEFAULT '{}'`),
+    ),
+  );
+}
+
 async function restoreP5Schema(): Promise<void> {
-  const { results } = await env.DB.prepare("SELECT name FROM pragma_table_info('user_stats')").all<{
-    name: string;
-  }>();
-  if (results.some((column) => column.name === 'kana_stats')) return;
+  await restoreFormat2Columns();
+  if ((await userStatsColumns()).includes('kana_stats')) return;
   await env.DB.batch([
     env.DB.prepare("ALTER TABLE user_stats ADD COLUMN kana_stats TEXT NOT NULL DEFAULT '{}'"),
     env.DB.prepare("ALTER TABLE user_stats ADD COLUMN typing_records TEXT NOT NULL DEFAULT '{}'"),
@@ -147,10 +166,9 @@ describe('migration 0003', () => {
   });
 });
 
-// Migration 0004 is additive (P7 plan, D13): the table of the batches of sync format 3, next to
-// the columns of format 2.
+// Migration 0004 is additive (P7 plan, D13): the table of the batches of sync format 3.
 describe('migration 0004 (sync_batches)', () => {
-  it('creates a table whose primary key is the table, and keeps the columns of format 2', async () => {
+  it('creates a table whose primary key is the table', async () => {
     const columns = await env.DB.prepare(
       "SELECT name, pk FROM pragma_table_info('sync_batches') ORDER BY cid",
     ).all<{ name: string; pk: number }>();
@@ -170,17 +188,39 @@ describe('migration 0004 (sync_batches)', () => {
       "SELECT sql FROM sqlite_master WHERE name = 'sync_batches'",
     ).first<{ sql: string }>();
     expect(table?.sql).toMatch(/WITHOUT ROWID/);
-    const stats = await env.DB.prepare("SELECT name FROM pragma_table_info('user_stats')").all<{
-      name: string;
-    }>();
-    expect(stats.results.map((column) => column.name)).toEqual(
-      expect.arrayContaining([
-        'counters',
-        'learn',
-        'learn_recent',
-        'learn_buckets',
-        'bucket_newest',
-      ]),
-    );
+  });
+});
+
+// Migration 0005 drops the columns of sync format 2 (P7 plan, D13). The setup has applied it, so the
+// test puts the columns back, writes a row with what format 2 stored and runs the migration again.
+describe('migration 0005 (drop learning columns)', () => {
+  it('leaves user_id, device_seq, last_sync_at and version, with their data and the cascade', async () => {
+    await restoreFormat2Columns();
+    await env.DB.batch([
+      env.DB.prepare('INSERT INTO users (id, created_at) VALUES (?, 1)').bind('s-user'),
+      env.DB.prepare(
+        `INSERT INTO user_stats (user_id, counters, learn, learn_recent, learn_buckets, bucket_newest,
+           device_seq, last_sync_at, version)
+         VALUES (?, '{"started":1,"finished":1}', '{}', '{}', '{}', '{}', '{"d":{"seq":2,"at":5}}', 9, 3)`,
+      ).bind('s-user'),
+    ]);
+
+    await migrate('0005_drop_learning_columns.sql');
+
+    expect(await userStatsColumns()).toEqual(['user_id', 'device_seq', 'last_sync_at', 'version']);
+    expect(
+      await env.DB.prepare('SELECT * FROM user_stats WHERE user_id = ?').bind('s-user').first(),
+    ).toEqual({
+      user_id: 's-user',
+      device_seq: '{"d":{"seq":2,"at":5}}',
+      last_sync_at: 9,
+      version: 3,
+    });
+
+    await env.DB.prepare('DELETE FROM users WHERE id = ?').bind('s-user').run();
+    const left = await env.DB.prepare('SELECT COUNT(*) AS n FROM user_stats WHERE user_id = ?')
+      .bind('s-user')
+      .first();
+    expect(left).toEqual({ n: 0 });
   });
 });

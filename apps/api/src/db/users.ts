@@ -1,22 +1,6 @@
 import type { OAuthProfile, OAuthProviderName } from '../env';
 import { corrupt, isRow, textOf } from './rows';
 
-/** The initial `user_stats` row (p5-plan.md, D6): the neutral element of every column. */
-
-const INITIAL_STATS = {
-  counters: JSON.stringify({ started: 0, finished: 0 }),
-  learn: JSON.stringify({
-    unlocked: { hiragana: [], katakana: [] },
-    entries: {},
-    stats: {},
-    activeDays: [],
-  }),
-  learn_recent: '{}',
-  learn_buckets: JSON.stringify({ hiragana: {}, katakana: {} }),
-  bucket_newest: '{}',
-  device_seq: '{}',
-};
-
 export async function findUserIdByOAuthAccount(
   db: D1Database,
   provider: OAuthProviderName,
@@ -72,21 +56,10 @@ export async function createUser(
       )
       .bind(userId, profile.email, profile.displayName, profile.avatarUrl, now),
     linkOAuthAccountStatement(db, userId, provider, profile.providerUserId),
+    // The neutral element of every column: no device has synced yet.
     db
-      .prepare(
-        `INSERT INTO user_stats (user_id, counters, learn, learn_recent, learn_buckets,
-           bucket_newest, device_seq, last_sync_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
-      )
-      .bind(
-        userId,
-        INITIAL_STATS.counters,
-        INITIAL_STATS.learn,
-        INITIAL_STATS.learn_recent,
-        INITIAL_STATS.learn_buckets,
-        INITIAL_STATS.bucket_newest,
-        INITIAL_STATS.device_seq,
-      ),
+      .prepare("INSERT INTO user_stats (user_id, device_seq, last_sync_at) VALUES (?, '{}', 0)")
+      .bind(userId),
   ]);
 }
 

@@ -33,7 +33,7 @@ describe('the migrations', () => {
     const columns = results.map((row) => row.name);
     expect(columns).not.toContain('kana_stats');
     expect(columns).not.toContain('typing_records');
-    expect(columns).toContain('counters');
+    expect(columns).toContain('device_seq');
     const tables = await env.DB.prepare(
       "SELECT name FROM sqlite_master WHERE name IN ('results', 'results_user_time')",
     ).all();
