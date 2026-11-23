@@ -1,9 +1,8 @@
-import type { Year } from '@nekotype/shared/testing';
 import { hashToken } from './auth/session';
 import { createUser } from './db/users';
 
 // Helpers of the API tests (p5-plan.md, D8): a wrapper that counts the statements of a request and
-// sums the rows it wrote, and the means to sign a user in and give it a year of learning.
+// sums the rows it wrote, and the means to sign a user in.
 
 export interface DbLog {
   /** Statements executed, in or out of a `batch()`. */
@@ -122,41 +121,4 @@ export async function signedInUser(
     .bind(await hashToken(token), userId, now + 30 * 24 * 60 * 60 * 1000)
     .run();
   return { cookie: `nt_session=${token}` };
-}
-
-const CHUNK_CHARS = 20_000;
-
-/** The newest day of each track, as `bucket_newest` holds it. */
-export function newestDays(year: Year): Record<string, number> {
-  const newest: Record<string, number> = {};
-  for (const track of ['hiragana', 'katakana'] as const) {
-    const days = Object.keys(year.learn.recallBuckets[track]).map(Number);
-    if (days.length > 0) newest[track] = Math.max(...days);
-  }
-  return newest;
-}
-
-/**
- * Gives the user the learning state of a generated year. D1 allows 100 KB per
- * statement, so each large column is appended in chunks, as the measurement's seed does.
- */
-export async function seedYear(db: D1Database, userId: string, year: Year): Promise<void> {
-  const { recent, recallBuckets, ...rest } = year.learn;
-  const columns: [string, string][] = [
-    ['counters', JSON.stringify(year.counters)],
-    ['learn', JSON.stringify(rest)],
-    ['learn_recent', JSON.stringify(recent)],
-    ['learn_buckets', JSON.stringify(recallBuckets)],
-    ['bucket_newest', JSON.stringify(newestDays(year))],
-    ['device_seq', JSON.stringify(year.deviceSeq)],
-  ];
-  for (const [column, text] of columns) {
-    await db.prepare(`UPDATE user_stats SET ${column} = '' WHERE user_id = ?`).bind(userId).run();
-    for (let at = 0; at < text.length; at += CHUNK_CHARS) {
-      await db
-        .prepare(`UPDATE user_stats SET ${column} = ${column} || ? WHERE user_id = ?`)
-        .bind(text.slice(at, at + CHUNK_CHARS), userId)
-        .run();
-    }
-  }
 }

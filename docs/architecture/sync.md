@@ -41,9 +41,9 @@ The tests drive the account and the engine together on one fake server (`model/a
 
 ## The server, format 3 (`apps/api`)
 
-The client sends format 3 only; the server still accepts format 2 until PR 13 of P7 ([ADR 102](../adr/102-sync-format-3-server.md), [Backend](../spec/backend.md#sync-format-3)). The pieces:
+The client sends format 3 only, and since PR 13 of P7 the server accepts nothing else ([ADR 102](../adr/102-sync-format-3-server.md), [Backend](../spec/backend.md#sync-format-3)). The pieces:
 
 - **`packages/shared/src/log-codec.ts`** is the one definition of a log page: `encodePage`, `decodePage` and `isLogPage` (the bounds of every event). The client checks every page it reads with it and the server every batch.
-- **`routes/sync.ts`** dispatches `POST` on the `v` of the body and `GET` on `after` or `part`.
+- **`routes/sync.ts`** accepts `POST` with `v: 3` and `GET` with `after`; `v: 2`, a `GET` without `after` and `part` are `400 invalid_body`.
 - **`sync/apply-log.ts`** is the `seq` rule, the rate limit and the `device_seq` bookkeeping of a batch of format 3; **`db/batches.ts`** holds its SQL: the read of step 1, the guarded `batch()` of step 3 and the page of a pull, whose body is assembled from the stored texts.
 - The table `sync_batches` (migration `0004`) has one `WITHOUT ROWID` row per batch; nothing in the API parses an event.

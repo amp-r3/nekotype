@@ -1,6 +1,7 @@
+import { RECENT_RECALLS } from '@nekotype/model';
 import { describe, it, expect } from 'vitest';
 import { answer, intro, key, learnedEvents, viewOfEvents } from './test-util';
-import { isEmptySummary, summarize } from './summary';
+import { RECALL_WINDOW, isEmptySummary, summarize } from './summary';
 
 const NOW = 1_700_000_000_000;
 const noConfusion = { mixups: [], errors: [] } as const;
@@ -73,5 +74,11 @@ describe('summarize', () => {
     });
     expect(isEmptySummary(summary)).toBe(false);
     expect(summary.errors).toEqual([key('い')]);
+  });
+});
+
+describe('RECALL_WINDOW', () => {
+  it('is the window of recent recalls of the model', () => {
+    expect(RECALL_WINDOW).toBe(RECENT_RECALLS);
   });
 });

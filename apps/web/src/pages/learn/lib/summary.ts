@@ -1,11 +1,15 @@
 import type { LearnView } from '@nekotype/model';
 import type { LearnKanaKey } from '@nekotype/shared/types';
-import { RECENT_ANSWERS } from '@nekotype/shared/runtime';
 
 /** Changes in the median answer time smaller than this are not listed. */
 export const CHANGE_MIN_MS = 100;
 /** At most this many faster and this many slower kana are listed. */
 export const CHANGE_LIMIT = 5;
+/**
+ * The window of recent recalls behind `LearnView.recall` (`RECENT_RECALLS` of `@nekotype/model`,
+ * not imported: the model is a lazy chunk and this module is not).
+ */
+export const RECALL_WINDOW = 10;
 
 export type MedianChange = {
   readonly key: LearnKanaKey;
@@ -65,7 +69,7 @@ export function summarize(input: SummaryInput): SessionSummary {
     if (was.state === 'locked' && now.state !== 'locked') introduced.push(key);
     const known = now.state === 'learned' || now.state === 'mastered';
     if ((was.state === 'locked' || was.state === 'learning') && known) learned.push(key);
-    if (was.recall.length >= RECENT_ANSWERS) {
+    if (was.recall.length >= RECALL_WINDOW) {
       changes.push({ key, from: was.medianMs, to: now.medianMs });
     }
   }
