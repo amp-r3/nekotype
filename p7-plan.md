@@ -1098,6 +1098,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Goal.** PRs 8–11 reach production in one deployment.
 - **Does:** an executor opens it once PR 11 is merged into `p7-switch`, first merging `origin/main` into `p7-switch` if needed (keeping every Status row). Title: `feat(learn): learning on the knowledge model and sync format 3 (P7)`. The description lists PRs 8–11, the acceptance items they close, the budget figures and what M3 will check.
 - **Done when:** CI is green with the browser, sync and latency jobs; the maintainer merges and does M3.
+- **M3:** done, 2026-11-23 (maintainer).
 
 ### PR 13 — Format 2 out of the server
 
