@@ -18,6 +18,10 @@ The visual reference for Nekotype: tokens, components, logo and cat assets. [ADR
 
 The artifact holds only approved design. A design session is drawn in a separate workbench artifact, in rounds the maintainer reviews one at a time, then moved into the artifact and exported. The workbench is deleted after the export. The procedure: [workflow.md](workflow.md) ([ADR 106](../adr/106-design-sessions-in-a-workbench-artifact.md)).
 
+## Changing the design
+
+The artifact holds only approved design. A design session is drawn in a separate workbench artifact, in rounds the maintainer reviews one at a time, then moved into the artifact and exported. The workbench is deleted after the export. The procedure: [workflow.md](workflow.md) ([ADR 106](../adr/106-design-sessions-in-a-workbench-artifact.md)).
+
 ## Moving a component into the app
 
 `bundle.js` and `bundle.css` are a React reference, not a dependency. Components are rewritten in Preact in `shared/ui` under the rules in [Frontend](../spec/frontend.md).
