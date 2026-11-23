@@ -38,13 +38,14 @@ export function kanaStateLines(info: KanaCellInfo): readonly string[] {
   }
   const heading = [info.kana, romajiOf(info.key)].filter((part) => part !== '').join(SEPARATOR);
   const state = [t(`learn.chart.state.${info.state}`)];
-  if (info.state === 'confident' || info.state === 'mastered') {
+  if (info.state === 'learned' || info.state === 'mastered') {
     if (info.due) state.push(t('learn.chart.due'));
     else if (info.dueAt !== null)
       state.push(t('learn.chart.nextReview', { date: dateOf(info.dueAt) }));
   }
   const lines = [heading, state.join(SEPARATOR)];
-  if (!info.introduced) return [...lines, t('learn.chart.notIntroduced')];
+  // An introduced kana with no recall answer yet has no median to show.
+  if (info.answers === 0) return lines;
   const stats = [
     t('learn.chart.stats', {
       ms: Math.round(info.medianMs),
@@ -86,15 +87,15 @@ export function chartModel(
 export function kanaPanelLines(info: KanaCellInfo): readonly KanaChartPanelLine[] {
   const lines = kanaStateLines(info);
   const mixups: KanaChartPanelLine =
-    info.mixups.length === 0
+    info.confusions.length === 0
       ? { text: t('learn.chart.noMixups') }
       : {
-          text: `${t('learn.chart.mixups')} ${info.mixups
+          text: `${t('learn.chart.mixups')} ${info.confusions
             .map((mixup) => `${mixup.key.slice(mixup.key.indexOf(':') + 1)} ×${mixup.count}`)
             .join(', ')}`,
           segments: [
             { text: `${t('learn.chart.mixups')} ` },
-            ...info.mixups.flatMap((mixup, at) => [
+            ...info.confusions.flatMap((mixup, at) => [
               ...(at > 0 ? [{ text: ', ' }] : []),
               { text: mixup.key.slice(mixup.key.indexOf(':') + 1), kana: true },
               { text: ` ×${mixup.count}` },
@@ -135,7 +136,7 @@ export function chartLegend(track: Track): ChartLegend {
     labels: {
       locked: t('learn.chart.state.locked'),
       learning: t('learn.chart.state.learning'),
-      confident: t('learn.chart.state.confident'),
+      learned: t('learn.chart.state.learned'),
       mastered: t('learn.chart.state.mastered'),
       due: t('learn.chart.due'),
     },

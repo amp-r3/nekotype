@@ -28,6 +28,11 @@ export const SIGNALS_MARKER = 'ReactiveTextNode';
 // The sync engine is for signed-in users: its chunk is loaded by a dynamic import that a user key
 // guards, never with the first load or with a screen (p5-plan.md, D17).
 export const SYNC_ENTRY = 'src/features/sync/index.ts';
+// The knowledge model is a chunk of its own, named in `vite.config.ts` (codeSplitting): the learn
+// store loads it by a dynamic import and the session runtime shares it. Never with the first load,
+// never a static import of a route (P7 plan, D22). A shared chunk has no `src` in the manifest, so
+// it is found by name.
+export const MODEL_CHUNK = 'model';
 const ROUTE_ENTRY = /^src\/pages\/[^/]+\/index\.ts$/;
 
 const kb = (bytes) => bytes / 1024;
@@ -185,6 +190,28 @@ export function checkBudget(distDir) {
         staticImports(manifest, key, initial).has(SYNC_ENTRY)
       ) {
         failures.push(`The sync engine is a static import of the route chunk ${chunk.file}`);
+      }
+    }
+  }
+
+  // The model stays a chunk of its own that no first load and no route pulls in.
+  const modelKeys = Object.keys(manifest).filter((key) => manifest[key]?.name === MODEL_CHUNK);
+  if (modelKeys.length === 0) {
+    failures.push(
+      `No chunk named ${MODEL_CHUNK} is in the manifest: its lazy loading cannot be checked`,
+    );
+  }
+  for (const modelKey of modelKeys) {
+    const modelFile = manifest[modelKey]?.file;
+    if (initial.has(modelKey) || (modelFile !== undefined && initialJs.includes(modelFile))) {
+      failures.push(`The model (${modelKey}) is in the initial chunk: a first visit would load it`);
+    }
+    for (const [key, chunk] of Object.entries(manifest)) {
+      if (
+        ROUTE_ENTRY.test(chunk.src ?? key) &&
+        staticImports(manifest, key, initial).has(modelKey)
+      ) {
+        failures.push(`The model is a static import of the route chunk ${chunk.file}`);
       }
     }
   }

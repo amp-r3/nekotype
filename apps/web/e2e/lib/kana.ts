@@ -1,4 +1,5 @@
 import { allKanaRows } from '@nekotype/engine';
+import type { EventDraft } from '@nekotype/shared/types';
 
 // The romaji the page asks for or accepts, worked out from what the page shows (ADR 045): the kana
 // on screen, through the kana table.
@@ -40,21 +41,29 @@ export function learnStateWith(kana: readonly string[]): Record<string, unknown>
 }
 
 /**
- * A learning state in which the five vowels and `kana` are unlocked and `kana` alone is due and
- * confident, so a review session of one task opens on its recall (ADR 062).
+ * The events of kana learned `ago` ms before now and due for review now: an introduction and five
+ * fast, correct recalls 40 s apart for each (the fold graduates a kana at the fifth).
  */
-export function reviewState(kana: string): Record<string, unknown> {
-  const vowels = ['あ', 'い', 'う', 'え', 'お'].map((v) => `hiragana:${v}`);
-  const key = `hiragana:${kana}`;
-  return {
-    unlocked: {
-      hiragana: [...vowels, key],
-      katakana: ['katakana:ア', 'katakana:イ', 'katakana:ウ', 'katakana:エ', 'katakana:オ'],
-    },
-    entries: { [key]: { box: 2, dueAt: 1, updatedAt: 1 } },
-    recent: { [key]: Array.from({ length: 10 }, (_, i) => ({ at: i + 1, ms: 900, ok: true })) },
-    stats: {},
-    activeDays: [],
-    recallBuckets: { hiragana: {}, katakana: {} },
-  };
+export function learnedLog(kana: readonly string[], ago: number): EventDraft[] {
+  const events: EventDraft[] = [];
+  let at = Date.now() - ago;
+  for (const k of kana) {
+    const key = `hiragana:${k}` as const;
+    events.push({ t: 'intro', at, k: key });
+    for (let i = 0; i < 5; i++) {
+      at += 40_000;
+      events.push({
+        t: 'answer',
+        at,
+        task: 'recall',
+        k: key,
+        ok: true,
+        ms: 900,
+        hint: false,
+        wrong: null,
+        alt: null,
+      });
+    }
+  }
+  return events;
 }

@@ -1,23 +1,21 @@
 import { kanaRows } from '@nekotype/engine';
 import type { RowCategory } from '@nekotype/engine';
-import type { LearnKanaKey, LearnState, Track } from '@nekotype/shared/types';
-import { isLearnKanaKey } from '@nekotype/shared/runtime';
-import { isConfident, accuracyOf, medianAnswerMs } from './confidence';
-import { isDueKana, isMastered } from './boxes';
-import { keyOf, nextUnlock } from './tracks';
+import type { ChartState, LearnView } from '@nekotype/model';
+import type { LearnKanaKey, Track } from '@nekotype/shared/types';
+import { keyOf } from './tracks';
 
-export type CellState = 'locked' | 'learning' | 'confident' | 'mastered';
+export type CellState = ChartState;
 
 /** What the kana chart shows of one kana; the strings are made above this layer. */
 export type KanaCellInfo = {
   readonly key: LearnKanaKey;
   readonly kana: string;
   readonly state: CellState;
-  /** The review date has come; only for confident and mastered kana. */
+  /** Learned or mastered, and the review comes within the next gap (what `continue` takes). */
   readonly due: boolean;
-  /** The next review, from box 1; `null` for a kana that is not scheduled. */
+  /** The predicted recall reaches 0.90; `null` unless the kana is learned or mastered. */
   readonly dueAt: number | null;
-  /** Unlocked and shown in an introduction at least once. */
+  /** Shown in an introduction at least once. */
   readonly introduced: boolean;
   /** The locked kana that opens next. */
   readonly opensNext: boolean;
@@ -25,8 +23,8 @@ export type KanaCellInfo = {
   readonly answers: number;
   readonly medianMs: number;
   readonly accuracy: number;
-  /** Kana chosen instead of this one in recognition, most first. */
-  readonly mixups: readonly { readonly key: LearnKanaKey; readonly count: number }[];
+  /** Kana given instead of this one in recognition and recall, most first. */
+  readonly confusions: readonly { readonly key: LearnKanaKey; readonly count: number }[];
   readonly recognitions: number;
   readonly recognitionErrors: number;
 };
@@ -68,52 +66,33 @@ export function chartRows(track: Track): readonly ChartRowInfo[] {
   }));
 }
 
-/** The cell of every kana of a track, by key. `targetMs` is the target answer time. */
+/** The cell of every kana of a track, by key. `now` decides which kana are due. */
 export function cellInfos(
   track: Track,
-  state: LearnState,
-  targetMs: number,
+  view: LearnView,
   now: number,
 ): ReadonlyMap<LearnKanaKey, KanaCellInfo> {
-  const open = new Set(state.unlocked[track]);
-  // The kana that opens once every unlocked kana is confident: the unlocked ones count as
-  // confident here, so the dependencies decide which locked kana is first.
-  const opening = nextUnlock(track, state.unlocked[track], (key) => open.has(key));
   const cells = new Map<LearnKanaKey, KanaCellInfo>();
   for (const row of chartRows(track)) {
     for (const kana of row.kana) {
       if (kana === null) continue;
       const key = keyOf(track, kana);
-      const entry = state.entries[key];
-      const answers = state.recent[key] ?? [];
-      const stat = state.stats[key];
-      const unlocked = open.has(key);
-      const confident = unlocked && isConfident(answers, targetMs);
-      const cellState: CellState = !unlocked
-        ? 'locked'
-        : isMastered(entry, answers, targetMs)
-          ? 'mastered'
-          : confident
-            ? 'confident'
-            : 'learning';
+      const kanaView = view.kana.get(key);
+      if (kanaView === undefined) continue;
       cells.set(key, {
         key,
         kana,
-        state: cellState,
-        due: unlocked && isDueKana(entry, answers, targetMs, now),
-        dueAt: unlocked && entry !== undefined && entry.box >= 1 ? entry.dueAt : null,
-        introduced: entry !== undefined,
-        opensNext: key === opening,
-        answers: answers.length,
-        medianMs: medianAnswerMs(answers),
-        accuracy: accuracyOf(answers),
-        mixups: Object.entries(stat?.mixups ?? {})
-          .flatMap(([mixed, count]) =>
-            isLearnKanaKey(mixed) && count > 0 ? [{ key: mixed, count }] : [],
-          )
-          .sort((a, b) => b.count - a.count),
-        recognitions: stat?.recognitions ?? 0,
-        recognitionErrors: stat?.recognitionErrors ?? 0,
+        state: kanaView.state,
+        due: kanaView.dueFrom !== null && kanaView.dueFrom <= now,
+        dueAt: kanaView.nextReviewAt,
+        introduced: kanaView.state !== 'locked',
+        opensNext: view.opensNext[track] === key,
+        answers: kanaView.recall.length,
+        medianMs: kanaView.medianMs,
+        accuracy: kanaView.accuracy,
+        confusions: kanaView.confusions,
+        recognitions: kanaView.recognitions,
+        recognitionErrors: kanaView.recognitionErrors,
       });
     }
   }

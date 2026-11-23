@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { seedLearning } from './lib/app';
-import { learnStateWith, romajiOf } from './lib/kana';
+import { seedLog } from './lib/app';
+import { learnedLog, romajiOf } from './lib/kana';
 
 // Keystroke latency (docs/spec/quality.md, "Budgets" and "Latency measurement"), measured by the
 // probe of the test build under 4x CPU throttling on recall, the one task that types: two learning
-// sessions of 25 tasks. Two checks: the p95 against the budget, and the worst keystroke against a
+// sessions of 30 tasks. Two checks: the p95 against the budget, and the worst keystroke against a
 // ceiling (ADR 048). The p95 alone cannot see a redraw that happens about one key in sixty.
 const THROTTLE = 4;
 const WORK_BUDGET_MS = 8;
@@ -37,7 +37,7 @@ async function readSamples(page: Page): Promise<Sample[]> {
 
 // The keys go through the input source, and the task controller writes the buffer and the caret.
 const SESSIONS = 2;
-const SESSION_TASKS = 25;
+const SESSION_TASKS = 30;
 
 // Plays one task of whatever kind is on screen, correctly, with the keys of a typist.
 async function answerTask(page: Page): Promise<void> {
@@ -64,10 +64,11 @@ async function answerTask(page: Page): Promise<void> {
 test(`keystroke latency of recall stays within the budgets at ${THROTTLE}x CPU throttling`, async ({
   page,
 }) => {
-  await seedLearning(
+  // Ten kana learned a month ago: both sessions open on reviews, then go on to new kana.
+  await seedLog(
     page,
     '/',
-    learnStateWith(['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ']),
+    learnedLog(['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ'], 30 * 864e5),
   );
   const client = await page.context().newCDPSession(page);
   await client.send('Emulation.setCPUThrottlingRate', { rate: THROTTLE });

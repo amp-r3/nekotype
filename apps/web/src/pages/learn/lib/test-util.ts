@@ -1,14 +1,20 @@
+import { describe, foldLog } from '@nekotype/model';
+import type { LearnView } from '@nekotype/model';
+import { answer, intro } from '@nekotype/model/testing';
 import type {
   Clock,
+  LearnKanaKey,
+  LogEvent,
+  Rng,
   Scheduler,
   TimeoutHandle,
-  LearnEntry,
-  LearnKanaKey,
-  LearnState,
-  RecallAnswer,
-  Rng,
 } from '@nekotype/shared/types';
-import { initialLearnState, keyOf } from '@/entities/learn';
+import { createLearnStore, keyOf } from '@/entities/learn';
+import type { LearnStore } from '@/entities/learn';
+import { createMemoryDb } from '@/shared/lib';
+import type { Db } from '@/shared/lib';
+
+export { answer, intro };
 
 /** Mulberry32: a small seeded generator with good low bits, for statistical tests. */
 export function seededRng(seed: number): Rng {
@@ -26,35 +32,22 @@ export function seededRng(seed: number): Rng {
 
 export const key = (kana: string): LearnKanaKey => keyOf('hiragana', kana);
 
-export function answers(count: number, ms: number, okEvery = 0): RecallAnswer[] {
-  return Array.from({ length: count }, (_, i) => ({
-    at: i + 1,
-    ms,
-    ok: okEvery === 0 || (i + 1) % okEvery !== 0,
-  }));
+/** Tests only: numbers the events of one device and folds them into a view. */
+export function viewOfEvents(events: readonly LogEvent[], targetMs = 1500): LearnView {
+  const numbered = events.map((event, index) => ({ ...event, dev: 'd1', n: index + 1 }));
+  const snapshot = foldLog(numbered, { targetMs, stats: true }).snapshot();
+  if (snapshot.stats === null) throw new Error('the fold has no statistics');
+  return describe(snapshot.state, snapshot.stats);
 }
 
-export function stateWith(parts: {
-  unlocked?: readonly string[];
-  entries?: Record<string, Partial<LearnEntry>>;
-  recent?: Record<string, readonly RecallAnswer[]>;
-}): LearnState {
-  const base = initialLearnState();
-  const entries: Record<LearnKanaKey, LearnEntry> = {};
-  for (const [kana, entry] of Object.entries(parts.entries ?? {})) {
-    entries[key(kana)] = { box: 0, dueAt: 0, updatedAt: 1, ...entry };
-  }
-  const recent: Record<LearnKanaKey, readonly RecallAnswer[]> = {};
-  for (const [kana, list] of Object.entries(parts.recent ?? {})) recent[key(kana)] = list;
-  return {
-    ...base,
-    unlocked: {
-      ...base.unlocked,
-      hiragana: parts.unlocked ? parts.unlocked.map(key) : base.unlocked.hiragana,
-    },
-    entries,
-    recent,
-  };
+/** An introduction and five fast, correct recalls 40 s apart: the kana is learned at the end. */
+export function learnedEvents(kana: string, at: number): LogEvent[] {
+  return [
+    intro(key(kana), { at }),
+    ...Array.from({ length: 5 }, (_, i) =>
+      answer(key(kana), { at: at + 40_000 * (i + 1), ms: 900 }),
+    ),
+  ];
 }
 
 export class Clock0 implements Clock {
@@ -87,4 +80,61 @@ export class Timers implements Scheduler {
     this.tasks.clear();
     for (const fn of due) fn();
   }
+}
+
+let ids = 0;
+
+/** A learn store on a memory database with the real model, loaded; the clock and timers are the test's. */
+export async function readyStore(
+  clock: Clock,
+  scheduler: Scheduler,
+  db: Db = createMemoryDb(),
+): Promise<LearnStore> {
+  const store = createLearnStore({
+    db: () => Promise.resolve(db),
+    clock,
+    scheduler,
+    targetMs: () => 1500,
+    loadModel: () => import('@nekotype/model'),
+    newId: () => `018f0000-0000-7000-8000-${String(ids++).padStart(12, '0')}`,
+    tz: () => -new Date().getTimezoneOffset(),
+  });
+  await store.init();
+  return store;
+}
+
+/** Introduces a kana and answers it five times, fast and right, 40 s apart: it is learned. */
+export function learnKana(store: LearnStore, clock: Clock0, kana: string): void {
+  store.introduce(key(kana));
+  for (let i = 0; i < 5; i++) {
+    clock.time += 40_000;
+    store.recordAnswer({
+      task: 'recall',
+      key: key(kana),
+      ok: true,
+      keystrokes: [{ t: 700, accepted: true }],
+      hint: false,
+      wrong: null,
+      alt: null,
+    });
+  }
+}
+
+/**
+ * Writes a log into `db` through a store of its own, the way the app would have, for a page test
+ * that then renders the page on the same database. `build` plays the history on a clock it moves.
+ */
+export async function seedLog(
+  db: Db,
+  from: number,
+  build: (store: LearnStore, clock: Clock0) => void,
+): Promise<void> {
+  const clock = new Clock0();
+  clock.time = from;
+  const timers = new Timers();
+  const store = await readyStore(clock, timers, db);
+  store.startSession();
+  build(store, clock);
+  timers.flush();
+  await store.flush();
 }

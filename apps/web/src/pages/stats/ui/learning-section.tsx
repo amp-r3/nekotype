@@ -8,8 +8,8 @@ import type { LearnTrack } from '@/entities/settings';
 import {
   dayStart,
   hasAnswers,
-  learnCounters,
-  learnState,
+  legacyLearnCounters,
+  legacyLearnState,
   streaks,
   trackProgress,
 } from '@/entities/learn';
@@ -44,8 +44,8 @@ export function LearningSection({ today }: { readonly today: number }): JSX.Elem
   );
 
   const target = learnTargetMs.value;
-  const state = learnState.value;
-  const counters = learnCounters.value;
+  const state = legacyLearnState.value;
+  const counters = legacyLearnCounters.value;
 
   const { current, best } = streaks(state, today);
   const progress = {

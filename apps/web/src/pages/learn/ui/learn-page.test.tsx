@@ -22,7 +22,7 @@ describe('learn page: the top of the learning screen', () => {
     container.remove();
   });
 
-  it('shows the unlocked kana of the selected track once the state has loaded', async () => {
+  it('shows the progress and a chart of locked kana once the log has loaded', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
@@ -31,7 +31,13 @@ describe('learn page: the top of the learning screen', () => {
     expect(container.querySelector('[data-testid="learn-mastered-count"]')?.textContent).toBe(
       t('learn.mastered', { done: 0, total: 104 }),
     );
-    expect(unlockedKana(container)).toBe('あいうえお');
+    expect(container.querySelectorAll('[data-testid="kana-cell"]')).toHaveLength(104);
+    expect(unlockedKana(container)).toBe('');
+    // Nothing is due: the part is not there, and there is no review button.
+    expect(container.querySelector('[data-testid="learn-due"]')).toBeNull();
+    const labels = Array.from(container.querySelectorAll('button')).map((el) => el.textContent);
+    expect(labels).toContain(t('learn.continue'));
+    expect(labels.filter((label) => label.startsWith('review'))).toEqual([]);
   });
 
   it('keeps the hidden field out of the Tab order and out of the tree on the home view', async () => {
@@ -84,23 +90,7 @@ describe('learn page: the top of the learning screen', () => {
     expect(container.querySelector('[data-testid="learn-first"]')?.textContent).toBe(
       t('learn.first', { kana: 'ア イ ウ エ オ' }),
     );
-    expect(unlockedKana(container)).toBe('アイウエオ');
+    expect(unlockedKana(container)).toBe('');
     expect(learnTrack.value).toBe('katakana');
-  });
-});
-
-describe('learn page: review', () => {
-  it('disables "Review (N)" while nothing is due', async () => {
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    render(<LearnPage />, container);
-    await act(settle);
-    const button = Array.from(container.querySelectorAll('button')).find(
-      (el) => el.textContent === t('learn.review', { n: 0 }),
-    );
-    expect(button).toBeDefined();
-    expect(button?.hasAttribute('disabled')).toBe(true);
-    render(null, container);
-    container.remove();
   });
 });

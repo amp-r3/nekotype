@@ -33,8 +33,7 @@ import { appendEvents, clearLog, isLearnMessage, isLogMeta, loadLogMeta, readLog
 import type { LearnMessage, LogMeta } from './log';
 
 // The learn store of P7 (P7 plan, D17): the log in memory, its fold, the screen data and the
-// writes. It is not used by a screen yet; PR 9 moves the learning screen onto it, PR 11 retires the
-// old store.
+// writes. `/` and the session use it since PR 9; PR 11 retires the old store.
 
 type Model = typeof ModelModule;
 type Fold = ModelModule.Fold;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { learnCounters, learnReady, learnState } from '@/entities/learn';
+import { learnReady, learnView, legacyLearnCounters, legacyLearnState } from '@/entities/learn';
 import { locale } from '@/shared/i18n';
 
 // Compile-checked type helper: verifies property 'value' is readonly without @ts-expect-error
@@ -11,8 +11,9 @@ type IsWritable<T, K extends keyof T> = IfEquals<{ [Q in K]: T[Q] }, { -readonly
 type AssertFalse<T extends false> = T;
 
 // Static type assertions: these fail compilation (tsc --noEmit) if .value is writable
-export type _CheckLearnState = AssertFalse<IsWritable<typeof learnState, 'value'>>;
-export type _CheckLearnCounters = AssertFalse<IsWritable<typeof learnCounters, 'value'>>;
+export type _CheckLearnState = AssertFalse<IsWritable<typeof legacyLearnState, 'value'>>;
+export type _CheckLearnCounters = AssertFalse<IsWritable<typeof legacyLearnCounters, 'value'>>;
+export type _CheckLearnView = AssertFalse<IsWritable<typeof learnView, 'value'>>;
 export type _CheckLearnReady = AssertFalse<IsWritable<typeof learnReady, 'value'>>;
 export type _CheckLocale = AssertFalse<IsWritable<typeof locale, 'value'>>;
 
@@ -20,8 +21,9 @@ describe('store state: ReadonlySignal guarantees', () => {
   it('all store signals are exposed as ReadonlySignal', () => {
     // Runtime confirmation that signals are defined and readable
     expect(locale.value).toBeDefined();
-    expect(learnState.value.unlocked.hiragana).toHaveLength(5);
-    expect(learnCounters.value.started).toBe(0);
+    expect(legacyLearnState.value.unlocked.hiragana).toHaveLength(5);
+    expect(legacyLearnCounters.value.started).toBe(0);
     expect(learnReady.value).toBe(false);
+    expect(learnView.value).toBeNull();
   });
 });

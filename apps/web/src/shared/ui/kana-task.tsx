@@ -7,7 +7,7 @@ import { createTaskController } from './task-controller';
 import type { TaskController, TaskKind } from './task-controller';
 
 export type TaskSession = {
-  readonly kind: 'learning' | 'review';
+  readonly kind: 'learning';
   // The task on display, from 1; it grows after every task, introductions included.
   readonly n: number;
   readonly total: number;
@@ -16,7 +16,6 @@ export type TaskSession = {
 // Every string the task shows, from the caller's dictionary.
 export type TaskLabels = {
   readonly learning: string;
-  readonly review: string;
   readonly of: string;
   readonly newKana: string;
   readonly show: string;
@@ -51,7 +50,7 @@ export type KanaTaskProps = {
 };
 
 /**
- * One task of a learning or review session: the session line, the prompt, the options, the
+ * One task of a learning session: the session line, the prompt, the options, the
  * notice line and the hint line. It renders once per task; keystrokes go to the controller
  * (`onReady`), which writes classes, text and transforms. Everything shown comes through props.
  */
@@ -100,7 +99,7 @@ export function KanaTask({
     >
       <div className="nk-task__bar text-mono-small font-mono">
         <span data-testid="task-session">
-          <span>{labels[session.kind]} · </span>
+          <span>{labels.learning} · </span>
           <span className="nk-task__n">{session.n}</span>
           {` ${labels.of} `}
           <span className="nk-task__n">{session.total}</span>

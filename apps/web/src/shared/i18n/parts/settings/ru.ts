@@ -10,7 +10,7 @@ export const settingsRu = {
   'settings.learn.strictIme': 'строгая IME',
   'settings.learn.target': 'целевое время ответа',
   'settings.learn.targetHint':
-    'При меньшей цели каны позже становятся уверенными, а уверенные могут это утратить.',
+    'Ответы медленнее цели считаются более трудными, и их повторения приходят раньше.',
   'settings.learn.targetValue': '{ms} мс',
   'settings.data.title': 'Данные',
   'settings.data.reset': 'сбросить прогресс',
