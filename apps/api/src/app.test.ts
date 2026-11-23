@@ -34,6 +34,7 @@ describe('the migrations', () => {
     expect(columns).not.toContain('kana_stats');
     expect(columns).not.toContain('typing_records');
     expect(columns).toContain('device_seq');
+    expect(columns).not.toContain('counters');
     const tables = await env.DB.prepare(
       "SELECT name FROM sqlite_master WHERE name IN ('results', 'results_user_time')",
     ).all();
