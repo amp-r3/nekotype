@@ -1,6 +1,6 @@
 # ResultChart
 
-The answer-time chart of `/stats` (a lazy route: charts are allowed there, never on `/`). It draws what the page computed and nothing else: hand-written SVG, no library. Since decision 130 it has one use; the typing trend chart (points, the median line and band, decisions 103–107 and 113) left with the typing trainer.
+The answer-time chart of `/stats` (a lazy route: charts are allowed there, never on `/`). It draws what the page computed and nothing else: hand-written SVG, no library.
 
 | chart | marks | axis |
 | --- | --- | --- |

@@ -53,7 +53,7 @@
   }
 
   /* ================= KanaTask (ADR 058) =================
-   * One task of a learning or review session: session line, prompt, options slot (recognition), one reserved Notice
+   * One task of a learning session: session line, prompt, options slot (recognition), one reserved Notice
    * line, key-hint line. kind: 'introduction' | 'recall' | 'recognition'.
    * Every keystroke goes through createTaskController: classList / textContent / transform writes only, positions cached
    * after layout. The component renders once per task.
@@ -124,7 +124,7 @@
     return api;
   }
 
-  var TASK_LABELS = { learning: 'learning', review: 'review', of: 'of', newKana: 'new kana', show: 'show the romaji',
+  var TASK_LABELS = { learning: 'learning', of: 'of', newKana: 'new kana', show: 'show the romaji',
     blur: 'return to the window to continue', focus: 'click to focus', leave: 'leave session', task: 'task' };
   var KanaTask = forwardRef(function KanaTask(p, ref) {
     var narrow = useNarrow(), touch = useCoarse();
@@ -184,7 +184,7 @@
   function Kbd(p) { return h('kbd', { className: cx('nk-kbd', 'mono-small', p.bare && 'is-bare', p.className) }, p.children); }
 
   /* ================= Icons =================
-   * The system's only icon (ADR 055; restart left with the typing trainer, decision 128): linear, 24-unit grid, stroke 2, colour from the text. Always next to a label. */
+   * The system's only icon (ADR 055): linear, 24-unit grid, stroke 2, colour from the text. Always next to a label. */
   var ICONS = {
     reset: 'M4 12a8 8 0 1 0 2.34-5.66M4 4v5h5'
   };
@@ -390,7 +390,7 @@
    * ActivityMap — activity by day on /stats (decisions 108, 137): a calendar grid, one column per week (Monday first),
    * one cell per day, the last cell is today. It always fills the width it is given: as many weeks as fit at `minCell`
    * (at most `maxWeeks`), and the cells grow to the edge (at most `maxCell`). The layout never depends on the history. Fill = recall answers of the day on `heat-fur-1…5`; a day without answers is
-   * an outlined empty cell; a day of the current streak (`run`) carries a dot in the cell's ink; today has an `eye` border (the typing-test square left with decision 130). Nothing is colour alone: the numbers are in the tooltip and in every cell's `aria-label`.
+   * an outlined empty cell; a day of the current streak (`run`) carries a dot in the cell's ink; today has an `eye` border. Nothing is colour alone: the numbers are in the tooltip and in every cell's `aria-label`.
    * One Tab stop; ← → move by a week, ↑ ↓ by a day, Home / End to the first and the last day.
    */
   var AM_LABELS = {
@@ -450,16 +450,16 @@
 
   /* ================= KanaChart ================= */
   /*
-   * KanaChart — the learning table on `/` (ADR 058; one mode since decision 128).
-   * state data per kana: { state: 'learning'|'confident'|'mastered', box, due, next (ISO date), median (ms), acc (%),
-   *   answers (recall answers counted, ≤ 10), mixups: [[kana, n]], recog: [correct, total] }. A kana without data is locked.
-   * `due` is a mark over confident or mastered, not a state: it is ignored on learning.
-   * `nextUnlock` — the locked kana that opens next: its tooltip adds `opens next`.
+   * KanaChart — the kana table of a track on `/`.
+   * Data per introduced kana: { state: 'learning'|'learned'|'mastered', due, next (ISO date), median (ms), acc (%),
+   *   answers (recall answers among the last 10), mixups: [[kana, n]], recog: [correct, total] }. A kana without data is locked.
+   * `due` is a mark over learned or mastered, not a state: it is ignored on learning.
+   * `opensNext` — the locked kana that opens next: its tooltip adds `opens next`.
    */
   var KC_LABELS = {
     base: 'basic', voiced: 'voiced', combo: 'combinations', ext: 'extended',
     locked: 'locked', mastered: 'mastered',
-    learning: 'learning', confident: 'confident', due: 'review due', notIntroduced: 'not introduced yet', opensNext: 'opens next', vowels: 'vowels',
+    learning: 'learning', learned: 'learned', due: 'review due', opensNext: 'opens next', vowels: 'vowels',
     next: function (d) { return 'next review: ' + d; },
     stats: function (m, a) { return 'median ' + m + ' ms · accuracy ' + a + '%'; },
     answers: function (n) { return n + ' of 10 answers'; },
@@ -467,16 +467,17 @@
     mixedWith: 'mixed up with', noMixups: 'no mixups yet', noRecog: 'no recognition answers yet',
     recog: function (p, a, b) { return 'recognition accuracy ' + p + '% (' + a + ' of ' + b + ')'; }, close: 'close'
   };
-  /* Tooltip / aria-label lines of a kana in the state mode (exception to Tooltip's one-line rule). */
-  /* Due = the mark: a confident or mastered kana whose review date has come. Review (N) counts exactly these kana and the
-     review session asks only them (decision 95): a learning kana is not scheduled for review, even in box 1 or higher. */
-  function isDue(d) { return !!(d && d.due && (d.state === 'confident' || d.state === 'mastered')); }
-  function kanaStateLines(k, d, L, romaji, nextUnlock) {
-    if (!d) return [k, L.locked + (k === nextUnlock ? ' · ' + L.opensNext : '')];
+  /* Tooltip / aria-label lines of a kana (exception to Tooltip's one-line rule). An introduced kana without a recall
+     answer yet has no third line. */
+  /* Due = the mark: a learned or mastered kana whose review comes before the next session. A learning kana is never due. */
+  function isDue(d) { return !!(d && d.due && (d.state === 'learned' || d.state === 'mastered')); }
+  function kanaStateLines(k, d, L, romaji, opensNext) {
+    if (!d) return [k, L.locked + (k === opensNext ? ' · ' + L.opensNext : '')];
     var l2 = L[d.state];
     if (d.state !== 'learning') l2 += ' · ' + (isDue(d) ? L.due : L.next(L.date(d.next)));
-    var l3 = !d.answers ? L.notIntroduced : L.stats(d.median, d.acc) + (d.answers < 10 ? ' · ' + L.answers(d.answers) : '');
-    return [k + ' · ' + (romaji ? romaji(k) : ''), l2, l3];
+    var lines = [k + ' · ' + (romaji ? romaji(k) : ''), l2];
+    if (d.answers) lines.push(L.stats(d.median, d.acc) + (d.answers < 10 ? ' · ' + L.answers(d.answers) : ''));
+    return lines;
   }
   /* Activation details (decision 94): a panel on `bg-raised` under the row of the activated cell, with everything known
      about the kana — head (kana, romaji, close), the state and review line, the median and accuracy line (the tooltip's
@@ -509,7 +510,7 @@
     var grid = useRef(null);
     var rows = rowsFor(script), first = cellsOf(rows[0], script)[0];
     function isLocked(k) { return !data[k]; }
-    function stateLines(k) { return kanaStateLines(k, data[k], L, romaji, p.nextUnlock); }
+    function stateLines(k) { return kanaStateLines(k, data[k], L, romaji, p.opensNext); }
     function cellCls(k) {
       var d = data[k];
       if (!d) return 'is-st-locked';
@@ -573,8 +574,8 @@
     return h('div', { className: cx('nk-kc', 'nk-kc--state', p.className) },
       h('div', { className: 'nk-kc__grid', role: 'grid', 'aria-label': p.label, ref: grid, onKeyDown: nav, onMouseLeave: function () { act[1](null); } },
         GROUPS.map(block)),
-      h('div', { className: 'nk-kc__legend ui-caption' }, sw('is-st-locked', L.locked), sw('is-st-learning', L.learning), sw('is-st-confident', L.confident), sw('is-st-mastered is-mastered', L.mastered),
-        h('span', { key: 'sep', className: 'nk-kc__legend-sep', 'aria-hidden': true }), sw('is-st-confident is-due', L.due)));
+      h('div', { className: 'nk-kc__legend ui-caption' }, sw('is-st-locked', L.locked), sw('is-st-learning', L.learning), sw('is-st-learned', L.learned), sw('is-st-mastered is-mastered', L.mastered),
+        h('span', { key: 'sep', className: 'nk-kc__legend-sep', 'aria-hidden': true }), sw('is-st-learned is-due', L.due)));
   }
 
   /* ================= Lesson ================= */

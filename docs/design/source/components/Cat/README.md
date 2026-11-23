@@ -6,7 +6,7 @@ The Nekotype cat. One style, `geometry` (Q24): mark, favicon and illustrations.
 | --- | --- |
 | `neutral` | 404 |
 | `sleep` | empty states (`EmptyState`) |
-| `content` | not placed yet: its only place, a typing personal best, left with the typing trainer (decision 136) |
+| `content` | not placed yet (decision 136) |
 | `grumpy` | not placed yet: reserved for an error or a failure (decision 98) |
 
 - Colours: `cat-fur`, `cat-eye`, `cat-ground`. The eyes are the only colour spot.

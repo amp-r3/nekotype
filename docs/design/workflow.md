@@ -54,7 +54,7 @@ The design system is an artifact of the Design System type. Its files are under 
 
 Details that are easy to miss:
 
-- Every `Screen*/preview.html` holds the same script. A change to the screens' code or data goes into each of them.
+- Every `Screen*/preview.html` loads one script and one stylesheet, `screens/screens.js` and `screens/screens.css`, and names its screen in `data-screen`. A change to the screens' code or data is made once, there.
 - Images (the logo, the cat) are uploads, not files. A new one is uploaded with `asset: true`, and the index's `assetGroups` points at its id.
 - `index.d.ts` is published with `contentType: "text/plain"`.
 - A token removed from `tokens.json` is removed from `apps/web/src/shared/styles/tokens.css` too, because `tokens.test.ts` compares them.

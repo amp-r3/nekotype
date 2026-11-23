@@ -44,7 +44,7 @@ export declare function Dialog(props: DialogProps): React.ReactElement;
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** In code: 'ghost' = 'text'. */
   variant?: 'primary' | 'secondary' | 'text' | 'danger';
-  /** lg = control-h with space-6 padding (continue, review). */
+  /** lg = control-h with space-6 padding (continue, to the table). */
   size?: 'sm' | 'md' | 'lg';
   /** The system's only icon (linear, 24 grid, stroke 2), always next to a label. */
   icon?: 'reset';
@@ -128,27 +128,26 @@ export interface ActivityMapProps {
 }
 export declare function ActivityMap(props: ActivityMapProps): React.ReactElement;
 
-/** A kana's datum (ADR 058). A kana without a datum is locked. */
+/** An introduced kana's datum. A kana without a datum is locked (not introduced). */
 export interface KanaState {
-  state: 'learning' | 'confident' | 'mastered';
-  /** Leitner box 0–5. Boxes drive the review schedule only, never unlocking. */
-  box: number;
-  /** The review date has come. A mark over confident or mastered, not a state; ignored on learning. */
+  /** learned and mastered: learned, stability under 21 days or from 21 days. */
+  state: 'learning' | 'learned' | 'mastered';
+  /** The review comes before the next session. A mark over learned or mastered, not a state; ignored on learning. */
   due: boolean;
-  /** ISO date of the next review (box ≥ 1). */
+  /** ISO date of the next review; learned and mastered only. */
   next: string | null;
   /** Median answer time of the last 10 recall answers, ms. */
   median: number;
   /** Accuracy of the last 10 recall answers, %. */
   acc: number;
-  /** Recall answers counted (≤ 10); 0 = not introduced yet. */
+  /** Recall answers among the last 10; 0 = introduced, no recall answer yet. */
   answers: number;
-  /** Kana chosen instead of this one in recognition: [kana, count]. */
+  /** Kana given instead of this one in recognition and recall: [kana, count]. */
   mixups: [string, number][];
   /** Recognition: [correct, total]. */
   recog: [number, number];
 }
-/** The learning table on `/` (ADR 058; one mode since decision 128). */
+/** The kana table of a track on `/`. */
 export interface KanaChartProps {
   script?: 'hiragana' | 'katakana';
   /** Keyed by kana. */
@@ -157,7 +156,7 @@ export interface KanaChartProps {
   romaji?: (kana: string) => string;
   onSelect?: (kana: string) => void;
   /** The locked kana that opens next — its tooltip adds `opens next`. */
-  nextUnlock?: string | null;
+  opensNext?: string | null;
   label: string;
   /** Tooltip language (lang attribute). */
   lang?: string;
@@ -168,10 +167,10 @@ export declare function KanaChart(props: KanaChartProps): React.ReactElement;
 /** The activation details: mixups and recognition accuracy. */
 export declare function KanaChartDetails(props: { kana: string; data?: KanaState; romaji?: (k: string) => string; labels?: Record<string, any>; onClose?: () => void }): React.ReactElement;
 /** Tooltip and aria-label lines of a kana. */
-export declare function kanaStateLines(kana: string, data: KanaState | undefined, labels: Record<string, any>, romaji?: (k: string) => string, nextUnlock?: string | null): string[];
-/** True when the review-due mark applies: `due` on a confident or mastered kana. */
+export declare function kanaStateLines(kana: string, data: KanaState | undefined, labels: Record<string, any>, romaji?: (k: string) => string, opensNext?: string | null): string[];
+/** True when the review-due mark applies: `due` on a learned or mastered kana. */
 export declare function isDue(data: KanaState | undefined): boolean;
-/* ---------- KanaTask (ADR 058): one task of a learning or review session ---------- */
+/* ---------- KanaTask: one task of a learning session ---------- */
 export interface TaskController {
   /** recall: pending romaji under the kana. */
   setBuffer(s: string): void;
@@ -195,13 +194,13 @@ export interface KanaTaskProps {
   kana?: string;
   /** introduction: the ghost hint; recognition: the prompt. */
   romaji?: string;
-  /** The session line: `learning · 7 of 25`. */
-  session: { kind: 'learning' | 'review'; n: number; total: number };
+  /** The session line: `learning · 7 of 30`. */
+  session: { kind: 'learning'; n: number; total: number };
   /** Content of the reserved notice line (a Notice). */
   notice?: React.ReactNode;
   /** recognition: four OptionCards. */
   children?: React.ReactNode;
-  /** `leave session` (proposal). */
+  /** `leave session`: back to `/` without confirmation. */
   onLeave?: () => void;
   /** recall under pointer: coarse: the `show the romaji` button (no Esc on an on-screen keyboard). */
   onShow?: () => void;
@@ -209,7 +208,7 @@ export interface KanaTaskProps {
   coarse?: boolean;
   label?: string;
   optionsLabel?: string;
-  labels?: Partial<Record<'learning' | 'review' | 'of' | 'newKana' | 'show' | 'blur' | 'focus' | 'leave', string>>;
+  labels?: Partial<Record<'learning' | 'of' | 'newKana' | 'show' | 'blur' | 'focus' | 'leave', string>>;
   onReady?: (ctl: TaskController) => void;
   onRender?: () => void;
   className?: string;
