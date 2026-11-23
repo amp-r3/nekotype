@@ -52,7 +52,7 @@ describe('learn page: the top of the learning screen', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
-    await act(settle);
+    await untilChart(container);
     const field = container.querySelector('input');
     expect(field?.tabIndex).toBe(-1);
     expect(field?.getAttribute('aria-hidden')).toBe('true');
@@ -62,7 +62,7 @@ describe('learn page: the top of the learning screen', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
-    await act(settle);
+    await untilChart(container);
     expect(container.querySelector('[data-testid="learn-streak"]')).toBeNull();
     expect(container.querySelector('[data-testid="learn-first"]')?.textContent).toBe(
       t('learn.first', { kana: 'あ い う え お' }),
@@ -73,7 +73,13 @@ describe('learn page: the top of the learning screen', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
-    await act(settle);
+    for (
+      let i = 0;
+      i < 100 && document.activeElement?.textContent !== t('learn.continue');
+      i += 1
+    ) {
+      await act(settle);
+    }
     expect(document.activeElement?.textContent).toBe(t('learn.continue'));
     expect(t('learn.continue')).toBe('continue');
   });
@@ -82,7 +88,7 @@ describe('learn page: the top of the learning screen', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
-    await act(settle);
+    await untilChart(container);
 
     const katakana = Array.from(container.querySelectorAll('[role="radio"]')).find(
       (el) => el.textContent === t('learn.track.katakana'),
