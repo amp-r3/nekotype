@@ -203,6 +203,7 @@ export function createFakeServer() {
   const requests: RecordedRequest[] = [];
   const forced: Forced[] = [];
   let beforeResponse: ((request: RecordedRequest) => void) | null = null;
+  let lostAcks = 0;
 
   const moreFor = (deviceId: string, after: number): boolean =>
     rows.some((r) => r.id > after && r.deviceId !== deviceId);
@@ -230,6 +231,11 @@ export function createFakeServer() {
           rows.push({ id: rows.length + 1, deviceId: sync.deviceId, log: sync.log });
         settings = mergeSettings(settings, sync.settings, sync.seq);
         seqs.set(sync.deviceId, sync.seq);
+      }
+      if (lostAcks > 0) {
+        // The batch is stored, the answer never arrives.
+        lostAcks -= 1;
+        throw new TypeError('Failed to fetch');
       }
       return Promise.resolve(
         json(200, {
@@ -269,6 +275,10 @@ export function createFakeServer() {
     /** The next requests get these answers instead of the server's, in order. */
     force: (...responses: Forced[]) => {
       forced.push(...responses);
+    },
+    /** The next `count` batches are applied, but their answers are lost. */
+    loseAcks: (count: number) => {
+      lostAcks += count;
     },
     forceNetworkError: () => {
       forced.push(() => {
@@ -323,6 +333,17 @@ export async function seedOwn(db: Db, count: number, from = 1, dev = LOG_DEV): P
   await db.put('log', 'own:open', encodePage(events));
   await db.put('meta', 'log', { dev, next: from + count, lastAt: last?.at ?? 0 });
   return events;
+}
+
+/** Appends `count` more own events, as the log module does: the open page and `meta/log`. */
+export async function appendOwn(db: Db, count: number, dev = LOG_DEV): Promise<void> {
+  const meta = await db.get('meta', 'log');
+  const next = isObject(meta) && typeof meta['next'] === 'number' ? meta['next'] : 1;
+  const open = decodePage(await db.get('log', 'own:open')) ?? [];
+  const added = eventsOf(dev, next, count, 1_000 + next * 1000);
+  const all = [...open, ...added];
+  await db.put('log', 'own:open', encodePage(all));
+  await db.put('meta', 'log', { dev, next: next + count, lastAt: all[all.length - 1]?.at ?? 0 });
 }
 
 export function settingsAt(updatedAt: number): ValidSettings {

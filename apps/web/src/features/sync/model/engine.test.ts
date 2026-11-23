@@ -15,6 +15,7 @@ import {
   TEST_PULL_ROWS,
   createFakeServer,
   createRig,
+  appendOwn,
   createTestLocks,
   errorResponse,
   eventsOf,
@@ -654,6 +655,66 @@ describe('two devices against one server', () => {
     expect(a.reloads.count).toBe(1);
     expect(b.reloads.count).toBe(1);
   });
+});
+
+describe('two devices with failed requests', () => {
+  // A small seeded generator: the failures fall in the same places on every run.
+  const seeded = (seed: number): (() => number) => {
+    let x = seed;
+    return () => {
+      x = (x * 1_664_525 + 1_013_904_223) % 4_294_967_296;
+      return x / 4_294_967_296;
+    };
+  };
+
+  it.each([1, 2, 3, 4, 5])(
+    'converge on every event after failed requests and lost answers (seed %i)',
+    async (seed) => {
+      const random = seeded(seed);
+      const server = createFakeServer();
+      const a = await createRig({ db: await signedInDb('dev-a'), server });
+      const b = await createRig({ db: await signedInDb('dev-b'), server });
+      const rigs = [
+        { rig: a, dev: LOG_DEV },
+        { rig: b, dev: OTHER_DEV },
+      ];
+      for (const { rig } of rigs) rig.engine.start();
+
+      for (let round = 0; round < 8; round += 1) {
+        for (const { rig, dev } of rigs) {
+          await appendOwn(rig.db, 1 + Math.floor(random() * 40), dev);
+          const roll = random();
+          if (roll < 0.25) server.forceNetworkError();
+          else if (roll < 0.5) server.loseAcks(1);
+          rig.request();
+          rig.timers.advance(10_000);
+          await rig.engine.idle();
+          rig.env.goOnline();
+          rig.timers.advance(10_000);
+          await rig.engine.idle();
+        }
+      }
+      // Quiet: every pending batch and catch-up goes out, and each device reads the other's rows.
+      for (let i = 0; i < 6; i += 1) {
+        for (const { rig } of rigs) {
+          rig.env.goOnline();
+          rig.timers.advance(10_000);
+          await rig.engine.idle();
+        }
+      }
+
+      const key = (e: { dev: string; n: number }): string => `${e.dev}:${String(e.n)}`;
+      const onServer = new Set(server.events().map(key));
+      // Each batch reached the server once: no event is stored twice.
+      expect(onServer.size).toBe(server.events().length);
+      expect(onServer.size).toBeGreaterThan(100);
+      for (const { rig } of rigs) {
+        const stored = (await rig.db.getAll('log')).flatMap((page) => decodePage(page) ?? []);
+        expect(new Set(stored.map(key))).toEqual(onServer);
+        expect(await rig.db.get('outbox', 'current')).toBeUndefined();
+      }
+    },
+  );
 });
 
 describe('a guest', () => {

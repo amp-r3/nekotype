@@ -378,6 +378,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
             seq: (asCount(lastSeq) ?? 0) + 1,
             after: asCount(pulledId) ?? 0,
             unsent,
+            firstN: sentN + 1,
             settings:
               isSettings(settings) && settings.updatedAt > (asTimestamp(syncedAt) ?? 0)
                 ? settings

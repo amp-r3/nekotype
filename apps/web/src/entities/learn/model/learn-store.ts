@@ -298,6 +298,9 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   const reload = (): Promise<void> => {
     writing = writing
       .then(async () => {
+        // A pull that lands while the log and the model chunk load is read by that load, or by
+        // this reload once it ends; it is never dropped.
+        if (loading !== null) await loading;
         if (status.value !== 'ready') return;
         await rebuild();
       })

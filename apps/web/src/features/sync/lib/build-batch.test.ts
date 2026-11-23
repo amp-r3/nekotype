@@ -9,6 +9,7 @@ const input = (over: Partial<BatchInput> = {}): BatchInput => ({
   seq: 4,
   after: 9,
   unsent: [],
+  firstN: 1,
   settings: null,
   ...over,
 });
@@ -20,7 +21,7 @@ describe('buildBatch', () => {
 
   it('carries the events, `after` and the identity', () => {
     const unsent = eventsOf(LOG_DEV, 3, 4);
-    const batch = buildBatch(input({ unsent }), 1_000_000);
+    const batch = buildBatch(input({ unsent, firstN: 3 }), 1_000_000);
     expect(batch?.request).toMatchObject({
       v: 3,
       deviceId: 'dev',
@@ -30,6 +31,17 @@ describe('buildBatch', () => {
     });
     expect(decodePage(batch?.request.log)).toEqual(unsent);
     expect(batch?.lastN).toBe(6);
+  });
+
+  it('sends only the run that starts at the first unsent n', () => {
+    // Events 1–2 are missing from the read (a page closed between two reads): nothing is sent, so
+    // `sentN` never jumps over them.
+    const late = eventsOf(LOG_DEV, 3, 4);
+    expect(buildBatch(input({ unsent: late, firstN: 1 }), 1_000_000)).toBeNull();
+    const gap = [...eventsOf(LOG_DEV, 1, 2), ...eventsOf(LOG_DEV, 5, 2)];
+    const batch = buildBatch(input({ unsent: gap, firstN: 1 }), 1_000_000);
+    expect(batch?.lastN).toBe(2);
+    expect(batch?.request.log?.e).toHaveLength(2);
   });
 
   it('sends settings alone', () => {

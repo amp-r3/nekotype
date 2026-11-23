@@ -122,6 +122,29 @@ describe('loading', () => {
     expect(env.store.modelState()).not.toBeNull();
   });
 
+  it('a reload during loading reads the log again when the load ends', async () => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const env = setup({
+      loadModel: async () => {
+        await gate;
+        return import('@nekotype/model');
+      },
+    });
+    const loading = env.store.init();
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    // The log was read before the pull stored its row; the model chunk is still loading.
+    const row: LogEvent = { t: 'intro', at: 1000, dev: OTHER, n: 1, k: A };
+    await env.db.put('log', rowPageKey(1), encodePage([row]));
+    const reloading = env.store.reload();
+    release();
+    await loading;
+    await reloading;
+    expect(env.store.view.value?.kana.get(A)?.state).toBe('learning');
+  });
+
   it('is an error, and writes nothing, when the log cannot be read', async () => {
     const db = createMemoryDb();
     const env = setup({ db: { ...db, getAll: () => Promise.reject(new Error('closed')) } });
