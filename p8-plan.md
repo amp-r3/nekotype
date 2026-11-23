@@ -15,7 +15,7 @@ The executor of a pull request fills its row (see [section 8](#8-instructions-fo
 
 | PR  | Branch                   | Status  | Pull request |
 | --- | ------------------------ | ------- | ------------ |
-| C   | `docs/design-cleanup`    | waiting |              |
+| C   | `docs/design-cleanup`    | done    | #230         |
 | D   | `docs/p8-design`         | waiting |              |
 | 1   | `p8-01-model-home`       | waiting |              |
 | 2   | `p8-02-progress-details` | waiting |              |
