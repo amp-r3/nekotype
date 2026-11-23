@@ -87,15 +87,35 @@ The MVP is delivered in fifteen sequential phases. At the end of every phase `ve
      - learning.md, metrics.md, storage-sync.md, backend.md and frontend.md describe the model, the log and the screens of P7.
    - **Closed** on 2026-11-23 by PR 15 of the [phase plan](../archive/p7-plan.md) (PRs 205–218 and 220–226). The model is `@nekotype/model` ([ADR 101](../adr/101-model-package.md)); the client keeps the answer log in IndexedDB schema 6 and learns on the planner ([ADR 103](../adr/103-log-on-the-client.md), [ADR 104](../adr/104-learning-on-the-model.md)); sync format 3 replaced format 2 and migration `0005` dropped the learning columns ([ADR 102](../adr/102-sync-format-3-server.md)), checked on production by the maintainer. The sim's beginner reads the 46 basic hiragana on day 7 at 94.6% review retention and 8.2 minutes a day; at 4× a fold of 40,000 answers takes 64.9 ms and a forecast 131.8 ms; a 256 KB batch takes 10 ms of CPU on Cloudflare ([acceptance note](../research/2026-11-23-p7-acceptance.md)). The initial JavaScript went from 31.06 to 30.38 KB ([Budgets and quality](quality.md), "End of P7").
 9. **P8 — Learning home and progress.**
-   - Scope ([ADR 099](../adr/099-learning-home-methods-and-phases-after-p6.md)): `/` is rewritten as a learning home driven by the model:
-     - the next action with its reason;
-     - the forecast of the next unlock in sessions;
-     - the path through the groups of the track;
-     - an outline of the next session;
-     - what got stronger.
-   - Hiragana is suggested first; the learner can switch the track. `/stats` becomes `/progress`, with the kana chart on top; "Leave session" and the summary return to `/`.
-   - The session summary, the session screen, a kana details view and the navigation are redesigned with it. The design also draws the states of P9–P12 (stroke order, sound, first visit and placement, mnemonic, words the learner can read), which those phases turn on.
-   - The design session in the design-system artifact and its export come before any code pull request.
+   - Scope ([ADR 099](../adr/099-learning-home-methods-and-phases-after-p6.md), points 1–4): the screens show what the model of P7 already computes (`forecastRow`, `outlineSession`, `strongerSince`, `suggestKatakana`). Agreed with the maintainer on 2026-11-23.
+   - **The home `/`** answers "what now" without the kana chart, which leaves it:
+     - one primary "Continue" (Enter) with the reason for what the session will do: kana due for review, learning kana to finish, the next row to open, or weak kana to practise (by their accuracy and confusions). The reason is a label, not a mode: there is one kind of session ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md));
+     - when the planner has nothing to offer, the home says when the next review is due instead of starting an empty session;
+     - the forecast of the next row in sessions, as a range. While the learner's habits are unknown it comes from the model's prediction; a row beyond 60 sessions has no forecast;
+     - the path through the track in blocks (basic; dakuten and handakuten; yōon; in katakana also extended), each block opening into its rows, marked done, current or locked, with the learner's place on it;
+     - the outline of the next session ("≈5 reviews, 2 new"), not a promise: the session still adapts as it goes;
+     - what got stronger since the start of the last session, each kana opening its details;
+     - the current streak; the other statistics move to "Progress";
+     - the track: hiragana is suggested first, and katakana once the model sets `suggestKatakana`. The learner switches the track at any time; the choice syncs as `learn.track` of the settings.
+   - **"Progress"** replaces `/stats` at `/progress`: the kana chart of the selected track on top, the current statistics under it. `/stats` redirects to `/progress`.
+   - **Kana details** become a dialog, opened from the chart, from "what got stronger" and from the session summary, never from a running session: the state, the next review, the accuracy and median time of recall, the confusions and the recognition accuracy. The dialog is not part of the first load.
+   - **The session summary** returns to `/` and shows how the forecast of the next row changed with the session ("about 3 sessions → about 2"). "Leave session" returns to `/` too.
+   - **The session screen and the navigation** are redesigned; the render rule of the hot path stays.
+   - **Forecast history.** Each forecast shown is kept on the device and settled once its row is introduced; from three settled forecasts on, the forecast is corrected by them ([part 4](../research/2026-11-21-p7-knowledge-model-part-4.md), [acceptance note](../research/2026-11-23-p7-acceptance.md)). The history is never synced; its store raises `SCHEMA_VERSION` (ADR 061).
+   - **Design first.** The design session in the design-system artifact and its export come before any code pull request. The export catches up with the P7 code (`learned`, no `review (N)`, `due: N`; [Design](../design/README.md)) and draws, switched off, the states of the later phases, so that they do not redraw these screens:
+     - P9: the contrast, transfer, build and fluency-run tasks, the feedback that teaches, and the stroke order in the kana details;
+     - P10: the sound in tasks, in the kana details and in the settings;
+     - P11: the first visit, the placement test with its entry on "Progress", and the mnemonic;
+     - P12: the words the learner can read, on `/` and in the summary.
+   - **Acceptance:**
+     - `/` shows the action with its reason, the forecast or its absence, the path, the outline, what got stronger and the streak, and no chart; the state with nothing to offer has a test;
+     - "Continue" works before the forecast and what got stronger are ready; both are computed outside the first render and outside keystroke handlers, and with a 4× CPU slowdown in Chromium they appear within 300 ms of the model chunk loading for a log of 40,000 answers;
+     - `/stats` redirects to `/progress`; neither "Progress" nor the kana details dialog is in the initial chunk, and every budget holds;
+     - the forecast history is settled when its row is introduced and corrects the forecast from the third settled forecast on (unit tests); a database of schema 6 is reset;
+     - a keystroke of a recall task renders nothing (`session-screen.test.tsx`), and the latency test holds;
+     - an e2e goes home → session → summary → home and finds a kana under what got stronger;
+     - the export matches the code, with the states of P9–P12 drawn and switched off; `en` and `ru` keep key parity; every new screen and the dialog work from the keyboard and are named for screen readers;
+     - learning.md, metrics.md, frontend.md and storage-sync.md describe the screens and the forecast history of P8.
 10. **P9 — Learning methods.**
     - Scope ([ADR 099](../adr/099-learning-home-methods-and-phases-after-p6.md), [research note](../research/2026-11-21-kana-learning-methods.md)) as task types of the model:
       - contrast tasks for confusable kana, from the confusion state per pair;
