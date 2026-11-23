@@ -29,7 +29,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | 12  | `p7-switch`                   | `main`      | done   | #220         |
 | 13  | `p7-13-format-2-out`          | `main`      | done   | #222         |
 | 14  | `p7-14-drop-learning-columns` | `main`      | done   | #224         |
-| 15  | `p7-15-close`                 | `main`      | —      | —            |
+| 15  | `p7-15-close`                 | `main`      | done   | #226         |
 
 ## 1. Goal and scope
 
