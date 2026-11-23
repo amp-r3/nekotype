@@ -1,6 +1,6 @@
 # CPU of sync format 3 on Cloudflare (P7 PR 7)
 
-Measured on 2026-11-23 with `apps/bench` against the Pages project `nekotype-bench`: the real application of `apps/api` at commit 39f59e4 (P7 PR 6, #211, format 3 on the server) on a year of log. The method is that of [the P5 acceptance note](2026-11-19-p5-acceptance.md): `cpuTime` from `wrangler pages deployment tail`, a whole number of milliseconds; cold is the first request after each of 5 deployments, warm 50 requests to the last one. The pass line is [D24 of the P7 plan](../../p7-plan.md) on [ADR 086](../adr/086-sync-endpoint-cpu-line.md).
+Measured on 2026-11-23 with `apps/bench` against the Pages project `nekotype-bench`: the real application of `apps/api` at commit 39f59e4 (P7 PR 6, #211, format 3 on the server) on a year of log. The method is that of [the P5 acceptance note](2026-11-19-p5-acceptance.md): `cpuTime` from `wrangler pages deployment tail`, a whole number of milliseconds; cold is the first request after each of 5 deployments, warm 50 requests to the last one. The pass line is [D24 of the P7 plan](../archive/p7-plan.md) on [ADR 086](../adr/086-sync-endpoint-cpu-line.md).
 
 ## What was measured
 

@@ -9,8 +9,8 @@ export function keyOf(track: Track, kana: string): LearnKanaKey {
   return `${track}:${kana}`;
 }
 
-/** The kana of a track as keys, in track order, which is also the unlock order. */
-export function trackKeys(track: Track): readonly LearnKanaKey[] {
+/** The kana of a track as keys, in track order, which is also the order of introduction. */
+function trackKeys(track: Track): readonly LearnKanaKey[] {
   return kanaOf(track).map((kana) => keyOf(track, kana));
 }
 
@@ -22,11 +22,6 @@ const KEYS: Readonly<Record<Track, readonly LearnKanaKey[]>> = {
 
 export function keysOfTrack(track: Track): readonly LearnKanaKey[] {
   return KEYS[track];
-}
-
-/** The five vowels of a track are unlocked from the start. */
-export function initialUnlocked(track: Track): readonly LearnKanaKey[] {
-  return KEYS[track].slice(0, 5);
 }
 
 export function trackOfKey(key: LearnKanaKey): Track {
@@ -61,33 +56,4 @@ export function dependenciesOf(track: Track, kana: string): readonly LearnKanaKe
   return [...new Set(deps.map((dep) => keyOf(track, dep)))].filter(
     (key) => key !== own && KEYS[track].includes(key),
   );
-}
-
-const DEPENDENCIES: Readonly<Record<Track, ReadonlyMap<LearnKanaKey, readonly LearnKanaKey[]>>> = {
-  hiragana: new Map(
-    kanaOf('hiragana').map((kana) => [keyOf('hiragana', kana), dependenciesOf('hiragana', kana)]),
-  ),
-  katakana: new Map(
-    kanaOf('katakana').map((kana) => [keyOf('katakana', kana), dependenciesOf('katakana', kana)]),
-  ),
-};
-
-/**
- * The kana to unlock next: when every unlocked kana is confident, the first locked kana in track
- * order whose dependencies are all confident. `null` when something is not confident yet or no
- * kana can be unlocked. Kana unlock one at a time: a new kana is not confident.
- */
-export function nextUnlock(
-  track: Track,
-  unlocked: readonly LearnKanaKey[],
-  isKeyConfident: (key: LearnKanaKey) => boolean,
-): LearnKanaKey | null {
-  if (!unlocked.every(isKeyConfident)) return null;
-  const open = new Set(unlocked);
-  const deps = DEPENDENCIES[track];
-  for (const key of KEYS[track]) {
-    if (open.has(key)) continue;
-    if ((deps.get(key) ?? []).every(isKeyConfident)) return key;
-  }
-  return null;
 }

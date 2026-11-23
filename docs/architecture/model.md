@@ -1,10 +1,10 @@
 # The knowledge model
 
-Part of the [architecture description](README.md) of the current code. [ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md) decides the model; [ADR 101](../adr/101-model-package.md) its package. After P7 PR 4 the package holds FSRS-6, the kana items, the grade table, the fold with its statistics, the planner and the learn view. The forecast is added by the next pull request; nothing in `apps/web` imports the package yet.
+Part of the [architecture description](README.md) of the current code. [ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md) decides the model; [ADR 101](../adr/101-model-package.md) its package. The package holds FSRS-6, the kana items, the grade table, the fold with its statistics, the planner, the learn view, the forecast and the outline. `apps/web` loads it in a lazy chunk of its own (`entities/learn`, [entities.md](entities.md)); the forecast, the outline and `strongerSince` have no caller before P8.
 
 ## The package
 
-`packages/model` (`@nekotype/model`) is consumed as source, like the engine. Entry points: `.` and `./testing` (event builders for tests: `intro`, `answer`, `start`, `end`). It runs in the browser, in a Worker and in Node (`packages/sim`). Lint enforces it: relative imports, `@nekotype/engine` and types of `@nekotype/shared/types` only; no `window`, `document`, `navigator`, storage, `fetch`, timers or `Date`; no `Math.random`. Time is passed as numbers and randomness as `Rng`. Coverage thresholds: 95% statements, functions and lines, 90% branches.
+`packages/model` (`@nekotype/model`) is consumed as source, like the engine. Entry points: `.` and `./testing` (event builders for tests: `intro`, `answer`, `start`, `end`; `syntheticLog` for the measurements). It runs in the browser, in a Worker and in Node (`packages/sim`). Lint enforces it: relative imports, `@nekotype/engine` and types of `@nekotype/shared/types` only; no `window`, `document`, `navigator`, storage, `fetch`, timers or `Date`; no `Math.random`. Time is passed as numbers and randomness as `Rng`. Coverage thresholds: 95% statements, functions and lines, 90% branches.
 
 | File           | Holds                                                                                                                                          |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -18,6 +18,7 @@ Part of the [architecture description](README.md) of the current code. [ADR 100]
 | `stats.ts`     | `LogStats` (last recall answers, recognition counts, days, session counters) and the data the fold keeps for it                                |
 | `view.ts`      | `describe(state, stats)`: the plain `LearnView` the screens read (chart states, due times, confusions, `opensNext`)                            |
 | `stronger.ts`  | `strongerSince(before, after)`: kana whose chart state rose or whose stability doubled                                                         |
+| `forecast.ts`  | `habitsOf`, `nextRow`, `forecastRow`, `outlineSession`: plays of the planner forward (below)                                                   |
 | `grade.ts`     | `effectsOf(answer, targetMs, learned)`: the table of ADR 100, point 4, as memory updates and confusion changes; a grade is never stored        |
 
 ## FSRS-6
@@ -36,7 +37,7 @@ The state is never stored, synced or migrated: it is `foldLog(events, { targetMs
 
 `ModelState` holds `items` (phase, FSRS-6 memory, `lastAt`, `lastDay`, `streak`, `lastTask` per kana), `learner` (task count, gaps, sittings, task intervals, `observed`, the last 200 outcomes, the `tz` of each device), `confusions` (asked → given → count above 0) and `targetMs`. `fold.state` is live and valid until the next `apply`; `snapshot()` copies the maps and lists (and the statistics), so a later `apply` does not change it; `clone()` gives an independent fold; `clone({ stats: false })` is what the forecast will use.
 
-Each event is applied by the rules of D5 in the P7 plan: an event with an unknown kana is counted in `ignored` and skipped; a session start sets the device's zone; an introduction of a kana that is not new is ignored; an answer on a new kana introduces it first. A review is a `recall` on a kana that is learned before the answer; only reviews move `observed`. The same-day formula follows the local day of the writing device (`tz` of its last session start, 0 without one). A word answer has no outcome of its own (it is not on one kana) and grades the learned kana of its reading. Statistics are kept only with `stats: true` (otherwise `fold.stats` is null).
+Each event is applied by the rules of D5 in the [P7 plan](../archive/p7-plan.md#d5-the-fold): an event with an unknown kana is counted in `ignored` and skipped; a session start sets the device's zone; an introduction of a kana that is not new is ignored; an answer on a new kana introduces it first. A review is a `recall` on a kana that is learned before the answer; only reviews move `observed`. The same-day formula follows the local day of the writing device (`tz` of its last session start, 0 without one). A word answer has no outcome of its own (it is not on one kana) and grades the learned kana of its reading. Statistics are kept only with `stats: true` (otherwise `fold.stats` is null).
 
 `fold.properties.test.ts` runs 200 seeded logs of 2–3 devices: any order of delivery with repeats, incremental `apply`, and devices exchanging batches with 30% failed syncs all end in the snapshot of one `foldLog` of every event.
 

@@ -55,7 +55,7 @@ const ARROWS: Readonly<Record<string, GridKey>> = {
   ArrowDown: 'down',
 };
 
-/** The class of a state: `learned` has the fill the old `confident` had (P7 plan, D19). */
+/** The class of a state: `learned` has the fill the old `confident` had (ADR 104). */
 function stateClass(state: ChartCellState): string {
   return state === 'learned' ? 'is-st-learned' : `is-${state}`;
 }

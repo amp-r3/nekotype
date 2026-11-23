@@ -36,7 +36,7 @@ type Settings = {
   learn: {
     strictness: Strictness;
     track: 'hiragana' | 'katakana';
-    targetMs: number; // target answer time of confidence: 1000–3000 in steps of 250, default 1500
+    targetMs: number; // target answer time, good vs hard grade: 1000–3000 in steps of 250, default 1500
     sound: boolean; // play the kana sound after each task (P10), default true
   };
   updatedAt: number;

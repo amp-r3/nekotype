@@ -13,7 +13,7 @@ The format 3 numbers of P7 are in the note [docs/research/2026-11-23-p7-sync-end
 
 ## Setup (once, by the maintainer)
 
-The test project and its database are step M1 of the [P5 plan](../../docs/archive/p5-plan.md#m1-test-project-for-the-measurement--before-pr-1): `wrangler login`, a Pages project `nekotype-bench` (`pages project create … --force`) and a D1 database `nekotype-bench`, whose id is in `wrangler.toml`. Both were deleted when P5 was closed (M6) and created again for P7 ([M1 of the P7 plan](../../p7-plan.md)); a new measurement repeats M1 and puts the new `database_id` into `wrangler.toml`.
+The test project and its database are step M1 of the [P5 plan](../../docs/archive/p5-plan.md#m1-test-project-for-the-measurement--before-pr-1): `wrangler login`, a Pages project `nekotype-bench` (`pages project create … --force`) and a D1 database `nekotype-bench`, whose id is in `wrangler.toml`. Both were deleted when P5 was closed (M6) and created again for P7 ([M1 of the P7 plan](../../docs/archive/p7-plan.md)); a new measurement repeats M1 and puts the new `database_id` into `wrangler.toml`.
 
 ## Run
 
