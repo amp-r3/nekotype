@@ -9,7 +9,7 @@ export const CHANGE_LIMIT = 5;
  * The window of recent recalls behind `LearnView.recall` (`RECENT_RECALLS` of `@nekotype/model`,
  * not imported: the model is a lazy chunk and this module is not).
  */
-const RECALL_WINDOW = 10;
+export const RECALL_WINDOW = 10;
 
 export type MedianChange = {
   readonly key: LearnKanaKey;
