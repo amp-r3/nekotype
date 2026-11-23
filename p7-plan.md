@@ -20,7 +20,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | 5   | `p7-05-forecast-cost`         | `main`      | done   | #210         |
 | 6   | `p7-06-sync-format-3-server`  | `main`      | done   | #211         |
 | 7   | `p7-07-sync-bench`            | `main`      | done   | #212         |
-| 8   | `p7-08-log-store`             | `p7-switch` | —      | —            |
+| 8   | `p7-08-log-store`             | `p7-switch` | done   | #215         |
 | 9   | `p7-09-learning-on-the-model` | `p7-switch` | —      | —            |
 | 10  | `p7-10-stats-from-the-log`    | `p7-switch` | —      | —            |
 | 11  | `p7-11-sync-format-3-client`  | `p7-switch` | —      | —            |
