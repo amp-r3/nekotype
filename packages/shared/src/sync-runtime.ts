@@ -7,16 +7,19 @@ import {
   isRecentMap,
 } from './learn-runtime';
 import { mergeLearn } from './learn-state';
+import { isLogPage } from './log-codec';
 import { isObject } from './object';
 import { isSettings } from './settings-runtime';
 import { isCount, outboxDelta } from './sync-format';
 import type {
   Outbox,
+  PullResponse,
   Snapshot,
   SnapshotBuckets,
   SnapshotRecent,
   SnapshotRest,
   SyncRequestV2,
+  SyncResponse,
   SyncResponseV2,
   ValidSettings,
 } from './types';
@@ -29,8 +32,29 @@ export const MAX_SYNC_BODY_BYTES = 256 * 1024;
 /** The caps on the learning part of a batch (p5-plan.md, Q1; ADR 082): kana, and days per track. */
 export const BATCH_CAPS = { kana: 60, days: 31 } as const;
 
-export function isSyncResponse(value: unknown): value is SyncResponseV2 {
+export function isSyncResponseV2(value: unknown): value is SyncResponseV2 {
   return isObject(value) && isCount(value['lastSeq']) && isCount(value['version']);
+}
+
+/** The answer of `POST /api/sync` in format 3 (P7 plan, D12). */
+export function isSyncResponse(value: unknown): value is SyncResponse {
+  return isObject(value) && isCount(value['lastSeq']) && typeof value['more'] === 'boolean';
+}
+
+/** One page of `GET /api/sync?after=` (P7 plan, D12); every row is a valid log page. */
+export function isPullResponse(value: unknown): value is PullResponse {
+  if (
+    !isObject(value) ||
+    !isCount(value['last']) ||
+    typeof value['more'] !== 'boolean' ||
+    !isSettingsOrNull(value['settings']) ||
+    !Array.isArray(value['rows'])
+  ) {
+    return false;
+  }
+  return value['rows'].every(
+    (row: unknown) => isObject(row) && isCount(row['id']) && isLogPage(row['log']),
+  );
 }
 
 function isSettingsOrNull(value: unknown): value is ValidSettings | null {

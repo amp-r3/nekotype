@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { Outbox, Snapshot, SyncRequestV2 } from '@nekotype/shared/types';
-import { isObject, isSnapshot } from '@nekotype/shared/runtime';
+import type { PendingBatch } from '../lib/stored';
+import type { SyncRequest } from '@nekotype/shared/types';
+import { decodePage, encodePage, isObject, isLogPage } from '@nekotype/shared/runtime';
 import { createMemoryDb } from '@/shared/lib';
 import {
   AFTER_WORK_MS,
@@ -9,24 +10,22 @@ import {
   REQUEST_SPACING_MS,
 } from './engine';
 import {
-  KEY_A,
-  KEY_I,
+  LOG_DEV,
+  OTHER_DEV,
+  TEST_PULL_ROWS,
   createFakeServer,
   createRig,
   createTestLocks,
-  emptyCounters,
   errorResponse,
-  learnDelta,
-  learnRecord,
+  eventsOf,
+  seedOwn,
   settingsAt,
   signedInDb,
 } from './test-util';
 import type { Rig } from './test-util';
 
-const isSyncRequest = (value: unknown): value is SyncRequestV2 =>
-  isObject(value) && value['v'] === 2 && typeof value['seq'] === 'number';
-
-const entry = (updatedAt: number) => ({ box: 1, dueAt: updatedAt + 1000, updatedAt }) as const;
+const isSyncRequest = (value: unknown): value is SyncRequest =>
+  isObject(value) && value['v'] === 3 && typeof value['seq'] === 'number';
 
 async function sync(rig: Rig): Promise<void> {
   rig.engine.start();
@@ -34,24 +33,18 @@ async function sync(rig: Rig): Promise<void> {
   await rig.engine.idle();
 }
 
-const body = (request: { body: string | null }): SyncRequestV2 => {
+const body = (request: { body: string | null }): SyncRequest => {
   const parsed: unknown = JSON.parse(request.body ?? 'null');
   if (!isSyncRequest(parsed)) throw new Error('not a sync request');
   return parsed;
 };
 
+const eventCount = (request: SyncRequest): number => request.log?.e.length ?? 0;
+
 describe('a batch', () => {
-  it('is built from the learning delta and the changed settings, and clears what it took', async () => {
+  it('carries the own events and the changed settings, and the acknowledgement records them', async () => {
     const rig = await createRig();
-    await rig.db.put(
-      'delta',
-      'learn',
-      learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } }), {
-        ...emptyCounters(),
-        started: 2,
-        finished: 1,
-      }),
-    );
+    await seedOwn(rig.db, 3);
     await rig.db.put('settings', 'current', settingsAt(900));
     await sync(rig);
 
@@ -60,33 +53,59 @@ describe('a batch', () => {
     const sent = body(first ?? { body: null });
     expect(sent.seq).toBe(1);
     expect(sent.deviceId).toBe('dev-a');
-    expect(sent.delta.settings?.updatedAt).toBe(900);
-    expect(Object.keys(sent.delta.learn.entries)).toEqual([KEY_A]);
-    expect(sent.delta.counters).toEqual({ started: 2, finished: 1 });
-    // The acknowledgement cleared the outbox; the delta left `delta` in the same transaction.
+    expect(sent.after).toBe(0);
+    expect(sent.settings?.updatedAt).toBe(900);
+    expect(sent.log?.dev).toBe(LOG_DEV);
+    expect(sent.log?.n0).toBe(1);
+    expect(eventCount(sent)).toBe(3);
+    expect(rig.server.events().map((e) => e.n)).toEqual([1, 2, 3]);
     expect(await rig.db.get('outbox', 'current')).toBeUndefined();
-    expect(await rig.db.get('delta', 'learn')).toBeUndefined();
+    expect(await rig.db.get('meta', 'sentN')).toBe(3);
+    expect(await rig.db.get('meta', 'lastSeq')).toBe(1);
   });
 
-  it('splits a delta over the caps: the rest stays in delta and follows 5 seconds later', async () => {
+  it('sends only the events after sentN', async () => {
     const rig = await createRig();
-    const entries: Record<string, ReturnType<typeof entry>> = {};
-    for (let i = 0; i < 70; i += 1) entries[`hiragana:k${String(i).padStart(3, '0')}`] = entry(i);
-    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries })));
+    await seedOwn(rig.db, 5);
+    await rig.db.put('meta', 'sentN', 3);
+    await sync(rig);
+
+    const sent = body(rig.server.posts()[0] ?? { body: null });
+    expect(sent.log?.n0).toBe(4);
+    expect(eventCount(sent)).toBe(2);
+    expect(await rig.db.get('meta', 'sentN')).toBe(5);
+  });
+
+  it('is the longest prefix within 256 KB, and the rest follows 5 seconds later', async () => {
+    const rig = await createRig();
+    await seedOwn(rig.db, 7000);
 
     await sync(rig);
 
     const first = body(rig.server.posts()[0] ?? { body: null });
-    expect(Object.keys(first.delta.learn.entries)).toHaveLength(60);
-    const kept = await rig.db.get('delta', 'learn');
-    expect(JSON.stringify(kept)).toContain('k069');
+    const bytes = new TextEncoder().encode(rig.server.posts()[0]?.body ?? '').length;
+    expect(bytes).toBeLessThanOrEqual(256 * 1024);
+    expect(eventCount(first)).toBeGreaterThan(1000);
+    expect(eventCount(first)).toBeLessThan(7000);
+    expect(await rig.db.get('meta', 'sentN')).toBe(eventCount(first));
     expect(rig.timers.pending).toEqual([CATCH_UP_SPACING_MS]);
 
     rig.timers.advance(CATCH_UP_SPACING_MS);
     await rig.engine.idle();
     const second = body(rig.server.posts()[1] ?? { body: null });
-    expect(Object.keys(second.delta.learn.entries)).toHaveLength(10);
-    expect(await rig.db.get('delta', 'learn')).toBeUndefined();
+    expect(second.log?.n0).toBe(eventCount(first) + 1);
+    expect(eventCount(first) + eventCount(second)).toBe(7000);
+    expect(await rig.db.get('meta', 'sentN')).toBe(7000);
+  });
+
+  it('sends settings alone when there are no events', async () => {
+    const rig = await createRig();
+    await rig.db.put('settings', 'current', settingsAt(900));
+    await sync(rig);
+    const sent = body(rig.server.posts()[0] ?? { body: null });
+    expect(sent.log).toBeNull();
+    expect(sent.settings?.updatedAt).toBe(900);
+    expect(await rig.db.get('meta', 'sentN')).toBeUndefined();
   });
 
   it('sends nothing when nothing changed', async () => {
@@ -94,19 +113,47 @@ describe('a batch', () => {
     await sync(rig);
     expect(rig.server.posts()).toEqual([]);
   });
+
+  it('carries `after` = pulledId', async () => {
+    const rig = await createRig();
+    await rig.db.put('meta', 'pulledId', 12);
+    await seedOwn(rig.db, 1);
+    await sync(rig);
+    expect(body(rig.server.posts()[0] ?? { body: null }).after).toBe(12);
+  });
 });
 
 describe('an unacknowledged batch', () => {
+  it('is followed by the events that came after it was built', async () => {
+    const rig = await createRig();
+    await seedOwn(rig.db, 2);
+    rig.server.forceNetworkError();
+    await sync(rig);
+    // A second session ends while the first batch waits in the outbox.
+    await seedOwn(rig.db, 5);
+    rig.timers.advance(REQUEST_SPACING_MS);
+    rig.env.goOnline();
+    rig.timers.advance(0);
+    await rig.engine.idle();
+    expect(await rig.db.get('meta', 'sentN')).toBe(2);
+    expect(rig.timers.pending).toEqual([CATCH_UP_SPACING_MS]);
+
+    rig.timers.advance(CATCH_UP_SPACING_MS);
+    await rig.engine.idle();
+    expect(await rig.db.get('meta', 'sentN')).toBe(5);
+    expect(rig.server.events().map((e) => e.n)).toEqual([1, 2, 3, 4, 5]);
+  });
+
   it('is resent unchanged', async () => {
     const rig = await createRig();
-    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
+    await seedOwn(rig.db, 2);
     rig.server.forceNetworkError();
 
     await sync(rig);
-    const stored = await rig.db.get('outbox', 'current');
-    expect(stored).toBeDefined();
+    expect(await rig.db.get('outbox', 'current')).toBeDefined();
+    expect(await rig.db.get('meta', 'sentN')).toBeUndefined();
     expect(rig.server.posts()).toHaveLength(1);
-    expect(rig.server.version()).toBe(0);
+    expect(rig.server.events()).toEqual([]);
 
     rig.timers.advance(REQUEST_SPACING_MS);
     rig.env.goOnline();
@@ -116,117 +163,84 @@ describe('an unacknowledged batch', () => {
     expect(rig.server.posts()).toHaveLength(2);
     expect(rig.server.posts()[1]?.body).toBe(rig.server.posts()[0]?.body);
     expect(await rig.db.get('outbox', 'current')).toBeUndefined();
-    expect(rig.server.version()).toBe(1);
+    expect(rig.server.events()).toHaveLength(2);
+  });
+
+  it('is not applied twice when the acknowledgement was lost', async () => {
+    const rig = await createRig();
+    await seedOwn(rig.db, 2);
+    // The server applies the batch, the answer never arrives.
+    rig.server.onRequest((request) => {
+      if (request.method === 'POST' && rig.server.posts().length === 1) {
+        rig.server.externalWrite('dev-a', eventsOf(LOG_DEV, 1, 2));
+        rig.server.setLastSeq('dev-a', 1);
+      }
+    });
+    rig.server.force(() => {
+      throw new TypeError('Failed to fetch');
+    });
+    await sync(rig);
+    rig.server.onRequest(null);
+    rig.timers.advance(REQUEST_SPACING_MS);
+    rig.env.goOnline();
+    rig.timers.advance(0);
+    await rig.engine.idle();
+
+    expect(rig.server.rows()).toHaveLength(1);
+    expect(await rig.db.get('meta', 'sentN')).toBe(2);
+    expect(await rig.db.get('outbox', 'current')).toBeUndefined();
   });
 });
 
-describe('an acknowledgement', () => {
-  it('with version = stored + 1 applies the batch to the snapshot and equals what the server stored', async () => {
+describe('settings', () => {
+  it('the acknowledgement keeps a document that has not changed since the batch', async () => {
     const rig = await createRig();
-    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
-    await sync(rig);
-    // The first batch has no snapshot to apply to: the parts were read.
-    expect(rig.server.gets().filter((g) => g.url.includes('part='))).toHaveLength(3);
-    expect(await rig.db.get('meta', 'snapshotVersion')).toBe(1);
-
-    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_I]: entry(9) } })));
-    rig.request();
-    rig.timers.advance(AFTER_WORK_MS);
-    await rig.engine.idle();
-
-    // The second batch: only the POST, no read of the parts.
-    expect(rig.server.gets().filter((g) => g.url.includes('part='))).toHaveLength(3);
-    expect(rig.server.posts()).toHaveLength(2);
-    expect(await rig.db.get('meta', 'snapshotVersion')).toBe(2);
-    expect(await rig.db.get('meta', 'lastSeq')).toBe(2);
-    expect(await rig.db.get('snapshot', 'current')).toEqual(rig.server.snapshot());
-  });
-
-  it('with another version reads the three parts, and again when their versions differ', async () => {
-    const rig = await createRig();
-    const other: SyncRequestV2 = {
-      v: 2,
-      deviceId: 'dev-b',
-      seq: 1,
-      delta: {
-        counters: emptyCounters(),
-        learn: learnDelta({ entries: { [KEY_I]: entry(3) } }),
-        settings: null,
-      },
-    };
-    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
-    let writes = 0;
-    rig.server.onPart((part) => {
-      // Another device writes between two parts of the first read.
-      if (part === 'recent' && writes === 0) {
-        writes += 1;
-        rig.server.externalWrite(other);
-      }
-    });
-
-    await sync(rig);
-
-    // The three parts were requested twice: the first set disagreed on `version`.
-    expect(rig.server.gets().filter((g) => g.url.includes('part='))).toHaveLength(6);
-    const snapshot = await rig.db.get('snapshot', 'current');
-    expect(snapshot).toEqual(rig.server.snapshot());
-    expect(await rig.db.get('meta', 'snapshotVersion')).toBe(rig.server.version());
-    expect(Object.keys(rig.server.snapshot().learn.entries).sort()).toEqual([KEY_A, KEY_I]);
-  });
-
-  it('applies the settings rule', async () => {
-    const rig = await createRig();
-    const server: Snapshot = {
-      ...rig.server.snapshot(),
-      settings: settingsAt(500),
-    };
-    rig.server.setSnapshot(server, 4);
-    await rig.db.put('settings', 'current', settingsAt(100));
-    await rig.db.put('meta', 'settingsSyncedAt', 100);
+    await rig.db.put('settings', 'current', settingsAt(500));
+    await rig.db.put('meta', 'lastSeq', 1);
+    rig.server.setLastSeq('dev-a', 1);
     await sync(rig);
 
     expect(await rig.db.get('settings', 'current')).toEqual(settingsAt(500));
     expect(await rig.db.get('meta', 'settingsSyncedAt')).toBe(500);
-    expect(rig.channels.settings.posts).toEqual(['change']);
-    expect(rig.channels.learn.posts).toEqual(['change']);
   });
 
   it('keeps settings that changed after the batch was built, and sends them next', async () => {
     const rig = await createRig();
     await rig.db.put('settings', 'current', settingsAt(100));
-    rig.server.onRequest((request) => {
-      if (request.method === 'POST') void rig.db.put('settings', 'current', settingsAt(300));
+    await rig.db.put('meta', 'lastSeq', 1);
+    rig.server.setLastSeq('dev-a', 1);
+    rig.server.onRequest(() => {
+      void rig.db.put('settings', 'current', settingsAt(300));
     });
-
     await sync(rig);
 
     expect(await rig.db.get('settings', 'current')).toEqual(settingsAt(300));
-    // The batch carried 100; 300 is newer than what the server holds, so it is still to send.
     expect(await rig.db.get('meta', 'settingsSyncedAt')).toBe(100);
     rig.server.onRequest(null);
     rig.request();
     rig.timers.advance(AFTER_WORK_MS);
     await rig.engine.idle();
-    expect(body(rig.server.posts()[1] ?? { body: null }).delta.settings?.updatedAt).toBe(300);
-    expect(rig.server.snapshot().settings?.updatedAt).toBe(300);
+    expect(body(rig.server.posts()[1] ?? { body: null }).settings?.updatedAt).toBe(300);
+    expect(rig.server.settings()?.updatedAt).toBe(300);
   });
 
-  it('the account settings win on the first batch of a sign-in', async () => {
+  it('the account settings win on the first batch of a sign-in: the pull brings them', async () => {
     const rig = await createRig();
-    rig.server.setSnapshot({ ...rig.server.snapshot(), settings: settingsAt(40) }, 2);
+    rig.server.setSettings(settingsAt(40));
     await rig.db.put('settings', 'current', settingsAt(700));
 
     await sync(rig);
 
     expect(await rig.db.get('settings', 'current')).toEqual(settingsAt(40));
     expect(await rig.db.get('meta', 'settingsSyncedAt')).toBe(40);
+    expect(rig.channels.settings.posts).toEqual(['change']);
   });
 
   it('is synced when the settings carry a fractional updatedAt, as the clock gives them', async () => {
     const rig = await createRig();
-    rig.server.setSnapshot({ ...rig.server.snapshot(), settings: settingsAt(40.4) }, 2);
+    rig.server.setSettings(settingsAt(40.4));
     await rig.db.put('settings', 'current', settingsAt(700.5));
-    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
+    await seedOwn(rig.db, 1);
     const { syncStatus } = await import('./status');
 
     await sync(rig);
@@ -236,14 +250,25 @@ describe('an acknowledgement', () => {
   });
 });
 
-describe('failed requests', () => {
-  async function pending(rig: Rig): Promise<void> {
-    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
-  }
+describe('the status', () => {
+  it('is pending while own events are unsent and synced after', async () => {
+    const { syncStatus } = await import('./status');
+    const rig = await createRig();
+    await seedOwn(rig.db, 2);
+    rig.engine.start();
+    rig.request();
+    await rig.engine.idle();
+    expect(syncStatus.value).toBe('pending');
+    rig.timers.advance(AFTER_WORK_MS);
+    await rig.engine.idle();
+    expect(syncStatus.value).toBe('synced');
+  });
+});
 
+describe('failed requests', () => {
   it('a 409 rewrites the seq of the outbox to lastSeq + 1 and resends at once', async () => {
     const rig = await createRig();
-    await pending(rig);
+    await seedOwn(rig.db, 2);
     await rig.db.put('meta', 'lastSeq', 7);
     rig.server.setLastSeq('dev-a', 2);
 
@@ -254,6 +279,7 @@ describe('failed requests', () => {
     expect(rig.server.lastSeq('dev-a')).toBe(3);
     expect(await rig.db.get('meta', 'lastSeq')).toBe(3);
     expect(await rig.db.get('outbox', 'current')).toBeUndefined();
+    expect(rig.server.events()).toHaveLength(2);
   });
 
   it.each([
@@ -261,7 +287,7 @@ describe('failed requests', () => {
     ['503 with Retry-After', () => errorResponse(503, 'conflict', { retryAfter: 12 })],
   ])('a %s waits for Retry-After, then retries and drops nothing', async (_name, response) => {
     const rig = await createRig();
-    await pending(rig);
+    await seedOwn(rig.db, 1);
     rig.server.force(response);
 
     await sync(rig);
@@ -281,7 +307,7 @@ describe('failed requests', () => {
   it('a network error leaves everything in place, shows offline and the next trigger retries', async () => {
     const { syncStatus } = await import('./status');
     const rig = await createRig();
-    await pending(rig);
+    await seedOwn(rig.db, 1);
     rig.server.forceNetworkError();
 
     await sync(rig);
@@ -292,13 +318,13 @@ describe('failed requests', () => {
     rig.env.goOnline();
     rig.timers.advance(0);
     await rig.engine.idle();
-    expect(rig.server.version()).toBe(1);
+    expect(rig.server.events()).toHaveLength(1);
     expect(syncStatus.value).toBe('synced');
   });
 
   it('a 5xx keeps the batch and sets no timer', async () => {
     const rig = await createRig();
-    await pending(rig);
+    await seedOwn(rig.db, 1);
     rig.server.force(() => errorResponse(503, 'unavailable'));
 
     await sync(rig);
@@ -310,7 +336,7 @@ describe('failed requests', () => {
   it('a 401 sets sessionExpired, tells the user signals and stops syncing', async () => {
     const { syncStatus } = await import('./status');
     const rig = await createRig();
-    await pending(rig);
+    await seedOwn(rig.db, 1);
     rig.server.force(() => errorResponse(401, 'unauthenticated'));
 
     await sync(rig);
@@ -331,7 +357,7 @@ describe('failed requests', () => {
     async (status) => {
       const { syncStatus } = await import('./status');
       const rig = await createRig();
-      await pending(rig);
+      await seedOwn(rig.db, 1);
       rig.server.force(() => errorResponse(status, status === 400 ? 'invalid_body' : 'too_large'));
 
       await sync(rig);
@@ -354,13 +380,114 @@ describe('failed requests', () => {
       expect(await rig.db.get('outbox', 'current')).toBeUndefined();
     },
   );
+
+  it('a pulled page that fails its guard blocks syncing', async () => {
+    const { syncStatus } = await import('./status');
+    const rig = await createRig();
+    rig.server.force(
+      () =>
+        new Response(JSON.stringify({ last: 1, more: false, settings: null, rows: [{ id: 1 }] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+
+    await sync(rig);
+
+    expect(await rig.db.get('meta', 'syncBlockedAtVersion')).toBe('v1');
+    expect(syncStatus.value).toBe('blocked');
+    expect(await rig.db.getAll('log')).toEqual([]);
+    expect(rig.reloads.count).toBe(0);
+  });
+});
+
+describe('the pull', () => {
+  it('on start with nothing to send stores the rows of other devices and reads the log again', async () => {
+    const rig = await createRig();
+    const theirs = eventsOf(OTHER_DEV, 1, 2);
+    rig.server.externalWrite('dev-b', theirs);
+
+    await sync(rig);
+
+    expect(rig.server.gets()).toHaveLength(1);
+    expect(rig.server.gets()[0]?.url).toBe('/api/sync?deviceId=dev-a&after=0');
+    const stored = await rig.db.get('log', 'row:000000000001');
+    expect(isLogPage(stored)).toBe(true);
+    expect(decodePage(stored)).toEqual(theirs);
+    expect(await rig.db.get('meta', 'pulledId')).toBe(1);
+    expect(rig.reloads.count).toBe(1);
+    expect(rig.channels.learn.posts).toEqual([{ kind: 'pull' }]);
+  });
+
+  it('walks the pages until more is false', async () => {
+    const rig = await createRig();
+    const rows = TEST_PULL_ROWS * 2 + 1;
+    for (let i = 0; i < rows; i += 1)
+      rig.server.externalWrite('dev-b', eventsOf(OTHER_DEV, i + 1, 1));
+
+    await sync(rig);
+
+    expect(rig.server.gets()).toHaveLength(3);
+    expect((await rig.db.getAll('log')).length).toBe(rows);
+    expect(await rig.db.get('meta', 'pulledId')).toBe(rows);
+    // One read of the log for the whole pull.
+    expect(rig.reloads.count).toBe(1);
+  });
+
+  it('reads nothing again when no row arrived', async () => {
+    const rig = await createRig();
+    await sync(rig);
+    expect(rig.server.gets()).toHaveLength(1);
+    expect(rig.reloads.count).toBe(0);
+    expect(rig.channels.learn.posts).toEqual([]);
+  });
+
+  it('follows an acknowledgement that says more', async () => {
+    const rig = await createRig();
+    rig.server.externalWrite('dev-b', eventsOf(OTHER_DEV, 1, 1));
+    await seedOwn(rig.db, 1);
+
+    await sync(rig);
+
+    expect(rig.server.posts()).toHaveLength(1);
+    expect(rig.server.gets()).toHaveLength(1);
+    expect(await rig.db.get('meta', 'pulledId')).toBe(2);
+    // The device's own row is walked and skipped: it is not stored.
+    expect(await rig.db.get('log', 'row:000000000002')).toBeUndefined();
+    expect(await rig.db.get('log', 'row:000000000001')).toBeDefined();
+    expect(rig.reloads.count).toBe(1);
+  });
+
+  it('does not pull after an acknowledgement without more', async () => {
+    const rig = await createRig();
+    await seedOwn(rig.db, 1);
+    await sync(rig);
+    expect(rig.server.gets()).toEqual([]);
+  });
+
+  it('on online asks again from pulledId', async () => {
+    const rig = await createRig();
+    await sync(rig);
+    rig.server.externalWrite('dev-b', eventsOf(OTHER_DEV, 1, 1));
+    rig.timers.advance(REQUEST_SPACING_MS);
+    rig.env.goOnline();
+    rig.timers.advance(0);
+    await rig.engine.idle();
+    expect(rig.server.gets()[1]?.url).toBe('/api/sync?deviceId=dev-a&after=0');
+    expect(await rig.db.get('meta', 'pulledId')).toBe(1);
+    rig.timers.advance(REQUEST_SPACING_MS);
+    rig.env.goOnline();
+    rig.timers.advance(0);
+    await rig.engine.idle();
+    expect(rig.server.gets()[2]?.url).toBe('/api/sync?deviceId=dev-a&after=1');
+  });
 });
 
 describe('spacing', () => {
   it('sends a batch 10 seconds after the work ends, once for several triggers', async () => {
     const rig = await createRig();
     await sync(rig);
-    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
+    await seedOwn(rig.db, 1);
     rig.request();
     rig.timers.advance(3000);
     rig.request();
@@ -375,11 +502,11 @@ describe('spacing', () => {
 
   it('does not send twice within 10 seconds', async () => {
     const rig = await createRig();
-    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
+    await seedOwn(rig.db, 1);
     await sync(rig);
     expect(rig.server.posts()).toHaveLength(1);
 
-    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_I]: entry(9) } })));
+    await seedOwn(rig.db, 2);
     rig.timers.advance(2000);
     rig.env.goOnline();
     rig.timers.advance(0);
@@ -393,9 +520,9 @@ describe('spacing', () => {
 });
 
 describe('the hidden page', () => {
-  it('sends the delta with keepalive', async () => {
+  it('sends the events with keepalive', async () => {
     const rig = await createRig();
-    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
+    await seedOwn(rig.db, 2);
     rig.engine.start();
 
     rig.env.hide();
@@ -408,20 +535,36 @@ describe('the hidden page', () => {
     expect(await rig.db.get('outbox', 'current')).toBeUndefined();
   });
 
+  it('builds the batch within 60 KB', async () => {
+    const rig = await createRig();
+    await seedOwn(rig.db, 3000);
+    rig.engine.start();
+
+    rig.env.hide();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await rig.engine.idle();
+
+    const post = rig.server.posts()[0];
+    expect(post?.keepalive).toBe(true);
+    expect(new TextEncoder().encode(post?.body ?? '').length).toBeLessThanOrEqual(
+      KEEPALIVE_MAX_BYTES,
+    );
+    const sent = body(post ?? { body: null });
+    expect(eventCount(sent)).toBeLessThan(3000);
+  });
+
   it('resends an outbox within 60 KB, and nothing above it', async () => {
     const small = await createRig();
     await sync(small);
-    const outbox: Outbox = {
+    const outbox: PendingBatch = {
       seq: 1,
       request: {
-        v: 2,
+        v: 3,
         deviceId: 'dev-a',
         seq: 1,
-        delta: {
-          counters: emptyCounters(),
-          learn: learnDelta({ entries: { [KEY_A]: entry(5) } }),
-          settings: null,
-        },
+        after: 0,
+        log: encodePage(eventsOf(LOG_DEV, 1, 1)),
+        settings: null,
       },
     };
     await small.db.put('outbox', 'current', outbox);
@@ -433,13 +576,7 @@ describe('the hidden page', () => {
 
     const big = await createRig();
     await sync(big);
-    // 1500 entries of about 65 bytes each are over 60 KB.
-    const entries: Record<string, ReturnType<typeof entry>> = {};
-    for (let i = 0; i < 1500; i += 1) entries[`hiragana:k${String(i).padStart(4, '0')}`] = entry(i);
-    const request: SyncRequestV2 = {
-      ...outbox.request,
-      delta: { ...outbox.request.delta, learn: learnDelta({ entries }) },
-    };
+    const request: SyncRequest = { ...outbox.request, log: encodePage(eventsOf(LOG_DEV, 1, 3000)) };
     await big.db.put('outbox', 'current', { ...outbox, request });
     expect(JSON.stringify(request).length).toBeGreaterThan(KEEPALIVE_MAX_BYTES);
     big.env.hide();
@@ -450,7 +587,7 @@ describe('the hidden page', () => {
 
   it('sends nothing when the lock is held by a running sync', async () => {
     const rig = await createRig();
-    await rig.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
+    await seedOwn(rig.db, 1);
     rig.engine.start();
     let release: () => void = () => {};
     const holding = rig.locks.run(
@@ -471,7 +608,7 @@ describe('the hidden page', () => {
 describe('two engines on one database', () => {
   it('send one batch', async () => {
     const db = await signedInDb();
-    await db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
+    await seedOwn(db, 2);
     const server = createFakeServer();
     const locks = createTestLocks();
     const one = await createRig({ db, server, locks });
@@ -490,12 +627,12 @@ describe('two engines on one database', () => {
 });
 
 describe('two devices against one server', () => {
-  it('converge', async () => {
+  it('exchange their events', async () => {
     const server = createFakeServer();
     const a = await createRig({ db: await signedInDb('dev-a'), server });
     const b = await createRig({ db: await signedInDb('dev-b'), server });
-    await a.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_A]: entry(5) } })));
-    await b.db.put('delta', 'learn', learnRecord(learnDelta({ entries: { [KEY_I]: entry(6) } })));
+    await seedOwn(a.db, 3, 1, LOG_DEV);
+    await seedOwn(b.db, 2, 1, OTHER_DEV);
 
     await sync(a);
     await sync(b);
@@ -505,51 +642,22 @@ describe('two devices against one server', () => {
     a.timers.advance(0);
     await a.engine.idle();
 
-    const stored = await a.db.get('snapshot', 'current');
-    expect(isSnapshot(stored)).toBe(true);
-    expect(stored).toEqual(server.snapshot());
-    expect(await b.db.get('snapshot', 'current')).toEqual(server.snapshot());
-    expect(Object.keys(server.snapshot().learn.entries).sort()).toEqual([KEY_A, KEY_I]);
-    expect(await a.db.get('meta', 'snapshotVersion')).toBe(2);
+    expect(server.events()).toHaveLength(5);
+    const pulledByA = (await a.db.getAll('log'))
+      .flatMap((page) => decodePage(page) ?? [])
+      .filter((e) => e.dev === OTHER_DEV);
+    expect(pulledByA.map((e) => e.n)).toEqual([1, 2]);
+    const pulledByB = (await b.db.getAll('log'))
+      .flatMap((page) => decodePage(page) ?? [])
+      .filter((e) => e.dev === LOG_DEV);
+    expect(pulledByB.map((e) => e.n)).toEqual([1, 2, 3]);
+    expect(a.reloads.count).toBe(1);
+    expect(b.reloads.count).toBe(1);
   });
 });
 
-describe('start and online with nothing to send', () => {
-  it('check the version, and read the parts only when it differs', async () => {
-    const rig = await createRig();
-    rig.server.setSnapshot({ ...rig.server.snapshot(), settings: settingsAt(9) }, 3);
-
-    await sync(rig);
-    expect(rig.server.gets().filter((g) => !g.url.includes('part='))).toHaveLength(1);
-    expect(rig.server.gets().filter((g) => g.url.includes('part='))).toHaveLength(3);
-    expect(await rig.db.get('meta', 'snapshotVersion')).toBe(3);
-
-    rig.timers.advance(REQUEST_SPACING_MS);
-    rig.env.goOnline();
-    rig.timers.advance(0);
-    await rig.engine.idle();
-    expect(rig.server.gets().filter((g) => !g.url.includes('part='))).toHaveLength(2);
-    expect(rig.server.gets().filter((g) => g.url.includes('part='))).toHaveLength(3);
-
-    rig.server.externalWrite({
-      v: 2,
-      deviceId: 'dev-b',
-      seq: 1,
-      delta: {
-        counters: emptyCounters(),
-        learn: learnDelta({ entries: { [KEY_I]: entry(3) } }),
-        settings: null,
-      },
-    });
-    rig.timers.advance(REQUEST_SPACING_MS);
-    rig.env.goOnline();
-    rig.timers.advance(0);
-    await rig.engine.idle();
-    expect(rig.server.gets().filter((g) => g.url.includes('part='))).toHaveLength(6);
-    expect(await rig.db.get('meta', 'snapshotVersion')).toBe(4);
-  });
-
-  it('does nothing for a guest', async () => {
+describe('a guest', () => {
+  it('does nothing', async () => {
     const db = createMemoryDb();
     const rig = await createRig({ db });
     await sync(rig);

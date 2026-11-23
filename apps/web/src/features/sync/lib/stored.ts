@@ -1,26 +1,30 @@
-import type { Outbox } from '@nekotype/shared/types';
-import { isCounters, isLearnState, isObject, isOutbox, isSettings } from '@nekotype/shared/runtime';
-import type { LearnChanges } from './build-batch';
+import type { SyncRequest } from '@nekotype/shared/types';
+import { SYNC_FORMAT_VERSION, isLogPage, isObject, isSettings } from '@nekotype/shared/runtime';
 
-/** `delta/learn`, or null when the record is absent or fails validation (ADR 061). */
-export function readLearnChanges(value: unknown): LearnChanges | null {
-  if (isObject(value) && isLearnState(value['learn']) && isCounters(value['counters'])) {
-    return { learn: value['learn'], counters: value['counters'] };
-  }
-  return null;
+/** `outbox/current`: the one batch built and not acknowledged yet (storage-sync.md, "Batches"). */
+export type PendingBatch = {
+  readonly seq: number;
+  readonly request: SyncRequest;
+};
+
+const isCount = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+
+/** `outbox/current` checked for everything the engine sends; null when absent or invalid (ADR 061). */
+export function readOutbox(value: unknown): PendingBatch | null {
+  if (!isObject(value)) return null;
+  const outerSeq = value['seq'];
+  const request = value['request'];
+  if (!isCount(outerSeq) || !isObject(request)) return null;
+  const { v, deviceId, seq, after, log, settings } = request;
+  if (v !== SYNC_FORMAT_VERSION || typeof deviceId !== 'string' || seq !== outerSeq) return null;
+  if (!isCount(after)) return null;
+  if (log !== null && !isLogPage(log)) return null;
+  if (settings !== null && !isSettings(settings)) return null;
+  return { seq: outerSeq, request: { v, deviceId, seq: outerSeq, after, log, settings } };
 }
 
-/**
- * `outbox/current` checked for everything the engine sends: the stores check the delta they read,
- * the engine also the identity and the settings of the request.
- */
-export function readOutbox(value: unknown): Outbox | null {
-  if (!isOutbox(value)) return null;
-  const { request } = value;
-  const settings = request.delta.settings;
-  const valid =
-    typeof request.deviceId === 'string' &&
-    request.seq === value.seq &&
-    (settings === null || isSettings(settings));
-  return valid ? value : null;
+/** The `n` of the last event of a batch; null for a batch without events. */
+export function lastNOf(request: SyncRequest): number | null {
+  return request.log === null ? null : request.log.n0 + request.log.e.length - 1;
 }

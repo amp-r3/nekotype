@@ -3,15 +3,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { SettingsPage } from './settings-page';
-import {
-  initLearn,
-  introduce,
-  keyOf,
-  learnView,
-  legacyInitLearn,
-  legacyIntroduce,
-  legacyLearnState,
-} from '@/entities/learn';
+import { initLearn, introduce, keyOf, learnView } from '@/entities/learn';
 import { t, loadDictionaryPart } from '@/shared/i18n';
 import { learnTargetMs } from '@/entities/settings';
 import { initUser } from '@/entities/user';
@@ -42,9 +34,6 @@ describe('settings page: Reset progress', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     const key = keyOf('hiragana', 'あ');
-    await legacyInitLearn(() => 1500);
-    legacyIntroduce(key);
-    expect(Object.keys(legacyLearnState.value.entries)).toHaveLength(1);
     await initLearn(() => 1500);
     introduce(key);
     expect(learnView.value?.kana.get(key)?.state).toBe('learning');
@@ -60,7 +49,6 @@ describe('settings page: Reset progress', () => {
     });
     await act(settle);
 
-    expect(legacyLearnState.value.entries).toEqual({});
     expect(learnView.value?.kana.get(key)?.state).toBe('locked');
   });
 

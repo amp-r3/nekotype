@@ -13,12 +13,10 @@ export const DATABASE_NAME = 'nekotype';
 
 /**
  * The stores of the application; each phase adds its own. `log` (schema 6, P7) holds the learning
- * log; `delta` and `snapshot` stay until the switch to sync format 3 (P7 plan, D16).
+ * log, own pages and pulled server rows (sync format 3).
  */
 export const STORES: readonly StoreDef[] = [
   { name: 'settings' },
-  { name: 'delta' },
-  { name: 'snapshot' },
   { name: 'log' },
   { name: 'outbox' },
   { name: 'meta' },

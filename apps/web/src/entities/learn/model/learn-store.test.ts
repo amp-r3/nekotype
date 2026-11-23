@@ -82,6 +82,21 @@ async function settle(env: { scheduler: ManualScheduler; store: LearnStore }): P
   await env.store.flush();
 }
 
+describe('the clock', () => {
+  it('has a fraction, and the stored event times are integers (D2)', async () => {
+    const env = await ready();
+    env.clock.time = 1_700_000_000_000.4;
+    env.store.startSession();
+    env.clock.time += 1000.7;
+    env.store.introduce(A);
+    await settle(env);
+    const events = await readLog(env.db);
+    expect(events.map((e) => e.at)).toEqual([1_700_000_000_000, 1_700_000_001_001]);
+    // They read back: a page with a fractional time would fail its check.
+    expect(events).toHaveLength(2);
+  });
+});
+
 describe('loading', () => {
   it('is ready only after the log and the model chunk are both read', async () => {
     let release: () => void = () => {};

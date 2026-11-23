@@ -4,7 +4,7 @@ import { t } from '@/shared/i18n';
 import type { Strictness } from '@nekotype/engine';
 import { Button, Dialog, ResetIcon, Segmented } from '@/shared/ui';
 import { Select } from '@/shared/ui/select';
-import { legacyResetLearning, resetLearning } from '@/entities/learn';
+import { resetLearning } from '@/entities/learn';
 import { authAvailable, beginSignIn, userId } from '@/entities/user';
 import {
   learnStrictness,
@@ -101,8 +101,6 @@ export function SettingsPage(): JSX.Element {
 
   const handleConfirmReset = () => {
     void resetLearning();
-    // The old store of `/stats` and the sync is cleared too until PR 11 (P7 plan, D21).
-    void legacyResetLearning();
     setResetDialogOpen(false);
   };
 
