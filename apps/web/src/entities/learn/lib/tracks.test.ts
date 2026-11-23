@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { kanaOf } from '@nekotype/engine';
 import type { Track } from '@nekotype/shared/types';
-import { dependenciesOf, initialUnlocked, keyOf, keysOfTrack, nextUnlock } from './tracks';
+import { dependenciesOf, keyOf, keysOfTrack } from './tracks';
 
 const TRACK_LIST: readonly Track[] = ['hiragana', 'katakana'];
 
@@ -18,12 +18,14 @@ describe('track composition', () => {
   });
   it('starts with the five vowels', () => {
     expect(
-      initialUnlocked('hiragana')
+      keysOfTrack('hiragana')
+        .slice(0, 5)
         .map((k) => k.slice(-1))
         .join(''),
     ).toBe('あいうえお');
     expect(
-      initialUnlocked('katakana')
+      keysOfTrack('katakana')
+        .slice(0, 5)
         .map((k) => k.slice(-1))
         .join(''),
     ).toBe('アイウエオ');
@@ -64,30 +66,5 @@ describe('dependenciesOf', () => {
         for (const dep of dependenciesOf(track, kana)) expect(keys.has(dep)).toBe(true);
       }
     }
-  });
-});
-
-describe('nextUnlock', () => {
-  const allConfident = () => true;
-  it('is the first locked kana when the unlocked ones are confident', () => {
-    expect(nextUnlock('hiragana', initialUnlocked('hiragana'), allConfident)).toBe(
-      keyOf('hiragana', 'か'),
-    );
-  });
-  it('waits while any unlocked kana is not confident', () => {
-    const slow = keyOf('hiragana', 'い');
-    expect(nextUnlock('hiragana', initialUnlocked('hiragana'), (k) => k !== slow)).toBeNull();
-  });
-  it('unlocks ヴ before ヴァ and ヴィ', () => {
-    const katakana = keysOfTrack('katakana');
-    const va = keyOf('katakana', 'ヴァ');
-    const vu = keyOf('katakana', 'ヴ');
-    const before = katakana.slice(0, katakana.indexOf(va));
-    const open = new Set(before);
-    // Only the unlocked kana are confident, so ヴァ waits for ヴ.
-    expect(nextUnlock('katakana', before, (key) => open.has(key))).toBe(vu);
-  });
-  it('is null when the track is complete', () => {
-    expect(nextUnlock('hiragana', keysOfTrack('hiragana'), allConfident)).toBeNull();
   });
 });

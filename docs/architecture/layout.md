@@ -11,7 +11,7 @@ packages/model/    @nekotype/model: the knowledge model of P7 (see model.md); pu
 packages/content/  @nekotype/content: the content pipeline, a build tool; the application reads the files it generates
 packages/shared/   @nekotype/shared: /types (Clock, Rng, Scheduler, Valid* types, the learning data model), /runtime (re-exports only, so the modules behind it split between chunks; the settings guards in `settings-runtime.ts`; `log-codec.ts`: the log page, its guard and `isLearnKanaKey`; `sync-runtime.ts`: the sync constants, the guards of the responses and `mergeSettings`; `sync-format.ts`: the format version; ADR 100, 102), /schemas (the valibot schemas of the API: batch, settings, report; server only), /testing (the kana keys and a seeded generator, for tests and measurements only; `apps/web` imports it from test files)
 apps/api/          @nekotype/api: the Hono application behind /api/* (Pages Functions), D1 migrations (migrations/), API tests in the Workers runtime; routes: `/api/auth/*` and `/api/me` (P5 PR 3, ADR 084; `DELETE /api/me` deletes the account, PR 11), `/api/reports` (P5 PR 12: `routes/reports.ts`, Turnstile in `lib/turnstile.ts`; ADR 092) and `/api/sync` (`routes/sync.ts`; format 3: `sync/apply-log.ts`, the SQL in `db/batches.ts`; ADR 102). functions/api/[[route]].ts mounts it; wrangler.toml at the root configures the Pages project
-apps/bench/        @nekotype/bench: the measurement of the real `/api/sync` on Cloudflare (CPU time, D1 statements and rows), run by hand against the Pages project `nekotype-bench` (P5 PR 1, 5, 13); see its README
+apps/bench/        @nekotype/bench: the measurement of the real `/api/sync` on Cloudflare (CPU time, D1 statements and rows), run by hand against the Pages project `nekotype-bench` (P5 PR 1, 5, 13; P7 PR 7), which is deleted between measurements; see its README
 ```
 
 Packages are consumed as TypeScript source (no build step). Each package has its own `tsconfig.json`, ESLint config, scripts and tests; the root holds Prettier, `tsconfig.base.json`, `eslint.base.js` (`createBaseConfig`) and scripts that run `pnpm -r`. Enforced by lint:
@@ -45,7 +45,7 @@ apps/web/src/
 
 1. **Unidirectional Dependency Flow:** Slices in higher layers may import slices from lower layers only (`app` → `pages` → `features` → `entities` → `shared`). Lower layers NEVER import from higher layers.
 2. **No Same-Layer Cross-Slice Imports:** Slices within the same layer (e.g. `entities/learn` and `entities/settings`) must never import from each other. They interact through compositional coordination in higher layers (`pages` or `features`).
-3. **Public API Facades:** All inter-slice imports must resolve through the target slice's root `index.ts` public re-export file. Deep internal imports (e.g. `@/entities/learn/lib/boxes`) are forbidden and rejected by lint checks.
+3. **Public API Facades:** All inter-slice imports must resolve through the target slice's root `index.ts` public re-export file. Deep internal imports (e.g. `@/entities/learn/model/log`) are forbidden and rejected by lint checks.
 4. **Zero-Assertion TypeScript:** The entire codebase operates under maximum strictness: zero `any`, zero `as T` type assertions, zero non-null assertions (`!`), and zero `@ts-ignore` or `eslint-disable` directives.
 
 ## Widgets layer consolidation

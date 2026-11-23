@@ -29,7 +29,7 @@ export type ValidSettings = {
   readonly learn: {
     readonly strictness: 'learner' | 'ime';
     readonly track: 'hiragana' | 'katakana';
-    // Target answer time of confidence: 1000–3000 in steps of 250.
+    // Target answer time: a slower correct recall is a hard grade. 1000–3000 in steps of 250.
     readonly targetMs: number;
     readonly sound: boolean;
   };

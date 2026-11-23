@@ -4,16 +4,16 @@
 
 # Nekotype (ねこタイプ)
 
-> A lightweight, keyboard-first web app for learning Hiragana and Katakana from zero, with adaptive unlocking, spaced reviews and progress tracking, instantaneous feedback, dual-tier romaji matching and zero latency.
+> A lightweight, keyboard-first web app for learning Hiragana and Katakana from zero, with an adaptive knowledge model, spaced reviews and progress tracking, instantaneous feedback, dual-tier romaji matching and zero latency.
 
-**Status.** The code implements phases P0–P6 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md), [ADR 093](docs/adr/093-learning-only-words-in-learning.md), [ADR 099](docs/adr/099-learning-home-methods-and-phases-after-p6.md)): `/` teaches hiragana and katakana with introductions, recall, recognition and reviews that a knowledge model plans (FSRS-6, ADR 100), with the answers kept as a log in IndexedDB. Phase P6 removed the typing trainer: its screen, `/type`, answers 404, and its data are gone from the client, the sync and D1: what syncs is the learning log and settings only (sync format 3: the own events go to the server as batches, one D1 row each, and the events of other devices are pulled; IndexedDB schema 6; [ADR 100](docs/adr/100-knowledge-model-fsrs-planner-and-answer-log.md), [ADR 102](docs/adr/102-sync-format-3-server.md)). Since P5 a user can sign in with Google or GitHub on production: progress and settings sync through Pages Functions and D1, the account can be deleted, and `POST /api/reports` takes reports of a wrong reading or translation (Turnstile; the client's report dialog returns with words in P12).
+**Status.** The code implements phases P0–P7 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md), [ADR 093](docs/adr/093-learning-only-words-in-learning.md), [ADR 099](docs/adr/099-learning-home-methods-and-phases-after-p6.md)): `/` teaches hiragana and katakana with introductions, recall, recognition and reviews that a knowledge model plans (FSRS-6, ADR 100), with the answers kept as a log in IndexedDB. Phase P6 removed the typing trainer: its screen, `/type`, answers 404. Phase P7 replaced confidence, unlocking and the Leitner boxes with the model, whose state is a fold of the log: what syncs is the learning log and settings only (sync format 3: the own events go to the server as batches, one D1 row each, and the events of other devices are pulled; IndexedDB schema 6; [ADR 100](docs/adr/100-knowledge-model-fsrs-planner-and-answer-log.md), [ADR 102](docs/adr/102-sync-format-3-server.md)). Since P5 a user can sign in with Google or GitHub on production: progress and settings sync through Pages Functions and D1, the account can be deleted, and `POST /api/reports` takes reports of a wrong reading or translation (Turnstile; the client's report dialog returns with words in P12).
 
-Next come the adaptive knowledge model (P7), the learning home and the progress screen (P8), more learning methods (P9), kana audio (P10), a placement test and mnemonics (P11), then words in learning (P12) and vocabulary (P13).
+Next come the learning home and the progress screen (P8), which show the forecast and the outline the model already computes, more learning methods (P9), kana audio (P10), a placement test and mnemonics (P11), then words in learning (P12) and vocabulary (P13).
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Max%20Strict-blue.svg)](https://www.typescriptlang.org/)
 [![FSD: Verified](https://img.shields.io/badge/Architecture-Feature--Sliced%20Design-orange.svg)](https://feature-sliced.design/)
-[![Bundle Budget](https://img.shields.io/badge/First%20Load-99.9%20KB%20%2F%20160%20KB-success.svg)](#-performance-budgets)
+[![Bundle Budget](https://img.shields.io/badge/First%20Load-99.3%20KB%20%2F%20160%20KB-success.svg)](#-performance-budgets)
 
 ---
 
@@ -49,16 +49,16 @@ Next come the adaptive knowledge model (P7), the learning home and the progress 
 
 A pnpm workspace ([ADR 027](docs/adr/027-pnpm-workspace-layout-for-the-monorepo.md)); packages are consumed as TypeScript source, with no build step.
 
-| Path                | Package             | Contents                                                                                                                                                                                                    |
-| ------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web/`         | `@nekotype/web`     | The Preact single-page app (Feature-Sliced Design), its tests, e2e tests, scripts, assets                                                                                                                   |
-| `apps/api/`         | `@nekotype/api`     | The Hono application behind `/api/*` (Pages Functions), its D1 migrations and its tests in the Workers runtime; `functions/` mounts it                                                                      |
-| `apps/bench/`       | `@nekotype/bench`   | The CPU and D1 measurement of the real `/api/sync` on a test Pages project (P5); a tool run by hand, never deployed to production                                                                           |
-| `packages/engine/`  | `@nekotype/engine`  | The NFA romaji engine and the kana tables; imports nothing, runs in a browser or a Worker                                                                                                                   |
-| `packages/shared/`  | `@nekotype/shared`  | Types (`Clock`, `Rng`, `Scheduler`, …), type guards, and the merge, patch and apply functions of the learning state, shared by the client and the API                                                       |
-| `packages/model/`   | `@nekotype/model`   | The knowledge model of P7: FSRS-6, the kana items and the grade of each answer (the fold, the planner and the forecast follow); pure, runs in a browser, a Worker and Node                                  |
-| `packages/content/` | `@nekotype/content` | The content pipeline (build tool, never bundled): pinned sources, parsers, the word and phrase steps; `generate` writes the content chunks                                                                  |
-| `packages/sim/`     | `@nekotype/sim`     | The learner simulation of the P7 research (a tool run by hand, never bundled): a reference learner, the current rule and candidate models; FSRS-6 comes from `@nekotype/model`; `sim` prints the comparison |
+| Path                | Package             | Contents                                                                                                                                                                                                                           |
+| ------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/`         | `@nekotype/web`     | The Preact single-page app (Feature-Sliced Design), its tests, e2e tests, scripts, assets                                                                                                                                          |
+| `apps/api/`         | `@nekotype/api`     | The Hono application behind `/api/*` (Pages Functions), its D1 migrations and its tests in the Workers runtime; `functions/` mounts it                                                                                             |
+| `apps/bench/`       | `@nekotype/bench`   | The CPU and D1 measurement of the real `/api/sync` on a test Pages project (P5, P7); a tool run by hand, never deployed to production                                                                                              |
+| `packages/engine/`  | `@nekotype/engine`  | The NFA romaji engine and the kana tables; imports nothing, runs in a browser or a Worker                                                                                                                                          |
+| `packages/shared/`  | `@nekotype/shared`  | Types (`Clock`, `Rng`, `Scheduler`, the log events, …), type guards, the codec of log pages and the settings merge, shared by the client and the API                                                                               |
+| `packages/model/`   | `@nekotype/model`   | The knowledge model of P7: FSRS-6, the kana items, the grade of each answer, the fold of the log, the planner, statistics, the forecast and the outline; pure, runs in a browser, a Worker and Node                                |
+| `packages/content/` | `@nekotype/content` | The content pipeline (build tool, never bundled): pinned sources, parsers, the word and phrase steps; `generate` writes the content chunks                                                                                         |
+| `packages/sim/`     | `@nekotype/sim`     | The learner simulation of the P7 research (a tool run by hand, never bundled): a reference learner, the rule before P7 and the research candidates, and the production model through an adapter; `p7` prints the acceptance tables |
 
 Root scripts run the package scripts with `pnpm -r`; run one package directly with `pnpm --filter @nekotype/web run <script>`.
 
@@ -156,17 +156,17 @@ CI runs `verify` (with e2e) on every pull request, and on `main` unless the tree
 
 Nekotype adheres to strict first-load asset caps, checked by `pnpm run budget` (part of `verify`) from the Vite manifest. Figures of the current build:
 
-| Asset                      | Budget Limit | Actual (gzip / woff2)  | Status                    |
-| -------------------------- | ------------ | ---------------------- | ------------------------- |
-| **Initial HTML**           | $\le 5$ KB   | **0.42 KB**            | ✅ Passed                 |
-| **Initial JavaScript**     | $\le 35$ KB  | **31.06 KB**           | ✅ Passed                 |
-| **Initial CSS**            | $\le 10$ KB  | **7.64 KB**            | ✅ Passed                 |
-| **Noto Sans JP 400**       | $\le 45$ KB  | **20.38 KB** (woff2)   | ✅ Passed                 |
-| **JetBrains Mono 400/500** | $\le 45$ KB  | **10.79 / 10.61 KB**   | ✅ Passed                 |
-| **Golos Text 400/500**     | $\le 45$ KB  | **9.42 / 9.56 KB**     | ✅ Passed                 |
-| **Total First Load**       | $\le 160$ KB | **99.88 KB**           | ✅ Passed (62% of budget) |
-| **Lazy content chunk**     | $\le 40$ KB  | none shipped (P12)     | —                         |
-| **Lazy route chunk**       | $\le 25$ KB  | **10.09 KB** (largest) | ✅ Passed                 |
+| Asset                      | Budget Limit | Actual (gzip / woff2) | Status                    |
+| -------------------------- | ------------ | --------------------- | ------------------------- |
+| **Initial HTML**           | $\le 5$ KB   | **0.42 KB**           | ✅ Passed                 |
+| **Initial JavaScript**     | $\le 35$ KB  | **30.38 KB**          | ✅ Passed                 |
+| **Initial CSS**            | $\le 10$ KB  | **7.69 KB**           | ✅ Passed                 |
+| **Noto Sans JP 400**       | $\le 45$ KB  | **20.38 KB** (woff2)  | ✅ Passed                 |
+| **JetBrains Mono 400/500** | $\le 45$ KB  | **10.79 / 10.61 KB**  | ✅ Passed                 |
+| **Golos Text 400/500**     | $\le 45$ KB  | **9.42 / 9.56 KB**    | ✅ Passed                 |
+| **Total First Load**       | $\le 160$ KB | **99.26 KB**          | ✅ Passed (62% of budget) |
+| **Lazy content chunk**     | $\le 40$ KB  | none shipped (P12)    | —                         |
+| **Lazy route chunk**       | $\le 25$ KB  | **9.90 KB** (largest) | ✅ Passed                 |
 
 ---
 

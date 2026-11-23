@@ -1,7 +1,7 @@
 # ADR 102: Sync Format 3 on the Server: One Guard for the Events, a Guarded Insert, Two Formats Side by Side
 
 - **Status:** In force.
-- **Context:** [ADR 100](100-knowledge-model-fsrs-planner-and-answer-log.md), point 7, replaces the deltas of sync format 2 with the log of answers, stored as one D1 row per batch. P7 PR 6 builds the server side ([plan D11–D15](../../p7-plan.md)) before the client moves, so the deployed client and server never disagree.
+- **Context:** [ADR 100](100-knowledge-model-fsrs-planner-and-answer-log.md), point 7, replaces the deltas of sync format 2 with the log of answers, stored as one D1 row per batch. P7 PR 6 builds the server side ([plan D11–D15](../archive/p7-plan.md)) before the client moves, so the deployed client and server never disagree.
 - **Decision:**
   1. **Two formats.** From PR 6 until PR 13 the server accepts format 2 and format 3: `POST` dispatches on `v`, `GET` on `after` (3) or `part` (2). `SYNC_FORMAT_VERSION` is 3, `SYNC_FORMAT_V2` is 2, and the format-2 types are `SyncRequestV2` and `SyncResponseV2`.
   2. **One guard for the events.** The bounds of a log page are `isLogPage` in `packages/shared/src/log-codec.ts`. The client needs a guard anyway (it never loads valibot), valibot was measured on batches of a few kilobytes while a 256 KB batch holds thousands of tuples, and one guard keeps the bounds in one place. The valibot schema of the request calls it through `v.custom`; the envelope stays a valibot schema. This amends [ADR 086](086-sync-endpoint-cpu-line.md), point 2, for the events only.

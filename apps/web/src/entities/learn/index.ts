@@ -10,7 +10,7 @@ export {
   answerK,
 } from './lib/answer-time';
 
-export { dependenciesOf, keyOf, keysOfTrack, nextUnlock, trackOfKey } from './lib/tracks';
+export { dependenciesOf, keyOf, keysOfTrack, trackOfKey } from './lib/tracks';
 export { dayStart, localDay } from './lib/day';
 export type { AnswerInput, LearnStatus, LearnStore, LearnStoreDeps } from './model/learn-store';
 export {
