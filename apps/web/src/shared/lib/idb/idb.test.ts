@@ -84,3 +84,15 @@ describe.each(backends)('Db.update on %s', (_name, open) => {
     expect(await db.get('a', 'x')).toBeUndefined();
   });
 });
+
+describe.each(backends)('Db.getAll on %s', (_name, open) => {
+  it('returns the values of one store in key order', async () => {
+    const db = await open();
+    await db.put('a', 'own:2', 'second');
+    await db.put('a', 'own:1', 'first');
+    await db.put('a', 'row:1', 'third');
+    await db.put('b', 'own:0', 'other store');
+    expect(await db.getAll('a')).toEqual(['first', 'second', 'third']);
+    expect(await db.getAll('b')).toEqual(['other store']);
+  });
+});

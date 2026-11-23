@@ -14,6 +14,8 @@ export type Read = { store: string; key: string };
 
 export interface Db {
   get(store: string, key: string): Promise<unknown>;
+  /** Every value of the store, in key order. */
+  getAll(store: string): Promise<readonly unknown[]>;
   put(store: string, key: string, value: unknown): Promise<void>;
   delete(store: string, key: string): Promise<void>;
   /** Applies the writes in one transaction over their stores: all of them or none. */
@@ -86,6 +88,8 @@ function wrap(raw: IDBDatabase): Db {
   return {
     get: async (store, key) =>
       request<unknown>(raw.transaction(store, 'readonly').objectStore(store).get(key)),
+    getAll: async (store) =>
+      request<unknown[]>(raw.transaction(store, 'readonly').objectStore(store).getAll()),
     put: (store, key, value) => run([{ op: 'put', store, key, value }]),
     delete: (store, key) => run([{ op: 'delete', store, key }]),
     write: (writes) => (writes.length === 0 ? Promise.resolve() : run(writes)),

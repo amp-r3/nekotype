@@ -6,6 +6,7 @@ export const OUTBOX_STORE = 'outbox';
 export const SYNC_KEY = 'current';
 export const DELTA_STORE = 'delta';
 export const META_STORE = 'meta';
+export const LOG_STORE = 'log';
 
 /**
  * What a store reads to build its view besides its own delta (p5-plan.md, D18). Each store checks
