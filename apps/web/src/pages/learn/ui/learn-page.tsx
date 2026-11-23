@@ -9,19 +9,18 @@ import type { LearnTrack } from '@/entities/settings';
 import { databaseMode, defaultClock } from '@/shared/lib';
 import {
   cellInfos,
-  currentStreak,
+  dueCount,
   initLearn,
-  masteredCount,
   keyOf,
   keysOfTrack,
-  learnState,
   learnStatus,
+  learnView,
   localDay,
   retryLearn,
+  streakOfDays,
 } from '@/entities/learn';
 import { authError, signInCheck } from '@/entities/user';
 import type { LearnSession } from '../model/session';
-import { dueCount } from '../lib/review-queue';
 import { loadSessionRuntime } from '../session-loader';
 import type { SessionRuntime } from '../session-loader';
 
@@ -54,7 +53,7 @@ export function LearnPage(): JSX.Element {
 
   // The session code is a chunk of its own. The field is focused here, inside the click, before
   // the chunk is awaited, so a phone keeps its keyboard.
-  const startSession = useCallback(async (mode: 'learning' | 'review' = 'learning') => {
+  const startSession = useCallback(async () => {
     inputRef.current?.focus();
     setLoadFailed(false);
     setView('loading');
@@ -64,7 +63,7 @@ export function LearnPage(): JSX.Element {
       setView('home');
       return;
     }
-    const next = loaded.openSession(mode);
+    const next = loaded.openSession();
     setRuntime(loaded);
     setSession(next);
     setView('session');
@@ -139,16 +138,15 @@ export function LearnPage(): JSX.Element {
 
   const ready = status === 'ready';
   const track = learnTrack.value;
-  const state = learnState.value;
+  const learned = learnView.value;
   const keys = keysOfTrack(track);
-  const target = learnTargetMs.value;
-  const mastered = masteredCount(state, track, target);
   const now = defaultClock.now();
-  const infos = cellInfos(track, state, target, now);
-  const due = dueCount(state, track, target, now);
-  const streak = currentStreak(state.activeDays, localDay(now));
+  const infos = learned === null ? null : cellInfos(track, learned, now);
+  const mastered = learned?.mastered[track] ?? 0;
+  const due = learned === null ? 0 : dueCount(learned, now);
+  const streak = learned === null ? 0 : streakOfDays(learned.stats.days, localDay(now));
   // The streak and the first-visit line depend on the first answer, from any track.
-  const answered = state.activeDays.length > 0;
+  const answered = learned !== null && learned.stats.days.size > 0;
   const vowels = keys.slice(0, 5).map(kanaOfKey).join(' ');
 
   // One reserved line: what holds the screen back, most serious first.
@@ -209,6 +207,19 @@ export function LearnPage(): JSX.Element {
                   </span>
                 </>
               )}
+              {due > 0 && (
+                <>
+                  <span aria-hidden="true" className="max-sm:hidden">
+                    {' · '}
+                  </span>
+                  <span data-testid="learn-due">
+                    <Parts
+                      parts={tParts('learn.due', { n: due })}
+                      valueClass="text-mono-romaji text-fur font-mono"
+                    />
+                  </span>
+                </>
+              )}
             </p>
           )}
         </div>
@@ -235,21 +246,6 @@ export function LearnPage(): JSX.Element {
           >
             {t('learn.continue')}
           </Button>
-          <Button
-            variant="secondary"
-            size="lg"
-            disabled={!ready || due === 0}
-            onClick={() => {
-              void startSession('review');
-            }}
-          >
-            <span>
-              <Parts
-                parts={tParts('learn.review', { n: ready ? due : 0 })}
-                valueClass="text-mono-romaji font-mono"
-              />
-            </span>
-          </Button>
         </div>
 
         <Notice
@@ -273,7 +269,7 @@ export function LearnPage(): JSX.Element {
           {notice?.text}
         </Notice>
 
-        {ready && (
+        {ready && infos !== null && (
           <div className="mt-2 w-full">
             <KanaChart
               rows={chartModel(track, infos)}

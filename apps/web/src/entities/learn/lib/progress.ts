@@ -1,27 +1,43 @@
-import type { LearnState, Track } from '@nekotype/shared/types';
-import { isMastered } from './boxes';
-import { keysOfTrack } from './tracks';
-import { bestStreak, currentStreak } from './streak';
+import type { LearnView } from '@nekotype/model';
 
-export type TrackProgress = {
-  readonly mastered: number;
-  readonly total: number;
-};
-
-/** Mastered kana of a track against the target answer time. */
-export function masteredCount(state: LearnState, track: Track, targetMs: number): number {
-  return keysOfTrack(track).filter((key) =>
-    isMastered(state.entries[key], state.recent[key] ?? [], targetMs),
-  ).length;
+/** Kana of both tracks whose review `continue` takes: what the `due` part of the progress line counts. */
+export function dueCount(view: LearnView, now: number): number {
+  let n = 0;
+  for (const kana of view.kana.values()) {
+    if (kana.dueFrom !== null && kana.dueFrom <= now) n += 1;
+  }
+  return n;
 }
 
-export function trackProgress(state: LearnState, track: Track, targetMs: number): TrackProgress {
-  return {
-    mastered: masteredCount(state, track, targetMs),
-    total: keysOfTrack(track).length,
-  };
+/** The consecutive days with an answer ending today, or yesterday while today has none; else 0. */
+export function streakOfDays(days: ReadonlyMap<number, unknown>, today: number): number {
+  let day = days.has(today) ? today : today - 1;
+  let streak = 0;
+  while (days.has(day)) {
+    streak += 1;
+    day -= 1;
+  }
+  return streak;
 }
 
-export function streaks(state: LearnState, today: number): { current: number; best: number } {
-  return { current: currentStreak(state.activeDays, today), best: bestStreak(state.activeDays) };
+/** The longest run of consecutive days with an answer; 0 without any. */
+export function bestStreakOfDays(days: ReadonlyMap<number, unknown>): number {
+  const sorted = [...days.keys()].sort((a, b) => a - b);
+  let best = 0;
+  let run = 0;
+  let previous = Number.NEGATIVE_INFINITY;
+  for (const day of sorted) {
+    run = day === previous + 1 ? run + 1 : 1;
+    best = Math.max(best, run);
+    previous = day;
+  }
+  return best;
+}
+
+/** The current and the best streak of the days that hold answers (the keys of `LogStats.days`). */
+export function streaks(
+  days: ReadonlyMap<number, unknown>,
+  today: number,
+): { current: number; best: number } {
+  return { current: streakOfDays(days, today), best: bestStreakOfDays(days) };
 }

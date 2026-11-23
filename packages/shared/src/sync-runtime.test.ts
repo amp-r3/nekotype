@@ -8,7 +8,9 @@ import {
   isSnapshotBuckets,
   isSnapshotRecent,
   isSnapshotRest,
+  isPullResponse,
   isSyncResponse,
+  isSyncResponseV2,
   mergeSettings,
   outboxDelta,
 } from './runtime';
@@ -39,12 +41,33 @@ describe('constants', () => {
 describe('guards', () => {
   const { recent, recallBuckets, ...rest } = snapshot.learn;
 
-  it('isSyncResponse', () => {
-    expect(isSyncResponse({ lastSeq: 0, version: 3 })).toBe(true);
-    expect(isSyncResponse({ lastSeq: -1, version: 3 })).toBe(false);
-    expect(isSyncResponse({ lastSeq: 1.5, version: 3 })).toBe(false);
+  it('isSyncResponseV2', () => {
+    expect(isSyncResponseV2({ lastSeq: 0, version: 3 })).toBe(true);
+    expect(isSyncResponseV2({ lastSeq: -1, version: 3 })).toBe(false);
+    expect(isSyncResponseV2({ lastSeq: 1.5, version: 3 })).toBe(false);
+    expect(isSyncResponseV2({ lastSeq: 1 })).toBe(false);
+    expect(isSyncResponseV2(null)).toBe(false);
+  });
+
+  it('isSyncResponse (format 3)', () => {
+    expect(isSyncResponse({ lastSeq: 0, more: false })).toBe(true);
+    expect(isSyncResponse({ lastSeq: 2, more: 1 })).toBe(false);
+    expect(isSyncResponse({ lastSeq: -1, more: true })).toBe(false);
     expect(isSyncResponse({ lastSeq: 1 })).toBe(false);
     expect(isSyncResponse(null)).toBe(false);
+  });
+
+  it('isPullResponse checks the pages of the rows', () => {
+    const page = { dev: '0190f3a0-0000-7000-8000-000000000001', n0: 1, at0: 5, e: [[0, 'e']] };
+    const body = { last: 4, more: false, settings: null, rows: [{ id: 4, log: page }] };
+    expect(isPullResponse(body)).toBe(true);
+    expect(isPullResponse({ ...body, rows: [] })).toBe(true);
+    expect(isPullResponse({ ...body, rows: [{ id: 4, log: { ...page, e: [] } }] })).toBe(false);
+    expect(isPullResponse({ ...body, rows: [{ id: -1, log: page }] })).toBe(false);
+    expect(isPullResponse({ ...body, more: 'no' })).toBe(false);
+    expect(isPullResponse({ ...body, settings: 3 })).toBe(false);
+    expect(isPullResponse({ ...body, last: 1.5 })).toBe(false);
+    expect(isPullResponse(null)).toBe(false);
   });
 
   it('isSnapshot takes a whole snapshot and nothing broken', () => {

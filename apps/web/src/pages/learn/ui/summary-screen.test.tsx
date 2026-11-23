@@ -8,8 +8,8 @@ import type { SessionSummary } from '../lib/summary';
 
 // The panel is a chunk of its own; the actions under test do not depend on it.
 const summary: SessionSummary = {
-  unlocked: [],
-  confident: [],
+  introduced: [],
+  learned: [],
   faster: [],
   slower: [],
   mixups: [],

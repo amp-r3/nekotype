@@ -1,19 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import type { LearnBox, LearnEntry, LearnState, RecallAnswer } from '@nekotype/shared/types';
+import { answer, intro, learnedEvents, viewOfEvents } from './test-view';
 import { cellInfos, chartRows } from './chart';
-import { initialLearnState } from './state';
 import { keyOf } from './tracks';
 
-const NOW = 1_000_000_000_000;
-const TARGET = 1500;
-const answers = (ms: number, ok = true, n = 10): RecallAnswer[] =>
-  Array.from({ length: n }, (_, i) => ({ at: i, ms, ok }));
-
-const entry = (box: LearnBox, dueAt: number): LearnEntry => ({ box, dueAt, updatedAt: 1 });
-
-function stateWith(patch: Partial<LearnState>): LearnState {
-  return { ...initialLearnState(), ...patch };
-}
+const NOW = 1_700_000_000_000;
+const a = keyOf('hiragana', 'あ');
+const i = keyOf('hiragana', 'い');
+const u = keyOf('hiragana', 'う');
+const e = keyOf('hiragana', 'え');
 
 describe('chart rows', () => {
   it('cover every kana of a track once', () => {
@@ -35,85 +29,69 @@ describe('chart rows', () => {
 });
 
 describe('cell states', () => {
-  const a = keyOf('hiragana', 'あ');
-  const i = keyOf('hiragana', 'い');
-  const u = keyOf('hiragana', 'う');
-  const e = keyOf('hiragana', 'え');
-
-  it('are locked, learning, confident and mastered, with the due mark over the last two', () => {
-    const state = stateWith({
-      entries: {
-        [a]: entry(4, NOW - 1),
-        [i]: entry(2, NOW + 1),
-        [u]: entry(1, NOW - 5),
-        [e]: entry(0, 0),
-      },
-      recent: {
-        [a]: answers(900),
-        [i]: answers(900),
-        [u]: answers(2000),
-        [e]: answers(900, true, 4),
-      },
-    });
-    const cells = cellInfos('hiragana', state, TARGET, NOW);
-    expect(cells.get(a)).toMatchObject({ state: 'mastered', due: true });
-    expect(cells.get(i)).toMatchObject({ state: 'confident', due: false, dueAt: NOW + 1 });
-    // Slow: not confident, so learning, and a learning kana carries no due mark.
-    expect(cells.get(u)).toMatchObject({ state: 'learning', due: false });
-    expect(cells.get(e)).toMatchObject({
-      state: 'learning',
-      introduced: true,
-      dueAt: null,
-      answers: 4,
-    });
-    expect(cells.get(keyOf('hiragana', 'お'))).toMatchObject({ introduced: false });
-    expect(cells.get(keyOf('hiragana', 'か'))).toMatchObject({ state: 'locked', opensNext: true });
-    expect(cells.get(keyOf('hiragana', 'き'))).toMatchObject({ state: 'locked', opensNext: false });
-  });
-
-  it('show a kana of box 4 that lost its confidence as learning', () => {
-    const state = stateWith({
-      entries: { [a]: entry(5, NOW - 1) },
-      recent: { [a]: answers(900, false) },
-    });
-    expect(cellInfos('hiragana', state, TARGET, NOW).get(a)).toMatchObject({
-      state: 'learning',
-      due: false,
-    });
-  });
-
-  it('follow the target answer time at once', () => {
-    const state = stateWith({
-      entries: { [i]: entry(1, NOW + 1) },
-      recent: { [i]: answers(1800) },
-    });
-    expect(cellInfos('hiragana', state, 1500, NOW).get(i)?.state).toBe('learning');
-    expect(cellInfos('hiragana', state, 2000, NOW).get(i)?.state).toBe('confident');
-  });
-
-  it('name the kana that opens next after the unlock order, ヴ before ヴァ', () => {
-    const state = stateWith({});
-    const katakana = cellInfos('katakana', state, TARGET, NOW);
-    expect(
-      [...katakana.values()].filter((cell) => cell.opensNext).map((cell) => cell.kana),
-    ).toEqual(['カ']);
-  });
-
-  it('list the mixups, most first, with the recognition accuracy inputs', () => {
-    const state = stateWith({
-      stats: {
-        [a]: {
-          recognitions: 18,
-          recognitionErrors: 4,
-          mixups: { [i]: 2, [u]: 4, [e]: 0 },
-        },
-      },
-    });
-    const cell = cellInfos('hiragana', state, TARGET, NOW).get(a);
-    expect(cell?.mixups).toEqual([
-      { key: u, count: 4 },
-      { key: i, count: 2 },
+  it('are locked, learning, learned and mastered, from the fold of the log', () => {
+    const view = viewOfEvents([
+      ...learnedEvents(a, NOW - 40 * 86_400_000),
+      ...learnedEvents(i, NOW - 60_000),
+      intro(u, { at: NOW - 30_000 }),
+      answer(u, { at: NOW - 20_000 }),
     ]);
-    expect(cell).toMatchObject({ recognitions: 18, recognitionErrors: 4 });
+    const cells = cellInfos('hiragana', view, NOW);
+    expect(cells.get(i)).toMatchObject({ state: 'learned', introduced: true });
+    expect(cells.get(u)).toMatchObject({ state: 'learning', introduced: true, answers: 1 });
+    expect(cells.get(e)).toMatchObject({ state: 'locked', introduced: false, dueAt: null });
+    expect(cells.get(a)?.dueAt).not.toBeNull();
+  });
+
+  it('mark a learned kana due when its review falls within the gap, never a learning one', () => {
+    const day = 86_400_000;
+    const spaced = [3, 8, 20].map((days) => answer(a, { at: NOW - 40 * day + days * day }));
+    const view = viewOfEvents([
+      ...learnedEvents(a, NOW - 40 * day),
+      ...spaced,
+      intro(u, { at: NOW - 20_000 }),
+    ]);
+    const cells = cellInfos('hiragana', view, NOW);
+    expect(cells.get(a)?.dueAt).not.toBeNull();
+    expect(cells.get(u)).toMatchObject({ state: 'learning', due: false });
+    const due = cells.get(a)?.dueAt ?? 0;
+    expect(cellInfos('hiragana', view, due + 1).get(a)).toMatchObject({ due: true });
+    const from = view.kana.get(a)?.dueFrom ?? 0;
+    expect(cellInfos('hiragana', view, from - 1).get(a)?.due).toBe(false);
+  });
+
+  it('name the locked kana that opens next', () => {
+    const none = viewOfEvents([]);
+    expect(
+      [...cellInfos('hiragana', none, NOW).values()]
+        .filter((cell) => cell.opensNext)
+        .map((cell) => cell.kana),
+    ).toEqual(['あ']);
+    const learned = viewOfEvents(
+      ['あ', 'い', 'う', 'え', 'お'].flatMap((kana, at) =>
+        learnedEvents(keyOf('hiragana', kana), NOW - 10_000_000 + at * 1_000_000),
+      ),
+    );
+    expect(
+      [...cellInfos('hiragana', learned, NOW).values()]
+        .filter((cell) => cell.opensNext)
+        .map((cell) => cell.kana),
+    ).toEqual(['か']);
+  });
+
+  it('list the confusions, most first, with the recognition inputs', () => {
+    const view = viewOfEvents([
+      intro(a, { at: NOW }),
+      answer(a, { at: NOW + 1, task: 'recognition', ok: false, wrong: u }),
+      answer(a, { at: NOW + 2, task: 'recognition', ok: false, wrong: u }),
+      answer(a, { at: NOW + 3, task: 'recognition', ok: false, wrong: i }),
+      answer(a, { at: NOW + 4, task: 'recognition' }),
+    ]);
+    const cell = cellInfos('hiragana', view, NOW).get(a);
+    expect(cell?.confusions).toEqual([
+      { key: u, count: 2 },
+      { key: i, count: 1 },
+    ]);
+    expect(cell).toMatchObject({ recognitions: 4, recognitionErrors: 3 });
   });
 });

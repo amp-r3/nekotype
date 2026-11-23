@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { seedLearning } from './lib/app';
+import { seedLog } from './lib/app';
+import { learnedLog } from './lib/kana';
 import { answer } from './lib/learn';
 
 test.describe('learning session on /', () => {
-  test('a full session of 25 tasks ends on the summary @mobile', async ({ page, isMobile }) => {
+  test('a full session of 30 tasks ends on the summary @mobile', async ({ page, isMobile }) => {
     await page.goto('/');
     await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
     await page.getByRole('button', { name: 'continue' }).click();
@@ -11,19 +12,19 @@ test.describe('learning session on /', () => {
     // The navigation is not drawn during a session.
     await expect(page.getByRole('navigation')).toHaveCount(0);
 
-    for (let n = 1; n <= 25; n++) {
-      await expect(page.getByTestId('task-session')).toHaveText(`learning · ${String(n)} of 25`);
+    for (let n = 1; n <= 30; n++) {
+      await expect(page.getByTestId('task-session')).toHaveText(`learning · ${String(n)} of 30`);
       // Keys pressed before the task is shown are ignored; the task is on screen now.
       await answer(page, isMobile);
     }
 
     await expect(page.getByRole('heading', { name: 'session summary' })).toBeVisible();
     await expect(page.getByRole('navigation')).toBeVisible();
-    // The first session introduces the five vowels, so there is something to show or the line.
+    // The first session introduces kana, so there is something to show or the line.
     await expect(page.getByRole('button', { name: /continue/ })).toBeVisible();
     // Enter from the hidden field starts the next session (the table button has a unit test).
     await page.keyboard.press('Enter');
-    await expect(page.getByTestId('task-session')).toHaveText('learning · 1 of 25');
+    await expect(page.getByTestId('task-session')).toHaveText('learning · 1 of 30');
     await page.getByRole('button', { name: 'leave session' }).click();
     await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
   });
@@ -33,43 +34,37 @@ test.describe('learning session on /', () => {
     await page.getByRole('button', { name: 'continue' }).click();
     await expect(page.getByTestId('kana-task')).toHaveAttribute('data-kind', 'introduction');
     await answer(page, false);
-    await expect(page.getByTestId('task-session')).toHaveText('learning · 2 of 25');
+    await expect(page.getByTestId('task-session')).toHaveText('learning · 2 of 30');
     await page.getByRole('button', { name: 'leave session' }).click();
     await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
     await expect(page.getByRole('navigation')).toBeVisible();
   });
 });
 
-test.describe('review session on /', () => {
-  const unlocked = ['あ', 'い', 'う', 'え', 'お'].map((kana) => `hiragana:${kana}`);
-  const learn = {
-    unlocked: {
-      hiragana: unlocked,
-      katakana: unlocked.map((k) => k.replace(/^hiragana/, 'katakana')),
-    },
-    entries: { 'hiragana:あ': { box: 2, dueAt: 1, updatedAt: 1 } },
-    // Confident: only a confident kana is due (ADR 062).
-    recent: {
-      'hiragana:あ': Array.from({ length: 10 }, (_, i) => ({ at: i + 1, ms: 900, ok: true })),
-    },
-    stats: {},
-    activeDays: [],
-    recallBuckets: { hiragana: {}, katakana: {} },
-  };
+test.describe('review in a session on /', () => {
+  test('takes the due kana first, shows it in the progress line and clears it after', async ({
+    page,
+  }) => {
+    // The learner came back every 2 hours on the first day, then stayed away for a month: the
+    // planner looks ahead by the usual gap between sittings, so one month-long gap alone would make
+    // the kana due again right after its review.
+    const base = learnedLog(['あ'], 30 * 864e5);
+    const last = base.at(-1);
+    if (last === undefined) throw new Error('no seed events');
+    const habit = [1, 2, 3].map((hours) => ({ ...last, at: last.at + hours * 2 * 3_600_000 }));
+    await seedLog(page, '/', [...base, ...habit]);
+    await expect(page.getByTestId('learn-due')).toHaveText('due: 1');
+    await expect(page.getByRole('button', { name: /^review/ })).toHaveCount(0);
+    await page.getByRole('button', { name: 'continue' }).click();
 
-  test('reviews the one due kana and ends on the summary', async ({ page }) => {
-    await seedLearning(page, '/', learn);
-    const review = page.getByRole('button', { name: 'review (1)' });
-    await expect(review).toBeEnabled();
-    await review.click();
-
-    await expect(page.getByTestId('task-session')).toHaveText('review · 1 of 1');
+    await expect(page.getByTestId('task-session')).toHaveText('learning · 1 of 30');
     await expect(page.getByTestId('kana-task')).toHaveAttribute('data-kind', 'recall');
     await answer(page, false);
+    await expect(page.getByTestId('task-session')).toHaveText('learning · 2 of 30');
 
-    await expect(page.getByRole('heading', { name: 'session summary' })).toBeVisible();
-    await page.getByRole('button', { name: 'to the table' }).click();
-    // The kana moved to box 3, so it is not due any more.
-    await expect(page.getByRole('button', { name: 'review (0)' })).toBeDisabled();
+    await page.getByRole('button', { name: 'leave session' }).click();
+    // The review moved the kana a long way ahead, so nothing is due now.
+    await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
+    await expect(page.getByTestId('learn-due')).toHaveCount(0);
   });
 });

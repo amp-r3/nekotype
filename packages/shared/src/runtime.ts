@@ -43,6 +43,8 @@ export {
   MAX_SYNC_BODY_BYTES,
   BATCH_CAPS,
   isSyncResponse,
+  isSyncResponseV2,
+  isPullResponse,
   isSnapshotRest,
   isSnapshotRecent,
   isSnapshotBuckets,

@@ -4,8 +4,8 @@ import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { getDatabase } from '@/shared/lib';
 import { locale, setLocale, tPlural } from '@/shared/i18n';
-import { initialCounters, initialLearnState, localDay } from '@/entities/learn';
 import { LearnPage } from './learn-page';
+import { key, seedLog } from '../lib/test-util';
 
 // A file of its own: the learning store is read once per page load, so the record is seeded before
 // the page first renders.
@@ -22,11 +22,24 @@ describe('learn page: after the first answer', () => {
   });
 
   it('shows the streak, in the plural of the language, and not the first-visit line', async () => {
-    const today = localDay(Date.now());
     const db = await getDatabase();
-    await db.put('delta', 'learn', {
-      learn: { ...initialLearnState(), activeDays: [[today - 5, today]] },
-      counters: initialCounters(),
+    // One answer a day for six days, the last of them now.
+    await seedLog(db, Date.now() - 5 * 86_400_000, (store, clock) => {
+      store.introduce(key('あ'));
+      for (let day = 0; day < 6; day++) {
+        store.recordAnswer({
+          task: 'recall',
+          key: key('あ'),
+          ok: true,
+          keystrokes: [{ t: 700, accepted: true }],
+          hint: false,
+          wrong: null,
+          alt: null,
+        });
+        clock.time += 86_400_000;
+      }
+      // The clock ran one day past the last answer: bring it back to that day.
+      clock.time -= 86_400_000;
     });
 
     container = document.createElement('div');

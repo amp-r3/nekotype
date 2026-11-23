@@ -3,7 +3,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { SettingsPage } from './settings-page';
-import { introduce, keyOf, learnState } from '@/entities/learn';
+import { initLearn, introduce, keyOf, learnView } from '@/entities/learn';
 import { t, loadDictionaryPart } from '@/shared/i18n';
 import { learnTargetMs } from '@/entities/settings';
 import { initUser } from '@/entities/user';
@@ -33,8 +33,10 @@ describe('settings page: Reset progress', () => {
   it('also clears the learning state', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
-    introduce(keyOf('hiragana', 'あ'));
-    expect(Object.keys(learnState.value.entries)).toHaveLength(1);
+    const key = keyOf('hiragana', 'あ');
+    await initLearn(() => 1500);
+    introduce(key);
+    expect(learnView.value?.kana.get(key)?.state).toBe('learning');
 
     render(<SettingsPage />, container);
     await act(() => {
@@ -47,7 +49,7 @@ describe('settings page: Reset progress', () => {
     });
     await act(settle);
 
-    expect(learnState.value.entries).toEqual({});
+    expect(learnView.value?.kana.get(key)?.state).toBe('locked');
   });
 
   it('changes the target answer time with a select of nine values', async () => {

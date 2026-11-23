@@ -1,17 +1,35 @@
 import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { LOG_PAGE_EVENTS, encodePage } from '@nekotype/shared/runtime';
+import type { EventDraft } from '@nekotype/shared/types';
 import { SCHEMA_VERSION } from '../../src/shared/lib/idb/schema';
 
-/** Writes the learning state (`delta/learn`) the same way, on `path`, and reloads. */
-export async function seedLearning(
+/** The log device id of the seeded log: a UUID, as the app creates it. */
+const SEED_DEV = '018f0000-0000-7000-8000-0000000000e2';
+
+const pad = (n: number): string => String(n).padStart(12, '0');
+
+/**
+ * Writes the learning log (`log` pages and `meta/log`, P7 plan D16) as one device would have, on
+ * `path`, and reloads. `events` are in order; they get the identity `(SEED_DEV, 1, 2, 3, …)`.
+ */
+export async function seedLog(
   page: Page,
   path: string,
-  learn: Record<string, unknown>,
+  events: readonly EventDraft[],
 ): Promise<void> {
   await page.goto(path);
-  await putRecord(page, 'delta', 'learn', {
-    learn,
-    counters: { started: 0, finished: 0 },
+  const numbered = events.map((event, index) => ({ ...event, dev: SEED_DEV, n: index + 1 }));
+  for (let first = 0; first < numbered.length; first += LOG_PAGE_EVENTS) {
+    const chunk = numbered.slice(first, first + LOG_PAGE_EVENTS);
+    const closed = chunk.length === LOG_PAGE_EVENTS;
+    await putRecord(page, 'log', closed ? `own:${pad(first + 1)}` : 'own:open', encodePage(chunk));
+  }
+  const last = numbered.at(-1);
+  await putRecord(page, 'meta', 'log', {
+    dev: SEED_DEV,
+    next: numbered.length + 1,
+    lastAt: last?.at ?? 0,
   });
   await page.reload();
 }

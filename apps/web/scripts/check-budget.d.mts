@@ -17,3 +17,5 @@ export function checkBudget(distDir: string): {
 };
 
 export const SYNC_ENTRY: string;
+
+export const MODEL_CHUNK: string;

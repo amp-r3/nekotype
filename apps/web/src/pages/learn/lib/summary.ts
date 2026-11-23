@@ -1,6 +1,6 @@
-import type { LearnKanaKey, LearnState, Track } from '@nekotype/shared/types';
+import type { LearnView } from '@nekotype/model';
+import type { LearnKanaKey } from '@nekotype/shared/types';
 import { RECENT_ANSWERS } from '@nekotype/shared/runtime';
-import { isConfident, medianAnswerMs } from '@/entities/learn';
 
 /** Changes in the median answer time smaller than this are not listed. */
 export const CHANGE_MIN_MS = 100;
@@ -21,8 +21,10 @@ export type Mixup = {
 };
 
 export type SessionSummary = {
-  readonly unlocked: readonly LearnKanaKey[];
-  readonly confident: readonly LearnKanaKey[];
+  /** Kana introduced in the session. */
+  readonly introduced: readonly LearnKanaKey[];
+  /** Kana that were locked or learning at the start and are learned or mastered now. */
+  readonly learned: readonly LearnKanaKey[];
   readonly faster: readonly MedianChange[];
   readonly slower: readonly MedianChange[];
   /** Recognition: a kana picked instead of the right one. */
@@ -32,11 +34,9 @@ export type SessionSummary = {
 };
 
 export type SummaryInput = {
-  readonly track: Track;
-  /** The learning state when the session started and when it ended. */
-  readonly before: LearnState;
-  readonly after: LearnState;
-  readonly targetMs: number;
+  /** The view when the session started and when it ended. */
+  readonly before: LearnView;
+  readonly after: LearnView;
   readonly mixups: readonly Mixup[];
   readonly errors: readonly LearnKanaKey[];
 };
@@ -44,8 +44,8 @@ export type SummaryInput = {
 /** Whether the summary has nothing to list. */
 export function isEmptySummary(summary: SessionSummary): boolean {
   return (
-    summary.unlocked.length === 0 &&
-    summary.confident.length === 0 &&
+    summary.introduced.length === 0 &&
+    summary.learned.length === 0 &&
     summary.faster.length === 0 &&
     summary.slower.length === 0 &&
     summary.mixups.length === 0 &&
@@ -53,20 +53,20 @@ export function isEmptySummary(summary: SessionSummary): boolean {
   );
 }
 
-/** What the session changed (learning.md, "Session summary"). */
+/** What the session changed (learning.md, "Session summary"), kana of both tracks. */
 export function summarize(input: SummaryInput): SessionSummary {
-  const { track, before, after, targetMs } = input;
-  const unlockedBefore = new Set(before.unlocked[track]);
-  const unlocked = after.unlocked[track].filter((key) => !unlockedBefore.has(key));
-
-  const confident: LearnKanaKey[] = [];
+  const { before, after } = input;
+  const introduced: LearnKanaKey[] = [];
+  const learned: LearnKanaKey[] = [];
   const changes: MedianChange[] = [];
-  for (const key of after.unlocked[track]) {
-    const was = before.recent[key] ?? [];
-    const now = after.recent[key] ?? [];
-    if (!isConfident(was, targetMs) && isConfident(now, targetMs)) confident.push(key);
-    if (was.length >= RECENT_ANSWERS) {
-      changes.push({ key, from: medianAnswerMs(was), to: medianAnswerMs(now) });
+  for (const [key, now] of after.kana) {
+    const was = before.kana.get(key);
+    if (was === undefined) continue;
+    if (was.state === 'locked' && now.state !== 'locked') introduced.push(key);
+    const known = now.state === 'learned' || now.state === 'mastered';
+    if ((was.state === 'locked' || was.state === 'learning') && known) learned.push(key);
+    if (was.recall.length >= RECENT_ANSWERS) {
+      changes.push({ key, from: was.medianMs, to: now.medianMs });
     }
   }
   const delta = (change: MedianChange): number => change.to - change.from;
@@ -79,12 +79,5 @@ export function summarize(input: SummaryInput): SessionSummary {
     .sort((a, b) => delta(b) - delta(a))
     .slice(0, CHANGE_LIMIT);
 
-  return {
-    unlocked,
-    confident,
-    faster,
-    slower,
-    mixups: input.mixups,
-    errors: input.errors,
-  };
+  return { introduced, learned, faster, slower, mixups: input.mixups, errors: input.errors };
 }

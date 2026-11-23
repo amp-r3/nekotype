@@ -1,10 +1,11 @@
 import { signal } from '@preact/signals';
 import type { ReadonlySignal } from '@preact/signals';
+import { nextTask } from '@nekotype/model';
+import type { LearnView, ModelState } from '@nekotype/model';
 import type {
   AudioProvider,
   Clock,
   LearnKanaKey,
-  LearnState,
   Rng,
   Scheduler,
   TimeoutHandle,
@@ -14,13 +15,14 @@ import type { KeyIntent } from '@/shared/lib';
 import { requestSync } from '@/shared/lib';
 import { compile, isComplete, start, step } from '../lib/prompt';
 import type { MatchState, Matcher, Strictness } from '../lib/prompt';
-import type { Keystroke, LearnStore } from '@/entities/learn';
+import { trackOfKey } from '@/entities/learn';
+import type { AnswerInput, Keystroke } from '@/entities/learn';
 import { ANSWER_PAUSE_MS, SESSION_TASKS } from '../lib/constants';
 import { recognitionOptions } from '../lib/distractors';
 import { displayRomaji } from '../lib/romaji';
 import { summarize } from '../lib/summary';
 import type { Mixup, SessionSummary } from '../lib/summary';
-import { chooseTask } from '../lib/task-choice';
+import { wrongKana } from '../lib/wrong-kana';
 
 /** The part of the controller of a task that the session drives. */
 export type TaskPort = {
@@ -65,23 +67,26 @@ export type Notice =
 /** `task`: waiting for the answer; `answered`: the result is held; `waiting`: for Enter, Space or a click. */
 export type Phase = 'idle' | 'task' | 'answered' | 'waiting' | 'summary';
 
+/** What the session needs of the learn store (`entities/learn`). */
+export type SessionStore = {
+  readonly view: ReadonlySignal<LearnView | null>;
+  readonly modelState: () => ModelState | null;
+  readonly startSession: () => void;
+  readonly endSession: () => void;
+  readonly introduce: (key: LearnKanaKey) => void;
+  readonly recordAnswer: (input: AnswerInput) => void;
+};
+
 export type LearnSessionDeps = {
+  /** `settings.learn.track`: where the planner takes new kana from. */
   readonly track: Track;
-  /** `review`: recall only, one task per kana of `queue`, no introductions; answers move boxes. */
-  readonly mode?: 'learning' | 'review';
-  /** The kana of a review session, in order; fixed when the session is created. */
-  readonly queue?: readonly LearnKanaKey[];
-  readonly store: Pick<
-    LearnStore,
-    'state' | 'introduce' | 'recordRecall' | 'recordRecognition' | 'countSession'
-  >;
+  readonly store: SessionStore;
   readonly clock: Clock;
   readonly scheduler: Scheduler;
   readonly rng: Rng;
   readonly audio: AudioProvider;
   /** Read at each task, so a change of the setting applies to the next one. */
   readonly strictness: () => Strictness;
-  readonly targetMs: () => number;
   readonly tasks?: number;
 };
 
@@ -93,7 +98,6 @@ export interface LearnSession {
   readonly phase: ReadonlySignal<Phase>;
   readonly summary: ReadonlySignal<SessionSummary | null>;
   readonly total: number;
-  readonly mode: 'learning' | 'review';
   /** Shows the first task. */
   start: () => void;
   /** The task is on screen: its answer time runs from now, and keys are taken. */
@@ -115,18 +119,26 @@ function kanaOfKey(key: LearnKanaKey): string {
   return key.slice(key.indexOf(':') + 1);
 }
 
+/** The kana of a track that are not locked, for the filler of the options. */
+function introducedOf(view: LearnView | null, track: Track): readonly LearnKanaKey[] {
+  if (view === null) return [];
+  const keys: LearnKanaKey[] = [];
+  for (const [key, kana] of view.kana) {
+    if (kana.state !== 'locked' && trackOfKey(key) === track) keys.push(key);
+  }
+  return keys;
+}
+
 /**
- * A learning session (docs/spec/learning.md, "Learning session"): 25 tasks, an introduction for
- * each unlocked kana not yet shown, then recall and recognition. It holds no DOM: the screen
+ * A learning session (docs/spec/learning.md, "Learning session"): 30 tasks, each chosen by the
+ * planner of the model when it is shown (introduction, recall or recognition). It holds no DOM: the screen
  * hands it a `TaskPort` once a task is on display and calls `handleIntent`, `choose` and
  * `advance`. The signals change once per task (`task`) and once per recognition answer
  * (`choice`); a recall keystroke changes none of them.
  */
 export function createLearnSession(deps: LearnSessionDeps): LearnSession {
   const { track, store, clock, scheduler, rng, audio } = deps;
-  const mode = deps.mode ?? 'learning';
-  const queue = deps.queue ?? [];
-  const total = mode === 'review' ? queue.length : (deps.tasks ?? SESSION_TASKS);
+  const total = deps.tasks ?? SESSION_TASKS;
 
   const task = signal<TaskView | null>(null);
   const choice = signal<Choice | null>(null);
@@ -137,7 +149,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
   let port: TaskPort | null = null;
   let count = 0;
   let previous: LearnKanaKey | null = null;
-  let before: LearnState = store.state.value;
+  let before: LearnView | null = store.view.value;
   let timer: TimeoutHandle | null = null;
   const mixups: Mixup[] = [];
   const errors = new Set<LearnKanaKey>();
@@ -148,6 +160,8 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
   let typed = '';
   let keystrokes: Keystroke[] = [];
   let ok = true;
+  /** The romaji typed up to and including the first rejected key of a recall; null for none. */
+  let firstError: string | null = null;
   let shownAt = 0;
 
   const clearTimer = (): void => {
@@ -164,34 +178,30 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
 
   const finish = (): void => {
     clearTimer();
-    store.countSession('finished');
+    store.endSession();
     requestSync();
-    summary.value = summarize({
-      track,
-      before,
-      after: store.state.value,
-      targetMs: deps.targetMs(),
-      mixups,
-      errors: [...errors],
-    });
+    const after = store.view.value;
+    if (before !== null && after !== null) {
+      summary.value = summarize({ before, after, mixups, errors: [...errors] });
+    } else {
+      summary.value = {
+        introduced: [],
+        learned: [],
+        faster: [],
+        slower: [],
+        mixups,
+        errors: [...errors],
+      };
+    }
     phase.value = 'summary';
   };
 
+  // The planner runs here, when a task is shown, never in a key handler (D18).
   const pick = (): { kind: TaskView['kind']; key: LearnKanaKey } | null => {
-    if (mode === 'review') {
-      const key = queue[count];
-      return key === undefined ? null : { kind: 'recall', key };
-    }
-    const state = store.state.value;
-    const pending = state.unlocked[track].find((key) => state.entries[key] === undefined);
-    if (pending !== undefined) return { kind: 'introduction', key: pending };
-    return chooseTask({
-      track,
-      state,
-      targetMs: deps.targetMs(),
-      previous,
-      rng,
-    });
+    const state = store.modelState();
+    if (state === null) return null;
+    const task = nextTask(state, { now: clock.now(), track, previous, rng });
+    return task === null ? null : { kind: task.kind, key: task.key };
   };
 
   const showNext = (): void => {
@@ -207,11 +217,13 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
     matcher = null;
     matchState = null;
     ok = true;
+    firstError = null;
     const n = count;
     const { key } = next;
     const kana = kanaOfKey(key);
     if (next.kind === 'recognition') {
-      const state = store.state.value;
+      const shown = store.view.value;
+      const own = trackOfKey(key);
       matcher = null;
       task.value = {
         kind: 'recognition',
@@ -219,10 +231,10 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
         key,
         romaji: displayRomaji(key),
         options: recognitionOptions({
-          track,
+          track: own,
           answer: key,
-          unlocked: state.unlocked[track],
-          stat: state.stats[key],
+          introduced: introducedOf(shown, own),
+          confusions: shown?.kana.get(key)?.confusions ?? [],
           strictness: deps.strictness(),
           rng,
         }),
@@ -246,16 +258,41 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
     timer = scheduler.setTimeout(showNext, ANSWER_PAUSE_MS);
   };
 
+  // The record is deferred: a key handler does no fold, grade or IndexedDB call (D18). It runs
+  // before the hold timer, so the next task is planned on the answer.
+  const defer = (record: () => void): void => {
+    scheduler.setTimeout(record, 0);
+  };
+
   const completeTyped = (current: TaskView): void => {
+    const { key } = current;
     if (current.kind === 'introduction') {
       port?.finish('correct');
-      store.introduce(current.key);
+      defer(() => {
+        store.introduce(key);
+      });
     } else if (current.kind === 'recall') {
-      store.recordRecall({ key: current.key, keystrokes, ok, review: mode === 'review' });
-      if (!ok) errors.add(current.key);
+      const answered = { keystrokes: [...keystrokes], ok, firstError };
+      const strictness = deps.strictness();
+      if (!ok) errors.add(key);
       port?.finish(ok ? 'correct' : 'miss');
+      defer(() => {
+        store.recordAnswer({
+          task: 'recall',
+          key,
+          ok: answered.ok,
+          keystrokes: answered.keystrokes,
+          hint: false,
+          // The kana the typed romaji matched is worked out here, not in the key handler (D18).
+          wrong:
+            answered.firstError === null
+              ? null
+              : wrongKana(trackOfKey(key), strictness, answered.firstError),
+          alt: null,
+        });
+      });
     }
-    audio.play(current.key);
+    audio.play(key);
     hold();
   };
 
@@ -283,6 +320,8 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
     if (next === null) {
       if (current.kind === 'recall') {
         keystrokes.push({ t, accepted: false });
+        // Only the first error names a kana: the prefix typed so far plus this key.
+        if (ok) firstError = typed + char;
         ok = false;
       }
       port.reject();
@@ -311,13 +350,12 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
     phase,
     summary,
     total,
-    mode,
 
     start() {
-      before = store.state.value;
+      before = store.view.value;
       count = 0;
       previous = null;
-      store.countSession('started');
+      store.startSession();
       showNext();
     },
 
@@ -344,7 +382,19 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
       const chosen = current.options[index];
       if (chosen === undefined) return;
       const correct = chosen === current.key;
-      store.recordRecognition({ key: current.key, chosen });
+      const ms = clock.now() - shownAt;
+      const { key } = current;
+      defer(() => {
+        store.recordAnswer({
+          task: 'recognition',
+          key,
+          ok: correct,
+          ms,
+          hint: false,
+          wrong: correct ? null : chosen,
+          alt: null,
+        });
+      });
       audio.play(current.key);
       if (!correct) {
         if (!mixups.some((m) => m.key === current.key && m.chosen === chosen)) {

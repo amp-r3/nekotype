@@ -1,23 +1,30 @@
 import type {
   Clock,
-  Counters,
-  LearnDelta,
   LearnKanaKey,
+  LogEvent,
+  LogPage,
+  PullResponse,
   Scheduler,
-  Snapshot,
-  SyncRequestV2,
+  SyncRequest,
   TimeoutHandle,
   ValidSettings,
 } from '@nekotype/shared/types';
-import { applyBatch, emptyLearnState, isObject } from '@nekotype/shared/runtime';
-import type { ChangeChannel, Db } from '@/shared/lib';
+import {
+  decodePage,
+  encodePage,
+  isObject,
+  isLogPage,
+  mergeSettings,
+} from '@nekotype/shared/runtime';
+import type { ChangeChannel, Db, TypedChannel } from '@/shared/lib';
 import { createMemoryDb } from '@/shared/lib';
+import type { LearnMessage } from '@/entities/learn';
 import type { FetchLike } from '@/shared/api';
 import { createSyncEngine } from './engine';
 import type { SyncEngine, SyncEnv, SyncLocks } from './engine';
 
 // Doubles for the sync engine's tests: a clock and timers moved by hand, the lock, the page, and a
-// server that implements the protocol of backend.md with the shared merge functions.
+// server that implements the log protocol of backend.md: one row per accepted batch.
 
 export class TestClock implements Clock {
   constructor(public time = 1_700_000_000_000) {}
@@ -137,13 +144,16 @@ export function createTestChannel(): TestChannel {
   };
 }
 
-export const emptyCounters = (): Counters => ({ started: 0, finished: 0 });
+export type TestLearnChannel = TypedChannel<LearnMessage> & { readonly posts: LearnMessage[] };
 
-export function emptySnapshot(): Snapshot {
+export function createTestLearnChannel(): TestLearnChannel {
+  const posts: LearnMessage[] = [];
   return {
-    settings: null,
-    counters: emptyCounters(),
-    learn: emptyLearnState(),
+    posts,
+    post: (message) => {
+      posts.push(message);
+    },
+    listen: () => {},
   };
 }
 
@@ -173,24 +183,30 @@ export const errorResponse = (
     extra.retryAfter === undefined ? {} : { 'Retry-After': String(extra.retryAfter) },
   );
 
-const isSyncRequestLike = (value: unknown): value is SyncRequestV2 =>
-  isObject(value) && typeof value['deviceId'] === 'string' && typeof value['seq'] === 'number';
+const isSyncRequestLike = (value: unknown): value is SyncRequest =>
+  isObject(value) &&
+  typeof value['deviceId'] === 'string' &&
+  typeof value['seq'] === 'number' &&
+  typeof value['after'] === 'number' &&
+  (value['log'] === null || isLogPage(value['log']));
 
-/** The server of backend.md for one user: `seq` rules, `version`, and the parts of the snapshot. */
+/** The rows a pull page holds at most; small, so tests reach `more`. */
+export const TEST_PULL_ROWS = 3;
+
+type ServerRow = { readonly id: number; readonly deviceId: string; readonly log: LogPage };
+
+/** The server of backend.md for one user: `seq` rules, one row per batch, pages of rows. */
 export function createFakeServer() {
-  let snapshot = emptySnapshot();
-  let version = 0;
+  let settings: ValidSettings | null = null;
+  const rows: ServerRow[] = [];
   const seqs = new Map<string, number>();
   const requests: RecordedRequest[] = [];
   const forced: Forced[] = [];
-  let beforePart: ((part: string) => void) | null = null;
   let beforeResponse: ((request: RecordedRequest) => void) | null = null;
+  let lostAcks = 0;
 
-  const apply = (request: SyncRequestV2): void => {
-    snapshot = applyBatch(snapshot, request);
-    version += 1;
-    seqs.set(request.deviceId, request.seq);
-  };
+  const moreFor = (deviceId: string, after: number): boolean =>
+    rows.some((r) => r.id > after && r.deviceId !== deviceId);
 
   const fetchFn: FetchLike = (input, init) => {
     const request: RecordedRequest = {
@@ -210,36 +226,40 @@ export function createFakeServer() {
       const last = seqs.get(sync.deviceId) ?? 0;
       if (sync.seq > last + 1)
         return Promise.resolve(errorResponse(409, 'seq_gap', { lastSeq: last }));
-      if (sync.seq === last + 1) apply(sync);
-      return Promise.resolve(json(200, { lastSeq: seqs.get(sync.deviceId) ?? 0, version }));
-    }
-    const lastSeq = seqs.get(url.searchParams.get('deviceId') ?? '') ?? 0;
-    const part = url.searchParams.get('part');
-    if (part === null) return Promise.resolve(json(200, { lastSeq, version }));
-    beforePart?.(part);
-    if (part === 'recent')
-      return Promise.resolve(json(200, { part, version, recent: snapshot.learn.recent }));
-    if (part === 'buckets') {
+      if (sync.seq === last + 1) {
+        if (sync.log !== null)
+          rows.push({ id: rows.length + 1, deviceId: sync.deviceId, log: sync.log });
+        settings = mergeSettings(settings, sync.settings, sync.seq);
+        seqs.set(sync.deviceId, sync.seq);
+      }
+      if (lostAcks > 0) {
+        // The batch is stored, the answer never arrives.
+        lostAcks -= 1;
+        throw new TypeError('Failed to fetch');
+      }
       return Promise.resolve(
-        json(200, { part, version, recallBuckets: snapshot.learn.recallBuckets }),
+        json(200, {
+          lastSeq: seqs.get(sync.deviceId) ?? 0,
+          more: moreFor(sync.deviceId, sync.after),
+        }),
       );
     }
-    const learn = {
-      unlocked: snapshot.learn.unlocked,
-      entries: snapshot.learn.entries,
-      stats: snapshot.learn.stats,
-      activeDays: snapshot.learn.activeDays,
-    };
-    return Promise.resolve(
-      json(200, {
-        part,
-        lastSeq,
-        version,
-        settings: snapshot.settings,
-        counters: snapshot.counters,
-        learn,
-      }),
-    );
+    const deviceId = url.searchParams.get('deviceId') ?? '';
+    const after = Number(url.searchParams.get('after'));
+    const page: PullResponse['rows'][number][] = [];
+    let lastId = after;
+    let more = false;
+    for (const row of rows) {
+      if (row.id <= after) continue;
+      if (page.length >= TEST_PULL_ROWS) {
+        more = true;
+        break;
+      }
+      lastId = row.id;
+      if (row.deviceId !== deviceId) page.push({ id: row.id, log: row.log });
+    }
+    const body: PullResponse = { last: lastId, more, settings, rows: page };
+    return Promise.resolve(json(200, body));
   };
 
   return {
@@ -247,31 +267,33 @@ export function createFakeServer() {
     requests,
     posts: () => requests.filter((r) => r.method === 'POST'),
     gets: () => requests.filter((r) => r.method === 'GET'),
-    snapshot: () => snapshot,
-    version: () => version,
+    rows: () => rows,
+    /** The events the server holds, of every device, in row order. */
+    events: (): LogEvent[] => rows.flatMap((r) => decodePage(r.log) ?? []),
+    settings: () => settings,
     lastSeq: (deviceId: string) => seqs.get(deviceId) ?? 0,
     /** The next requests get these answers instead of the server's, in order. */
     force: (...responses: Forced[]) => {
       forced.push(...responses);
+    },
+    /** The next `count` batches are applied, but their answers are lost. */
+    loseAcks: (count: number) => {
+      lostAcks += count;
     },
     forceNetworkError: () => {
       forced.push(() => {
         throw new TypeError('Failed to fetch');
       });
     },
-    /** Another device's batch, applied directly. */
-    externalWrite: (request: SyncRequestV2) => {
-      apply(request);
-    },
-    onPart: (hook: ((part: string) => void) | null) => {
-      beforePart = hook;
+    /** Another device's batch, stored directly. */
+    externalWrite: (deviceId: string, events: readonly LogEvent[]) => {
+      rows.push({ id: rows.length + 1, deviceId, log: encodePage(events) });
     },
     onRequest: (hook: ((request: RecordedRequest) => void) | null) => {
       beforeResponse = hook;
     },
-    setSnapshot: (next: Snapshot, nextVersion: number) => {
-      snapshot = next;
-      version = nextVersion;
+    setSettings: (next: ValidSettings | null) => {
+      settings = next;
     },
     setLastSeq: (deviceId: string, seq: number) => {
       seqs.set(deviceId, seq);
@@ -284,13 +306,44 @@ export type FakeServer = ReturnType<typeof createFakeServer>;
 export const KEY_A: LearnKanaKey = 'hiragana:あ';
 export const KEY_I: LearnKanaKey = 'hiragana:い';
 
-export function learnDelta(overrides: Partial<LearnDelta> = {}): LearnDelta {
-  return { ...emptyLearnState(), ...overrides };
+export const LOG_DEV = '0190f3a0-0000-7000-8000-00000000000a';
+export const OTHER_DEV = '0190f3a0-0000-7000-8000-00000000000b';
+
+/** `count` events of `dev`, `n` from `from`, one second apart from `at0`; answers on あ. */
+export function eventsOf(dev: string, from: number, count: number, at0 = 1_000): LogEvent[] {
+  return Array.from({ length: count }, (_, i) => ({
+    t: 'answer' as const,
+    at: at0 + (from + i) * 1000,
+    dev,
+    n: from + i,
+    task: 'recall' as const,
+    k: KEY_A,
+    ok: true,
+    ms: 900,
+    hint: false,
+    wrong: null,
+    alt: null,
+  }));
 }
 
-/** `delta/learn` as a store writes it. */
-export function learnRecord(delta: LearnDelta, counters: Counters = emptyCounters()) {
-  return { learn: delta, counters };
+/** Stores the device's own events as the log module does: one open page and `meta/log`. */
+export async function seedOwn(db: Db, count: number, from = 1, dev = LOG_DEV): Promise<LogEvent[]> {
+  const events = eventsOf(dev, from, count);
+  const last = events[events.length - 1];
+  await db.put('log', 'own:open', encodePage(events));
+  await db.put('meta', 'log', { dev, next: from + count, lastAt: last?.at ?? 0 });
+  return events;
+}
+
+/** Appends `count` more own events, as the log module does: the open page and `meta/log`. */
+export async function appendOwn(db: Db, count: number, dev = LOG_DEV): Promise<void> {
+  const meta = await db.get('meta', 'log');
+  const next = isObject(meta) && typeof meta['next'] === 'number' ? meta['next'] : 1;
+  const open = decodePage(await db.get('log', 'own:open')) ?? [];
+  const added = eventsOf(dev, next, count, 1_000 + next * 1000);
+  const all = [...open, ...added];
+  await db.put('log', 'own:open', encodePage(all));
+  await db.put('meta', 'log', { dev, next: next + count, lastAt: all[all.length - 1]?.at ?? 0 });
 }
 
 export function settingsAt(updatedAt: number): ValidSettings {
@@ -316,9 +369,11 @@ export type Rig = {
   readonly timers: TimerScheduler;
   readonly env: ReturnType<typeof createTestEnv>;
   readonly locks: ReturnType<typeof createTestLocks>;
-  readonly channels: { learn: TestChannel; settings: TestChannel };
+  readonly channels: { learn: TestLearnChannel; settings: TestChannel };
   readonly refreshUser: () => Promise<void>;
   readonly refreshed: { count: number };
+  /** How many times the engine asked the learn store to read the log again. */
+  readonly reloads: { count: number };
   readonly engine: SyncEngine;
   /** What `requestSync` calls. */
   readonly request: () => void;
@@ -340,10 +395,11 @@ export async function createRig(
   const env = createTestEnv();
   const locks = options.locks ?? createTestLocks();
   const channels = {
-    learn: createTestChannel(),
+    learn: createTestLearnChannel(),
     settings: createTestChannel(),
   };
   const refreshed = { count: 0 };
+  const reloads = { count: 0 };
   let handler: (() => void) | null = null;
   const refreshUser = (): Promise<void> => {
     refreshed.count += 1;
@@ -358,6 +414,10 @@ export async function createRig(
     locks,
     env,
     channels,
+    reloadLearning: () => {
+      reloads.count += 1;
+      return Promise.resolve();
+    },
     refreshUser,
     onSyncRequest: (next) => {
       handler = next;
@@ -376,6 +436,7 @@ export async function createRig(
     channels,
     refreshUser,
     refreshed,
+    reloads,
     engine,
     request: () => {
       handler?.();

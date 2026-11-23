@@ -1,78 +1,77 @@
 import { describe, it, expect } from 'vitest';
-import { summarize, isEmptySummary } from './summary';
-import { answers, key, stateWith } from './test-util';
+import { answer, intro, key, learnedEvents, viewOfEvents } from './test-util';
+import { isEmptySummary, summarize } from './summary';
 
-const VOWELS = ['あ', 'い', 'う', 'え', 'お'];
-const base = { track: 'hiragana', targetMs: 1500, mixups: [], errors: [] } as const;
+const NOW = 1_700_000_000_000;
+const noConfusion = { mixups: [], errors: [] } as const;
+
+/** Ten recalls of a kana, each `ms` long, from `at`. */
+const recalls = (kana: string, at: number, ms: number): ReturnType<typeof answer>[] =>
+  Array.from({ length: 10 }, (_, i) => answer(key(kana), { at: at + i * 1000, ms }));
 
 describe('summarize', () => {
   it('is empty when nothing changed', () => {
-    const state = stateWith({});
-    const summary = summarize({ ...base, before: state, after: state });
-    expect(isEmptySummary(summary)).toBe(true);
+    const view = viewOfEvents(learnedEvents('あ', NOW));
+    expect(isEmptySummary(summarize({ ...noConfusion, before: view, after: view }))).toBe(true);
   });
 
-  it('lists the kana unlocked during the session', () => {
-    const before = stateWith({});
-    const after = stateWith({ unlocked: [...VOWELS, 'か'] });
-    expect(summarize({ ...base, before, after }).unlocked).toEqual([key('か')]);
-  });
-
-  it('lists kana that were not confident at the start and are at the end', () => {
-    const before = stateWith({ recent: { あ: answers(9, 800), い: answers(10, 800) } });
-    const after = stateWith({
-      recent: { あ: answers(10, 800), い: answers(10, 800), う: answers(10, 3000) },
-    });
-    expect(summarize({ ...base, before, after }).confident).toEqual([key('あ')]);
-  });
-
-  it('lists changes of 100 ms or more for kana with 10 answers at the start, largest first', () => {
-    const before = stateWith({
-      recent: {
-        あ: answers(10, 1700),
-        い: answers(10, 1000),
-        う: answers(10, 1000),
-        え: answers(10, 1000),
-        お: answers(9, 1000),
-      },
-    });
-    const after = stateWith({
-      recent: {
-        あ: answers(10, 1380),
-        い: answers(10, 1099),
-        う: answers(10, 1250),
-        え: answers(10, 1100),
-        お: answers(10, 400),
-      },
-    });
-    const summary = summarize({ ...base, before, after });
-    expect(summary.faster).toEqual([{ key: key('あ'), from: 1700, to: 1380 }]);
-    // い moved by 99 ms: not listed; お had 9 answers at the start: not listed.
-    expect(summary.slower).toEqual([
-      { key: key('う'), from: 1000, to: 1250 },
-      { key: key('え'), from: 1000, to: 1100 },
+  it('lists the kana introduced during the session, of both tracks', () => {
+    const before = viewOfEvents(learnedEvents('あ', NOW));
+    const after = viewOfEvents([
+      ...learnedEvents('あ', NOW),
+      intro(key('い'), { at: NOW + 1_000_000 }),
+      intro('katakana:ア', { at: NOW + 1_000_001 }),
+    ]);
+    expect(summarize({ ...noConfusion, before, after }).introduced).toEqual([
+      key('い'),
+      'katakana:ア',
     ]);
   });
 
-  it('lists at most five each way', () => {
-    const kana = ['あ', 'い', 'う', 'え', 'お', 'か', 'き'];
-    const recent = (ms: number) => Object.fromEntries(kana.map((k) => [k, answers(10, ms)]));
-    const before = stateWith({ unlocked: [...VOWELS, 'か', 'き'], recent: recent(2000) });
-    const after = stateWith({ unlocked: [...VOWELS, 'か', 'き'], recent: recent(1000) });
-    expect(summarize({ ...base, before, after }).faster).toHaveLength(5);
+  it('lists kana that were locked or learning at the start and are learned at the end', () => {
+    const start = [intro(key('あ'), { at: NOW }), ...learnedEvents('い', NOW + 1000)];
+    const before = viewOfEvents(start);
+    const after = viewOfEvents([
+      ...start,
+      ...Array.from({ length: 5 }, (_, i) =>
+        answer(key('あ'), { at: NOW + 2_000_000 + 40_000 * i, ms: 900 }),
+      ),
+    ]);
+    expect(summarize({ ...noConfusion, before, after }).learned).toEqual([key('あ')]);
   });
 
-  it('passes the confusions through', () => {
-    const state = stateWith({});
+  it('lists changes of 100 ms or more for kana with 10 answers at the start, largest first', () => {
+    const start = [
+      intro(key('あ'), { at: NOW }),
+      ...recalls('あ', NOW + 1000, 1800),
+      intro(key('い'), { at: NOW + 20_000 }),
+      ...recalls('い', NOW + 21_000, 1000),
+      intro(key('う'), { at: NOW + 40_000 }),
+      ...recalls('う', NOW + 41_000, 1000),
+    ];
+    const before = viewOfEvents(start);
+    const later = NOW + 5_000_000;
+    const after = viewOfEvents([
+      ...start,
+      ...recalls('あ', later, 800),
+      ...recalls('い', later + 20_000, 1700),
+      ...recalls('う', later + 40_000, 1050),
+    ]);
+    const summary = summarize({ ...noConfusion, before, after });
+    expect(summary.faster.map((change) => change.key)).toEqual([key('あ')]);
+    expect(summary.slower.map((change) => change.key)).toEqual([key('い')]);
+    expect(summary.faster[0]?.from).toBe(1800);
+  });
+
+  it('passes the confusions of the session through', () => {
+    const view = viewOfEvents([]);
     const summary = summarize({
-      ...base,
-      before: state,
-      after: state,
-      mixups: [{ key: key('ぬ'), chosen: key('め') }],
-      errors: [key('ね')],
+      before: view,
+      after: view,
+      mixups: [{ key: key('あ'), chosen: key('お') }],
+      errors: [key('い')],
     });
-    expect(summary.mixups).toHaveLength(1);
-    expect(summary.errors).toEqual([key('ね')]);
     expect(isEmptySummary(summary)).toBe(false);
+    expect(summary.errors).toEqual([key('い')]);
   });
 });

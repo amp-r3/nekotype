@@ -2,30 +2,25 @@ import type { Clock, MeResponse } from '@nekotype/shared/types';
 import { isObject } from '@nekotype/shared/runtime';
 import type { FetchLike } from '@/shared/api';
 import { apiFetch } from '@/shared/api';
-import type { ChangeChannel, Db, Write } from '@/shared/lib';
-import {
-  DELTA_STORE,
-  META_STORE,
-  OUTBOX_STORE,
-  SNAPSHOT_STORE,
-  SYNC_KEY,
-  uuidv7,
-} from '@/shared/lib';
+import type { ChangeChannel, Db, TypedChannel, Write } from '@/shared/lib';
+import { LOG_STORE, META_STORE, OUTBOX_STORE, SYNC_KEY, uuidv7 } from '@/shared/lib';
+import { LOG_META_KEY, PULLED_ID_KEY, SENT_N_KEY, isLogMeta } from '@/entities/learn';
+import type { LearnMessage } from '@/entities/learn';
 import type { AuthProvider, SignInCheck } from '@/entities/user';
-import { isEmptyLearnChanges } from '../lib/build-batch';
-import { readLearnChanges } from '../lib/stored';
 import { readPendingSignIn, readProfile } from '../lib/profile';
 import type { Profile } from '../lib/profile';
 
 /** The stores that hold a user's data; sign-out and another account clear them (D19, Q3). */
-const USER_STORES = [DELTA_STORE, SNAPSHOT_STORE, OUTBOX_STORE, 'settings'] as const;
+const USER_STORES = [LOG_STORE, OUTBOX_STORE, 'settings'] as const;
 
 /** The user keys of `meta`. `schemaVersion` and `keyIntervals` (the device's K) stay. */
 const USER_META_KEYS = [
   'userId',
   'deviceId',
   'lastSeq',
-  'snapshotVersion',
+  LOG_META_KEY,
+  SENT_N_KEY,
+  PULLED_ID_KEY,
   'syncBlockedAtVersion',
   'sessionExpired',
   'settingsSyncedAt',
@@ -46,7 +41,7 @@ export type AccountDeps = {
   readonly fetch: FetchLike;
   /** The stores listen on these; a `reset` makes them drop what they hold. */
   readonly channels: {
-    readonly learn: ChangeChannel;
+    readonly learn: TypedChannel<LearnMessage>;
     readonly settings: ChangeChannel;
   };
   /** The user keys of `meta` changed: the signals read them again and the other tabs are told. */
@@ -101,14 +96,15 @@ export function createAccount(deps: AccountDeps): Account {
   // The account the dialog asks about.
   let waiting: { readonly me: MeResponse; readonly provider: AuthProvider | null } | null = null;
 
-  /** What the device holds that the server has not acknowledged: a batch in the outbox or changes in `delta`. Settings do not count (ADR 089). */
+  /** What the device holds that the server has not acknowledged: a batch in the outbox or own events after `sentN`. Settings do not count (ADR 089). */
   const unsent = async (): Promise<boolean> => {
-    const [outbox, learn] = await Promise.all([
+    const [outbox, logMeta, sentN] = await Promise.all([
       db.get(OUTBOX_STORE, SYNC_KEY),
-      db.get(DELTA_STORE, 'learn'),
+      db.get(META_STORE, LOG_META_KEY),
+      db.get(META_STORE, SENT_N_KEY),
     ]);
-    const learnChanges = readLearnChanges(learn);
-    return outbox !== undefined || (learnChanges !== null && !isEmptyLearnChanges(learnChanges));
+    const sent = typeof sentN === 'number' ? sentN : 0;
+    return outbox !== undefined || (isLogMeta(logMeta) && logMeta.next - 1 > sent);
   };
 
   const profileOf = (me: MeResponse, provider: AuthProvider): Profile => ({
@@ -134,7 +130,7 @@ export function createAccount(deps: AccountDeps): Account {
       ...USER_META_KEYS.map(metaDelete),
       ...extra,
     ]);
-    deps.channels.learn.post('reset');
+    deps.channels.learn.post({ kind: 'reset' });
     deps.channels.settings.post('reset');
     await deps.refreshUser();
   };
@@ -174,12 +170,12 @@ export function createAccount(deps: AccountDeps): Account {
       const provider = pending ?? readProfile(storedProfile)?.provider ?? null;
 
       if (current === null) {
-        // Guest merge: the guest's delta goes in the first batches.
+        // Guest merge: the guest's log stays and goes in the first batches.
         await finish(newUserWrites(me, provider));
         return;
       }
       if (me.id === current) {
-        // The same user: the device id, `lastSeq`, the outbox and the delta are kept.
+        // The same user: the device id, `lastSeq`, the outbox and the log are kept.
         await finish([
           metaDelete('sessionExpired'),
           metaDelete('pendingSignIn'),

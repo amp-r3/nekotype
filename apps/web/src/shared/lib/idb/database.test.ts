@@ -76,7 +76,8 @@ describe('openDatabase', () => {
     old.db.close();
     const db = await openDatabase(factory);
     expect(db.hasStores(STORE_NAMES)).toBe(true);
-    expect(await db.get('delta', 'current')).toBeUndefined();
+    expect(await db.get('meta', 'schemaVersion')).toBe(SCHEMA_VERSION);
+    expect(db.hasStores(['delta'])).toBe(false);
     expect(await db.get('meta', 'schemaVersion')).toBe(SCHEMA_VERSION);
     expect(info).toHaveBeenCalledTimes(1);
   });
@@ -94,9 +95,32 @@ describe('openDatabase', () => {
     old.db.close();
     const db = await openDatabase(factory);
     expect(db.hasStores(STORE_NAMES)).toBe(true);
-    expect(db.hasStores(['snapshot', 'outbox'])).toBe(true);
-    expect(await db.get('delta', 'learn')).toBeUndefined();
+    expect(db.hasStores(['log', 'outbox'])).toBe(true);
+    expect(db.hasStores(['delta', 'snapshot'])).toBe(false);
     expect(await db.get('meta', 'schemaVersion')).toBe(SCHEMA_VERSION);
+    expect(info).toHaveBeenCalledTimes(1);
+  });
+
+  it('resets a database of schema 5 (P6) and creates the store log (schema 6, P7)', async () => {
+    const old = await openRaw(factory, DATABASE_NAME, [
+      'settings',
+      'delta',
+      'snapshot',
+      'outbox',
+      'meta',
+    ]);
+    await old.db.put('meta', 'schemaVersion', 5);
+    await old.db.put('delta', 'learn', { learn: 1 });
+    old.db.close();
+
+    const db = await openDatabase(factory);
+
+    expect(SCHEMA_VERSION).toBe(6);
+    expect(db.hasStores(['log'])).toBe(true);
+    expect(await db.getAll('log')).toEqual([]);
+    // `delta` and `snapshot` left with sync format 3 (PR 11).
+    expect(db.hasStores(['delta', 'snapshot'])).toBe(false);
+    expect(await db.get('meta', 'schemaVersion')).toBe(6);
     expect(info).toHaveBeenCalledTimes(1);
   });
 
@@ -139,8 +163,7 @@ describe('openDatabase', () => {
 
     const db = await openDatabase(factory);
 
-    expect(SCHEMA_VERSION).toBe(5);
-    expect(await db.get('meta', 'schemaVersion')).toBe(5);
+    expect(await db.get('meta', 'schemaVersion')).toBe(SCHEMA_VERSION);
     expect(await db.get('settings', 'current')).toBeUndefined();
     expect(await db.get('meta', 'typingIntervals')).toBeUndefined();
     expect(db.hasStores(['results'])).toBe(false);
@@ -153,12 +176,12 @@ describe('openDatabase', () => {
     const db = await openDatabase(factory);
     await db.write([
       { op: 'put', store: 'settings', key: 'current', value: 1 },
-      { op: 'put', store: 'delta', key: 'learn', value: 2 },
+      { op: 'put', store: 'log', key: 'own:open', value: 2 },
     ]);
     expect(await db.get('settings', 'current')).toBe(1);
-    expect(await db.get('delta', 'learn')).toBe(2);
-    await db.write([{ op: 'delete', store: 'delta', key: 'learn' }]);
-    expect(await db.get('delta', 'learn')).toBeUndefined();
+    expect(await db.get('log', 'own:open')).toBe(2);
+    await db.write([{ op: 'delete', store: 'log', key: 'own:open' }]);
+    expect(await db.get('log', 'own:open')).toBeUndefined();
   });
 
   it('closes its connection on versionchange so another tab can delete the database', async () => {

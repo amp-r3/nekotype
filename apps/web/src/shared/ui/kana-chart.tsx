@@ -5,14 +5,14 @@ import { Button } from './button';
 import { moveInGrid } from './kana-chart-nav';
 import type { GridKey } from './kana-chart-nav';
 
-export type ChartCellState = 'locked' | 'learning' | 'confident' | 'mastered';
+export type ChartCellState = 'locked' | 'learning' | 'learned' | 'mastered';
 
 export type ChartCell = {
   // Unique in the chart.
   readonly id: string;
   readonly kana: string;
   readonly state: ChartCellState;
-  // Review due: a mark over a confident or mastered kana.
+  // Review due: a mark over a learned or mastered kana.
   readonly due: boolean;
   // The tooltip; the same lines are in `label`.
   readonly lines: readonly string[];
@@ -55,7 +55,12 @@ const ARROWS: Readonly<Record<string, GridKey>> = {
   ArrowDown: 'down',
 };
 
-const LEGEND_STATES: readonly ChartCellState[] = ['locked', 'learning', 'confident', 'mastered'];
+/** The class of a state: `learned` has the fill the old `confident` had (P7 plan, D19). */
+function stateClass(state: ChartCellState): string {
+  return state === 'learned' ? 'is-st-learned' : `is-${state}`;
+}
+
+const LEGEND_STATES: readonly ChartCellState[] = ['locked', 'learning', 'learned', 'mastered'];
 
 type Block = { readonly id: string; readonly rows: readonly { row: ChartRow; at: number }[] };
 
@@ -159,7 +164,7 @@ export function KanaChart({
                   }}
                   className={cx(
                     'nk-cell font-jp',
-                    `is-${cell.state}`,
+                    stateClass(cell.state),
                     cell.due && 'is-due',
                     Array.from(cell.kana).length > 1 ? 'text-jp-cell-sm' : 'text-jp-cell',
                   )}
@@ -271,7 +276,7 @@ export function KanaChart({
             <span key={state} className="nk-chart__legend-item">
               <span
                 aria-hidden="true"
-                className={cx('nk-cell nk-chart__swatch font-jp', `is-${state}`)}
+                className={cx('nk-cell nk-chart__swatch font-jp', stateClass(state))}
               >
                 {legend.sample}
               </span>
@@ -281,7 +286,7 @@ export function KanaChart({
           <span className="nk-chart__legend-item nk-chart__legend-due">
             <span
               aria-hidden="true"
-              className="nk-cell nk-chart__swatch font-jp is-confident is-due"
+              className="nk-cell nk-chart__swatch font-jp is-st-learned is-due"
             >
               {legend.sample}
             </span>

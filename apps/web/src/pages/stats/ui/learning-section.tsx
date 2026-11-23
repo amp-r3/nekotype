@@ -1,3 +1,4 @@
+import type { LearnView } from '@nekotype/model';
 import type { JSX } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
 import { locale, t, tParts, tPlural, tPluralParts } from '@/shared/i18n';
@@ -5,16 +6,9 @@ import { Button, Notice, Parts } from '@/shared/ui';
 import { Stat } from '@/shared/ui/stat';
 import { learnTargetMs, learnTrack } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
-import {
-  dayStart,
-  hasAnswers,
-  learnCounters,
-  learnState,
-  streaks,
-  trackProgress,
-} from '@/entities/learn';
+import { dayStart, keysOfTrack, streaks } from '@/entities/learn';
 import { activeDaysIn, activityDays } from '../lib/activity';
-import { dayBars, msAxis } from '../lib/answer-time';
+import { dayBars, hasRecall, msAxis } from '../lib/answer-time';
 import { DAY_MS, HALF_DAY_MS } from '../lib/days';
 import type { Period } from '../lib/days';
 import { timeAxis, type ChartRange } from '../lib/trend';
@@ -32,8 +26,14 @@ const ACTIVE_WINDOW = 30;
 
 // The learning section, the whole of `/stats` (design decision 137): the streak next to the
 // activity map, the totals, the answer time; four equal columns, two below 640 px. It is drawn
-// once the learning state has loaded and holds data.
-export function LearningSection({ today }: { readonly today: number }): JSX.Element {
+// once the log has loaded and holds data; it reads the view of the fold (`LogStats`, S8).
+export function LearningSection({
+  view,
+  today,
+}: {
+  readonly view: LearnView;
+  readonly today: number;
+}): JSX.Element {
   // The chart's switch is local: looking at the other track here does not change the track on `/`.
   const [chosen, setChosen] = useState<LearnTrack>(learnTrack.value);
   const [period, setPeriod] = useState<Period>('30');
@@ -44,17 +44,12 @@ export function LearningSection({ today }: { readonly today: number }): JSX.Elem
   );
 
   const target = learnTargetMs.value;
-  const state = learnState.value;
-  const counters = learnCounters.value;
+  const stats = view.stats;
 
-  const { current, best } = streaks(state, today);
-  const progress = {
-    hiragana: trackProgress(state, 'hiragana', target),
-    katakana: trackProgress(state, 'katakana', target),
-  };
+  const { current, best } = streaks(stats.days, today);
   const withMedians = {
-    hiragana: hasAnswers(state.recallBuckets.hiragana),
-    katakana: hasAnswers(state.recallBuckets.katakana),
+    hiragana: hasRecall(stats.days, 'hiragana'),
+    katakana: hasRecall(stats.days, 'katakana'),
   };
   const both = withMedians.hiragana && withMedians.katakana;
   // With one track that has answers, the chart shows it and there is nothing to switch.
@@ -65,9 +60,8 @@ export function LearningSection({ today }: { readonly today: number }): JSX.Elem
       : withMedians.hiragana
         ? 'hiragana'
         : chosen;
-  const activity = activityDays(state, today);
-  const days = state.recallBuckets[track];
-  const { weekly, span, bars } = dayBars(days, period, today);
+  const activity = activityDays(stats.days, today);
+  const { weekly, span, bars } = dayBars(stats.days, track, period, today);
   const axis = msAxis(bars, target);
   const xAxis = timeAxis(period, dayStart(today - span + 1), today, narrow, (ms) =>
     dateFormat.format(ms),
@@ -122,7 +116,7 @@ export function LearningSection({ today }: { readonly today: number }): JSX.Elem
               <p data-testid="stats-active-30">
                 <Parts
                   parts={tParts('stats.learn.active30', {
-                    count: activeDaysIn(state, today, ACTIVE_WINDOW),
+                    count: activeDaysIn(stats.days, today, ACTIVE_WINDOW),
                   })}
                   valueClass={MONO}
                 />
@@ -140,18 +134,18 @@ export function LearningSection({ today }: { readonly today: number }): JSX.Elem
           <Stat
             key={name}
             label={t('stats.learn.masteredTrack', { track: t(`learn.track.${name}`) })}
-            value={progress[name].mastered}
-            unit={t('stats.learn.masteredOf', { total: progress[name].total })}
+            value={view.mastered[name]}
+            unit={t('stats.learn.masteredOf', { total: keysOfTrack(name).length })}
           />
         ))}
         <Stat
           label={t('stats.learn.sessionsStarted')}
-          value={counters.started}
+          value={stats.started}
           testId="stats-started"
         />
         <Stat
           label={t('stats.learn.sessionsFinished')}
-          value={counters.finished}
+          value={stats.finished}
           testId="stats-finished"
         />
       </div>

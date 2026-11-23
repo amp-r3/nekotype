@@ -5,7 +5,13 @@ import { act } from 'preact/test-utils';
 import { StatsPage } from './stats-page';
 import { t } from '@/shared/i18n';
 
-const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+/** Waits until the loading line is gone: the log and the lazy model chunk both have to arrive. */
+async function loaded(container: HTMLElement): Promise<void> {
+  for (let i = 0; i < 200 && container.textContent.includes(t('route.loading')); i++) {
+    await sleep(10);
+  }
+}
 
 describe('stats page: nothing learned yet', () => {
   let container: HTMLDivElement;
@@ -19,7 +25,7 @@ describe('stats page: nothing learned yet', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<StatsPage />, container);
-    await act(settle);
+    await act(() => loaded(container));
 
     expect(container.querySelector('h1')?.textContent).toBe(t('page.stats'));
     expect(container.textContent).toContain(t('stats.empty.title'));

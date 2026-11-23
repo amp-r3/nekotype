@@ -9,7 +9,7 @@ export const settingsEn = {
   'settings.learn.strictIme': 'strict IME',
   'settings.learn.target': 'target answer time',
   'settings.learn.targetHint':
-    'With a lower target, kana become confident later, and kana already confident may stop being so.',
+    'Answers slower than the target count as harder, so their reviews come sooner.',
   'settings.learn.targetValue': '{ms} ms',
   'settings.data.title': 'Data',
   'settings.data.reset': 'reset progress',

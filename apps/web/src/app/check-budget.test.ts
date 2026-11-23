@@ -7,6 +7,7 @@ import {
   checkBudget,
   PROBE_MARKER,
   SIGNALS_MARKER,
+  MODEL_CHUNK,
   SYNC_ENTRY,
 } from '../../scripts/check-budget.mjs';
 
@@ -16,6 +17,7 @@ const blob = (kb: number): Buffer => randomBytes(Math.round(kb * KB));
 
 type ManifestChunk = {
   file: string;
+  name?: string;
   src?: string;
   isEntry?: boolean;
   isDynamicEntry?: boolean;
@@ -46,6 +48,9 @@ type Fixture = {
   // panel imports (default), folded into the initial chunk, a static import of a route chunk, or
   // missing from the manifest.
   sync?: 'lazy' | 'initial' | 'route' | 'absent';
+  // Where the model's chunk (named `model`) is: shared by lazy chunks (default), folded into the
+  // initial chunk, a static import of a route chunk, or missing from the manifest.
+  model?: 'lazy' | 'initial' | 'route' | 'absent';
 };
 
 const dirs: string[] = [];
@@ -138,6 +143,24 @@ function makeDist(f: Fixture): string {
       isDynamicEntry: true,
       imports: sync === 'route' ? [SYNC_ENTRY] : [],
     };
+  }
+  const model = f.model ?? 'lazy';
+  if (model !== 'absent') {
+    write(root, 'assets/model.js', blob(2));
+    manifest['_model.js'] = {
+      file: model === 'initial' ? 'assets/index.js' : 'assets/model.js',
+      name: MODEL_CHUNK,
+      imports: ['index.html'],
+    };
+    if (model === 'route') {
+      write(root, 'assets/learn.js', blob(1));
+      manifest['src/pages/learn/index.ts'] = {
+        file: 'assets/learn.js',
+        src: 'src/pages/learn/index.ts',
+        isDynamicEntry: true,
+        imports: ['_model.js'],
+      };
+    }
   }
   if (f.manifest !== false) write(root, '.vite/manifest.json', JSON.stringify(manifest));
   return root;
@@ -243,6 +266,27 @@ describe('check-budget', () => {
   it('fails when a route chunk imports the sync engine statically', () => {
     expect(failuresFor({ sync: 'route' })).toEqual([
       expect.stringContaining('static import of the route chunk assets/settings.js'),
+    ]);
+  });
+
+  it('passes when the model is a chunk of its own', () => {
+    expect(failuresFor({ model: 'lazy' })).toEqual([]);
+  });
+
+  it('fails when the model is in the initial chunk', () => {
+    const failures = failuresFor({ model: 'initial' });
+    expect(failures.some((f) => f.includes('model') && f.includes('initial chunk'))).toBe(true);
+  });
+
+  it('fails when a route chunk imports the model statically', () => {
+    expect(failuresFor({ model: 'route' })).toEqual([
+      'The model is a static import of the route chunk assets/learn.js',
+    ]);
+  });
+
+  it('fails when the model is missing from the manifest', () => {
+    expect(failuresFor({ model: 'absent' })).toEqual([
+      `No chunk named ${MODEL_CHUNK} is in the manifest: its lazy loading cannot be checked`,
     ]);
   });
 

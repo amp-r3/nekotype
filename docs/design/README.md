@@ -18,6 +18,7 @@ The visual reference for Nekotype: tokens, components, logo and cat assets. [ADR
 
 `bundle.js` and `bundle.css` are a React reference, not a dependency. Components are rewritten in Preact in `shared/ui` under the rules in [Frontend](../spec/frontend.md).
 
+- **P7 code and the export.** Until the design session of P8 the code calls the `confident` state `learned` (`is-st-learned`, the same fill), has no `review (N)` action, and shows `due: N` in the progress line (ADR 104).
 - **Learning task.** `KanaTask` and its `createTaskController` draw one task of a learning session; they are not built on the typing stream (ADR 059), which left the system with the typing trainer (ADR 094).
 - **Fonts.** Fonts are subset by the project's own build ([ADR 032](../adr/032-font-weights-for-the-design-system.md), [ADR 034](../adr/034-design-tokens-and-font-build.md)); the font files in the artifact are copies of those subsets. The glyphs under "Glyphs to add to subsets" in [`source/decisions.md`](source/decisions.md) are in the subsets (`apps/web/scripts/subset-fonts.mjs`); the Noto subset is built from the generated content, so it holds the punctuation the words and phrases use, `！` and `？` included (ADR 071).
 - **Names.** The code uses the design's names (ADR 059): `Switch` for the on/off track and the `text` button variant. `Toggle` in the code is the on/off item that the [`Segmented`](source/components/Segmented/README.md) guidelines had until ADR 094, not the old switch; it goes with the typing filters.

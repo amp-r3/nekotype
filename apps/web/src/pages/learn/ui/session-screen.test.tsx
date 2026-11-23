@@ -6,25 +6,19 @@ import { act } from 'preact/test-utils';
 import { createMemoryDb, immersive, recordWrites } from '@/shared/lib';
 import { canonicalFor } from '../lib/prompt';
 import { t } from '@/shared/i18n';
-import { createLearnStore } from '@/entities/learn';
 import { createLearnSession } from '../model/session';
 import type { LearnSession } from '../model/session';
-import { Clock0, Timers, seededRng } from '../lib/test-util';
+import { Clock0, Timers, readyStore, seededRng } from '../lib/test-util';
 import { SessionScreen } from './session-screen';
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
-function setup(seed: number, tasks?: number) {
+async function setup(seed: number, tasks?: number) {
   const clock = new Clock0();
   const timers = new Timers();
   const db = createMemoryDb();
   const writes = recordWrites(db);
-  const store = createLearnStore({
-    db: () => Promise.resolve(db),
-    clock,
-    scheduler: timers,
-    targetMs: () => 1500,
-  });
+  const store = await readyStore(clock, timers, db);
   const session = createLearnSession({
     track: 'hiragana',
     store,
@@ -33,7 +27,6 @@ function setup(seed: number, tasks?: number) {
     rng: seededRng(seed),
     audio: { play: vi.fn() },
     strictness: () => 'learner',
-    targetMs: () => 1500,
     ...(tasks === undefined ? {} : { tasks }),
   });
   return { clock, timers, store, session, writes };
@@ -96,7 +89,7 @@ describe('learning session screen', () => {
 
   /** Answers tasks (introductions first) until the task on screen is `kind`. */
   async function toTask(
-    env: ReturnType<typeof setup>,
+    env: Awaited<ReturnType<typeof setup>>,
     kind: 'recall' | 'recognition',
   ): Promise<void> {
     while (env.session.task.value?.kind !== kind) {
@@ -118,7 +111,7 @@ describe('learning session screen', () => {
   }
 
   it('tells the page when the last task is answered', async () => {
-    const env = setup(1, 1);
+    const env = await setup(1, 1);
     const onEnd = vi.fn();
     await mount(env.session, onEnd);
     expect(onEnd).not.toHaveBeenCalled();
@@ -132,7 +125,7 @@ describe('learning session screen', () => {
   });
 
   it('hides the navigation while it is on screen and shows it again after', async () => {
-    const env = setup(1);
+    const env = await setup(1);
     await mount(env.session);
     expect(immersive.value).toBe(true);
     await act(() => {
@@ -142,7 +135,7 @@ describe('learning session screen', () => {
   });
 
   it('renders nothing for a recall keystroke, the answer or Esc; one render for the next task', async () => {
-    const env = setup(11);
+    const env = await setup(11);
     await mount(env.session);
     await toTask(env, 'recall');
     const task = env.session.task.value;
@@ -175,7 +168,7 @@ describe('learning session screen', () => {
   });
 
   it('renders at most once for a recognition answer', async () => {
-    const env = setup(5);
+    const env = await setup(5);
     await mount(env.session);
     await toTask(env, 'recognition');
     const task = env.session.task.value;
@@ -189,7 +182,7 @@ describe('learning session screen', () => {
   });
 
   it('takes a wrong choice by number, then moves on with Enter', async () => {
-    const env = setup(5);
+    const env = await setup(5);
     await mount(env.session);
     await toTask(env, 'recognition');
     const task = env.session.task.value;
@@ -212,7 +205,7 @@ describe('learning session screen', () => {
         addEventListener: () => undefined,
         removeEventListener: () => undefined,
       }));
-      const env = setup(5);
+      const env = await setup(5);
       await mount(env.session);
       await toTask(env, 'recognition');
       const task = env.session.task.value;
@@ -244,7 +237,7 @@ describe('learning session screen', () => {
   });
 
   it('shows the layout notice for a letter of another layout and clears it on the next right key', async () => {
-    const env = setup(11);
+    const env = await setup(11);
     await mount(env.session);
     await toTask(env, 'recall');
     const notice = (): string | undefined =>
@@ -258,7 +251,7 @@ describe('learning session screen', () => {
   });
 
   it('names the right option after a wrong choice and says the answer in the status', async () => {
-    const env = setup(5);
+    const env = await setup(5);
     await mount(env.session);
     await toTask(env, 'recognition');
     const task = env.session.task.value;
@@ -278,7 +271,7 @@ describe('learning session screen', () => {
   });
 
   it('announces a new recall task in a polite live region', async () => {
-    const env = setup(11);
+    const env = await setup(11);
     await mount(env.session);
     await toTask(env, 'recall');
     await act(tick);
@@ -290,7 +283,7 @@ describe('learning session screen', () => {
   });
 
   it('writes no IndexedDB record inside a keystroke handler', async () => {
-    const env = setup(11);
+    const env = await setup(11);
     await mount(env.session);
     await toTask(env, 'recall');
     const before = env.writes.length;
@@ -300,7 +293,9 @@ describe('learning session screen', () => {
       press(char);
       expect(env.writes.length).toBe(before);
     }
-    // The write follows outside the handler.
+    // The record follows outside the handler, and the write after it.
+    env.timers.flush();
+    await tick();
     env.timers.flush();
     await tick();
     expect(env.writes.length).toBeGreaterThan(before);

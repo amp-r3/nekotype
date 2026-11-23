@@ -1,10 +1,11 @@
 // @vitest-environment happy-dom
 // IndexedDB is available, so the storage notice does not take the line.
 import 'fake-indexeddb/auto';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { LearnPage } from './learn-page';
+import { initLearn } from '@/entities/learn';
 import { setAuthError, setSignInCheck } from '@/entities/user';
 import { t } from '@/shared/i18n';
 
@@ -14,6 +15,11 @@ const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve,
 describe('learn page after a sign-in', () => {
   const container = document.createElement('div');
   document.body.appendChild(container);
+  // The log and the model chunk load before the page renders, so the notice under test is not
+  // hidden behind the loading line on a slow first import.
+  beforeAll(async () => {
+    await initLearn(() => 1500);
+  });
   afterEach(() => {
     render(null, container);
     setAuthError(null);

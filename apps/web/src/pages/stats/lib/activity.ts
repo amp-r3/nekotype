@@ -1,10 +1,10 @@
-import type { LearnState } from '@nekotype/shared/types';
+import type { DayLog } from '@nekotype/model';
 import { mondayOf } from './days';
 
 export type ActivityDay = {
   /** Recall answers of both tracks. */
   readonly answers: number;
-  /** The day lies inside a run of `activeDays`. */
+  /** The day holds an answer of any task. */
   readonly active: boolean;
   /** The day is counted by the current streak. */
   readonly run: boolean;
@@ -23,38 +23,43 @@ const LABELS = 32;
 /** What the map draws before it has a width, and without a layout. */
 const FALLBACK = { weeks: 12, cell: MIN_CELL } as const;
 
-/** The days that hold anything: answers (S7), a place in an active run, a day of the current streak. */
-export function activityDays(state: LearnState, today: number): Map<number, ActivityDay> {
-  const days = new Map<number, ActivityDay>();
-  const at = (day: number): ActivityDay =>
-    days.get(day) ?? { answers: 0, active: false, run: false };
-  for (const track of ['hiragana', 'katakana'] as const) {
-    for (const [key, buckets] of Object.entries(state.recallBuckets[track])) {
-      const sum = Object.values(buckets).reduce((total, count) => total + count, 0);
-      const day = Number(key);
-      const was = at(day);
-      days.set(day, { ...was, answers: was.answers + sum });
-    }
+/**
+ * The days that hold anything: the day's recall answers of both tracks (S8), a day with any answer
+ * is active, and the days of the current streak are a run (`streakOfDays`).
+ */
+export function activityDays(
+  days: ReadonlyMap<number, DayLog>,
+  today: number,
+): Map<number, ActivityDay> {
+  const result = new Map<number, ActivityDay>();
+  for (const [day, log] of days) {
+    if (log.answers === 0) continue;
+    result.set(day, {
+      answers: log.recall.hiragana.length + log.recall.katakana.length,
+      active: true,
+      run: false,
+    });
   }
-  for (const [first, last] of state.activeDays) {
-    for (let day = first; day <= last; day++) days.set(day, { ...at(day), active: true });
+  // The current streak ends today, or yesterday while today has no answer.
+  let day = result.has(today) ? today : today - 1;
+  for (let entry = result.get(day); entry !== undefined; entry = result.get(day)) {
+    result.set(day, { ...entry, run: true });
+    day -= 1;
   }
-  // The current streak is the last run, while it ends today or yesterday (`currentStreak`).
-  const last = state.activeDays[state.activeDays.length - 1];
-  if (last !== undefined && last[1] >= today - 1) {
-    for (let day = last[0]; day <= last[1]; day++) days.set(day, { ...at(day), run: true });
-  }
-  return days;
+  return result;
 }
 
-/** How many of the last `window` days up to `today` fall in a run of `activeDays`. */
-export function activeDaysIn(state: LearnState, today: number, window: number): number {
-  const from = today - window + 1;
-  return state.activeDays.reduce(
-    (total, [first, last]) =>
-      total + Math.max(0, Math.min(last, today) - Math.max(first, from) + 1),
-    0,
-  );
+/** How many of the last `window` days up to `today` hold an answer. */
+export function activeDaysIn(
+  days: ReadonlyMap<number, DayLog>,
+  today: number,
+  window: number,
+): number {
+  let count = 0;
+  for (let day = today - window + 1; day <= today; day++) {
+    if ((days.get(day)?.answers ?? 0) > 0) count += 1;
+  }
+  return count;
 }
 
 /** The fill step of a day: the answers against 1, 10, 25, 50, 100; an active day without answers is 1. */

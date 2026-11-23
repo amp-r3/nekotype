@@ -8,6 +8,14 @@ import { t } from '@/shared/i18n';
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
 
+// The model is a lazy chunk: wait until the chart is drawn instead of guessing the time.
+async function untilChart(root: HTMLElement): Promise<void> {
+  for (let i = 0; i < 100; i += 1) {
+    if (root.querySelector('[data-testid="kana-cell"]')) return;
+    await act(settle);
+  }
+}
+
 function unlockedKana(root: HTMLElement): string {
   return Array.from(root.querySelectorAll('[data-testid="kana-cell"]:not([data-state="locked"])'))
     .map((cell) => cell.textContent)
@@ -22,23 +30,29 @@ describe('learn page: the top of the learning screen', () => {
     container.remove();
   });
 
-  it('shows the unlocked kana of the selected track once the state has loaded', async () => {
+  it('shows the progress and a chart of locked kana once the log has loaded', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
-    await act(settle);
+    await untilChart(container);
 
     expect(container.querySelector('[data-testid="learn-mastered-count"]')?.textContent).toBe(
       t('learn.mastered', { done: 0, total: 104 }),
     );
-    expect(unlockedKana(container)).toBe('あいうえお');
+    expect(container.querySelectorAll('[data-testid="kana-cell"]')).toHaveLength(104);
+    expect(unlockedKana(container)).toBe('');
+    // Nothing is due: the part is not there, and there is no review button.
+    expect(container.querySelector('[data-testid="learn-due"]')).toBeNull();
+    const labels = Array.from(container.querySelectorAll('button')).map((el) => el.textContent);
+    expect(labels).toContain(t('learn.continue'));
+    expect(labels.filter((label) => label.startsWith('review'))).toEqual([]);
   });
 
   it('keeps the hidden field out of the Tab order and out of the tree on the home view', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
-    await act(settle);
+    await untilChart(container);
     const field = container.querySelector('input');
     expect(field?.tabIndex).toBe(-1);
     expect(field?.getAttribute('aria-hidden')).toBe('true');
@@ -48,7 +62,7 @@ describe('learn page: the top of the learning screen', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
-    await act(settle);
+    await untilChart(container);
     expect(container.querySelector('[data-testid="learn-streak"]')).toBeNull();
     expect(container.querySelector('[data-testid="learn-first"]')?.textContent).toBe(
       t('learn.first', { kana: 'あ い う え お' }),
@@ -59,7 +73,13 @@ describe('learn page: the top of the learning screen', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
-    await act(settle);
+    for (
+      let i = 0;
+      i < 100 && document.activeElement?.textContent !== t('learn.continue');
+      i += 1
+    ) {
+      await act(settle);
+    }
     expect(document.activeElement?.textContent).toBe(t('learn.continue'));
     expect(t('learn.continue')).toBe('continue');
   });
@@ -68,7 +88,7 @@ describe('learn page: the top of the learning screen', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
-    await act(settle);
+    await untilChart(container);
 
     const katakana = Array.from(container.querySelectorAll('[role="radio"]')).find(
       (el) => el.textContent === t('learn.track.katakana'),
@@ -84,23 +104,7 @@ describe('learn page: the top of the learning screen', () => {
     expect(container.querySelector('[data-testid="learn-first"]')?.textContent).toBe(
       t('learn.first', { kana: 'ア イ ウ エ オ' }),
     );
-    expect(unlockedKana(container)).toBe('アイウエオ');
+    expect(unlockedKana(container)).toBe('');
     expect(learnTrack.value).toBe('katakana');
-  });
-});
-
-describe('learn page: review', () => {
-  it('disables "Review (N)" while nothing is due', async () => {
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-    render(<LearnPage />, container);
-    await act(settle);
-    const button = Array.from(container.querySelectorAll('button')).find(
-      (el) => el.textContent === t('learn.review', { n: 0 }),
-    );
-    expect(button).toBeDefined();
-    expect(button?.hasAttribute('disabled')).toBe(true);
-    render(null, container);
-    container.remove();
   });
 });

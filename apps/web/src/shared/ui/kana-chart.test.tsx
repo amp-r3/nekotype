@@ -27,7 +27,7 @@ const rows: ChartRow[] = [
     head: 'y',
     label: 'Ya',
     block: 'basic',
-    cells: [cell('や', 'confident'), null, cell('よ', 'locked')],
+    cells: [cell('や', 'learned'), null, cell('よ', 'locked')],
   },
   {
     id: 'g',
@@ -144,13 +144,13 @@ describe('KanaChart', () => {
     const labels = {
       locked: 'locked',
       learning: 'learning',
-      confident: 'confident',
+      learned: 'learned',
       mastered: 'mastered',
       due: 'review due',
     };
     const root = mount(<KanaChart rows={rows} ariaLabel="x" legend={{ sample: 'あ', labels }} />);
     const legend = root.querySelector('[data-testid="kana-legend"]');
-    expect(legend?.textContent).toBe('あlockedあlearningあconfidentあmasteredあreview due');
+    expect(legend?.textContent).toBe('あlockedあlearningあlearnedあmasteredあreview due');
     expect(legend?.querySelector('.is-due')).not.toBeNull();
   });
 

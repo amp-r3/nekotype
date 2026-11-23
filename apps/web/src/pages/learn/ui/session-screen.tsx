@@ -53,7 +53,6 @@ function announce(task: TaskView): string {
 function labels(): TaskLabels {
   return {
     learning: t('learn.session.learning'),
-    review: t('learn.session.review'),
     of: t('learn.session.of'),
     newKana: t('learn.session.newKana'),
     show: t('learn.session.show'),
@@ -204,7 +203,7 @@ export function SessionScreen({
       <KanaTask
         kind={task.kind}
         {...shown}
-        session={{ kind: session.mode, n: task.n, total: session.total }}
+        session={{ kind: 'learning', n: task.n, total: session.total }}
         labels={labels()}
         notice={
           waiting ? (

@@ -6,14 +6,7 @@ import { Button, Notice } from '@/shared/ui';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { defaultClock, navigate } from '@/shared/lib';
 import { learnTargetMs } from '@/entities/settings';
-import {
-  initLearn,
-  learnCounters,
-  learnState,
-  learnStatus,
-  localDay,
-  retryLearn,
-} from '@/entities/learn';
+import { initLearn, learnStatus, learnView, localDay, retryLearn } from '@/entities/learn';
 import { LearningSection } from './learning-section';
 
 // Statistics: the learning progress, all of the screen (design decisions 130, 137).
@@ -23,7 +16,8 @@ export function StatsPage(): JSX.Element {
   }, []);
 
   const status = learnStatus.value;
-  const has = learnState.value.activeDays.length > 0 || learnCounters.value.started > 0;
+  const view = learnView.value;
+  const has = view !== null && (view.stats.days.size > 0 || view.stats.started > 0);
 
   return (
     <section className="max-w-layout-max mx-auto flex w-full flex-col gap-8 sm:gap-12">
@@ -48,8 +42,9 @@ export function StatsPage(): JSX.Element {
         </Notice>
       )}
       {status === 'ready' &&
+        view !== null &&
         (has ? (
-          <LearningSection today={localDay(defaultClock.now())} />
+          <LearningSection view={view} today={localDay(defaultClock.now())} />
         ) : (
           <EmptyState
             title={t('stats.empty.title')}

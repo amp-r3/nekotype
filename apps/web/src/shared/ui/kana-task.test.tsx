@@ -8,7 +8,6 @@ import type { TaskController } from './task-controller';
 
 const labels: TaskLabels = {
   learning: 'learning',
-  review: 'review',
   of: 'of',
   newKana: 'new kana',
   show: 'show the romaji',
@@ -25,7 +24,7 @@ function mount(props: Partial<KanaTaskProps> & Pick<KanaTaskProps, 'kind'>): HTM
   container = document.createElement('div');
   document.body.append(container);
   render(
-    <KanaTask session={{ kind: 'learning', n: 7, total: 25 }} labels={labels} {...props} />,
+    <KanaTask session={{ kind: 'learning', n: 7, total: 30 }} labels={labels} {...props} />,
     container,
   );
   return container;
@@ -75,7 +74,7 @@ describe('KanaTask', () => {
   it('shows the session line from the props', () => {
     mount({ kind: 'recall', kana: 'ぬ' });
     expect(container.querySelector('[data-testid="task-session"]')?.textContent).toBe(
-      'learning · 7 of 25',
+      'learning · 7 of 30',
     );
   });
 
@@ -91,7 +90,7 @@ describe('KanaTask', () => {
         kind="recall"
         kana="ぬ"
         coarse
-        session={{ kind: 'review', n: 3, total: 5 }}
+        session={{ kind: 'learning', n: 3, total: 30 }}
         labels={labels}
         onShow={onShow}
       />,
@@ -129,7 +128,7 @@ describe('KanaTask', () => {
         kind="introduction"
         kana="ぬ"
         romaji="nu"
-        session={{ kind: 'learning', n: 1, total: 25 }}
+        session={{ kind: 'learning', n: 1, total: 30 }}
         labels={labels}
         onLeave={onLeave}
       />,

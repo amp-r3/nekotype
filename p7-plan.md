@@ -20,11 +20,11 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | 5   | `p7-05-forecast-cost`         | `main`      | done   | #210         |
 | 6   | `p7-06-sync-format-3-server`  | `main`      | done   | #211         |
 | 7   | `p7-07-sync-bench`            | `main`      | done   | #212         |
-| 8   | `p7-08-log-store`             | `p7-switch` | —      | —            |
-| 9   | `p7-09-learning-on-the-model` | `p7-switch` | —      | —            |
-| 10  | `p7-10-stats-from-the-log`    | `p7-switch` | —      | —            |
-| 11  | `p7-11-sync-format-3-client`  | `p7-switch` | —      | —            |
-| 12  | `p7-switch`                   | `main`      | —      | —            |
+| 8   | `p7-08-log-store`             | `p7-switch` | done   | #215         |
+| 9   | `p7-09-learning-on-the-model` | `p7-switch` | done   | #216         |
+| 10  | `p7-10-stats-from-the-log`    | `p7-switch` | done   | #217         |
+| 11  | `p7-11-sync-format-3-client`  | `p7-switch` | done   | #218         |
+| 12  | `p7-switch`                   | `main`      | done   | #220         |
 | 13  | `p7-13-format-2-out`          | `main`      | —      | —            |
 | 14  | `p7-14-drop-learning-columns` | `main`      | —      | —            |
 | 15  | `p7-15-close`                 | `main`      | —      | —            |
@@ -1028,7 +1028,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Acceptance:** 10.
 - **Docs:** ADR 102 (and ADR 086's status line); S2; `docs/architecture/sync.md` (the server).
 - **Preview URL:** nothing changes; the CI step "Apply D1 migrations (preview)" passes.
-- **Done when:** `verify:quick` passes and CI is green; after the merge the maintainer does M2.
+- **Done when:** `verify:quick` passes and CI is green; after the merge the maintainer does M2 (done, confirmed by the maintainer on 2026-11-23).
 - **Size:** about 1,500 lines.
 
 ### PR 7 — CPU of format 3 on Cloudflare

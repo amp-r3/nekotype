@@ -1,16 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import type { LearnEntry } from '@nekotype/shared/types';
-import { emptyLearnState } from '@nekotype/shared/runtime';
-import { settingsAt } from '../model/test-util';
-import { buildBatch, noCounters, noLearnChanges } from './build-batch';
+import { decodePage } from '@nekotype/shared/runtime';
+import { LOG_DEV, eventsOf, settingsAt } from '../model/test-util';
+import { bodyBytes, buildBatch } from './build-batch';
 import type { BatchInput } from './build-batch';
-
-const entry: LearnEntry = { box: 1, dueAt: 10, updatedAt: 5 };
 
 const input = (over: Partial<BatchInput> = {}): BatchInput => ({
   deviceId: 'dev',
   seq: 4,
-  learn: noLearnChanges(),
+  after: 9,
+  unsent: [],
+  firstN: 1,
   settings: null,
   ...over,
 });
@@ -20,37 +19,64 @@ describe('buildBatch', () => {
     expect(buildBatch(input(), 1_000_000)).toBeNull();
   });
 
-  it('sends the counters of the learning delta', () => {
-    const batch = buildBatch(
-      input({ learn: { learn: emptyLearnState(), counters: { started: 2, finished: 1 } } }),
-      1_000_000,
-    );
-    expect(batch?.request.delta.counters).toEqual({ started: 2, finished: 1 });
-    expect(batch?.rest.counters).toEqual(noCounters());
+  it('carries the events, `after` and the identity', () => {
+    const unsent = eventsOf(LOG_DEV, 3, 4);
+    const batch = buildBatch(input({ unsent, firstN: 3 }), 1_000_000);
+    expect(batch?.request).toMatchObject({
+      v: 3,
+      deviceId: 'dev',
+      seq: 4,
+      after: 9,
+      settings: null,
+    });
+    expect(decodePage(batch?.request.log)).toEqual(unsent);
+    expect(batch?.lastN).toBe(6);
   });
 
-  it('carries the settings alone', () => {
-    const batch = buildBatch(input({ settings: settingsAt(9) }), 1_000_000);
-    expect(batch?.request.delta.settings?.updatedAt).toBe(9);
-    expect(batch?.request.seq).toBe(4);
+  it('sends only the run that starts at the first unsent n', () => {
+    // Events 1–2 are missing from the read (a page closed between two reads): nothing is sent, so
+    // `sentN` never jumps over them.
+    const late = eventsOf(LOG_DEV, 3, 4);
+    expect(buildBatch(input({ unsent: late, firstN: 1 }), 1_000_000)).toBeNull();
+    const gap = [...eventsOf(LOG_DEV, 1, 2), ...eventsOf(LOG_DEV, 5, 2)];
+    const batch = buildBatch(input({ unsent: gap, firstN: 1 }), 1_000_000);
+    expect(batch?.lastN).toBe(2);
+    expect(batch?.request.log?.e).toHaveLength(2);
   });
 
-  it('returns null when the batch does not fit', () => {
-    const learn = {
-      learn: { ...emptyLearnState(), entries: { 'hiragana:あ': entry } },
-      counters: noCounters(),
-    };
-    expect(buildBatch(input({ learn }), 20)).toBeNull();
+  it('sends settings alone', () => {
+    const batch = buildBatch(input({ settings: settingsAt(5) }), 1_000_000);
+    expect(batch?.request.log).toBeNull();
+    expect(batch?.request.settings?.updatedAt).toBe(5);
+    expect(batch?.lastN).toBeNull();
   });
 
-  it('caps the learning part and leaves the rest', () => {
-    const entries: Record<string, LearnEntry> = {};
-    for (let i = 0; i < 61; i += 1) entries[`hiragana:k${String(i).padStart(2, '0')}`] = entry;
-    const batch = buildBatch(
-      input({ learn: { learn: { ...emptyLearnState(), entries }, counters: noCounters() } }),
-      1_000_000,
-    );
-    expect(Object.keys(batch?.request.delta.learn.entries ?? {})).toHaveLength(60);
-    expect(Object.keys(batch?.rest.learn.entries ?? {})).toEqual(['hiragana:k60']);
+  it('takes the longest prefix that fits', () => {
+    const unsent = eventsOf(LOG_DEV, 1, 400);
+    const limit = 6000;
+    const batch = buildBatch(input({ unsent }), limit);
+    const count = batch?.request.log?.e.length ?? 0;
+    expect(count).toBeGreaterThan(10);
+    expect(count).toBeLessThan(400);
+    expect(bodyBytes(JSON.stringify(batch?.request))).toBeLessThanOrEqual(limit);
+    // One more event would not fit.
+    const more = buildBatch(input({ unsent: unsent.slice(0, count + 1) }), limit * 100);
+    expect(bodyBytes(JSON.stringify(more?.request))).toBeGreaterThan(limit);
+    expect(batch?.lastN).toBe(count);
+  });
+
+  it('never takes more than the events of a page', () => {
+    const batch = buildBatch(input({ unsent: eventsOf(LOG_DEV, 1, 9000) }), 100_000_000);
+    expect(batch?.request.log?.e.length).toBe(8192);
+  });
+
+  it('falls back to the settings when not even one event fits', () => {
+    const unsent = eventsOf(LOG_DEV, 1, 3);
+    const alone = buildBatch(input({ settings: settingsAt(5) }), 1_000_000);
+    const tight = bodyBytes(JSON.stringify(alone?.request));
+    const batch = buildBatch(input({ unsent, settings: settingsAt(5) }), tight);
+    expect(batch?.request.log).toBeNull();
+    expect(batch?.request.settings).not.toBeNull();
+    expect(buildBatch(input({ unsent }), 10)).toBeNull();
   });
 });

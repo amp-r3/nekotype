@@ -16,7 +16,7 @@ async function pressCyrillic(target: Locator, key: string): Promise<void> {
 async function expectNoAnswer(page: Page): Promise<void> {
   await expect(page.locator('[data-task-buffer]')).toHaveText('');
   await expect(page.locator('[data-task-kana]')).not.toHaveClass(/is-miss|is-correct/);
-  await expect(page.getByTestId('task-session')).toHaveText('review · 1 of 1');
+  await expect(page.getByTestId('task-session')).toHaveText('learning · 1 of 30');
 }
 
 test.describe('input: layouts', { tag: '@mobile' }, () => {
@@ -108,9 +108,9 @@ test.describe('input: composition (IME emulated through the DevTools protocol)',
     await composeWord(client, 'shi');
     await expect(page.getByText(IME_NOTICE)).toHaveCount(0);
 
-    // Typed once, the answer is right and the review ends; typed twice, the commit would be a
-    // wrong key on top of it.
-    await expect(page.getByRole('heading', { name: 'session summary' })).toBeVisible();
+    // Typed once, the answer is right and the session goes on to the next task; typed twice, the
+    // commit would be a wrong key on top of it.
+    await expect(page.getByTestId('task-session')).toHaveText('learning · 2 of 30');
   });
 
   test('a Japanese IME that is on shows the notice once kana are composed', async ({ page }) => {
