@@ -17,7 +17,8 @@ function recallLog(counts: Readonly<Record<number, number>>, started = 1): Event
     .sort((x, y) => y - x);
   const first = noon(backs[0] ?? 0);
   const events: EventDraft[] = [];
-  for (let i = 0; i < started; i++) events.push({ t: 'start', at: first - 1000, tz: offset });
+  for (let i = 0; i < started; i++)
+    events.push({ t: 'start', at: Math.min(first, Date.now()) - 1000, tz: offset });
   for (const back of backs) {
     for (let i = 0; i < (counts[back] ?? 0); i++) {
       events.push({
