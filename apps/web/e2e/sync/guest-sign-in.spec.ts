@@ -9,9 +9,7 @@ import {
 } from '../lib/sync';
 
 test.describe('a guest signs in (storage-sync.md, "Guest, sign-in and sign-out")', () => {
-  // Off until PR 11 of P7: sessions are recorded in the log now, while the sync engine and `/stats`
-  // still read the old store (P7 plan, D21). PR 11 turns this back on with the sync of format 3.
-  test.fixme('the learning of a guest reaches the account and shows on a new device', async ({
+  test('the learning of a guest reaches the account and shows on a new device', async ({
     page,
     browser,
   }) => {

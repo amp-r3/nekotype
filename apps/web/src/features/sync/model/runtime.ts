@@ -1,5 +1,13 @@
-import type { ChangeChannel, Db } from '@/shared/lib';
-import { changeChannel, defaultClock, defaultScheduler, onSyncRequest } from '@/shared/lib';
+import type { ChangeChannel, Db, TypedChannel } from '@/shared/lib';
+import {
+  changeChannel,
+  defaultClock,
+  defaultScheduler,
+  onSyncRequest,
+  typedChannel,
+} from '@/shared/lib';
+import { isLearnMessage, reloadLearning } from '@/entities/learn';
+import type { LearnMessage } from '@/entities/learn';
 import { refreshUser, setSignInCheck } from '@/entities/user';
 import { createAccount } from './account';
 import type { Account } from './account';
@@ -60,14 +68,14 @@ let channels: SyncEngineChannels | null = null;
 let account: Account | null = null;
 
 type SyncEngineChannels = {
-  readonly learn: ChangeChannel;
+  readonly learn: TypedChannel<LearnMessage>;
   readonly settings: ChangeChannel;
 };
 
 // One set of channel objects for the chunk: the stores of this tab receive their posts too (D17).
 function syncChannels(): SyncEngineChannels {
   channels ??= {
-    learn: changeChannel('nekotype:learn'),
+    learn: typedChannel('nekotype:learn', isLearnMessage),
     settings: changeChannel('nekotype:settings'),
   };
   return channels;
@@ -123,6 +131,7 @@ export function startSync(db: Db): void {
     locks: createLocks(),
     env: createEnv(),
     channels: syncChannels(),
+    reloadLearning,
     refreshUser,
     onSyncRequest: (handler: () => void) => onSyncRequest(handler),
   });

@@ -123,7 +123,7 @@ export async function appendEvents(
       }
       const writes: Write[] = [];
       for (const draft of drafts) {
-        const at = Math.max(draft.at, lastAt);
+        const at = Math.max(Math.round(draft.at), lastAt);
         const event: LogEvent = { ...draft, at, dev: meta.dev, n: next };
         next += 1;
         lastAt = at;

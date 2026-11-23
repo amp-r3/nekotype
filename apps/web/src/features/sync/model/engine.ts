@@ -1,27 +1,29 @@
-import type {
-  Clock,
-  Outbox,
-  Scheduler,
-  Snapshot,
-  SyncResponseV2,
-  TimeoutHandle,
-} from '@nekotype/shared/types';
+import type { Clock, PullResponse, Scheduler, TimeoutHandle } from '@nekotype/shared/types';
 import {
   MAX_SYNC_BODY_BYTES,
-  applyBatch,
+  isPullResponse,
   isSettings,
-  isSnapshot,
   isSyncResponse,
 } from '@nekotype/shared/runtime';
 import type { ApiResult, FetchLike } from '@/shared/api';
-import type { ChangeChannel, Db, Read, Write } from '@/shared/lib';
-import { DELTA_STORE, META_STORE, OUTBOX_STORE, SNAPSHOT_STORE, SYNC_KEY } from '@/shared/lib';
+import type { ChangeChannel, Db, TypedChannel, Write } from '@/shared/lib';
+import { LOG_STORE, META_STORE, OUTBOX_STORE, SYNC_KEY } from '@/shared/lib';
+import {
+  LOG_META_KEY,
+  PULLED_ID_KEY,
+  SENT_N_KEY,
+  isLogMeta,
+  readUnsent,
+  rowPageKey,
+} from '@/entities/learn';
+import type { LearnMessage } from '@/entities/learn';
 import { createSyncApi } from '../api/sync';
-import type { Parts, SyncApi } from '../api/sync';
-import { appliesLocally, assembleSnapshot, settingsAfter } from '../lib/apply-ack';
-import { bodyBytes, buildBatch, isEmptyLearnChanges, noLearnChanges } from '../lib/build-batch';
+import type { SyncApi } from '../api/sync';
+import { bodyBytes, buildBatch } from '../lib/build-batch';
 import type { Batch } from '../lib/build-batch';
-import { readLearnChanges, readOutbox } from '../lib/stored';
+import { settingsAfter } from '../lib/settings-after';
+import { lastNOf, readOutbox } from '../lib/stored';
+import type { PendingBatch } from '../lib/stored';
 import { setSyncOnline, setSyncStatus } from './status';
 import type { SyncStatus } from './status';
 
@@ -65,9 +67,11 @@ export type SyncEngineDeps = {
   readonly env: SyncEnv;
   /** The stores listen on these: a post makes them read the database again. */
   readonly channels: {
-    readonly learn: ChangeChannel;
+    readonly learn: TypedChannel<LearnMessage>;
     readonly settings: ChangeChannel;
   };
+  /** Reads the log again and folds it: called after a pull wrote rows (D17). */
+  readonly reloadLearning: () => Promise<void>;
   /** The user keys of `meta` changed (`sessionExpired`): the signals read them again. */
   readonly refreshUser: () => Promise<void>;
   /** Registers the handler of `requestSync`; returns the function that removes it. */
@@ -90,7 +94,6 @@ export interface SyncEngine {
 type Meta = {
   readonly userId: string | null;
   readonly deviceId: string | null;
-  readonly snapshotVersion: number | null;
   readonly sessionExpired: boolean;
   readonly blockedAt: string | null;
 };
@@ -103,17 +106,15 @@ const asTimestamp = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
 
 async function readMeta(db: Db): Promise<Meta> {
-  const [userId, deviceId, snapshotVersion, expired, blockedAt] = await Promise.all([
+  const [userId, deviceId, expired, blockedAt] = await Promise.all([
     db.get(META_STORE, 'userId'),
     db.get(META_STORE, 'deviceId'),
-    db.get(META_STORE, 'snapshotVersion'),
     db.get(META_STORE, 'sessionExpired'),
     db.get(META_STORE, 'syncBlockedAtVersion'),
   ]);
   return {
     userId: asString(userId),
     deviceId: asString(deviceId),
-    snapshotVersion: asCount(snapshotVersion),
     sessionExpired: expired === true,
     blockedAt: asString(blockedAt),
   };
@@ -139,36 +140,38 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
   let lastRequestAt = Number.NEGATIVE_INFINITY;
   let notBefore = 0;
   let networkFailed = false;
-  // The last batch built left changes in `delta` because of the caps.
-  let capped = false;
   let working: Promise<unknown> = Promise.resolve();
   let statusRun: Promise<void> = Promise.resolve();
   let removers: (() => void)[] = [];
 
-  const post = (...names: readonly ('learn' | 'settings')[]): void => {
-    for (const name of names) deps.channels[name].post();
+  const postSettings = (): void => {
+    deps.channels.settings.post();
   };
 
   // ---- status -------------------------------------------------------------------------------
+
+  /** True when own events are not acknowledged yet: `LogMeta.next - 1 > sentN`. */
+  const hasUnsentEvents = async (): Promise<boolean> => {
+    const [logMeta, sentN] = await Promise.all([
+      db.get(META_STORE, LOG_META_KEY),
+      db.get(META_STORE, SENT_N_KEY),
+    ]);
+    return isLogMeta(logMeta) && logMeta.next - 1 > (asCount(sentN) ?? 0);
+  };
 
   const computeStatus = async (): Promise<SyncStatus> => {
     const meta = await readMeta(db);
     if (meta.blockedAt === appVersion) return 'blocked';
     if (meta.sessionExpired) return 'expired';
     if (!deps.env.isOnline() || networkFailed) return 'offline';
-    const [outbox, learn, settings, syncedAt] = await Promise.all([
+    const [outbox, settings, syncedAt, unsentEvents] = await Promise.all([
       db.get(OUTBOX_STORE, SYNC_KEY),
-      db.get(DELTA_STORE, 'learn'),
       db.get(SETTINGS_STORE, SETTINGS_KEY),
       db.get(META_STORE, 'settingsSyncedAt'),
+      hasUnsentEvents(),
     ]);
-    const learnChanges = readLearnChanges(learn);
     const unsent = isSettings(settings) && settings.updatedAt > (asTimestamp(syncedAt) ?? 0);
-    const pending =
-      outbox !== undefined ||
-      (learnChanges !== null && !isEmptyLearnChanges(learnChanges)) ||
-      unsent;
-    return pending ? 'pending' : 'synced';
+    return outbox !== undefined || unsentEvents || unsent ? 'pending' : 'synced';
   };
 
   const refreshStatus = (): Promise<void> => {
@@ -190,103 +193,117 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
   };
 
   /**
-   * One transaction: the new snapshot and its version, the outbox cleared, the settings rule (D16).
+   * The settings rule (storage-sync.md, "Settings travel") as writes, for an acknowledgement and a
+   * pulled page: `sentAt` is the `updatedAt` of the settings the batch carried.
    */
-  const store = async (
-    next: Snapshot,
-    version: number,
-    sent: Outbox | null,
-    lastSeq: number | null,
-  ): Promise<void> => {
-    const reads: Read[] = [
-      { store: SETTINGS_STORE, key: SETTINGS_KEY },
-      { store: META_STORE, key: 'settingsSyncedAt' },
-    ];
-    const replaced = { settings: false };
-    await db.update(
-      reads,
-      ([settings, syncedAt]) => {
-        const after = settingsAfter(
-          isSettings(settings) ? settings : null,
-          asTimestamp(syncedAt) ?? 0,
-          sent?.request.delta.settings?.updatedAt ?? null,
-          next.settings,
-        );
-        const writes: Write[] = [
-          { op: 'put', store: SNAPSHOT_STORE, key: SYNC_KEY, value: next },
-          metaPut('snapshotVersion', version),
-          metaPut('settingsSyncedAt', after.syncedAt),
-        ];
-        if (lastSeq !== null) writes.push(metaPut('lastSeq', lastSeq));
-        if (sent !== null) writes.push({ op: 'delete', store: OUTBOX_STORE, key: SYNC_KEY });
-        if (after.replace !== null) {
-          replaced.settings = true;
-          writes.push({
-            op: 'put',
-            store: SETTINGS_STORE,
-            key: SETTINGS_KEY,
-            value: after.replace,
-          });
-        }
-        return writes;
-      },
-      [SNAPSHOT_STORE, OUTBOX_STORE],
+  const settingsWrites = (
+    local: unknown,
+    syncedAt: unknown,
+    sentAt: number | null,
+    server: PullResponse['settings'],
+    flag: { settings: boolean },
+  ): Write[] => {
+    const after = settingsAfter(
+      isSettings(local) ? local : null,
+      asTimestamp(syncedAt) ?? 0,
+      sentAt,
+      server,
     );
-    post('learn');
-    if (replaced.settings) post('settings');
+    const writes: Write[] = [metaPut('settingsSyncedAt', after.syncedAt)];
+    if (after.replace !== null) {
+      flag.settings = true;
+      writes.push({ op: 'put', store: SETTINGS_STORE, key: SETTINGS_KEY, value: after.replace });
+    }
+    return writes;
   };
 
   // ---- an acknowledgement -------------------------------------------------------------------
 
-  const acknowledge = async (
-    api: SyncApi,
-    outbox: Outbox,
-    response: SyncResponseV2,
-  ): Promise<boolean> => {
-    const [stored, version] = await Promise.all([
-      db.get(SNAPSHOT_STORE, SYNC_KEY),
-      db.get(META_STORE, 'snapshotVersion'),
-    ]);
-    const snapshot = isSnapshot(stored) ? stored : null;
-    const base = appliesLocally(snapshot, asCount(version), response.version) ? snapshot : null;
-    if (base !== null) {
-      await store(applyBatch(base, outbox.request), response.version, outbox, response.lastSeq);
-      return true;
-    }
-    const parts = await api.readParts();
-    if (parts === null) return false;
-    await store(
-      assembleSnapshot(parts.rest, parts.recent, parts.buckets),
-      parts.rest.version,
-      outbox,
-      response.lastSeq,
+  /**
+   * One transaction: the outbox cleared, `lastSeq`, `sentN` and the settings rule. The response
+   * carries no settings, so a local document that has not changed since the batch stays as it is.
+   */
+  const acknowledge = async (sent: PendingBatch, lastSeq: number): Promise<void> => {
+    const lastN = lastNOf(sent.request);
+    const flag = { settings: false };
+    await db.update(
+      [
+        { store: SETTINGS_STORE, key: SETTINGS_KEY },
+        { store: META_STORE, key: 'settingsSyncedAt' },
+        { store: META_STORE, key: SENT_N_KEY },
+      ],
+      ([settings, syncedAt, sentN]) => {
+        const writes = settingsWrites(
+          settings,
+          syncedAt,
+          sent.request.settings?.updatedAt ?? null,
+          null,
+          flag,
+        );
+        writes.push(metaPut('lastSeq', lastSeq), {
+          op: 'delete',
+          store: OUTBOX_STORE,
+          key: SYNC_KEY,
+        });
+        if (lastN !== null) writes.push(metaPut(SENT_N_KEY, Math.max(lastN, asCount(sentN) ?? 0)));
+        return writes;
+      },
+      [OUTBOX_STORE],
     );
-    return true;
+    if (flag.settings) postSettings();
   };
 
-  /** `start` and `online` with nothing to send: read the snapshot when another device wrote. */
-  const pull = async (api: SyncApi): Promise<void> => {
-    lastRequestAt = clock.now();
-    const result = await api.check();
-    if (result.kind !== 'ok') {
-      await failed(result, null);
-      return;
-    }
-    networkFailed = false;
-    if (!isSyncResponse(result.body)) return;
-    const [stored, version] = await Promise.all([
-      db.get(SNAPSHOT_STORE, SYNC_KEY),
-      db.get(META_STORE, 'snapshotVersion'),
-    ]);
-    if (isSnapshot(stored) && asCount(version) === result.body.version) return;
-    const parts: Parts | null = await api.readParts();
-    if (parts === null) return;
-    await store(
-      assembleSnapshot(parts.rest, parts.recent, parts.buckets),
-      parts.rest.version,
-      null,
-      null,
+  // ---- the pull -----------------------------------------------------------------------------
+
+  /** Stores one page of the pull in one transaction. */
+  const storePage = async (page: PullResponse): Promise<void> => {
+    const flag = { settings: false };
+    await db.update(
+      [
+        { store: SETTINGS_STORE, key: SETTINGS_KEY },
+        { store: META_STORE, key: 'settingsSyncedAt' },
+        { store: META_STORE, key: PULLED_ID_KEY },
+      ],
+      ([settings, syncedAt, pulledId]) => {
+        const writes = settingsWrites(settings, syncedAt, null, page.settings, flag);
+        for (const row of page.rows) {
+          writes.push({ op: 'put', store: LOG_STORE, key: rowPageKey(row.id), value: row.log });
+        }
+        writes.push(metaPut(PULLED_ID_KEY, Math.max(page.last, asCount(pulledId) ?? 0)));
+        return writes;
+      },
+      [LOG_STORE],
     );
+    if (flag.settings) postSettings();
+  };
+
+  /** Pages of `GET ?after=` until `more` is false; the log is read again when rows arrived. */
+  const pull = async (api: SyncApi): Promise<void> => {
+    let after = asCount(await db.get(META_STORE, PULLED_ID_KEY)) ?? 0;
+    let rows = 0;
+    for (;;) {
+      lastRequestAt = clock.now();
+      const result = await api.pull(after);
+      if (result.kind !== 'ok') {
+        await failed(result, null);
+        break;
+      }
+      networkFailed = false;
+      if (!isPullResponse(result.body)) {
+        // A page this version cannot read: it will not read it later either (A28).
+        await putMeta([['syncBlockedAtVersion', appVersion]]);
+        break;
+      }
+      const page = result.body;
+      await storePage(page);
+      rows += page.rows.length;
+      after = Math.max(after, page.last);
+      if (!page.more || !isRunning()) break;
+    }
+    if (rows > 0) {
+      await deps.reloadLearning();
+      deps.channels.learn.post({ kind: 'pull' });
+    }
   };
 
   // ---- failed requests (storage-sync.md, "Failed requests") ---------------------------------
@@ -298,7 +315,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
         const outbox = readOutbox(value);
         if (outbox === null) return [];
         const seq = lastSeq + 1;
-        const next: Outbox = { ...outbox, seq, request: { ...outbox.request, seq } };
+        const next: PendingBatch = { seq, request: { ...outbox.request, seq } };
         return [
           { op: 'put', store: OUTBOX_STORE, key: SYNC_KEY, value: next },
           metaPut('lastSeq', lastSeq),
@@ -308,7 +325,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
     );
   };
 
-  const failed = async (result: ApiResult, outbox: Outbox | null): Promise<Verdict> => {
+  const failed = async (result: ApiResult, outbox: PendingBatch | null): Promise<Verdict> => {
     if (result.kind === 'network') {
       networkFailed = true;
       return 'stop';
@@ -337,24 +354,31 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
 
   // ---- building and sending a batch ---------------------------------------------------------
 
-  /** Moves the next batch from `delta` into the outbox in one transaction (step 3). */
-  const buildNext = async (deviceId: string, maxBytes: number): Promise<Outbox | null> => {
+  /**
+   * Moves the next batch into the outbox in one transaction (step 3): the longest prefix of the
+   * unsent own events within `maxBytes`, `after` = `pulledId` and the changed settings.
+   */
+  const buildNext = async (deviceId: string, maxBytes: number): Promise<PendingBatch | null> => {
+    const sentN = asCount(await db.get(META_STORE, SENT_N_KEY)) ?? 0;
+    const unsent = await readUnsent(db, sentN);
     const built: { batch: Batch | null } = { batch: null };
     await db.update(
       [
         { store: OUTBOX_STORE, key: SYNC_KEY },
-        { store: DELTA_STORE, key: 'learn' },
         { store: SETTINGS_STORE, key: SETTINGS_KEY },
         { store: META_STORE, key: 'lastSeq' },
         { store: META_STORE, key: 'settingsSyncedAt' },
+        { store: META_STORE, key: PULLED_ID_KEY },
       ],
-      ([outbox, learn, settings, lastSeq, syncedAt]) => {
+      ([outbox, settings, lastSeq, syncedAt, pulledId]) => {
         if (outbox !== undefined) return [];
         const batch = buildBatch(
           {
             deviceId,
             seq: (asCount(lastSeq) ?? 0) + 1,
-            learn: readLearnChanges(learn) ?? noLearnChanges(),
+            after: asCount(pulledId) ?? 0,
+            unsent,
+            firstN: sentN + 1,
             settings:
               isSettings(settings) && settings.updatedAt > (asTimestamp(syncedAt) ?? 0)
                 ? settings
@@ -364,14 +388,8 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
         );
         if (batch === null) return [];
         built.batch = batch;
-        capped = !isEmptyLearnChanges(batch.rest);
-        const sent: Outbox = { seq: batch.request.seq, request: batch.request };
-        return [
-          { op: 'put', store: OUTBOX_STORE, key: SYNC_KEY, value: sent },
-          isEmptyLearnChanges(batch.rest)
-            ? { op: 'delete', store: DELTA_STORE, key: 'learn' }
-            : { op: 'put', store: DELTA_STORE, key: 'learn', value: batch.rest },
-        ];
+        const sent: PendingBatch = { seq: batch.request.seq, request: batch.request };
+        return [{ op: 'put', store: OUTBOX_STORE, key: SYNC_KEY, value: sent }];
       },
     );
     const batch = built.batch;
@@ -379,19 +397,21 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
   };
 
   /** Sends the outbox once and settles the answer. */
-  const send = async (api: SyncApi, outbox: Outbox, keepalive: boolean): Promise<Verdict> => {
+  const send = async (
+    api: SyncApi,
+    outbox: PendingBatch,
+    keepalive: boolean,
+  ): Promise<{ verdict: Verdict; more: boolean }> => {
     lastRequestAt = clock.now();
     const result = await api.post(JSON.stringify(outbox.request), keepalive);
     if (result.kind === 'ok') {
       networkFailed = false;
-      if (!isSyncResponse(result.body)) return 'stop';
-      return (await acknowledge(api, outbox, result.body)) ? 'sent' : 'stop';
+      if (!isSyncResponse(result.body)) return { verdict: 'stop', more: false };
+      await acknowledge(outbox, result.body.lastSeq);
+      return { verdict: 'sent', more: result.body.more };
     }
-    return failed(result, outbox);
+    return { verdict: await failed(result, outbox), more: false };
   };
-
-  /** True when the last batch left changes out because of the caps: a catch-up batch follows (step 5). */
-  const hasMore = (): boolean => capped;
 
   // ---- a cycle ------------------------------------------------------------------------------
 
@@ -420,10 +440,13 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
         if (withPull) await pull(api);
         return;
       }
-      const verdict = await send(api, outbox, false);
+      const { verdict, more } = await send(api, outbox, false);
       if (verdict === 'again' && rewrites < MAX_SEQ_REWRITES) continue;
       if (verdict === 'sent') {
-        if (hasMore()) schedule(false, CATCH_UP_SPACING_MS, CATCH_UP_SPACING_MS);
+        // Events the batch left out (the caps) or that came after it was built follow (step 5).
+        if (await hasUnsentEvents()) schedule(false, CATCH_UP_SPACING_MS, CATCH_UP_SPACING_MS);
+        // The first batch of a sign-in leaves the account's settings in place; the pull brings them.
+        if (more || (outbox.seq === 1 && outbox.request.settings !== null)) await pull(api);
       }
       return;
     }

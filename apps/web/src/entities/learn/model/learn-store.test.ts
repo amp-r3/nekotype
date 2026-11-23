@@ -82,6 +82,21 @@ async function settle(env: { scheduler: ManualScheduler; store: LearnStore }): P
   await env.store.flush();
 }
 
+describe('the clock', () => {
+  it('has a fraction, and the stored event times are integers (D2)', async () => {
+    const env = await ready();
+    env.clock.time = 1_700_000_000_000.4;
+    env.store.startSession();
+    env.clock.time += 1000.7;
+    env.store.introduce(A);
+    await settle(env);
+    const events = await readLog(env.db);
+    expect(events.map((e) => e.at)).toEqual([1_700_000_000_000, 1_700_000_001_001]);
+    // They read back: a page with a fractional time would fail its check.
+    expect(events).toHaveLength(2);
+  });
+});
+
 describe('loading', () => {
   it('is ready only after the log and the model chunk are both read', async () => {
     let release: () => void = () => {};
@@ -105,6 +120,29 @@ describe('loading', () => {
     expect(env.store.status.value).toBe('ready');
     expect(env.store.view.value?.kana.get(A)?.state).toBe('locked');
     expect(env.store.modelState()).not.toBeNull();
+  });
+
+  it('a reload during loading reads the log again when the load ends', async () => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const env = setup({
+      loadModel: async () => {
+        await gate;
+        return import('@nekotype/model');
+      },
+    });
+    const loading = env.store.init();
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    // The log was read before the pull stored its row; the model chunk is still loading.
+    const row: LogEvent = { t: 'intro', at: 1000, dev: OTHER, n: 1, k: A };
+    await env.db.put('log', rowPageKey(1), encodePage([row]));
+    const reloading = env.store.reload();
+    release();
+    await loading;
+    await reloading;
+    expect(env.store.view.value?.kana.get(A)?.state).toBe('learning');
   });
 
   it('is an error, and writes nothing, when the log cannot be read', async () => {

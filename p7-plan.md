@@ -23,7 +23,7 @@ The executor of a pull request fills its row (see [section 7](#7-instructions-fo
 | 8   | `p7-08-log-store`             | `p7-switch` | done   | #215         |
 | 9   | `p7-09-learning-on-the-model` | `p7-switch` | done   | #216         |
 | 10  | `p7-10-stats-from-the-log`    | `p7-switch` | done   | #217         |
-| 11  | `p7-11-sync-format-3-client`  | `p7-switch` | —      | —            |
+| 11  | `p7-11-sync-format-3-client`  | `p7-switch` | done   | #218         |
 | 12  | `p7-switch`                   | `main`      | —      | —            |
 | 13  | `p7-13-format-2-out`          | `main`      | —      | —            |
 | 14  | `p7-14-drop-learning-columns` | `main`      | —      | —            |

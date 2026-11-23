@@ -1,13 +1,4 @@
-export type {
-  Counters,
-  LearnBox,
-  LearnEntry,
-  LearnKanaKey,
-  LearnState,
-  LearnStat,
-  RecallAnswer,
-  Track,
-} from '@nekotype/shared/types';
+export type { LearnKanaKey, Track } from '@nekotype/shared/types';
 
 export type { Keystroke } from './lib/answer-time';
 export {
@@ -19,29 +10,8 @@ export {
   answerK,
 } from './lib/answer-time';
 
-export { CONFIDENT_ACCURACY, accuracyOf, isConfident, medianAnswerMs } from './lib/confidence';
 export { dependenciesOf, keyOf, keysOfTrack, nextUnlock, trackOfKey } from './lib/tracks';
-export {
-  TRACKS,
-  evaluateBoxes,
-  evaluateUnlocking,
-  initialCounters,
-  initialLearnState,
-} from './lib/state';
 export { dayStart, localDay } from './lib/day';
-export {
-  BOX_DAYS,
-  MASTERED_BOX,
-  dueAtFor,
-  isDue,
-  isDueKana,
-  isMastered,
-  nextBox,
-  reviewEntry,
-  settleEntry,
-} from './lib/boxes';
-export { addActiveDay, bestStreak, currentStreak } from './lib/streak';
-
 export type { AnswerInput, LearnStatus, LearnStore, LearnStoreDeps } from './model/learn-store';
 export {
   createLearnStore,
@@ -60,13 +30,16 @@ export {
   startSession,
 } from './model/learn-store';
 
-// The old store: it still serves the sync and the reset until PR 11 (P7 plan, D21).
+export type { LearnMessage, LogMeta } from './model/log';
 export {
-  legacyInitLearn,
-  legacyIntroduce,
-  legacyLearnState,
-  legacyResetLearning,
-} from './model/store';
+  LOG_META_KEY,
+  PULLED_ID_KEY,
+  SENT_N_KEY,
+  isLearnMessage,
+  isLogMeta,
+  readUnsent,
+  rowPageKey,
+} from './model/log';
 
 export type { CellState, ChartRowInfo, KanaCellInfo } from './lib/chart';
 export { cellInfos, chartRows } from './lib/chart';

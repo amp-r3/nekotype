@@ -201,7 +201,8 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   const emit = (fields: EventDraft): void => {
     if (status.value !== 'ready' || fold === null) return;
     const current = ensureMeta();
-    const at = Math.max(fields.at, current.lastAt);
+    // The clock has a fraction; an event time is an integer (D2).
+    const at = Math.max(Math.round(fields.at), current.lastAt);
     const event: LogEvent = { ...fields, at, dev: current.dev, n: current.next };
     meta = { dev: current.dev, next: current.next + 1, lastAt: at };
     drafts.push(fields);
@@ -297,6 +298,9 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   const reload = (): Promise<void> => {
     writing = writing
       .then(async () => {
+        // A pull that lands while the log and the model chunk load is read by that load, or by
+        // this reload once it ends; it is never dropped.
+        if (loading !== null) await loading;
         if (status.value !== 'ready') return;
         await rebuild();
       })

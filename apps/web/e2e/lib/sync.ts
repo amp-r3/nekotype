@@ -59,3 +59,10 @@ export function sessionCounts(page: Page): { started: Locator; finished: Locator
     finished: page.getByTestId('stats-finished'),
   };
 }
+
+/** The chart states of `/` as one string, one letter per kana cell in table order. */
+export async function chartStates(page: Page): Promise<string[]> {
+  return page
+    .getByTestId('kana-cell')
+    .evaluateAll((cells) => cells.map((cell) => cell.getAttribute('data-state') ?? ''));
+}

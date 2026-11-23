@@ -34,20 +34,6 @@ export async function seedLog(
   await page.reload();
 }
 
-/** Writes the learning state (`delta/learn`) the same way, on `path`, and reloads. */
-export async function seedLearning(
-  page: Page,
-  path: string,
-  learn: Record<string, unknown>,
-): Promise<void> {
-  await page.goto(path);
-  await putRecord(page, 'delta', 'learn', {
-    learn,
-    counters: { started: 0, finished: 0 },
-  });
-  await page.reload();
-}
-
 async function putRecord(page: Page, store: string, key: string, value: unknown): Promise<void> {
   await page.evaluate(
     async ({ store, key, value, schemaVersion }) => {

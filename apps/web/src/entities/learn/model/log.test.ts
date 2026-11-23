@@ -28,6 +28,13 @@ const drafts = (count: number, at = 1000): EventDraft[] =>
   Array.from({ length: count }, (_, i) => intro(at + i));
 
 describe('appendEvents', () => {
+  it('rounds a fractional clock time: an event time is an integer', async () => {
+    const db = createMemoryDb();
+    const stored = await appendEvents(db, [intro(1000.4), intro(1001.6)], newId);
+    expect(stored.map((e) => e.at)).toEqual([1000, 1002]);
+    expect((await readLog(db)).map((e) => e.at)).toEqual([1000, 1002]);
+  });
+
   it('creates the identity and gives n and at in the transaction', async () => {
     const db = createMemoryDb();
     const stored = await appendEvents(db, [intro(500), intro(400), intro(900)], newId);

@@ -45,7 +45,14 @@ test.describe('review in a session on /', () => {
   test('takes the due kana first, shows it in the progress line and clears it after', async ({
     page,
   }) => {
-    await seedLog(page, '/', learnedLog(['あ'], 30 * 864e5));
+    // The learner came back every 2 hours on the first day, then stayed away for a month: the
+    // planner looks ahead by the usual gap between sittings, so one month-long gap alone would make
+    // the kana due again right after its review.
+    const base = learnedLog(['あ'], 30 * 864e5);
+    const last = base.at(-1);
+    if (last === undefined) throw new Error('no seed events');
+    const habit = [1, 2, 3].map((hours) => ({ ...last, at: last.at + hours * 2 * 3_600_000 }));
+    await seedLog(page, '/', [...base, ...habit]);
     await expect(page.getByTestId('learn-due')).toHaveText('due: 1');
     await expect(page.getByRole('button', { name: /^review/ })).toHaveCount(0);
     await page.getByRole('button', { name: 'continue' }).click();
