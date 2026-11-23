@@ -8,7 +8,7 @@ import { countingDb, signedInUser } from '../test-support';
 import { testDeps } from '../test-deps';
 
 // Sync format 3 (P7 plan, D11–D15): the log as batches, one D1 row per batch, pulls of the rows of
-// other devices. Format 2 keeps its own suite (`sync.test.ts`).
+// other devices. The checks common to every request are in `sync.test.ts`.
 
 const START = 1_700_000_000_000;
 const A = '11111111-1111-4111-8111-111111111111';

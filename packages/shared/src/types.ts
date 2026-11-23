@@ -41,54 +41,6 @@ export type ValidSettings = {
 export type Track = 'hiragana' | 'katakana';
 export type LearnKanaKey = `${Track}:${string}`;
 
-export type RecallAnswer = {
-  /** Time of the answer, Unix ms; identifies the answer in a merge. */
-  readonly at: number;
-  /** Answer time, ms. */
-  readonly ms: number;
-  /** No error. */
-  readonly ok: boolean;
-};
-
-export type LearnBox = 0 | 1 | 2 | 3 | 4 | 5;
-
-export type LearnEntry = {
-  readonly box: LearnBox;
-  /** 0 in box 0. */
-  readonly dueAt: number;
-  readonly updatedAt: number;
-};
-
-export type LearnStat = {
-  readonly recognitions: number;
-  readonly recognitionErrors: number;
-  /** Kana chosen instead of this one → count. */
-  readonly mixups: Readonly<Record<LearnKanaKey, number>>;
-};
-
-export type LearnState = {
-  /** In track order; starts with the vowels. */
-  readonly unlocked: Readonly<Record<Track, readonly LearnKanaKey[]>>;
-  /** Introduced kana. */
-  readonly entries: Readonly<Record<LearnKanaKey, LearnEntry>>;
-  /** The last 10 recall answers, oldest first. */
-  readonly recent: Readonly<Record<LearnKanaKey, readonly RecallAnswer[]>>;
-  readonly stats: Readonly<Record<LearnKanaKey, LearnStat>>;
-  /** Runs of consecutive active local days `[first, last]`; ascending, never overlapping or adjacent. */
-  readonly activeDays: readonly (readonly [first: number, last: number])[];
-  /** Recall answer times per track and local day, counted in buckets of 100 ms. */
-  readonly recallBuckets: Readonly<Record<Track, DayBuckets>>;
-};
-
-/** Local day → bucket → number of recall answers. */
-export type DayBuckets = Readonly<Record<string, Readonly<Record<string, number>>>>;
-
-/** Learning sessions started and finished. */
-export type Counters = {
-  readonly started: number;
-  readonly finished: number;
-};
-
 // The learning log (ADR 100, point 7; P7 plan D2). The model folds it; nothing here is a state.
 
 export type TaskKind =
@@ -177,38 +129,6 @@ export type LogPage = {
 
 // Sync batches (spec backend.md, "Request and response bodies")
 
-/** The fields of `LearnState`, holding only changes; increments for statistics and buckets. */
-export type LearnDelta = {
-  /** Changed entries. */
-  readonly entries: Readonly<Record<LearnKanaKey, LearnEntry>>;
-  /** Newly unlocked kana. */
-  readonly unlocked: Readonly<Record<Track, readonly LearnKanaKey[]>>;
-  /** New recall answers, at most 10 per kana. */
-  readonly recent: Readonly<Record<LearnKanaKey, readonly RecallAnswer[]>>;
-  /** Increments. */
-  readonly stats: Readonly<Record<LearnKanaKey, LearnStat>>;
-  /** Runs of days that became active. */
-  readonly activeDays: readonly (readonly [first: number, last: number])[];
-  /** Increments. */
-  readonly recallBuckets: Readonly<Record<Track, DayBuckets>>;
-};
-
-export type SyncDelta = {
-  /** Increments. */
-  readonly counters: Counters;
-  readonly learn: LearnDelta;
-  /** Null when unchanged. */
-  readonly settings: ValidSettings | null;
-};
-
-export type SyncRequestV2 = {
-  /** Batch format version. */
-  readonly v: 2;
-  readonly deviceId: string;
-  readonly seq: number;
-  readonly delta: SyncDelta;
-};
-
 /** Sync format 3 (P7 plan, D12): the log as batches. */
 export type SyncRequest = {
   readonly v: 3;
@@ -231,43 +151,6 @@ export type PullResponse = {
   readonly more: boolean;
   readonly settings: ValidSettings | null;
   readonly rows: readonly PulledRow[];
-};
-
-/** `outbox/current` on the device: the one batch awaiting acknowledgement (p5-plan.md, D15). */
-export type Outbox = {
-  readonly seq: number;
-  readonly request: SyncRequestV2;
-};
-
-/** The server's view of one user: what a sync acknowledgement keeps in step (ADR 082). */
-export type Snapshot = {
-  readonly settings: ValidSettings | null;
-  readonly counters: Counters;
-  /** The client assembles it from the three parts. */
-  readonly learn: LearnState;
-};
-
-/** `POST /api/sync`, and `GET /api/sync` without `part`. */
-export type SyncResponseV2 = { readonly lastSeq: number; readonly version: number };
-
-/** `GET /api/sync?part=…`; the client stores the three parts only when `version` is the same. */
-export type SnapshotRest = SyncResponseV2 & {
-  readonly part: 'rest';
-  readonly settings: ValidSettings | null;
-  readonly counters: Counters;
-  readonly learn: Omit<LearnState, 'recent' | 'recallBuckets'>;
-};
-
-export type SnapshotRecent = {
-  readonly part: 'recent';
-  readonly version: number;
-  readonly recent: LearnState['recent'];
-};
-
-export type SnapshotBuckets = {
-  readonly part: 'buckets';
-  readonly version: number;
-  readonly recallBuckets: LearnState['recallBuckets'];
 };
 
 export type MeResponse = {

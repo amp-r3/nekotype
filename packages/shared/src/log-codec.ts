@@ -1,4 +1,3 @@
-import { isLearnKanaKey } from './learn-runtime';
 import { isObject } from './object';
 import type { EncodedEvent, LearnKanaKey, LogEvent, LogPage, TaskKind, WordKey } from './types';
 
@@ -34,6 +33,15 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function isTask(value: unknown): value is TaskKind {
   return typeof value === 'string' && TASKS.has(value);
+}
+
+/** A kana key of either track: `hiragana:` or `katakana:` and a character. */
+export function isLearnKanaKey(value: unknown): value is LearnKanaKey {
+  return (
+    typeof value === 'string' &&
+    (value.startsWith('hiragana:') || value.startsWith('katakana:')) &&
+    value.length > 9
+  );
 }
 
 function isKanaKey(value: unknown): value is LearnKanaKey {

@@ -3,6 +3,3 @@
 export { KANA_KEYS } from './kana-keys';
 export type { KanaKeys } from './kana-keys';
 export { seededRng, intIn } from './rng';
-export { DEVICE_ID, LAST_SEQ, YEAR_FIRST_DAY, generateBatch, generateYear } from './year';
-export type { BatchKind, DeviceSeq, Year } from './year';
-export { applyMergePatch } from './merge-patch';

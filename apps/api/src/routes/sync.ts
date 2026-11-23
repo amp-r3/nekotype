@@ -1,20 +1,11 @@
-import { isObject, SYNC_FORMAT_V2, SYNC_FORMAT_VERSION } from '@nekotype/shared/runtime';
-import {
-  parseAfter,
-  parseDeviceId,
-  parseSyncRequest,
-  parseSyncRequestV2,
-} from '@nekotype/shared/schemas';
+import { isObject, SYNC_FORMAT_VERSION } from '@nekotype/shared/runtime';
+import { parseAfter, parseDeviceId, parseSyncRequest } from '@nekotype/shared/schemas';
 import { Hono } from 'hono';
 import { requireSession } from '../auth/session';
 import { readPull } from '../db/batches';
-import { isSnapshotPart, readAck, readPart } from '../db/sync';
 import type { AppBindings, AppDeps } from '../env';
 import { ApiError } from '../lib/errors';
 import { applyLog } from '../sync/apply-log';
-import type { LogOutcome } from '../sync/apply-log';
-import { applySync } from '../sync/apply-batch';
-import type { SyncOutcome } from '../sync/apply-batch';
 
 /** Used when `SYNC_MIN_INTERVAL_MS` is missing or not a number (docs/spec/backend.md: one per 5 s). */
 const DEFAULT_INTERVAL_MS = 5000;
@@ -30,9 +21,9 @@ function intervalOf(value: string | undefined): number {
 const jsonHeaders = { 'content-type': 'application/json; charset=UTF-8' } as const;
 
 /**
- * `POST` and `GET /api/sync` (docs/spec/backend.md, p5-plan.md D7, p7-plan.md D12): formats 2 and 3. The order of checks: `Origin`
+ * `POST` and `GET /api/sync` (docs/spec/backend.md, p7-plan.md D12): format 3 only. The order of checks: `Origin`
  * and the body size (middleware of the application), the session, the schema, then the `seq` rule
- * and the rate limit inside `applySync`.
+ * and the rate limit inside `applyLog`.
  */
 export function syncRoutes(deps: AppDeps) {
   const routes = new Hono<AppBindings>();
@@ -44,23 +35,15 @@ export function syncRoutes(deps: AppDeps) {
     } catch {
       throw new ApiError('invalid_body');
     }
-    // The format is the `v` of the body: 3 is the log, 2 the deltas until PR 13 of P7 (D15).
+    // Format 3 is the only one: `v: 2` and anything else are `400`.
     const format = isObject(body) ? body['v'] : undefined;
-    const now = deps.clock.now();
-    const minIntervalMs = intervalOf(c.env.SYNC_MIN_INTERVAL_MS);
-
-    let outcome: LogOutcome | SyncOutcome;
-    if (format === SYNC_FORMAT_VERSION) {
-      const request = parseSyncRequest(body);
-      if (request === null) throw new ApiError('invalid_body');
-      outcome = await applyLog(c.env.DB, c.var.userId, request, { now, minIntervalMs });
-    } else if (format === SYNC_FORMAT_V2) {
-      const request = parseSyncRequestV2(body);
-      if (request === null) throw new ApiError('invalid_body');
-      outcome = await applySync(c.env.DB, c.var.userId, request, { now, minIntervalMs });
-    } else {
-      throw new ApiError('invalid_body');
-    }
+    if (format !== SYNC_FORMAT_VERSION) throw new ApiError('invalid_body');
+    const request = parseSyncRequest(body);
+    if (request === null) throw new ApiError('invalid_body');
+    const outcome = await applyLog(c.env.DB, c.var.userId, request, {
+      now: deps.clock.now(),
+      minIntervalMs: intervalOf(c.env.SYNC_MIN_INTERVAL_MS),
+    });
     switch (outcome.kind) {
       case 'ok':
         return c.json(outcome.response);
@@ -79,23 +62,11 @@ export function syncRoutes(deps: AppDeps) {
     const query = c.req.query();
     const deviceId = parseDeviceId(query['deviceId']);
     if (deviceId === null) throw new ApiError('invalid_body');
-    const part = query['part'];
-    const afterText = query['after'];
-    if (afterText !== undefined) {
-      // Format 3: the rows of other devices after `after`.
-      const after = parseAfter(afterText);
-      if (after === null || part !== undefined) throw new ApiError('invalid_body');
-      const text = await readPull(c.env.DB, c.var.userId, deviceId, after);
-      return c.body(text, 200, jsonHeaders);
-    }
-    if (part === undefined) {
-      const ack = await readAck(c.env.DB, c.var.userId, deviceId);
-      if (ack === null) throw new ApiError('unavailable');
-      return c.json(ack);
-    }
-    if (!isSnapshotPart(part)) throw new ApiError('invalid_body');
-    const text = await readPart(c.env.DB, c.var.userId, deviceId, part);
-    if (text === null) throw new ApiError('unavailable');
+    // Only the pull of format 3 is left: `after` is required and `part` is gone.
+    if (query['part'] !== undefined) throw new ApiError('invalid_body');
+    const after = parseAfter(query['after']);
+    if (after === null) throw new ApiError('invalid_body');
+    const text = await readPull(c.env.DB, c.var.userId, deviceId, after);
     return c.body(text, 200, jsonHeaders);
   });
 

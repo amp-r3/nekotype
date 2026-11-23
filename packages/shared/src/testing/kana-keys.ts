@@ -1,4 +1,4 @@
-import { isLearnKanaKey } from '../learn-runtime';
+import { isLearnKanaKey } from '../log-codec';
 import type { LearnKanaKey, Track } from '../types';
 import raw from './kana-keys.json';
 
