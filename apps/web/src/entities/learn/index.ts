@@ -41,7 +41,6 @@ export {
   settleEntry,
 } from './lib/boxes';
 export { addActiveDay, bestStreak, currentStreak } from './lib/streak';
-export { addBuckets, addRecallTime, dayAnswers, hasAnswers, quartilesOf } from './lib/buckets';
 
 export type { AnswerInput, LearnStatus, LearnStore, LearnStoreDeps } from './model/learn-store';
 export {
@@ -61,20 +60,15 @@ export {
   startSession,
 } from './model/learn-store';
 
-// The old store: it still serves `/stats` and the sync until PR 11 (P7 plan, D21).
+// The old store: it still serves the sync and the reset until PR 11 (P7 plan, D21).
 export {
   legacyInitLearn,
   legacyIntroduce,
-  legacyLearnCounters,
-  legacyLearnReady,
   legacyLearnState,
-  legacyLearnStatus,
   legacyResetLearning,
-  legacyRetryLearn,
 } from './model/store';
 
 export type { CellState, ChartRowInfo, KanaCellInfo } from './lib/chart';
 export { cellInfos, chartRows } from './lib/chart';
 
-export type { TrackProgress } from './lib/progress';
-export { dueCount, masteredCount, streakOfDays, streaks, trackProgress } from './lib/progress';
+export { bestStreakOfDays, dueCount, streakOfDays, streaks } from './lib/progress';

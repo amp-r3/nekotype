@@ -2,9 +2,9 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
-import { getDatabase } from '@/shared/lib';
 import { t, loadDictionaryPart } from '@/shared/i18n';
-import { initialLearnState, localDay } from '@/entities/learn';
+import { initLearn, localDay } from '@/entities/learn';
+import { seedStatsLog } from '../lib/test-util';
 import { StatsPage } from './stats-page';
 
 await loadDictionaryPart('stats');
@@ -46,23 +46,18 @@ describe('learning section: the answer-time periods and tracks', () => {
 
   it('keeps one track per chart, shows the empty period and goes weekly over 45 days', async () => {
     const today = localDay(Date.now());
-    const base = initialLearnState();
-    const db = await getDatabase();
-    await db.put('delta', 'learn', {
-      learn: {
-        ...base,
-        activeDays: [[today - 50, today - 50]],
-        recallBuckets: {
-          hiragana: {
-            [String(today - 50)]: { '10': 2 },
-            [String(today - 20)]: { '12': 2 },
-          },
-          katakana: { [String(today - 3)]: { '15': 1 } },
-        },
-      },
-      counters: { started: 2, finished: 2 },
-    });
+    await seedStatsLog(
+      [
+        { day: today - 50, hiragana: [1000, 1200] },
+        { day: today - 20, hiragana: [1100, 1300] },
+        { day: today - 3, katakana: [1500] },
+      ],
+      { started: 2, finished: 2 },
+    );
 
+    // The log and the model chunk load before the page renders: a slow first import of the
+    // model must not leave the test on the loading line.
+    await initLearn(() => 1500);
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<StatsPage />, container);

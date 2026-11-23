@@ -6,24 +6,18 @@ import { Button, Notice } from '@/shared/ui';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { defaultClock, navigate } from '@/shared/lib';
 import { learnTargetMs } from '@/entities/settings';
-import {
-  legacyInitLearn,
-  legacyLearnCounters,
-  legacyLearnState,
-  legacyLearnStatus,
-  localDay,
-  legacyRetryLearn,
-} from '@/entities/learn';
+import { initLearn, learnStatus, learnView, localDay, retryLearn } from '@/entities/learn';
 import { LearningSection } from './learning-section';
 
 // Statistics: the learning progress, all of the screen (design decisions 130, 137).
 export function StatsPage(): JSX.Element {
   useEffect(() => {
-    void legacyInitLearn(() => learnTargetMs.value);
+    void initLearn(() => learnTargetMs.value);
   }, []);
 
-  const status = legacyLearnStatus.value;
-  const has = legacyLearnState.value.activeDays.length > 0 || legacyLearnCounters.value.started > 0;
+  const status = learnStatus.value;
+  const view = learnView.value;
+  const has = view !== null && (view.stats.days.size > 0 || view.stats.started > 0);
 
   return (
     <section className="max-w-layout-max mx-auto flex w-full flex-col gap-8 sm:gap-12">
@@ -37,7 +31,7 @@ export function StatsPage(): JSX.Element {
               variant="secondary"
               size="sm"
               onClick={() => {
-                void legacyRetryLearn();
+                void retryLearn();
               }}
             >
               {t('learn.retry')}
@@ -48,8 +42,9 @@ export function StatsPage(): JSX.Element {
         </Notice>
       )}
       {status === 'ready' &&
+        view !== null &&
         (has ? (
-          <LearningSection today={localDay(defaultClock.now())} />
+          <LearningSection view={view} today={localDay(defaultClock.now())} />
         ) : (
           <EmptyState
             title={t('stats.empty.title')}

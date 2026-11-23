@@ -1,12 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import type { LearnState } from '@nekotype/shared/types';
-import { initialLearnState } from '@/entities/learn';
+import type { DayLog } from '@nekotype/model';
 import { activeDaysIn, activityDays, fitMap, gridDays, levelOf } from './activity';
 import { mondayOf } from './days';
-
-function state(parts: Partial<LearnState>): LearnState {
-  return { ...initialLearnState(), ...parts };
-}
 
 describe('levelOf', () => {
   it.each([
@@ -30,34 +25,50 @@ describe('levelOf', () => {
   });
 });
 
+/** Days of a `LogStats`: `answers` of any task, `recall` times per track. */
+function logDays(
+  entries: Record<number, { answers: number; hiragana?: number[]; katakana?: number[] }>,
+): Map<number, DayLog> {
+  return new Map(
+    Object.entries(entries).map(([day, e]) => [
+      Number(day),
+      { answers: e.answers, recall: { hiragana: e.hiragana ?? [], katakana: e.katakana ?? [] } },
+    ]),
+  );
+}
+
 describe('activityDays', () => {
-  it('adds up the answers of both tracks and all buckets', () => {
+  it('counts the recall answers of both tracks of a day', () => {
     const days = activityDays(
-      state({
-        recallBuckets: {
-          hiragana: { '100': { '3': 2, '5': 1 } },
-          katakana: { '100': { '4': 4 }, '101': { '2': 1 } },
-        },
+      logDays({
+        100: { answers: 9, hiragana: [900, 1000, 1100], katakana: [1200, 1300, 1400, 1500] },
+        101: { answers: 1, katakana: [800] },
       }),
       200,
     );
-    expect(days.get(100)).toEqual({ answers: 7, active: false, run: false });
+    expect(days.get(100)).toEqual({ answers: 7, active: true, run: false });
     expect(days.get(101)?.answers).toBe(1);
   });
 
-  it('marks a run of active days, also without recall answers', () => {
-    const days = activityDays(state({ activeDays: [[10, 12]] }), 100);
-    expect([...days.keys()]).toEqual([10, 11, 12]);
+  it('draws a day with answers and no recall as active with no recall answers', () => {
+    const days = activityDays(logDays({ 11: { answers: 4 } }), 100);
     expect(days.get(11)).toEqual({ answers: 0, active: true, run: false });
+    expect(levelOf(0, true)).toBe(1);
+  });
+
+  it('leaves out a day without answers', () => {
+    expect([...activityDays(logDays({ 5: { answers: 0 } }), 100).keys()]).toEqual([]);
   });
 
   it('marks the days of the current streak: the last run, ending today or yesterday', () => {
-    const runs: LearnState['activeDays'] = [
-      [1, 3],
-      [10, 12],
-    ];
+    const entries = { 1: 1, 2: 1, 3: 1, 10: 1, 11: 1, 12: 1 };
     const ending = (today: number): number[] =>
-      [...activityDays(state({ activeDays: runs }), today)]
+      [
+        ...activityDays(
+          logDays(Object.fromEntries(Object.entries(entries).map(([d, n]) => [d, { answers: n }]))),
+          today,
+        ),
+      ]
         .filter(([, day]) => day.run)
         .map(([key]) => key);
     expect(ending(12)).toEqual([10, 11, 12]);
@@ -67,19 +78,20 @@ describe('activityDays', () => {
 });
 
 describe('activeDaysIn', () => {
-  const runs: LearnState['activeDays'] = [
-    [60, 70],
-    [90, 99],
-    [100, 100],
-  ];
+  const spans = (...ranges: [number, number][]): Map<number, DayLog> => {
+    const entries: Record<number, { answers: number }> = {};
+    for (const [first, last] of ranges)
+      for (let day = first; day <= last; day++) entries[day] = { answers: 1 };
+    return logDays(entries);
+  };
   it('counts the days of the last 30 only', () => {
     // The window of today = 100 is days 71–100.
-    expect(activeDaysIn(state({ activeDays: runs }), 100, 30)).toBe(11);
-    expect(activeDaysIn(state({ activeDays: [[60, 80]] }), 100, 30)).toBe(10);
-    expect(activeDaysIn(state({}), 100, 30)).toBe(0);
+    expect(activeDaysIn(spans([60, 70], [90, 100]), 100, 30)).toBe(11);
+    expect(activeDaysIn(spans([60, 80]), 100, 30)).toBe(10);
+    expect(activeDaysIn(spans(), 100, 30)).toBe(0);
   });
   it('does not count days after today', () => {
-    expect(activeDaysIn(state({ activeDays: [[98, 105]] }), 100, 30)).toBe(3);
+    expect(activeDaysIn(spans([98, 105]), 100, 30)).toBe(3);
   });
 });
 
