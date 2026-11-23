@@ -3,6 +3,7 @@
 Working file of phase P8 ([phases.md](docs/spec/phases.md), item 9). It tells the executor of each pull request what to build, in which order, and which decisions are already made. It is not part of `docs/`: the last pull request of the phase moves it to `docs/archive/`.
 
 - Written on 2026-11-23 against `main` at aa045fb (PR 227 merged: P8 specified in `phases.md`).
+- Changed on 2026-11-23 by [ADR 106](docs/adr/106-design-sessions-in-a-workbench-artifact.md): the design system is cleaned up before the session ([M0](#m0-the-clean-up-of-the-design-system--before-m1), [PR C](#pr-c--design-clean-up-export)), the session runs in rounds in a workbench artifact ([M1](#m1-the-design-session--after-pr-c-before-pr-d)), and the expected ADR numbers moved up by two.
 - Where this plan and `docs/spec/` disagree, the spec wins until the pull request named here changes the spec. Every such change is listed in [section 3.8](#38-spec-changes) with its pull request.
 - **Two kinds of content.** Section 3 holds the data and the computations as final contracts: types, names, stores, keys and constants. An executor copies them and does not invent names. Everything that depends on how a screen looks is a brief for the design session ([section 4](#4-design-brief)): proposals, not decisions. The design export decides, and its decision numbers fill the brief's last column.
 - **The code pull requests are preliminary** until the design export (PR D) is merged. PR D's executor rewrites the cards of PRs 1–6 against the export in the same pull request ([section 7](#7-pull-requests)).
@@ -14,6 +15,7 @@ The executor of a pull request fills its row (see [section 8](#8-instructions-fo
 
 | PR  | Branch                   | Status  | Pull request |
 | --- | ------------------------ | ------- | ------------ |
+| C   | `docs/design-cleanup`    | waiting |              |
 | D   | `docs/p8-design`         | waiting |              |
 | 1   | `p8-01-model-home`       | waiting |              |
 | 2   | `p8-02-progress-details` | waiting |              |
@@ -28,7 +30,8 @@ The executor of a pull request fills its row (see [section 8](#8-instructions-fo
 
 **In scope** ([phases.md](docs/spec/phases.md), P8; [ADR 099](docs/adr/099-learning-home-methods-and-phases-after-p6.md), points 1–4):
 
-- the design session in the design-system artifact and its export, which also catches up with the P7 code and draws the states of P9–P12 switched off;
+- the clean-up of the design system, which catches up with the P7 code, and its export (M0, PR C);
+- the design session in a workbench artifact, its transfer into the design-system artifact and its export, which draws the states of P9–P12 switched off;
 - small additions to `@nekotype/model` that the home needs: the reason, weak kana, the session in which a kana was introduced, a seeded generator ([D1](#d1-the-reason-for-continue), [D10](#d10-forecast-history));
 - the computation of the outline, what got stronger and the forecast outside the render and the key handlers, and the forecast history in IndexedDB (schema 7);
 - the home, "Progress", the kana details dialog, the session summary, the session screen and the navigation, per the export;
@@ -363,11 +366,11 @@ Every pull request goes to `main`. Reasons:
 
 ### 3.7 Documents and decision records
 
-- **ADRs,** each with the next free number when its pull request is opened (today the last is 105; the expected numbers follow): **106** in PR D (the P8 design export: the screens, the later phases drawn switched off, the catch-up with P7, and the format of the forecast change if it amends ADR 100 point 6); **107** in PR 1 (the home's data from the model: the reason from the first task, weak kana, `introducedIn`, seeded plays); **108** in PR 2 (`/progress` with a 301 at the edge and in the router; the kana details dialog as a lazy feature slice; the view-only track switch); **109** in PR 3 (insights on the main thread in scheduler callbacks, what got stronger from the last start, the forecast history in schema 7).
+- **ADRs,** each with the next free number when its pull request is opened (today the last is 106, the design workflow; the expected numbers follow): **107** in PR C (the clean-up of the design system: the catch-up with P7, the phase numbers of ADR 099, the typing trainer's leftovers, the cover); **108** in PR D (the P8 design export: the screens, the later phases drawn switched off, and the format of the forecast change if it amends ADR 100 point 6); **109** in PR 1 (the home's data from the model: the reason from the first task, weak kana, `introducedIn`, seeded plays); **110** in PR 2 (`/progress` with a 301 at the edge and in the router; the kana details dialog as a lazy feature slice; the view-only track switch); **111** in PR 3 (insights on the main thread in scheduler callbacks, what got stronger from the last start, the forecast history in schema 7).
 - No A-item is added: A47–A52 hold the model, and phases.md holds P8's screens.
 - `docs/architecture/` changes with the code: `model.md` (PR 1; PR 3 removes "no caller before P8"), `layout.md` and `pages.md` (PR 2, PR 4, PR 5), `entities.md` (PR 3), `sync.md` (PR 3: the cleared stores), `quality-gates.md` (PR 2, PR 4).
 - `README.md`: the routes (PR 2), how learning looks on `/` (PR 4).
-- `docs/design/README.md` loses the note on the P7 code (PR D).
+- `docs/design/README.md` loses the note on the P7 code (PR C).
 - `docs/README.md` gets a row for this plan in this pull request; PR 6 removes it.
 - `AGENTS.md` does not change.
 
@@ -389,7 +392,7 @@ Every pull request goes to `main`. Reasons:
 
 ## 4. Design brief
 
-The design session (M1) changes the design-system artifact and PR D exports it. This section is its brief: what each screen can show, every state it has, and proposals. **The proposals are not decisions:** the session may draw something else, and the export decides. PR D writes the numbers of the design decisions (from 139 on) into the last column of 4.2.
+The design session (M1) is drawn in a workbench artifact and moved into the design-system artifact, and PR D exports it ([design workflow](docs/design/workflow.md)). This section is its brief: what each screen can show, every state it has, and proposals. **The proposals are not decisions:** the session may draw something else, and the export decides. PR D writes the numbers of the design decisions (from 140 on) into the last column of 4.2; PR C writes the number of row o.
 
 ### 4.1 Data and states by screen
 
@@ -441,24 +444,24 @@ Names are those of [section 3](#3-decisions) and of `@nekotype/model`.
 
 ### 4.2 Proposals
 
-| #   | Item                   | Proposal                                                                                                                                                                                                                          | Decision |
-| --- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| a   | Home: what comes first | Continue with its reason as one block, the outline next to it; under it the forecast with the path; then what got stronger. The track switch and the streak sit at the top, quietly. No chart                                     |          |
-| b   | Reason copy            | The texts of [D1](#d1-the-reason-for-continue)                                                                                                                                                                                    |          |
-| c   | Nothing to do          | The reason's line takes Continue's place with the time of the next review; with the katakana suggestion, its button is the primary action                                                                                         |          |
-| d   | Forecast               | A range naming the row (`the s row: in 2–4 sessions`); low = high as one number with "about"; `model` and `habits` marked as a rough estimate; `beyond` as "no forecast yet"; `complete` as "every kana of the track is open"     |          |
-| e   | Path                   | The blocks in a row (`basic · voiced · combinations · extended`, the chart's block names); the current block open on its rows with their counts; the current row marked as the learner's place; a block opens with Enter or Space |          |
-| f   | What got stronger      | The kana as buttons, grouped by `to` (new, learned, mastered, stronger); each opens the details; hidden on the first visit                                                                                                        |          |
-| g   | Streak                 | `streak: N days` by the track switch; hidden before the first answer                                                                                                                                                              |          |
-| h   | Katakana suggestion    | A line under the track switch with `start katakana`; no dismiss ([Q1](#q1-can-the-katakana-suggestion-be-hidden))                                                                                                                 |          |
-| i   | Progress               | The title, one view-only track switch for the chart and the answer-time chart, the chart (the tooltip stays, activation opens the dialog), then the grid of decision 137                                                          |          |
-| j   | Kana details dialog    | The kana large with its romaji; the state and the next review; the recall line; the confusions; the recognition accuracy; places for the stroke order (P9), the sound (P10) and the mnemonic (P11) drawn switched off             |          |
-| k   | Summary                | The forecast change on top, medians or ranges as the session decides ([Q2](#q2-the-forecast-change-in-the-summary)); the lists as now, each kana a button to the details; Continue (Enter) and a second action home               |          |
-| l   | Session screen         | `KanaTask` as the centre; the session line and "Leave session" as now; the P9 task types and the P10 sound drawn on the same screen, switched off                                                                                 |          |
-| m   | Navigation             | `learn · progress · settings` / `обучение · прогресс · настройки`; the rest as now                                                                                                                                                |          |
-| n   | Settings               | The sound setting drawn switched off (P10)                                                                                                                                                                                        |          |
-| o   | Catch-up with P7       | `KanaChart` draws `learned` (was `confident`); no `review (N)`; the due count lives in the reason, not in a progress line; the summary sections `introduced` and `learned`                                                        |          |
-| p   | Later phases           | Each switched-off state of P9–P12 is in the previews behind the DemoBar and named with its phase, so the phase turns it on without redrawing the screen                                                                           |          |
+| #   | Item                   | Proposal                                                                                                                                                                                                                                                     | Decision |
+| --- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| a   | Home: what comes first | Continue with its reason as one block, the outline next to it; under it the forecast with the path; then what got stronger. The track switch and the streak sit at the top, quietly. No chart                                                                |          |
+| b   | Reason copy            | The texts of [D1](#d1-the-reason-for-continue)                                                                                                                                                                                                               |          |
+| c   | Nothing to do          | The reason's line takes Continue's place with the time of the next review; with the katakana suggestion, its button is the primary action                                                                                                                    |          |
+| d   | Forecast               | A range naming the row (`the s row: in 2–4 sessions`); low = high as one number with "about"; `model` and `habits` marked as a rough estimate; `beyond` as "no forecast yet"; `complete` as "every kana of the track is open"                                |          |
+| e   | Path                   | The blocks in a row (`basic · voiced · combinations · extended`, the chart's block names); the current block open on its rows with their counts; the current row marked as the learner's place; a block opens with Enter or Space                            |          |
+| f   | What got stronger      | The kana as buttons, grouped by `to` (new, learned, mastered, stronger); each opens the details; hidden on the first visit                                                                                                                                   |          |
+| g   | Streak                 | `streak: N days` by the track switch; hidden before the first answer                                                                                                                                                                                         |          |
+| h   | Katakana suggestion    | A line under the track switch with `start katakana`; no dismiss ([Q1](#q1-can-the-katakana-suggestion-be-hidden))                                                                                                                                            |          |
+| i   | Progress               | The title, one view-only track switch for the chart and the answer-time chart, the chart (the tooltip stays, activation opens the dialog), then the grid of decision 137                                                                                     |          |
+| j   | Kana details dialog    | The kana large with its romaji; the state and the next review; the recall line; the confusions; the recognition accuracy; places for the stroke order (P9), the sound (P10) and the mnemonic (P11) drawn switched off                                        |          |
+| k   | Summary                | The forecast change on top, medians or ranges as the session decides ([Q2](#q2-the-forecast-change-in-the-summary)); the lists as now, each kana a button to the details; Continue (Enter) and a second action home                                          |          |
+| l   | Session screen         | `KanaTask` as the centre; the session line and "Leave session" as now; the P9 task types and the P10 sound drawn on the same screen, switched off                                                                                                            |          |
+| m   | Navigation             | `learn · progress · settings` / `обучение · прогресс · настройки`; the rest as now                                                                                                                                                                           |          |
+| n   | Settings               | The sound setting drawn switched off (P10)                                                                                                                                                                                                                   |          |
+| o   | Catch-up with P7       | Done before the session by the clean-up (M0, PR C), as the P7 code is: `KanaChart` draws `learned` (was `confident`); no `review (N)`; `due: N` in the progress line, which item a replaces with the reason; the summary sections `introduced` and `learned` |          |
+| p   | Later phases           | Each switched-off state of P9–P12 is in the previews behind the DemoBar and named with its phase, so the phase turns it on without redrawing the screen                                                                                                      |          |
 
 **Constraints for the session:**
 
@@ -497,11 +500,29 @@ Names are those of [section 3](#3-decisions) and of `@nekotype/model`.
 
 ## 6. Maintainer's manual steps
 
-### M1. The design session — before PR D
+### M0. The clean-up of the design system — before M1
 
-An agent changes the design-system artifact (linked from [docs/design/README.md](docs/design/README.md)) by [section 4](#4-design-brief), with the workflow of the P6 session: read the files of the artifact, edit copies in the scratchpad, publish them with `root`, then `project/design-system.json` last; every `Screen*/preview.html` shares one script, so a change to shared preview data goes into each. Decisions are numbered from 139. The previews to review: the home on desktop and phone with a DemoBar through H1–H12 and the switched-off states, "Progress" on desktop and phone, the kana details dialog in its states, the summary in its states, the session screen with the switched-off task types, the navigation and the settings.
+An agent cleans the design-system artifact by the [design workflow](docs/design/workflow.md) ([ADR 106](docs/adr/106-design-sessions-in-a-workbench-artifact.md), point 6), with a workbench artifact `Nekotype · design clean-up`:
 
-The maintainer reviews the previews and approves or asks for changes; Q2 is settled here. Check after approval: `decisions.md` has the new decisions after 138; no preview draws `confident`, `review (N)` or `/stats`; each switched-off state is in a preview and names its phase.
+- the catch-up with the P7 code (row o of 4.2): `KanaChart` draws `learned`, and a kana's data are those of `cellInfos` (no Leitner box; `opensNext` for `nextUnlock`); no `review (N)` and no review session; `due: N` in the progress line; the summary sections `introduced` and `learned`; the settings' text of the target answer time; the session line of one kind of session;
+- the phase numbers of ADR 099 in the guidelines and previews: the sound P10, the report dialog P12, the data on the device P14;
+- the typing trainer's leftovers: the cover, `/stats#typing`, props and styles nothing uses, notes on what left with it;
+- the notes of earlier sessions ("proposal", "open question") and history in the guidelines, which stays in `decisions.md`;
+- the screens' script in one file that every screen preview loads, instead of a copy in each.
+
+The workbench shows "now" and "after" of each screen that changes, and two or three variants of the cover. After the maintainer approves, the agent moves the result into the design-system artifact as design decision 139. Check after approval: no preview draws `confident`, `review (N)` or a Leitner box, and no guideline names a phase by its number before ADR 099. The workbench is deleted after PR C is merged.
+
+### M1. The design session — after PR C, before PR D
+
+An agent runs the session by the [design workflow](docs/design/workflow.md) in a workbench artifact `Nekotype · P8 design`, by [section 4](#4-design-brief), in five rounds:
+
+1. the home on desktop and phone through H1–H12 (4.2 a–h);
+2. "Progress" on desktop and phone, and the kana details dialog in its states (i, j);
+3. the session summary in its states and the session screen (k, l); Q2 is settled here;
+4. the navigation and the settings (m, n);
+5. the switched-off states of P9–P12 on every screen (p).
+
+Each round starts with the agent's questions or, when the maintainer asks for it, with the variants the agent recommends; the maintainer's remarks come in the chat. After the last round the agent moves the approved variants into the design-system artifact as decisions from 140. Check after approval: `decisions.md` has the new decisions after 139; no preview draws `/stats`; each switched-off state is in a preview and names its phase. The workbench is deleted after PR D is merged.
 
 ### M2. Sync before PR 3 is merged
 
@@ -528,7 +549,8 @@ Common to all: the branch is cut from fresh `main`; the acceptance items are tho
 
 | PR  | Depends on | Can run in parallel with |
 | --- | ---------- | ------------------------ |
-| D   | M1         | —                        |
+| C   | M0         | —                        |
+| D   | C, M1      | —                        |
 | 1   | D          | 2                        |
 | 2   | D          | 1, 3                     |
 | 3   | 1, M2      | 2                        |
@@ -538,11 +560,20 @@ Common to all: the branch is cut from fresh `main`; the acceptance items are tho
 
 Sign-in is hidden on previews: what needs a session is checked locally (`pnpm run dev` with `pnpm run dev:api`) and, after the merge, by the maintainer on production.
 
+### PR C — Design clean-up export
+
+- **Branch:** `docs/design-cleanup`. **Depends on:** M0 (approved by the maintainer).
+- **Goal.** The cleaned design system exported into `docs/design/source/`, so that the P8 session starts from a design that matches the code.
+- **Docs:** `docs/design/source/` (`README.md`, `decisions.md` with decision 139, the component guidelines, `bundle.js`, `bundle.css`, `index.d.ts`); `docs/design/README.md` (the note on the P7 code goes, decisions up to 139); `docs/design/workflow.md` (the screens' script in one file); ADR 107; in this plan: 139 in the last column of row o.
+- **Preview URL:** nothing changes.
+- **Done when:** `pnpm run docs:check` passes; `git grep -n -i -E "confident|review \(|nextUnlock|Leitner" docs/design/source` finds only `decisions.md`; the workbench is deleted after the merge.
+- **Size:** documents only.
+
 ### PR D — Design export
 
-- **Branch:** `docs/p8-design`. **Depends on:** M1 (approved by the maintainer).
+- **Branch:** `docs/p8-design`. **Depends on:** PR C; M1 (approved by the maintainer).
 - **Goal.** The approved design exported from the artifact into `docs/design/source/` (never edited there by hand), and this plan brought in line with it.
-- **Docs:** `docs/design/source/` (`README.md`, `decisions.md`, `tokens.json`, the component guidelines, `bundle.js`, `bundle.css`, `index.d.ts`, new or removed component folders); `docs/design/README.md` (the P7 note goes); ADR 106; the token CSS and `tokens.test.ts` only if tokens change; in this plan: the decision numbers in the last column of 4.2, the rewritten cards 1–6, and a line under Q2 with the format chosen.
+- **Docs:** `docs/design/source/` (`README.md`, `decisions.md`, `tokens.json`, the component guidelines, `bundle.js`, `bundle.css`, `index.d.ts`, new or removed component folders); `docs/design/README.md` (the decisions it holds); ADR 108; the token CSS and `tokens.test.ts` only if tokens change; in this plan: the decision numbers in the last column of 4.2, the rewritten cards 1–6, and a line under Q2 with the format chosen.
 - **Preview URL:** nothing changes.
 - **Done when:** `pnpm run docs:check` passes; every row of 4.2 names a decision; cards 1–6 name the export's components and strings; the maintainer approved the rewritten cards.
 - **Size:** documents only.
@@ -555,7 +586,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Changes:** `src/constants.ts` (`WEAK_*`), `src/stats.ts` and `src/fold.ts` (`introducedIn`), `src/view.ts` (`KanaView.introducedIn`), `src/index.ts`, `src/testing/synthetic-log.ts` (uses `seededRng`), `src/fold.properties.test.ts` if it lists the statistics it compares.
 - **Tests:** each kind of reason on built states, and `review.due` equal to the kana with `dueFrom ≤ now`; `none` with `nextAt` the smallest `dueFrom`; a property over 200 seeded logs (prefixes of `syntheticLog` and the fold's generator): the kind of the reason agrees with `nextTask`'s first task; `new` of the other track under `TRACK_LAG`; weak at the boundaries (4 and 5 recalls, accuracy 0.8 and 0.7, confusions 1 and 2), a learned kana never weak; `introducedIn` from an `intro` and from an answer that introduces, copied by `snapshot()` and `clone()`, converging across devices; `syntheticLog({ answers: 1000, seed: 1 })` unchanged by the move of the generator.
 - **Acceptance:** 2 (model side), 8 (the data of settling).
-- **Docs:** ADR 107; S1; `docs/architecture/model.md`.
+- **Docs:** ADR 109; S1; `docs/architecture/model.md`.
 - **Preview URL:** nothing changes.
 - **Done when:** `pnpm --filter @nekotype/model test` passes with the coverage thresholds; `verify:quick` passes; budgets unchanged.
 - **Size:** about 700 lines.
@@ -569,7 +600,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Deletes:** `pages/stats`, `pages/learn/lib/romaji.ts` and `lib/prompt/canonical.ts` (moved), `KanaChartPanel`.
 - **Tests:** the redirect lists equal the code; the router replaces `/stats` and `/stats/`; the smoke test expects 301 to `/progress`; the dialog opens from a chart cell by click, Enter and Space, Esc closes it and the focus returns to the cell, its title names the kana, a locked cell opens nothing, `openKanaDetails` does nothing while `immersive`; the Progress switch never writes `learn.track`; the budget test fails when the dialog is in the initial chunk or statically imported by a route; the Progress page renders loading, error, no data and the blocks.
 - **Acceptance:** 6, 7, 14 (Progress and the dialog).
-- **Docs:** ADR 108; S2–S5; `README.md` (the routes); `docs/architecture/` (`layout.md`, `pages.md`, `quality-gates.md`).
+- **Docs:** ADR 110; S2–S5; `README.md` (the routes); `docs/architecture/` (`layout.md`, `pages.md`, `quality-gates.md`).
 - **Preview URL:** `/progress` shows the chart and the statistics; `/stats` lands on `/progress`; a chart cell opens the dialog by mouse and keyboard, Esc closes it; the navigation reads `learn · progress · settings`; `/` still has its chart.
 - **Done when:** `verify:quick` passes; CI is green with the e2e; the initial JS and CSS within D14; the dialog and Progress are lazy chunks.
 - **Size:** about 1,500 lines, much of it moved.
@@ -582,7 +613,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Changes:** `entities/learn/model/learn-store.ts` (`startSnapshot`, `version`, `loadedModel`, the dynamic import of `insights.ts`, the probe mark, cancelling at `startSession`), `model/log.ts` (`clearLog` clears `forecasts`), `entities/learn/index.ts`; `shared/lib/idb/schema.ts` (7, `forecasts`; the `PRE_RELEASE` comment says P14); `features/sync/model/account.ts` (`USER_STORES`); `scripts/check-budget.mjs` and its test only if `insights.ts` needs a check like the model's.
 - **Tests:** with a held fake scheduler nothing is computed until its callbacks run, and Continue's reason is there before; step 1 publishes the outline and what got stronger, step 2 the forecast; a stale request does nothing; `startSession` drops a pending request; the same state gives the same outline and forecast; `startSnapshot` after a full fold, after an incremental `start`, after a pull, and null without a `start`; what got stronger after a first session lists the introduced kana; the history: created once per row and day, never for `beyond` or `complete`, settled when the row's last kana is introduced with `actual` from `introducedIn`, deleted when `actual < 1`, passed in order of `at`, the correction applied from the third settled forecast (a fixed state with three settled records of ratio 2 doubles the median), trimmed to 10 settled and 60 open; reset, sign-out and account deletion clear `forecasts`, the guest merge keeps it; a database of schema 6 is reset to 7.
 - **Acceptance:** 3 and 4 (computation), 8, 9.
-- **Docs:** ADR 109; S6, S7; `docs/architecture/` (`entities.md`, `model.md`, `sync.md`).
+- **Docs:** ADR 111; S6, S7; `docs/architecture/` (`entities.md`, `model.md`, `sync.md`).
 - **Preview URL:** the app starts with empty data (schema 7) and behaves as before.
 - **Done when:** `verify:quick` passes; CI is green with the latency gate (it runs: `entities/learn/model/` changed); initial JS and CSS within D14; after the merge the maintainer does M3.
 - **Size:** about 1,200 lines.
@@ -620,7 +651,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
   - the export against the code: each switched-off state of P9–P12 is in a preview, and each screen of the code matches its preview (a list in the description);
   - `pnpm run build && pnpm run budget` and the CI figures of the latency, `model-cost` and `home-cost` tests;
   - `docs/research/2026-11-NN-p8-acceptance.md` (the day of the check) with a row per acceptance item, its line, its measure and its proof, and its row in `docs/README.md`.
-- **Docs:** S11; `README.md` and `docs/architecture/` reread against the code; `docs/adr/README.md` has ADRs 106–109; this file moved to `docs/archive/p8-plan.md` with a note on top; its row in `docs/README.md` removed.
+- **Docs:** S11; `README.md` and `docs/architecture/` reread against the code; `docs/adr/README.md` has ADRs 106–111; this file moved to `docs/archive/p8-plan.md` with a note on top; its row in `docs/README.md` removed.
 - **Done when:** every row of the table below names a passing test or check in the description.
 - **Size:** about 400 lines, documents.
 
@@ -641,7 +672,7 @@ The items of the P8 acceptance in [phases.md](docs/spec/phases.md), in its order
 | 9   | A database of schema 6 is reset                                                                                                   | 3           | `database.test.ts`                                                                         |
 | 10  | A keystroke of a recall task renders nothing, and the latency test holds                                                          | 5, every PR | `session-screen.test.tsx`; `latency.spec.ts` in CI                                         |
 | 11  | An e2e goes home → session → summary → home and finds a kana under what got stronger                                              | 5           | `e2e/learn-session.spec.ts`                                                                |
-| 12  | The export matches the code, with the states of P9–P12 drawn and switched off                                                     | D, 6        | ADR 106 and the export; the check of PR 6                                                  |
+| 12  | The export matches the code, with the states of P9–P12 drawn and switched off                                                     | D, 6        | ADR 108 and the export; the check of PR 6                                                  |
 | 13  | `en` and `ru` keep key parity                                                                                                     | every PR    | the existing parity test                                                                   |
 | 14  | Every new screen and the dialog work from the keyboard and are named for screen readers                                           | 2, 4, 5     | DOM tests by role and name; e2e by keyboard                                                |
 | 15  | learning.md, metrics.md, frontend.md and storage-sync.md describe the screens and the forecast history of P8                      | 1–5, 6      | S1–S11; the audit of PR 6                                                                  |
@@ -672,7 +703,7 @@ One executor takes one pull request of section 7.
 
 | Risk                                                   | How it shows                                                                                   | What to do                                                                                                                                                                                                                                                 |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The design session takes long                          | No code pull request can start                                                                 | The spec puts the design first. M1 needs no code and can start once this plan is merged; PR 1's model work is small and waits with the rest                                                                                                                |
+| The design session takes long                          | No code pull request can start                                                                 | The spec puts the design first. M0 is small and goes first; M1 runs in rounds that can be reviewed on different days (ADR 106). PR 1's model work is small and waits with the rest                                                                         |
 | The export needs data section 3 does not give          | A screen of the artifact shows a number the model does not compute                             | Section 4's constraint: the session stops and asks before the export. A new contract is added to section 3 by PR D with the maintainer's consent                                                                                                           |
 | The line of 300 ms is missed in CI                     | `home-cost.spec.ts` over 300 ms                                                                | Profile first (the fold, the split, step 2). Then split the forecast's ten plays into callbacks of their own (a model function that plays one at a time), and only then a Worker, by an ADR. The estimate is 100–235 ms ([section 2](#2-what-was-checked)) |
 | A long task when the forecast runs                     | A click or a key on the home waits up to about 25 ms at 4× (worst measured state about 146 ms) | Accepted: the home has no hot path and Continue's click runs right after. If the latency test or a manual check shows a delay, split the plays as above                                                                                                    |

@@ -84,6 +84,7 @@ When an `advisor` tool is available (ADR 105):
 
 - A new architectural or process decision is the next file in `docs/adr/` with a row in its index. Old ADRs are never rewritten: they get a Status line. Rules for documents: `docs/README.md`.
 - When behaviour defined in `docs/spec/` changes, update the spec in the same PR. `README.md` and `docs/architecture/` describe the code after the latest finished phase: update them in the PR that changes that code.
+- Design: variants are drawn in a workbench artifact, never in the design system, which holds only approved design; `docs/design/source/` is its export, never edited by hand (`docs/design/workflow.md`).
 
 ## Communication
 

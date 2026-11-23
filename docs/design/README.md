@@ -14,6 +14,10 @@ The visual reference for Nekotype: tokens, components, logo and cat assets. [ADR
 
 `source/` is a verbatim export of the [private artifact](https://claude.ai/artifact/22bxWBXuofNxqfnPzuvej1): version 10 with design decisions up to 137. Each export since version 10 is recorded in an ADR ([ADR 062](../adr/062-design-review-of-the-p3-build.md) and later; the [ADR index](../adr/README.md) lists them), and [`source/decisions.md`](source/decisions.md) holds every decision. It keeps the export's folder names and is excluded from Prettier. It is not edited by hand: change the artifact and export again. Live previews of components and screens stay in the artifact, as do the font files.
 
+## Changing the design
+
+The artifact holds only approved design. A design session is drawn in a separate workbench artifact, in rounds the maintainer reviews one at a time, then moved into the artifact and exported. The workbench is deleted after the export. The procedure: [workflow.md](workflow.md) ([ADR 106](../adr/106-design-sessions-in-a-workbench-artifact.md)).
+
 ## Moving a component into the app
 
 `bundle.js` and `bundle.css` are a React reference, not a dependency. Components are rewritten in Preact in `shared/ui` under the rules in [Frontend](../spec/frontend.md).
