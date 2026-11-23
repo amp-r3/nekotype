@@ -18,6 +18,11 @@ export function createMemoryDb(): Db {
   };
   return {
     get: (store, key) => Promise.resolve(data.get(id(store, key))),
+    getAll: (store) => {
+      const prefix = id(store, '');
+      const keys = [...data.keys()].filter((k) => k.startsWith(prefix)).sort();
+      return Promise.resolve(keys.map((k) => data.get(k)));
+    },
     put: (store, key, value) => {
       data.set(id(store, key), value);
       return Promise.resolve();

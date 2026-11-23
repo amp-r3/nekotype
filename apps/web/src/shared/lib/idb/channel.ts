@@ -27,3 +27,33 @@ export function changeChannel(name: string): ChangeChannel {
     },
   };
 }
+
+export type TypedChannel<M> = {
+  readonly post: (message: M) => void;
+  /** Messages that fail `isMessage` are dropped. */
+  readonly listen: (onMessage: (message: M) => void) => void;
+};
+
+/**
+ * A channel of structured messages (`nekotype:learn`, P7 plan D16). A no-op in unit tests and where
+ * `BroadcastChannel` is missing.
+ */
+export function typedChannel<M>(
+  name: string,
+  isMessage: (value: unknown) => value is M,
+): TypedChannel<M> {
+  const channel =
+    import.meta.env.MODE !== 'test' && typeof BroadcastChannel === 'function'
+      ? new BroadcastChannel(name)
+      : null;
+  return {
+    post: (message) => {
+      channel?.postMessage(message);
+    },
+    listen: (onMessage) => {
+      channel?.addEventListener('message', (event: MessageEvent<unknown>) => {
+        if (isMessage(event.data)) onMessage(event.data);
+      });
+    },
+  };
+}

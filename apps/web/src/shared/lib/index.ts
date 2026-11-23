@@ -31,12 +31,13 @@ export {
   removeLegacyKeys,
 } from './storage';
 
-export type { ChangeChannel, ChannelMessage } from './idb/channel';
-export { changeChannel } from './idb/channel';
+export type { ChangeChannel, ChannelMessage, TypedChannel } from './idb/channel';
+export { changeChannel, typedChannel } from './idb/channel';
 export type { Db, Read, Write } from './idb/idb';
 export type { SyncBase } from './idb/local-sync';
 export {
   DELTA_STORE,
+  LOG_STORE,
   META_STORE,
   OUTBOX_STORE,
   SNAPSHOT_STORE,

@@ -100,6 +100,28 @@ describe('openDatabase', () => {
     expect(info).toHaveBeenCalledTimes(1);
   });
 
+  it('resets a database of schema 5 (P6) and creates the store log (schema 6, P7)', async () => {
+    const old = await openRaw(factory, DATABASE_NAME, [
+      'settings',
+      'delta',
+      'snapshot',
+      'outbox',
+      'meta',
+    ]);
+    await old.db.put('meta', 'schemaVersion', 5);
+    await old.db.put('delta', 'learn', { learn: 1 });
+    old.db.close();
+
+    const db = await openDatabase(factory);
+
+    expect(SCHEMA_VERSION).toBe(6);
+    expect(db.hasStores(['log'])).toBe(true);
+    expect(await db.getAll('log')).toEqual([]);
+    expect(await db.get('delta', 'learn')).toBeUndefined();
+    expect(await db.get('meta', 'schemaVersion')).toBe(6);
+    expect(info).toHaveBeenCalledTimes(1);
+  });
+
   it('resets a database with a missing store', async () => {
     const old = await openRaw(factory, DATABASE_NAME, ['settings', 'meta']);
     await old.db.put('meta', 'schemaVersion', SCHEMA_VERSION);
@@ -139,8 +161,7 @@ describe('openDatabase', () => {
 
     const db = await openDatabase(factory);
 
-    expect(SCHEMA_VERSION).toBe(5);
-    expect(await db.get('meta', 'schemaVersion')).toBe(5);
+    expect(await db.get('meta', 'schemaVersion')).toBe(SCHEMA_VERSION);
     expect(await db.get('settings', 'current')).toBeUndefined();
     expect(await db.get('meta', 'typingIntervals')).toBeUndefined();
     expect(db.hasStores(['results'])).toBe(false);
