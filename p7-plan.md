@@ -1108,6 +1108,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Tests:** `v: 2`, `part=rest` and a `GET` without `after` are `400 invalid_body`; the format-3 suite passes.
 - **Docs:** S10 (format 2); `docs/architecture/sync.md`.
 - **Done when:** `verify:quick` passes and CI is green; the maintainer does M4.
+- **M4:** done, 2026-11-23 (maintainer).
 - **Size:** about 2,000 lines deleted, 150 written.
 
 ### PR 14 — Drop the learning columns
