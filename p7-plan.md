@@ -1119,6 +1119,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Tests:** after the migrations `user_stats` has the four columns of D13; a new user signs in and syncs; account deletion cascades.
 - **Docs:** S10 (schema).
 - **Done when:** CI is green with the preview migration; the maintainer does M5.
+- **M5:** done, 2026-11-23 (maintainer: preview sign-in and `synced`; production `user_stats` has the four columns, no migrations left, Deploy green). **M6:** done, 2026-11-23: `nekotype-bench` (database and Pages project) is no longer in the account.
 - **Size:** about 100 lines.
 
 ### PR 15 — Close the phase
