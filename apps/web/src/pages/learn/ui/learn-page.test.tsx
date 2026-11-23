@@ -8,6 +8,14 @@ import { t } from '@/shared/i18n';
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
 
+// The model is a lazy chunk: wait until the chart is drawn instead of guessing the time.
+async function untilChart(root: HTMLElement): Promise<void> {
+  for (let i = 0; i < 100; i += 1) {
+    if (root.querySelector('[data-testid="kana-cell"]')) return;
+    await act(settle);
+  }
+}
+
 function unlockedKana(root: HTMLElement): string {
   return Array.from(root.querySelectorAll('[data-testid="kana-cell"]:not([data-state="locked"])'))
     .map((cell) => cell.textContent)
@@ -26,7 +34,7 @@ describe('learn page: the top of the learning screen', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
-    await act(settle);
+    await untilChart(container);
 
     expect(container.querySelector('[data-testid="learn-mastered-count"]')?.textContent).toBe(
       t('learn.mastered', { done: 0, total: 104 }),

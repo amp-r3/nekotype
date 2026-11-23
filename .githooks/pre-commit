@@ -10,7 +10,7 @@ staged=$(git diff --cached --name-only --diff-filter=ACMR)
 files=$(printf '%s\n' "$staged" | while IFS= read -r f; do [ -L "$f" ] || printf '%s\n' "$f"; done)
 
 # Agent instructions are loaded into every agent session: keep them short.
-max_agent_lines=250
+max_agent_lines=100
 for f in $(printf '%s\n' "$files" | grep -E '(^|/)(AGENTS|CLAUDE)\.md$' || true); do
   lines=$(git show ":$f" | wc -l)
   if [ "$lines" -gt "$max_agent_lines" ]; then
