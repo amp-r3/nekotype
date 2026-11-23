@@ -34,15 +34,9 @@ CREATE TABLE user_settings (
   user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   json TEXT NOT NULL, updated_at INTEGER NOT NULL
 );
--- last applied seq per device in one row (ADR 078, 082). Since P7 PR 13 nothing reads or writes the
--- learning columns (counters ... bucket_newest); migration 0005 drops them (P7 PR 14)
+-- the last applied seq per device, with the optimistic-concurrency version of sync format 3
 CREATE TABLE user_stats (
   user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-  counters TEXT NOT NULL,
-  learn TEXT NOT NULL,         -- unlocked, entries, stats, activeDays
-  learn_recent TEXT NOT NULL,  -- kana → recent recall answers
-  learn_buckets TEXT NOT NULL, -- track → day → bucket → count
-  bucket_newest TEXT NOT NULL, -- track → newest day of learn_buckets
   device_seq TEXT NOT NULL, last_sync_at INTEGER NOT NULL,
   version INTEGER NOT NULL DEFAULT 0
 );
@@ -63,11 +57,11 @@ CREATE TABLE content_reports (
 );
 ```
 
-**Migrations** are the files `apps/api/migrations/NNNN_title.sql`; `0001_init.sql` creates the schema of P5 and the schema above is what all the migrations leave; `0002_learning_only.sql` rewrites the data of P5 for learning only (flat counters, settings without `typing`, the typing columns emptied, `results` cleared) and changes no schema; `0003_drop_typing.sql` drops the table `results` and the columns `kana_stats` and `typing_records` of `user_stats`. A merged migration is never edited, and each one works with the code deployed before it (new tables, new columns with defaults), because the preview database is shared by every pull request and production is migrated before its deploy. CI applies them with `wrangler d1 migrations apply`: to `nekotype-preview` before a preview deployment, and to `nekotype` after the release candidate's smoke test and before the production deploy ([ADR 083](../adr/083-api-package-and-pages-configuration.md)). Locally, `pnpm run db:migrate:local`.
+**Migrations** are the files `apps/api/migrations/NNNN_title.sql`; `0001_init.sql` creates the schema of P5 and the schema above is what all the migrations leave; `0002_learning_only.sql` rewrites the data of P5 for learning only (flat counters, settings without `typing`, the typing columns emptied, `results` cleared) and changes no schema; `0003_drop_typing.sql` drops the table `results` and the columns `kana_stats` and `typing_records` of `user_stats`; `0004_sync_batches.sql` adds `sync_batches`; `0005_drop_learning_columns.sql` drops the learning columns of `user_stats` (below). A merged migration is never edited, and each one works with the code deployed before it (new tables, new columns with defaults), because the preview database is shared by every pull request and production is migrated before its deploy. CI applies them with `wrangler d1 migrations apply`: to `nekotype-preview` before a preview deployment, and to `nekotype` after the release candidate's smoke test and before the production deploy ([ADR 083](../adr/083-api-package-and-pages-configuration.md)). Locally, `pnpm run db:migrate:local`.
 
-`user_stats.device_seq` maps `deviceId` → `{ "seq": number, "at": number }`: the last applied `seq` and the time it was applied, which the 90-day cleanup needs (see [Batches](storage-sync.md#batches)). The `user_stats` row is created with the user and its `oauth_accounts` row, in one `batch()`, in the OAuth callback, so a sync always finds it. It starts with empty documents (`bucket_newest` = `{}`: a track without a key has no days) and `last_sync_at` = 0.
+`user_stats.device_seq` maps `deviceId` → `{ "seq": number, "at": number }`: the last applied `seq` and the time it was applied, which the 90-day cleanup needs (see [Batches](storage-sync.md#batches)). The `user_stats` row is created with the user and its `oauth_accounts` row, in one `batch()`, in the OAuth callback, so a sync always finds it. It starts with `device_seq` = `{}` and `last_sync_at` = 0.
 
-`user_stats.counters`, `learn`, `learn_recent`, `learn_buckets` and `bucket_newest` held the learning state of sync format 2 ([ADR 078](../adr/078-user-stats-targeted-updates.md), [ADR 082](../adr/082-sync-acknowledgement-without-snapshot.md)). Format 2 left the server in P7 PR 13: nothing reads or writes them, and user creation still fills them with empty documents until migration `0005` drops them (P7 PR 14). The learning state is a fold of the log in `sync_batches` ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md)).
+The columns `counters`, `learn`, `learn_recent`, `learn_buckets` and `bucket_newest` of `user_stats` held the learning state of sync format 2 ([ADR 078](../adr/078-user-stats-targeted-updates.md), [ADR 082](../adr/082-sync-acknowledgement-without-snapshot.md)). Format 2 left the server in P7 PR 13 and migration `0005` dropped them in PR 14. The learning state is a fold of the log in `sync_batches` ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md)).
 
 **CPU budget.** A sync handles the small `user_stats` columns and one `LogPage` it does not parse beyond its bounds, so its cost depends on the batch, not on the history. Measured on Cloudflare ([note](../research/2026-11-23-p7-sync-endpoint.md)): a batch of 256 KB takes 10 ms in the warm median against the line of 12 ms of [ADR 086](../adr/086-sync-endpoint-cpu-line.md), a session or a settings batch 3 and 2 ms against 8, and no request was cut off.
 

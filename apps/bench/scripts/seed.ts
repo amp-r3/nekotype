@@ -79,7 +79,7 @@ export function seedSql(seed = 1): { sql: string; events: number; bytes: number 
     `INSERT INTO sessions (id_hash, user_id, expires_at) VALUES (${quote(sessionHash)}, ${quote(USER_ID)}, 4102444800000);`,
     // The settings row exists, as for any user who has synced once: a change updates it in place.
     `INSERT INTO user_settings (user_id, json, updated_at) VALUES (${quote(USER_ID)}, ${quote(JSON.stringify(benchSettings(0)))}, 0);`,
-    `INSERT INTO user_stats (user_id, counters, learn, learn_recent, learn_buckets, bucket_newest, device_seq, last_sync_at, version) VALUES (${quote(USER_ID)}, '', '', '', '', '', ${quote(deviceSeq)}, 0, 0);`,
+    `INSERT INTO user_stats (user_id, device_seq, last_sync_at, version) VALUES (${quote(USER_ID)}, ${quote(deviceSeq)}, 0, 0);`,
     ...rows,
   ];
   return { sql: lines.join('\n'), events: events.length, bytes };
