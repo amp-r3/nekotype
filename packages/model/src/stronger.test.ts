@@ -35,6 +35,12 @@ function viewOf(entries: [LearnKanaKey, ItemState['phase'], number][]) {
 }
 
 describe('strongerSince', () => {
+  it('ignores a learning kana whose stability grew: only its chart state counts', () => {
+    const before = viewOf([[KA, 'learning', 0.1]]);
+    const after = viewOf([[KA, 'learning', 5]]);
+    expect(strongerSince(before, after)).toEqual([]);
+  });
+
   it('lists kana whose chart state rose, in track order', () => {
     const before = viewOf([
       [KA, 'learning', 1],
