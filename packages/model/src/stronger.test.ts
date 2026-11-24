@@ -9,7 +9,13 @@ import { describe as describeState } from './view';
 const KA = 'hiragana:か';
 const KI = 'hiragana:き';
 const KATA_KA = 'katakana:カ';
-const STATS: LogStats = { kana: new Map(), days: new Map(), started: 0, finished: 0 };
+const STATS: LogStats = {
+  kana: new Map(),
+  days: new Map(),
+  started: 0,
+  finished: 0,
+  introducedIn: new Map(),
+};
 
 function viewOf(entries: [LearnKanaKey, ItemState['phase'], number][]) {
   const items = new Map<LearnKanaKey, ItemState>(

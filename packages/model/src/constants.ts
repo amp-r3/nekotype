@@ -66,3 +66,11 @@ export const FORECAST_MAX_SITTINGS = 240;
 export const FORECAST_HISTORY = 10;
 /** Settled forecasts needed for a correction. */
 export const FORECAST_HISTORY_MIN = 3;
+
+// Labels only: they never choose a task, so a change needs no sim run (P8 plan, D1).
+/** Recall answers among the last RECENT_RECALLS needed to call a learning kana weak by accuracy. */
+export const WEAK_MIN_RECALLS = 5;
+/** Accuracy below which a learning kana is weak. */
+export const WEAK_ACCURACY = 0.8;
+/** Confusions of a learning kana that make it weak. */
+export const WEAK_CONFUSIONS = 2;

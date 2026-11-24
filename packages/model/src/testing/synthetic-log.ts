@@ -1,8 +1,9 @@
-import type { LearnKanaKey, LogEvent, Rng, Track } from '@nekotype/shared/types';
+import type { LearnKanaKey, LogEvent, Track } from '@nekotype/shared/types';
 import { DAY_MS, PLAY_OK_MS, PLAY_WRONG_MS, SESSION_TASKS, TASK_DEFAULT_MS } from '../constants';
 import { createFold } from '../fold';
 import { ITEMS, trackItems } from '../items';
 import { nextTask } from '../planner';
+import { seededRng } from '../rng';
 
 /** Hours of the two daily sittings, and their length. */
 const SITTING_HOURS = [8, 20] as const;
@@ -15,20 +16,6 @@ const KATAKANA_STAGE = 80;
 /** The log is a test fixture: a run that needs more days than this has a bug. */
 const MAX_DAYS = 20_000;
 
-/** A small seeded generator (mulberry32): the model package may not depend on the simulator. */
-function seeded(seed: number): Rng {
-  let state = seed >>> 0;
-  return {
-    next() {
-      state = (state + 0x6d2b79f5) >>> 0;
-      let t = state;
-      t = Math.imul(t ^ (t >>> 15), t | 1);
-      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    },
-  };
-}
-
 /**
  * The production planner played with a seeded learner (P7 plan, D23): two sittings of five minutes
  * a day at 8:00 and 20:00 in UTC, a task every TASK_DEFAULT_MS, recall in PLAY_OK_MS when correct
@@ -40,7 +27,7 @@ export function syntheticLog(options: {
   readonly answers: number;
   readonly seed: number;
 }): readonly LogEvent[] {
-  const rng = seeded(options.seed);
+  const rng = seededRng(options.seed);
   const fold = createFold({ targetMs: 1500, stats: false });
   const events: LogEvent[] = [];
   const dev = 'synthetic';

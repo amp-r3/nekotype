@@ -16,7 +16,15 @@ import { ITEMS, isWordKey } from './items';
 import type { KanaItem } from './items';
 import { recallsToLearn } from './learner';
 import { compareEvents, eventKey, localDay } from './order';
-import { copyStats, emptyStats, liveStats, noteAnswer, noteSession, snapshotStats } from './stats';
+import {
+  copyStats,
+  emptyStats,
+  liveStats,
+  noteAnswer,
+  noteIntro,
+  noteSession,
+  snapshotStats,
+} from './stats';
 import type { LogStats, StatsData } from './stats';
 
 export type Phase = 'learning' | 'learned'; // a new kana has no entry
@@ -547,6 +555,7 @@ class LiveFold implements Fold, EffectSink {
     this.slots.push(slot);
     this.slotByKey.set(key, slot);
     this.data.items.set(key, item);
+    if (this.data.stats !== null) noteIntro(this.data.stats, key);
     return slot;
   }
 

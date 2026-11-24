@@ -22,6 +22,8 @@ export type LogStats = {
   /** Session starts and ends: the `learn` counters. */
   readonly started: number;
   readonly finished: number;
+  /** Kana → `started` when the fold introduced it: the number of the session that introduced it. */
+  readonly introducedIn: ReadonlyMap<LearnKanaKey, number>;
 };
 
 type MutableKana = { recall: RecallStat[]; recognitions: number; recognitionErrors: number };
@@ -41,6 +43,7 @@ export type StatsData = {
   last: { readonly day: number; readonly entry: MutableDay } | null;
   started: number;
   finished: number;
+  readonly introducedIn: Map<LearnKanaKey, number>;
 };
 
 export function emptyStats(): StatsData {
@@ -51,6 +54,7 @@ export function emptyStats(): StatsData {
     last: null,
     started: 0,
     finished: 0,
+    introducedIn: new Map(),
   };
 }
 
@@ -82,6 +86,7 @@ export function copyStats(s: StatsData): StatsData {
     last: null,
     started: s.started,
     finished: s.finished,
+    introducedIn: new Map(s.introducedIn),
   };
 }
 
@@ -140,6 +145,11 @@ function kanaLog(s: StatsData, key: LearnKanaKey): MutableKana {
   return log;
 }
 
+/** The fold introduces `key` (an `intro` event or an answer on a new kana): once per kana. */
+export function noteIntro(s: StatsData, key: LearnKanaKey): void {
+  if (!s.introducedIn.has(key)) s.introducedIn.set(key, s.started);
+}
+
 export function noteSession(s: StatsData, kind: 'start' | 'end'): void {
   if (kind === 'start') s.started += 1;
   else s.finished += 1;
@@ -156,6 +166,7 @@ export function liveStats(s: StatsData): LogStats {
     get finished() {
       return s.finished;
     },
+    introducedIn: s.introducedIn,
   };
 }
 
@@ -167,5 +178,6 @@ export function snapshotStats(s: StatsData): LogStats {
     days: new Map(s.days),
     started: s.started,
     finished: s.finished,
+    introducedIn: new Map(s.introducedIn),
   };
 }

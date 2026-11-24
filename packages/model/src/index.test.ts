@@ -36,6 +36,9 @@ describe('@nekotype/model', () => {
       FORECAST_HISTORY: 10,
       FORECAST_HISTORY_MIN: 3,
       DAY_MS: 86_400_000,
+      WEAK_MIN_RECALLS: 5,
+      WEAK_ACCURACY: 0.8,
+      WEAK_CONFUSIONS: 2,
     });
   });
 });
