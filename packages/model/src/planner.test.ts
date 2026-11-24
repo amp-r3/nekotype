@@ -115,7 +115,7 @@ describe('the choice', () => {
 
   it('shows a learning kana that is not ready when the limit stops introductions', () => {
     const items = Object.fromEntries(
-      [A, I, U, E].map((key, i) => [key, learning({ lastAt: NOW - 1000, lastTask: i })]),
+      [A, I, U, E, O].map((key, i) => [key, learning({ lastAt: NOW - 1000, lastTask: i })]),
     );
     expect(nextTask(stateOf(items), ctx())?.kind).toBe('recall');
     expect(keyOf(nextTask(stateOf(items), ctx()))).toBe(A); // the oldest by `lastTask`
@@ -209,6 +209,7 @@ describe('learning steps', () => {
         [I]: learning({ lastAt: NOW - 1, lastTask: 8 }),
         [U]: learning({ lastAt: NOW - 1, lastTask: 9 }),
         [E]: learning({ lastAt: NOW - 1, lastTask: 9 }),
+        [O]: learning({ lastAt: NOW - 1, lastTask: 9 }),
       };
       const early = learning({ lastAt: NOW - wait + 1, streak, lastTask: 99 });
       const onTime = learning({ lastAt: NOW - wait, streak, lastTask: 99 });
@@ -308,11 +309,11 @@ describe('introductions', () => {
   const many = (keys: readonly LearnKanaKey[]): Record<string, ItemState> =>
     Object.fromEntries(keys.map((key) => [key, learning({ lastAt: NOW - 1000 })]));
 
-  it('stop at four kana learning', () => {
-    const three = stateOf(many([A, I, U]));
-    expect(nextTask(three, ctx())).toEqual({ kind: 'introduction', key: E });
+  it('stop at five kana learning', () => {
     const four = stateOf(many([A, I, U, E]));
-    expect(nextTask(four, ctx())?.kind).toBe('recall');
+    expect(nextTask(four, ctx())).toEqual({ kind: 'introduction', key: O });
+    const five = stateOf(many([A, I, U, E, O]));
+    expect(nextTask(five, ctx())?.kind).toBe('recall');
   });
 
   it('stop at one kana learning under full pressure', () => {

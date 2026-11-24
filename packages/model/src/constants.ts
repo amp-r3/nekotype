@@ -7,7 +7,7 @@
 export const DAY_MS = 86_400_000;
 
 /** Kana learning at once. */
-export const LEARN_MAX = 4;
+export const LEARN_MAX = 5;
 /** First learning step; doubled per correct recall. */
 export const STEP_MS = 30_000;
 /** Correct recalls in a row to be learned. */

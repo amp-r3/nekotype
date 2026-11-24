@@ -11,7 +11,7 @@ Learning is the core of the product ([ADR 058](../adr/058-learning-first.md)): i
 
 ## Unlocking
 
-- The planner introduces a new kana when fewer than `LEARN_MAX` = 4 kana are learning (fewer under pressure, see "Memory") and every kana it is built from is learned. It takes the first such kana of the selected track in track order; once both tracks have an introduced kana, it takes the first of the other track when that track is more than `TRACK_LAG` = 10 introduced kana behind. Nothing is unlocked in advance: a kana the planner has not introduced is locked.
+- The planner introduces a new kana when fewer than `LEARN_MAX` = 5 kana are learning (fewer under pressure, see "Memory"; [ADR 109](../adr/109-five-kana-learning-at-once.md)) and every kana it is built from is learned, so a first session introduces the five vowels. It takes the first such kana of the selected track in track order; once both tracks have an introduced kana, it takes the first of the other track when that track is more than `TRACK_LAG` = 10 introduced kana behind. Nothing is unlocked in advance: a kana the planner has not introduced is locked.
 - **Dependencies** are derived from the kana table, not listed by hand:
   - a kana with a dakuten or handakuten depends on its base kana, found by Unicode canonical decomposition: が → か, ぱ → は, ヴ → ウ;
   - a kana of two characters (yōon, extended katakana) depends on the full-size form of each character: きゃ → き, や; ファ → フ, ア; ヴァ → ヴ, ア.
@@ -42,7 +42,7 @@ Every introduced kana has a phase and a memory ([ADR 100](../adr/100-knowledge-m
 - **Learning.** A kana comes back 30 s after its last answer; the step doubles after each correct recall (30 s, 1, 2, 4, 8 min). It is learned after 5 correct recalls in a row (`GRADUATE`); an error sets the count to 0, a correct recognition keeps it.
 - **Learned.** A learned kana is due when its predicted recall would fall below the requested retention (`RETENTION` = 0.90) by the expected start of the next session: now plus the median of the learner's last 10 gaps of over an hour between two answers, or 12 hours until there is one. A failed review puts the kana back in learning.
 - **Mastered** is a learned kana whose stability is at least 21 days (A52).
-- **Pressure.** A moving average of the outcomes of reviews (rate 0.05, starting at 0.90) below 0.90 raises the requested retention towards 0.98, lowers the number of kana learning at once from 4 towards 1 and adds up to 2 recalls before a kana is learned.
+- **Pressure.** A moving average of the outcomes of reviews (rate 0.05, starting at 0.90) below 0.90 raises the requested retention towards 0.98, lowers the number of kana learning at once from 5 towards 1 (`max(1, round(5 − 4p))`) and adds up to 2 recalls before a kana is learned.
 - A review is a recall; a late review has no penalty. A learned kana is never reviewed on a calendar schedule: the model's predicted recall decides.
 
 ## Recognition options
@@ -92,4 +92,4 @@ From P10 the session plays the sound of the task's kana after every task, introd
 
 ## Constants
 
-`SESSION_TASKS` = 30, `RECOGNITION_SHARE` = 0.25, `LEARN_MAX` = 4, `GRADUATE` = 5, `RETENTION` = 0.90, `TRACK_LAG` = 10, `MASTERED_STABILITY_DAYS` = 21 and the others of `packages/model/src/constants.ts` are code constants ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md)); `ANSWER_PAUSE_MS` = 400 is the session's. The target answer time, which separates a good grade from a hard one ([Metrics](metrics.md#learning-metrics)), is the only setting.
+`SESSION_TASKS` = 30, `RECOGNITION_SHARE` = 0.25, `LEARN_MAX` = 5, `GRADUATE` = 5, `RETENTION` = 0.90, `TRACK_LAG` = 10, `MASTERED_STABILITY_DAYS` = 21 and the others of `packages/model/src/constants.ts` are code constants ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md); `LEARN_MAX` by [ADR 109](../adr/109-five-kana-learning-at-once.md)); `ANSWER_PAUSE_MS` = 400 is the session's. The target answer time, which separates a good grade from a hard one ([Metrics](metrics.md#learning-metrics)), is the only setting.

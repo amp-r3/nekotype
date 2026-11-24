@@ -5,7 +5,7 @@ import { answer, end, intro, start } from './testing';
 describe('@nekotype/model', () => {
   it('exports the constants of D9 as simulated (candidate A4)', () => {
     expect(model).toMatchObject({
-      LEARN_MAX: 4,
+      LEARN_MAX: 5,
       STEP_MS: 30_000,
       GRADUATE: 5,
       RETENTION: 0.9,
