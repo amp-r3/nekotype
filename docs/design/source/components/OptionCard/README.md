@@ -21,4 +21,4 @@ An option in a recognition task (`KanaTask kind="recognition"`): the number key 
 - Keys pressed before the next task appears are ignored (behaviour, not a visual state).
 - No green, no praise for a correct answer: correctness reads from the `eye` mark.
 
-**Choosing the options** (engine rule, recorded here so the previews follow it): one right kana and three others — the user's mixups first (め for ぬ), then kana from the same row (ね, の). An option never shares a spelling with the right one: じ / ぢ, ず / づ, お / を never appear together under `relaxed`.
+**Choosing the options** (engine rule, recorded here so the previews follow it): one right kana and three others — at most one of the kana the user gave instead (め for ぬ), at most one visually similar kana, then kana from the same row (ね, の), then the rest of the track. An option never shares a spelling with the right one: じ / ぢ, ず / づ, お / を never appear together under `relaxed`.

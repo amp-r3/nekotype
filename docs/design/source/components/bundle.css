@@ -208,7 +208,7 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
 /* state mode (ADR 058): each state has a marker that does not depend on colour */
 .nk-kc .is-st-locked { color: var(--fur-faint); cursor: default; }                         /* no border, no fill, faint text */
 .nk-kc .is-st-learning { border-color: var(--line-strong); color: var(--fur); }              /* border */
-.nk-kc .is-st-confident { background: var(--heat-fur-3); color: var(--fur); }               /* fill */
+.nk-kc .is-st-learned { background: var(--heat-fur-3); color: var(--fur); }               /* fill */
 .nk-kc .is-st-mastered { background: var(--heat-fur-4); color: var(--on-fur); }             /* light fill + eye mark below */
 .nk-kc .is-due::before { content: ''; position: absolute; top: 0; right: 0; width: var(--space-2); height: var(--space-2); background: currentColor; clip-path: polygon(0 0, 100% 0, 100% 100%); }   /* due: a folded corner in the cell's ink */
 .nk-kc__sw--state { width: 28px; height: 28px; }

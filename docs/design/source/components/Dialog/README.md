@@ -23,4 +23,4 @@ Sign out without unsent data needs no dialog. The another-account dialog opens o
 
 **Failure** (decisions 116, 122, 127). A dialog with a request has one reserved `Notice` line in its actions row, left of the buttons (`note`; two lines of `ui-label`, 40px; its own row above the buttons below 640px), so a message never changes the dialog's height and no empty band stands above the buttons. `tone="miss"`, one message at a time; the strings are in the `Notice` guidelines. After a failure the fields and actions work again, and the action is the retry.
 
-A deleted account closes its dialog: the screen returns to guest mode. The report dialog (decisions 23, 114–117) left the system with the typing trainer; P10 draws it again for word tasks (decision 135).
+A deleted account closes its dialog: the screen returns to guest mode. P12 draws a report dialog for word tasks (decision 135).
