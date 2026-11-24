@@ -12,7 +12,7 @@ test.describe('kana chart on /', () => {
       0,
     );
     await page.getByTestId('kana-cell').first().click({ force: true });
-    await expect(page.getByTestId('kana-details')).toHaveCount(0);
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
   });
 
   test('the tooltip does not stay after the details are closed with the mouse', async ({
@@ -27,7 +27,7 @@ test.describe('kana chart on /', () => {
     await expect(page.getByTestId('kana-details')).toBeVisible();
     await expect(page.getByTestId('kana-details')).toContainText('learned');
     await page.getByRole('button', { name: 'close' }).click();
-    await expect(page.getByTestId('kana-details')).toHaveCount(0);
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
 
     await page.mouse.move(5, 5);
     await expect(page.getByTestId('kana-tooltip')).toHaveCount(0);

@@ -67,7 +67,7 @@ test.describe('two devices of one account (storage-sync.md, "Batches")', () => {
       .toBe(true);
 
     for (const page of [a, b]) {
-      await page.goto('/stats');
+      await page.goto('/progress');
       const counts = sessionCounts(page);
       await expect(counts.started).toHaveText('4');
       await expect(counts.finished).toHaveText('4');

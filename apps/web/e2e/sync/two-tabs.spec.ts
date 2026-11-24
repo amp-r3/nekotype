@@ -33,7 +33,7 @@ test.describe('two tabs of one device (storage-sync.md, "Batches")', () => {
     const device = await other.newPage();
     await signIn(device, user);
     await expectSyncStatus(device, 'synced');
-    await device.getByRole('link', { name: 'stats', exact: true }).click();
+    await device.getByRole('link', { name: 'progress', exact: true }).click();
     const counts = sessionCounts(device);
     await expect(counts.started).toHaveText('2');
     await expect(counts.finished).toHaveText('2');
