@@ -59,6 +59,9 @@ describe('forecast history (P8 D10)', () => {
     await put(db, record({ raw: 7 }));
     await history.add(record({ raw: 3 }));
     expect(await stored(db)).toEqual([record({ raw: 7 })]);
+    // This tab holds the other tab's record: settling does not write its own over it.
+    await history.settle(() => 11);
+    expect(await stored(db)).toEqual([record({ raw: 7, actual: 1 })]);
   });
 
   it('settles a record once its row has no locked kana: actual counts from `started`', async () => {

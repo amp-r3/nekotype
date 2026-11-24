@@ -135,13 +135,18 @@ export function createForecastHistory(db: () => Promise<Db>): ForecastHistory {
       const key = recordKey(record.row, record.day);
       if (cache.has(key)) return;
       try {
-        // Two tabs: the transaction writes only when no record has the key.
+        // Two tabs: the transaction writes only when no record has the key. What is there stays
+        // the first forecast of the day, and this tab holds that one.
+        let kept = record;
         await (
           await db()
-        ).update([{ store: FORECASTS_STORE, key }], ([stored]) =>
-          stored === undefined ? [{ op: 'put', store: FORECASTS_STORE, key, value: record }] : [],
-        );
-        cache.set(key, record);
+        ).update([{ store: FORECASTS_STORE, key }], ([stored]) => {
+          if (stored === undefined)
+            return [{ op: 'put', store: FORECASTS_STORE, key, value: record }];
+          if (isForecastRecord(stored)) kept = stored;
+          return [];
+        });
+        cache.set(key, kept);
       } catch {
         return;
       }
