@@ -175,4 +175,4 @@
 
     The first lever, if real reviews fall below 90%, is the requested retention (0.93).
 
-- **Status:** In force.
+- **Status:** In force. Amended by [ADR 108](108-p8-design-export.md), point 8: the session summary shows the forecast change as medians; every other forecast stays a range (point 6).

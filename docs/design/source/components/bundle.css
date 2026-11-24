@@ -20,6 +20,12 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 /* ---------- Learning task (KanaTask, ADR 058) ---------- */
 .nk-task { position: relative; display: flex; flex-direction: column; gap: var(--space-6); width: 100%; max-width: 640px; margin: 0 auto; }
 .nk-task__bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: 28px; color: var(--fur-dim); }
+/* a tick per task of the session (decision 149): done fur-dim, current eye, the rest line-strong, answered with an error miss */
+.nk-task__ticks { display: flex; gap: var(--stroke-mark); height: var(--stroke-mark); margin-top: calc(-1 * var(--space-1)); }
+.nk-task__tick { flex: 1 1 0; border-radius: var(--radius-xs); background: var(--line-strong); }
+.nk-task__tick.is-done { background: var(--fur-dim); }
+.nk-task__tick.is-current { background: var(--eye); }
+.nk-task__tick.is-miss { background: var(--miss); }
 .nk-task__n { color: var(--fur); font-variant-numeric: tabular-nums; }
 .nk-task__leave { margin-right: calc(-1 * var(--space-2)); }
 .nk-task__stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); min-height: 160px; transition: opacity var(--dur-fade) var(--ease-out); }
@@ -218,13 +224,6 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
 .nk-kc__tip.is-start { left: 0; transform: none; }
 .nk-kc__tip.is-end { left: auto; right: 0; transform: none; }
 .nk-kc__tip-line { display: block; text-align: left; }
-.nk-kc__detail { padding: var(--space-2) 0 var(--space-3) 36px; }
-/* Details panel (decision 94): the one surface in the table — bg-raised, as fields and dialogs; no border, no shadow. */
-.nk-kc__panel { display: flex; flex-direction: column; gap: var(--space-3); max-width: 360px; padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--bg-raised); color: var(--fur); }
-.nk-kc__detail-head { display: flex; align-items: center; gap: var(--space-3); }
-.nk-kc__detail-kana { color: var(--fur); }
-.nk-kc__detail-lines { display: flex; flex-direction: column; gap: var(--space-1); }
-.nk-kc__close { margin-left: auto; margin-right: calc(-1 * var(--space-3)); }   /* the label lines up with the panel's right edge */
 .nk-kc__legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); color: var(--fur-dim); }
 
 /* ---------- Lesson ---------- */
@@ -258,6 +257,8 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
 .nk-nav__side { display: flex; align-items: center; gap: var(--space-6); margin-left: auto; }
 .nk-nav__link { color: var(--fur-dim); text-decoration: none; border-radius: var(--radius-xs); transition: color var(--dur-hover) var(--ease-out); }
 .nk-nav__link:hover, .nk-nav__link.is-active { color: var(--fur); }
+/* the open page carries the eye underline of the selected language (decision 150) */
+.nk-nav__links .nk-nav__link.is-active { text-decoration: underline var(--stroke-mark) var(--eye); text-underline-offset: 5px; }
 .nk-lang { display: inline-flex; gap: var(--space-1); }
 .nk-lang__btn { padding: 0 var(--space-1); border: 0; border-radius: var(--radius-xs); background: none; color: var(--fur-dim); cursor: pointer; }
 .nk-lang__btn.is-on { color: var(--fur); text-decoration: underline var(--stroke-mark) var(--eye); text-underline-offset: 5px; }

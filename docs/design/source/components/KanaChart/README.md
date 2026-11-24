@@ -1,6 +1,6 @@
 # KanaChart
 
-The kana table of a track on `/`: where each kana stands, and the details of one.
+The kana table of a track on `/progress`: where each kana stands; a kana opens its details.
 
 **Composition — the groups of `docs/spec/learning.md`, rows by the engine's `RowId`:**
 
@@ -27,17 +27,13 @@ Data per introduced kana: `{ state, due, next, median, acc, answers, mixups, rec
 | learned | learned, stability under 21 days | `heat-fur-3` fill | kana `fur` 5.28:1; fill 2.62:1 on `bg` |
 | mastered | learned, stability 21 days or more | `heat-fur-4` fill + 2px `eye` mark under the cell (the system's signature) | kana `on-fur` 6.10:1; mark 9.47:1 |
 
-**Review due is a mark, not a state.** It sits over learned or mastered when the model reviews the kana before the next session: a folded corner (top right, `space-2`) in the cell's ink — 5.28:1 on learned, 6.10:1 on mastered; on mastered the `eye` mark stays. `due` on a learning kana is ignored. The home's `due: N` counts the marked kana of both tracks, which is what `continue` reviews. The legend (`nk-kc__legend`, under the table: the four states, a gap, then the due mark) sets the mark apart from the four states; it is part of the component and is always drawn. Preview: あ in state A is mastered and due at once; し, つ, ふ, へ are learned and due — `due: 5`.
+**Review due is a mark, not a state.** It sits over learned or mastered when the model reviews the kana before the next session: a folded corner (top right, `space-2`) in the cell's ink — 5.28:1 on learned, 6.10:1 on mastered; on mastered the `eye` mark stays. `due` on a learning kana is ignored. `continue` on `/` reviews them first: the reason `5 kana are due for review` counts the marked kana of both tracks. The legend (`nk-kc__legend`, under the table: the four states, a gap, then the due mark) sets the mark apart from the four states; it is part of the component and is always drawn. Preview: あ in state A is mastered and due at once; し, つ, ふ, へ are learned and due — `due: 5`.
 
 - The due mark is drawn in the cell's ink (`currentColor`), not in `eye` (which means "where you are now") and not in `miss` (errors and blocked actions only).
-- **Tooltip** (hover and focus; exception to Tooltip's one-line rule; above the cell, never below it, so it does not cover the row under it; one at a time, gone when the pointer leaves the table; not shown on a cell whose details are open — the panel already holds its lines) and **`aria-label`** carry the same lines — `kanaStateLines()`:
+- **Tooltip** (hover and focus; exception to Tooltip's one-line rule; above the cell, never below it, so it does not cover the row under it; one at a time, gone when the pointer leaves the table) and **`aria-label`** carry the same lines — `kanaStateLines()`:
   1. `し · shi`
   2. state; for learned and mastered add `review due` / `пора повторить` or `next review: 9 Nov` / `повторение: 9 нояб.`
   3. `median 1050 ms · accuracy 90%` / `медиана 1050 мс · точность 90%` over the last 10 recall answers; with fewer than 10 add `6 of 10 answers` / `6 из 10 ответов`; an introduced kana without a recall answer yet has no line 3. Locked: kana and `locked` / `закрыта`, no romaji; the kana that opens next (`opensNext`) adds `opens next` / `откроется следующей`: `み` · `locked · opens next`. The cell itself carries no extra marker.
-- **Activation** (click, tap, `Enter`, `Space`) on an introduced cell opens the details under the cell's row (`KanaChartDetails`, decision 94) — a **panel**: `bg-raised` fill, `radius-sm`, padding `space-3` × `space-4`, at most 360px wide, aligned with the cells (36px from the row start); no border, no shadow. The one surface in the table: without it the details read as loose text between rows. Top to bottom:
-  1. Head: the kana in `jp-test-sm` (`fur`), its romaji in `mono-romaji` (`fur-dim`), and `close` / `закрыть` (`Button text sm`) on the right; the button's label lines up with the panel's right padding (negative margin of its own padding).
-  2. `ui-body` lines, `space-1` apart: the state with the review timing (`fur`; the tooltip's line 2); median and accuracy with `n of 10 answers` (`fur-dim`; line 3, empty before the first recall answer); `mixed up with` / `путали с` + the kana given instead in recognition and recall, most first (`め ×4, ね ×2`), or `no mixups yet` / `путаниц пока нет`; `recognition accuracy 78% (14 of 18)` / `точность узнавания 78% (14 из 18)` or `no recognition answers yet` / `ответов в узнавании пока нет` (`fur-dim`).
-
-  Text on `bg-raised`: `fur` 12.57:1, `fur-dim` 7.1:1. The rows below move down by the panel's height (inline, as before). Closes with the same cell, `Esc` anywhere in the panel or on the cell (focus returns to the cell) or `close`. The cell carries `aria-expanded`.
-- One tooltip at a time; the table is a grid of buttons, no charts, no animation — it is in the initial chunk of `/`.
+- **Activation** (click, tap, `Enter`, `Space`) on an introduced cell calls `onOpen(kana)`: the page opens the kana details in a `Dialog` (decision 147; the content is in README, "Kana details"). The cell carries `aria-haspopup="dialog"`; a locked cell opens nothing. The dialog gives the focus back to the cell. The table has no panel of its own.
+- One tooltip at a time; the table is a grid of buttons, no charts, no animation.
 - `role="grid"`, cells are buttons with a roving `tabIndex` (one Tab stop). ← → go in order, ↑ ↓ — to the nearest column of the adjacent row, including across blocks.

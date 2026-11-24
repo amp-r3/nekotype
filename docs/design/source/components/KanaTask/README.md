@@ -1,10 +1,12 @@
 # KanaTask
 
-One task of a learning session on `/`: the session line, the prompt, the options (recognition), one reserved notice line and the key-hint line. Three kinds: `introduction`, `recall`, `recognition`. Why a task of its own: decisions.md, After ADR 058 · 41; recall colour — 58.
+One task of a learning session on `/`: the session line with its ticks, the prompt, the options (recognition), one reserved notice line and the key-hint line. Three kinds: `introduction`, `recall`, `recognition`. Why a task of its own: decisions.md, After ADR 058 · 41; recall colour — 58.
 
-**The consumer provides:** `kind`, `kana` (introduction, recall), `romaji` (introduction ghost hint, recognition prompt), `session` (`{ kind: 'learning', n, total }`), `notice` (the content of the notice line), `children` (four `OptionCard`s in recognition), `onLeave`, `onShow`, `labels` from i18n. The input engine takes the controller from `onReady` and calls only its methods while the user answers.
+**The consumer provides:** `kind`, `kana` (introduction, recall), `romaji` (introduction ghost hint, recognition prompt), `session` (`{ kind: 'learning', n, total, misses }`: `misses` are the 0-based numbers of the finished tasks answered with an error), `notice` (the content of the notice line), `children` (four `OptionCard`s in recognition), `onLeave`, `onShow`, `labels` from i18n. The input engine takes the controller from `onReady` and calls only its methods while the user answers.
 
 **Session line** — `mono-small`, words `fur-dim`, numbers `fur`: `learning · 7 of 30` / `обучение · 7 из 30`. `n` grows after every task, introduction included. No clock, no countdown, no answer time on screen. On the right: `leave session` / `выйти` (`Button text`): returns to `/` without confirmation — answers are kept, the summary is lost.
+
+**Ticks** (decision 149) — under the session line, one 2px tick per task of the session, `stroke-mark` apart, across the task's width: done `fur-dim`, the current task `eye`, the rest `line-strong`, a task answered with an error `miss` (an error as in Metrics: a rejected key or `Esc` in recall, a wrong choice in recognition). The current tick turns `miss` when the task is answered, never on a keystroke: the component still renders once per answer. A session that ends early, when the model has nothing to offer, ends with ticks left; that is how it is. Decorative for screen readers (`aria-hidden`): the session line says `7 of 30`.
 
 | kind | prompt | input |
 | --- | --- | --- |
@@ -29,7 +31,7 @@ One task of a learning session on `/`: the session line, the prompt, the options
 
 **Focus and tabs:** when the window loses focus the prompt dims to 25% and `return to the window to continue` appears; when the hidden input loses focus while the window keeps it, `click to focus` appears. If the tab is hidden during a task, the task starts over (`reset`): input cleared, time reset; an error made before stays recorded.
 
-**Phone with the on-screen keyboard open** (360 × 640 → about 280–330px visible; designed for 280). `continue` hands focus to the hidden input in their click handler; it keeps focus for the whole session, so the keyboard stays open, recognition included. Below 640px everything fits above it: session line, prompt, four options in one row (76 × 56px), notice line, hint line — 236px for recall and 260px for recognition, measured with `pointer: coarse` targets (every target ≥ `touch-min`). See `ScreenLessonKeyboard`.
+**Phone with the on-screen keyboard open** (360 × 640 → about 280–330px visible; designed for 280). `continue` hands focus to the hidden input in their click handler; it keeps focus for the whole session, so the keyboard stays open, recognition included. Below 640px everything fits above it: session line with its ticks, prompt, four options in one row (76 × 56px), notice line, hint line — 242px for recall and 266px for recognition, measured with `pointer: coarse` targets (every target ≥ `touch-min`). See `ScreenLessonKeyboard`.
 
 **Controller** (`createTaskController`) — classList / textContent / transform only, positions cached after layout and on `ResizeObserver` / `document.fonts.ready`; the component renders once per task:
 
@@ -45,3 +47,5 @@ One task of a learning session on `/`: the session line, the prompt, the options
 Only `transform` and `opacity` animate (caret move `dur-caret`, flash `dur-reject`, dimming `dur-fade`); no layout changes on a keystroke.
 
 The sound of the kana after each task (from P10) has no UI here: no button, no indicator; only the setting in `/settings`. A task never waits for the sound.
+
+**Later task types** (decision 152): `later` replaces the prompt and the options with the place of a task type of P9, P10 or P12 in the previews; the session line, its ticks and the notice line stay.

@@ -147,14 +147,15 @@ export interface KanaState {
   /** Recognition: [correct, total]. */
   recog: [number, number];
 }
-/** The kana table of a track on `/`. */
+/** The kana table of a track on `/progress`. */
 export interface KanaChartProps {
   script?: 'hiragana' | 'katakana';
   /** Keyed by kana. */
   data: Record<string, KanaState>;
   /** Canonical romaji of a kana (engine table, first `ime` spelling). */
   romaji?: (kana: string) => string;
-  onSelect?: (kana: string) => void;
+  /** Activation of an introduced kana (click, tap, Enter, Space): the page opens its details in a Dialog (decision 147). A locked kana calls nothing. */
+  onOpen?: (kana: string) => void;
   /** The locked kana that opens next — its tooltip adds `opens next`. */
   opensNext?: string | null;
   label: string;
@@ -164,8 +165,6 @@ export interface KanaChartProps {
   className?: string;
 }
 export declare function KanaChart(props: KanaChartProps): React.ReactElement;
-/** The activation details: mixups and recognition accuracy. */
-export declare function KanaChartDetails(props: { kana: string; data?: KanaState; romaji?: (k: string) => string; labels?: Record<string, any>; onClose?: () => void }): React.ReactElement;
 /** Tooltip and aria-label lines of a kana. */
 export declare function kanaStateLines(kana: string, data: KanaState | undefined, labels: Record<string, any>, romaji?: (k: string) => string, opensNext?: string | null): string[];
 /** True when the review-due mark applies: `due` on a learned or mastered kana. */
@@ -194,12 +193,14 @@ export interface KanaTaskProps {
   kana?: string;
   /** introduction: the ghost hint; recognition: the prompt. */
   romaji?: string;
-  /** The session line: `learning · 7 of 30`. */
-  session: { kind: 'learning'; n: number; total: number };
+  /** The session line `learning · 7 of 30` and its ticks; `misses`: 0-based numbers of the finished tasks answered with an error (decision 149). */
+  session: { kind: 'learning'; n: number; total: number; misses?: number[] };
   /** Content of the reserved notice line (a Notice). */
   notice?: React.ReactNode;
   /** recognition: four OptionCards. */
   children?: React.ReactNode;
+  /** Previews: the place of a later phase's task type; replaces the prompt and the options (decision 152). */
+  later?: React.ReactNode;
   /** `leave session`: back to `/` without confirmation. */
   onLeave?: () => void;
   /** recall under pointer: coarse: the `show the romaji` button (no Esc on an on-screen keyboard). */
@@ -286,7 +287,7 @@ declare global {
       KanaChart: typeof KanaChart; OptionCard: typeof OptionCard;
       Nav: typeof Nav; Footer: typeof Footer; Cat: typeof Cat; EmptyState: typeof EmptyState;
       useNarrow: typeof useNarrow; kanaRows: typeof kanaRows; kanaOf: typeof kanaOf;
-      KanaChartDetails: typeof KanaChartDetails; kanaStateLines: typeof kanaStateLines; isDue: typeof isDue; Icon: typeof Icon; KanaTask: typeof KanaTask; createTaskController: typeof createTaskController; useCoarse: typeof useCoarse;
+      kanaStateLines: typeof kanaStateLines; isDue: typeof isDue; Icon: typeof Icon; KanaTask: typeof KanaTask; createTaskController: typeof createTaskController; useCoarse: typeof useCoarse;
     };
   }
 }
