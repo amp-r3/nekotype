@@ -3,6 +3,9 @@ import { intIn, seededRng } from '@nekotype/shared/testing';
 import { describe, expect, it } from 'vitest';
 import { compareEvents } from './order';
 import { createFold, foldLog } from './fold';
+import { reasonOf } from './home';
+import { nextTask } from './planner';
+import { describe as describeState } from './view';
 import type { Fold } from './fold';
 import { answer, end, intro, start } from './testing';
 
@@ -149,5 +152,53 @@ describe('the fold is a function of the set of events (ADR 100, point 1)', () =>
         expect(folds.get(dev)?.snapshot(), `seed ${seed} device ${dev}`).toEqual(reference);
       }
     }
+  });
+});
+
+describe('the reason of Continue agrees with the planner on random logs', () => {
+  const classOf = (task: ReturnType<typeof nextTask>): string => {
+    if (task === null) return 'none';
+    if (task.kind === 'introduction') return `new:${task.key}`;
+    return task.kind === 'recall' && task.review ? 'review' : 'learning';
+  };
+
+  it('holds at prefixes of 80 logs of two devices, for both tracks and both draws', () => {
+    const kinds = new Set<string>();
+    for (let seed = 1; seed <= 80; seed++) {
+      const rng = seededRng(seed);
+      const events = sorted([
+        ...deviceLog(rng, 'd1', 60, 1_000_000),
+        ...deviceLog(rng, 'd2', 60, 1_500_000),
+      ]);
+      const fold = createFold(OPTIONS);
+      events.forEach((event, i) => {
+        fold.apply(event);
+        if (i % 12 !== 11) return;
+        const { state, stats } = fold.snapshot();
+        if (stats === null) throw new Error('no stats');
+        const view = describeState(state, stats);
+        for (const track of ['hiragana', 'katakana'] as const) {
+          // `now` after the last event and well after it, so `none` and `review` can occur.
+          for (const now of [event.at + 1000, event.at + 90 * 86_400_000]) {
+            const reason = reasonOf(state, view, { now, track });
+            const ctx = { now, track, previous: null } as const;
+            const low = classOf(nextTask(state, { ...ctx, rng: { next: () => 0 } }));
+            const high = classOf(nextTask(state, { ...ctx, rng: { next: () => 0.99 } }));
+            const at = `seed ${seed} event ${i} ${track} ${now}`;
+            expect(low, at).toBe(high);
+            kinds.add(reason.kind);
+            if (reason.kind === 'new') expect(low, at).toBe(`new:${reason.key}`);
+            else if (reason.kind === 'review') expect(low, at).toBe('review');
+            else if (reason.kind === 'none') {
+              expect(low, at).toBe('none');
+              expect(reason.nextAt, at).toBeGreaterThan(now);
+            } else expect(low, at).toBe('learning');
+          }
+        }
+      });
+    }
+    // Weak kana come from the generator's wrong answers and confusions. `none` needs a track that
+    // is fully introduced, which these few keys never give: `home.test.ts` builds that state.
+    expect([...kinds].sort()).toEqual(['learning', 'new', 'review', 'weak']);
   });
 });

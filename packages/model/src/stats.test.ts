@@ -161,3 +161,38 @@ describe('statistics: copies', () => {
     expect(withStats.clone({ stats: false }).stats).toBeNull();
   });
 });
+
+describe('statistics: introducedIn', () => {
+  it('is the number of the session that introduced the kana: from an intro and from an answer', () => {
+    const events = log(1000, [
+      (id) => intro(KA, id),
+      (id) => start(0, id),
+      (id) => answer(KI, id), // no intro: the answer introduces it, in session 1
+      (id) => start(0, id),
+      (id) => intro(KATA_KA, id),
+      (id) => answer(KA, id), // already introduced: unchanged
+    ]);
+    const stats = folded(events);
+    expect(stats.introducedIn.get(KA)).toBe(0); // before any start
+    expect(stats.introducedIn.get(KI)).toBe(1);
+    expect(stats.introducedIn.get(KATA_KA)).toBe(2);
+    expect(stats.introducedIn.size).toBe(3);
+  });
+
+  it('is copied by a snapshot and a clone, and each side changes alone', () => {
+    const fold = createFold({ targetMs: 1500, stats: true });
+    fold.apply(start(0, { at: 1, n: 1 }));
+    fold.apply(intro(KA, { at: 2, n: 2 }));
+    const snapshot = fold.snapshot().stats;
+    const copy = fold.clone();
+    fold.apply(start(0, { at: 3, n: 3 }));
+    fold.apply(intro(KI, { at: 4, n: 4 }));
+    copy.apply(intro(KATA_KA, { at: 5, n: 5 }));
+    expect([...(snapshot?.introducedIn ?? [])]).toEqual([[KA, 1]]);
+    expect([...(copy.stats?.introducedIn ?? [])]).toEqual([
+      [KA, 1],
+      [KATA_KA, 1],
+    ]);
+    expect(fold.stats?.introducedIn.get(KI)).toBe(2);
+  });
+});

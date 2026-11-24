@@ -13,8 +13,10 @@ export type KanaView = {
   readonly dueFrom: number | null;
   /** Learned or mastered: when its predicted recall reaches 0.90 (`lastAt + stability` days). */
   readonly nextReviewAt: number | null;
-  /** Learned or mastered: the stability in days; else null. */
+  /** Any introduced kana: the memory's stability in days; null while locked. */
   readonly stability: number | null;
+  /** The session that introduced it (`LogStats.introducedIn`); null while locked. */
+  readonly introducedIn: number | null;
   readonly recall: readonly RecallStat[];
   /** Of `recall`; 0 when empty. The median of an even count is the mean of the two middle values. */
   readonly medianMs: number;
@@ -85,7 +87,8 @@ function viewOf(state: ModelState, stats: LogStats, key: LearnKanaKey): KanaView
     state: chart,
     dueFrom: dueFrom(state, key),
     nextReviewAt: known ? item.lastAt + item.memory.stability * DAY_MS : null,
-    stability: known ? item.memory.stability : null,
+    stability: item === undefined ? null : item.memory.stability,
+    introducedIn: stats.introducedIn.get(key) ?? null,
     recall,
     medianMs: median(recall.map((r) => r.ms)),
     accuracy: recall.length === 0 ? 0 : recall.filter((r) => r.ok).length / recall.length,

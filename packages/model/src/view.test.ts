@@ -15,7 +15,13 @@ const KI = 'hiragana:き';
 const A = 'hiragana:あ';
 const TARGET = 1500;
 
-const EMPTY_STATS: LogStats = { kana: new Map(), days: new Map(), started: 0, finished: 0 };
+const EMPTY_STATS: LogStats = {
+  kana: new Map(),
+  days: new Map(),
+  started: 0,
+  finished: 0,
+  introducedIn: new Map(),
+};
 
 function item(over: Partial<ItemState> & Pick<ItemState, 'phase'>): ItemState {
   return {
@@ -76,7 +82,8 @@ describe('describe: chart states', () => {
       ],
     ]);
     expect(v.kana.get(A)?.state).toBe('learning');
-    expect(v.kana.get(A)?.stability).toBeNull();
+    expect(v.kana.get(A)?.stability).toBe(1);
+    expect(v.kana.get(A)?.nextReviewAt).toBeNull();
     expect(v.kana.get(KA)?.state).toBe('learned');
     expect(v.kana.get(KI)?.state).toBe('mastered');
     expect(v.mastered).toEqual({ hiragana: 1, katakana: 0 });
@@ -229,5 +236,16 @@ describe('describe: from a folded log', () => {
       medianMs: 800,
       accuracy: 1,
     });
+  });
+});
+
+describe('describe: introducedIn', () => {
+  it('is the session that introduced a kana, null while it is locked', () => {
+    const stats: LogStats = { ...EMPTY_STATS, introducedIn: new Map([[A, 3]]) };
+    const state = stateOf(new Map([[A, item({ phase: 'learning' })]]));
+    const v = describeState(state, stats);
+    expect(v.kana.get(A)?.introducedIn).toBe(3);
+    expect(v.kana.get(KA)?.introducedIn).toBeNull();
+    expect(v.kana.get(KA)?.stability).toBeNull();
   });
 });

@@ -9,7 +9,13 @@ import { describe as describeState } from './view';
 const KA = 'hiragana:か';
 const KI = 'hiragana:き';
 const KATA_KA = 'katakana:カ';
-const STATS: LogStats = { kana: new Map(), days: new Map(), started: 0, finished: 0 };
+const STATS: LogStats = {
+  kana: new Map(),
+  days: new Map(),
+  started: 0,
+  finished: 0,
+  introducedIn: new Map(),
+};
 
 function viewOf(entries: [LearnKanaKey, ItemState['phase'], number][]) {
   const items = new Map<LearnKanaKey, ItemState>(
@@ -29,6 +35,12 @@ function viewOf(entries: [LearnKanaKey, ItemState['phase'], number][]) {
 }
 
 describe('strongerSince', () => {
+  it('ignores a learning kana whose stability grew: only its chart state counts', () => {
+    const before = viewOf([[KA, 'learning', 0.1]]);
+    const after = viewOf([[KA, 'learning', 5]]);
+    expect(strongerSince(before, after)).toEqual([]);
+  });
+
   it('lists kana whose chart state rose, in track order', () => {
     const before = viewOf([
       [KA, 'learning', 1],

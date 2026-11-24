@@ -30,6 +30,9 @@ export {
   FORECAST_MAX_SITTINGS,
   FORECAST_HISTORY,
   FORECAST_HISTORY_MIN,
+  WEAK_MIN_RECALLS,
+  WEAK_ACCURACY,
+  WEAK_CONFUSIONS,
 } from './constants';
 export {
   createFsrs,
@@ -73,3 +76,6 @@ export { strongerSince } from './stronger';
 export type { Stronger } from './stronger';
 export { forecastRow, habitsOf, nextRow, outlineSession } from './forecast';
 export type { Forecast, Habits, Outline, SettledForecast } from './forecast';
+export { isWeak, reasonOf } from './home';
+export type { Reason } from './home';
+export { seededRng } from './rng';
