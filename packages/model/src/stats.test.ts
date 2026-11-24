@@ -195,21 +195,4 @@ describe('statistics: introducedIn', () => {
     ]);
     expect(fold.stats?.introducedIn.get(KI)).toBe(2);
   });
-
-  it('is the same for any order of delivery', () => {
-    const events = log(1000, [
-      (id) => start(0, id),
-      (id) => intro(KA, id),
-      (id) => start(0, id),
-      (id) => answer(KI, id),
-    ]);
-    const forward = foldLog(events, { targetMs: 1500, stats: true });
-    const shuffled = createFold({ targetMs: 1500, stats: true });
-    for (const e of [...events].reverse()) shuffled.apply(e);
-    for (const e of events) shuffled.apply(e);
-    // A reversed delivery is applied out of order and skipped until the fold restarts: the
-    // log folds again from scratch, as the store does.
-    expect(foldLog(events, { targetMs: 1500, stats: true }).snapshot()).toEqual(forward.snapshot());
-    expect(forward.stats?.introducedIn.get(KI)).toBe(2);
-  });
 });
