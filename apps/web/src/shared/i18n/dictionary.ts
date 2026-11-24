@@ -16,13 +16,13 @@ type Piece = 'core' | DictionaryPart;
 const LOADERS: Readonly<Record<Locale, Readonly<Record<Piece, () => Promise<Words>>>>> = {
   en: {
     core: () => Promise.resolve(en),
-    stats: () => import('./parts/stats/en').then((module) => module.statsEn),
+    progress: () => import('./parts/progress/en').then((module) => module.progressEn),
     settings: () => import('./parts/settings/en').then((module) => module.settingsEn),
     about: () => import('./parts/about/en').then((module) => module.aboutEn),
   },
   ru: {
     core: () => import('./ru').then((module) => module.ru),
-    stats: () => import('./parts/stats/ru').then((module) => module.statsRu),
+    progress: () => import('./parts/progress/ru').then((module) => module.progressRu),
     settings: () => import('./parts/settings/ru').then((module) => module.settingsRu),
     about: () => import('./parts/about/ru').then((module) => module.aboutRu),
   },

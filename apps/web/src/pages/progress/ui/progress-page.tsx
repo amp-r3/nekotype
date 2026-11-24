@@ -10,7 +10,7 @@ import { initLearn, learnStatus, learnView, localDay, retryLearn } from '@/entit
 import { LearningSection } from './learning-section';
 
 // Statistics: the learning progress, all of the screen (design decisions 130, 137).
-export function StatsPage(): JSX.Element {
+export function ProgressPage(): JSX.Element {
   useEffect(() => {
     void initLearn(() => learnTargetMs.value);
   }, []);
@@ -21,7 +21,7 @@ export function StatsPage(): JSX.Element {
 
   return (
     <section className="max-w-layout-max mx-auto flex w-full flex-col gap-8 sm:gap-12">
-      <h1 className="text-ui-title text-fur">{t('page.stats')}</h1>
+      <h1 className="text-ui-title text-fur">{t('page.progress')}</h1>
       {status === 'loading' && <Notice loading>{t('route.loading')}</Notice>}
       {status === 'error' && (
         <Notice

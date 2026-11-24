@@ -6,7 +6,7 @@ import {
   waitForDeployment,
 } from '../../scripts/smoke-deploy.mjs';
 import type { FetchFn } from '../../scripts/smoke-deploy.mjs';
-import { ROUTE_PATHS } from './route-paths';
+import { ROUTE_PATHS, ROUTE_REDIRECTS } from './route-paths';
 
 const HTML =
   '<!doctype html><html><body><div id="app"></div><script src="/assets/index-a1.js"></script><link href="/assets/index-b2.css"></body></html>';
@@ -42,6 +42,11 @@ function healthy(overrides: Record<string, () => Response> = {}): FetchFn {
     routes.add(path);
     routes.add(`${path}/`);
   }
+  const moved = new Map<string, string>();
+  for (const [from, to] of Object.entries(ROUTE_REDIRECTS)) {
+    moved.set(from, to);
+    moved.set(`${from}/`, to);
+  }
   return (url) => {
     const path = url.pathname;
     const override = overrides[path];
@@ -49,6 +54,10 @@ function healthy(overrides: Record<string, () => Response> = {}): FetchFn {
     if (path === '/api/unknown') return Promise.resolve(apiNotFound());
     if (path === '/api/me') return Promise.resolve(apiUnauthenticated());
     if (path === '/api/auth/google') return Promise.resolve(apiNotFound());
+    const target = moved.get(path);
+    if (target !== undefined) {
+      return Promise.resolve(new Response(null, { status: 301, headers: { location: target } }));
+    }
     if (routes.has(path)) return Promise.resolve(page(200, HTML));
     if (path === '/assets/index-a1.js') {
       return Promise.resolve(page(200, 'console.log(1)', { 'content-type': 'text/javascript' }));
@@ -71,10 +80,22 @@ describe('smoke test of a deployment', () => {
 
   it('catches a route that is redirected instead of served (the 308 of ADR 039)', async () => {
     const fetchFn = healthy({
-      '/stats': () => new Response(null, { status: 308, headers: { location: '/' } }),
+      '/progress': () => new Response(null, { status: 308, headers: { location: '/' } }),
     });
     const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn });
-    expect(failures).toEqual(['/stats should answer 200 with the application, got 308 -> /']);
+    expect(failures).toEqual(['/progress should answer 200 with the application, got 308 -> /']);
+  });
+
+  it('catches a retired path that is served as the application or leads elsewhere', async () => {
+    const fetchFn = healthy({
+      '/stats': () => page(200, HTML),
+      '/stats/': () => new Response(null, { status: 301, headers: { location: '/' } }),
+    });
+    const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn });
+    expect(failures).toEqual([
+      '/stats should answer 301 with location /progress, got 200',
+      '/stats/ should answer 301 with location /progress, got 301 -> /',
+    ]);
   });
 
   it('catches a retired route that is served again: /type answers 404, as /learn does', async () => {
@@ -86,11 +107,11 @@ describe('smoke test of a deployment', () => {
 
   it('catches a route that answers 404 or a page that is not the application', async () => {
     const fetchFn = healthy({
-      '/stats/': () => page(404, NOT_FOUND),
+      '/progress/': () => page(404, NOT_FOUND),
       '/about': () => page(200, '<html>maintenance</html>'),
     });
     const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn });
-    expect(failures.map((f) => f.split(' ')[0])).toEqual(['/stats/', '/about']);
+    expect(failures.map((f) => f.split(' ')[0])).toEqual(['/progress/', '/about']);
   });
 
   it('catches an API that is not deployed: the static 404 page answers /api/unknown', async () => {

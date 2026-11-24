@@ -8,7 +8,7 @@ import type { ActivityDay } from '../lib/activity';
 import { ActivityMap } from './activity-map';
 
 // The route brings the strings of the screen; here the test does.
-await loadDictionaryPart('stats');
+await loadDictionaryPart('progress');
 
 let container: HTMLDivElement;
 

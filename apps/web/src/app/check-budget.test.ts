@@ -115,9 +115,9 @@ function makeDist(f: Fixture): string {
     manifest[lazy.src] = { file: `assets/lazy${i}.js`, src: lazy.src, isDynamicEntry: true };
   }
   if (f.lazyInInitial === true) {
-    manifest['src/pages/stats/index.ts'] = {
+    manifest['src/pages/progress/index.ts'] = {
       file: 'assets/index.js',
-      src: 'src/pages/stats/index.ts',
+      src: 'src/pages/progress/index.ts',
       isDynamicEntry: true,
     };
   }
@@ -176,7 +176,7 @@ describe('check-budget', () => {
   it('passes a build within every budget', () => {
     const { failures, lines } = checkBudget(
       makeDist({
-        lazy: [{ src: 'src/pages/stats/index.ts', kb: 20 }],
+        lazy: [{ src: 'src/pages/progress/index.ts', kb: 20 }],
       }),
     );
     expect(failures).toEqual([]);
@@ -248,7 +248,7 @@ describe('check-budget', () => {
 
   it('fails when a lazily imported module is folded into the initial chunk', () => {
     expect(failuresFor({ lazyInInitial: true })).toEqual([
-      expect.stringContaining('src/pages/stats/index.ts is imported lazily'),
+      expect.stringContaining('src/pages/progress/index.ts is imported lazily'),
     ]);
   });
 
@@ -321,13 +321,13 @@ describe('check-budget', () => {
   it('does not count lazy chunks in the initial JS', () => {
     const failures = failuresFor({
       jsKb: 30,
-      lazy: [{ src: 'src/pages/stats/index.ts', kb: 24 }],
+      lazy: [{ src: 'src/pages/progress/index.ts', kb: 24 }],
     });
     expect(failures).toEqual([]);
   });
 
   it('applies 25 KB to a lazy route chunk', () => {
-    const failures = failuresFor({ lazy: [{ src: 'src/pages/stats/index.ts', kb: 26 }] });
+    const failures = failuresFor({ lazy: [{ src: 'src/pages/progress/index.ts', kb: 26 }] });
     expect(failures).toEqual([expect.stringContaining('Lazy route chunk')]);
   });
 
@@ -341,7 +341,7 @@ describe('check-budget', () => {
         expect.stringContaining('no content is shipped before P12'),
       ]);
     }
-    expect(failuresFor({ lazy: [{ src: 'src/pages/stats/index.ts', kb: 20 }] })).toEqual([]);
+    expect(failuresFor({ lazy: [{ src: 'src/pages/progress/index.ts', kb: 20 }] })).toEqual([]);
   });
 
   it('a route chunk is not mistaken for content because of its file name', () => {

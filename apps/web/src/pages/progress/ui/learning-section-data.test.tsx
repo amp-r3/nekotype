@@ -6,10 +6,10 @@ import { t, loadDictionaryPart } from '@/shared/i18n';
 import { learnTrack } from '@/entities/settings';
 import { initLearn, localDay } from '@/entities/learn';
 import { seedStatsLog } from '../lib/test-util';
-import { StatsPage } from './stats-page';
+import { ProgressPage } from './progress-page';
 
 // The route brings the strings of the screen; here the test does.
-await loadDictionaryPart('stats');
+await loadDictionaryPart('progress');
 
 // happy-dom has no layout: the chart draws once its container has a width.
 vi.stubGlobal(
@@ -59,7 +59,7 @@ describe('learning section: with answers', () => {
     await initLearn(() => 1500);
     container = document.createElement('div');
     document.body.appendChild(container);
-    render(<StatsPage />, container);
+    render(<ProgressPage />, container);
     await act(settle);
 
     const stats = Array.from(container.querySelectorAll('.text-mono-stat')).map(
@@ -88,7 +88,7 @@ describe('learning section: with answers', () => {
     expect(dotted).toHaveLength(3);
     expect(dotted.at(-1)?.classList.contains('is-today')).toBe(true);
     // One section with no switch, and no session line below the chart.
-    expect(container.querySelector('h1')?.textContent).toBe(t('page.stats'));
+    expect(container.querySelector('h1')?.textContent).toBe(t('page.progress'));
     expect(container.querySelectorAll('[role="radiogroup"]').length).toBe(1);
     expect(container.querySelector('[data-testid="stats-sessions"]')).toBeNull();
     expect(container.textContent).toContain(`hiragana · ${t('stats.learn.answerCaptionDay')}`);

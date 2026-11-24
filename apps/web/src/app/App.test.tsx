@@ -32,7 +32,7 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
     const nav = container.querySelector('nav');
     expect(nav?.getAttribute('aria-label')).toBe(t('nav.label'));
     expect(Array.from(nav?.querySelectorAll('a') ?? []).map((a) => a.getAttribute('href'))).toEqual(
-      ['/', '/stats', '/settings'],
+      ['/', '/progress', '/settings'],
     );
     expect(nav?.querySelector('[aria-current="page"]')?.getAttribute('href')).toBe('/');
     expect(container.querySelector('footer a')?.getAttribute('href')).toBe('/about');
@@ -46,16 +46,16 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
     render(<App />, container);
     const marker = window.history.length;
 
-    const stats = container.querySelector<HTMLAnchorElement>('nav a[href="/stats"]');
+    const stats = container.querySelector<HTMLAnchorElement>('nav a[href="/progress"]');
     stats?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
     await vi.waitFor(() => {
-      expect(container.querySelector('h1')?.textContent).toBe(t('page.stats'));
+      expect(container.querySelector('h1')?.textContent).toBe(t('page.progress'));
     });
 
-    expect(window.location.pathname).toBe('/stats');
+    expect(window.location.pathname).toBe('/progress');
     expect(window.history.length).toBe(marker + 1);
     expect(container.querySelector('nav [aria-current="page"]')?.getAttribute('href')).toBe(
-      '/stats',
+      '/progress',
     );
 
     window.history.replaceState(null, '', '/');
@@ -67,7 +67,7 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
 
   it('a modified click is left to the browser', async () => {
     render(<App />, container);
-    const stats = container.querySelector<HTMLAnchorElement>('nav a[href="/stats"]');
+    const stats = container.querySelector<HTMLAnchorElement>('nav a[href="/progress"]');
     const event = new MouseEvent('click', {
       bubbles: true,
       cancelable: true,
@@ -83,7 +83,7 @@ describe('App shell: navigation, lazy screens and the unknown path', () => {
 
   it('every other screen opens from its address', async () => {
     for (const [path, title] of [
-      ['/stats', 'page.stats'],
+      ['/progress', 'page.progress'],
       ['/settings', 'page.settings'],
       ['/about', 'page.about'],
     ] as const) {

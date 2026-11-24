@@ -37,7 +37,7 @@ function NotFound({ onHome }: { readonly onHome: () => void }): JSX.Element {
 // The title a lazy screen keeps while its chunk loads or has failed (design "Loading and errors").
 // `/` is in the first chunk and has no visible title.
 const TITLES: Readonly<Partial<Record<RoutePath, TranslationKey>>> = {
-  '/stats': 'page.stats',
+  '/progress': 'page.progress',
   '/settings': 'page.settings',
   '/about': 'page.about',
 };

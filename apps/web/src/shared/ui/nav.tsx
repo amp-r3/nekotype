@@ -50,7 +50,12 @@ export function Nav({
               href={item.href}
               onNavigate={onNavigate}
               current={current}
-              className={cx(itemClass, current ? 'text-fur' : 'text-fur-dim hover:text-fur')}
+              className={cx(
+                itemClass,
+                current
+                  ? 'text-fur decoration-eye underline decoration-2 underline-offset-[5px]'
+                  : 'text-fur-dim hover:text-fur',
+              )}
             >
               {item.label}
             </Link>

@@ -6,12 +6,17 @@
 # the learning screen (ADR 039). A trailing slash is the same route.
 #
 # There is deliberately no catch-all: an unknown path or a missing /assets/* file falls through to
-# 404.html and a real 404 status. A test keeps this list equal to ROUTE_PATHS in
+# 404.html and a real 404 status. A test keeps this list equal to ROUTE_PATHS and ROUTE_REDIRECTS in
 # src/app/route-paths.ts.
+#
+# /stats was the statistics screen until P8; it leads to /progress (301). Rules apply in order and
+# none overlaps another.
 
-/stats / 200
-/stats/ / 200
+/progress / 200
+/progress/ / 200
 /settings / 200
 /settings/ / 200
 /about / 200
 /about/ / 200
+/stats /progress 301
+/stats/ /progress 301

@@ -44,10 +44,10 @@ describe('app/init', () => {
     await initApp();
 
     expect(document.title).toBe('Nekotype');
-    navigate('/stats');
-    expect(document.title).toBe('Stats — Nekotype');
+    navigate('/progress');
+    expect(document.title).toBe('Progress — Nekotype');
     await setLocale('ru', store);
-    expect(document.title).toBe('Статистика — Nekotype');
+    expect(document.title).toBe('Прогресс — Nekotype');
     navigate('/nowhere');
     expect(document.title).toBe('Nekotype');
 

@@ -19,10 +19,10 @@ export const EAGER_ROUTES: readonly (readonly [RoutePath, ComponentType])[] = [[
 
 export const routes: Readonly<Record<RoutePath, Route>> = {
   '/': { load: () => Promise.resolve(LearnRoute) },
-  '/stats': {
+  '/progress': {
     load: () =>
-      Promise.all([import('@/pages/stats'), loadDictionaryPart('stats')]).then(
-        ([m]) => m.StatsPage,
+      Promise.all([import('@/pages/progress'), loadDictionaryPart('progress')]).then(
+        ([m]) => m.ProgressPage,
       ),
   },
   '/settings': {

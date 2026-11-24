@@ -33,8 +33,8 @@ describe('route view: a lazy screen that is not there yet', () => {
   };
 
   it('keeps the title of the screen over the loading notice', async () => {
-    await mount('/stats');
-    expect(container.querySelector('h1')?.textContent).toBe(t('page.stats'));
+    await mount('/progress');
+    expect(container.querySelector('h1')?.textContent).toBe(t('page.progress'));
     expect(container.textContent).toContain(t('route.loading'));
   });
 
