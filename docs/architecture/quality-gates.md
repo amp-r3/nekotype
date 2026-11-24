@@ -11,11 +11,12 @@ Every commit and pull request must satisfy `pnpm run verify`, which CI also runs
 5. **`pnpm run build` (`vite build`)**: Production client bundle into `apps/web/dist`, with the Vite manifest. Everything the entry loads statically is one chunk (Rolldown `codeSplitting` group with the `$initial` tag); the app's own modules are declared side-effect free in `apps/web/package.json`, so a barrel does not pull lazy-only modules into it; there is no `modulepreload` polyfill (ADR 067).
 6. **`pnpm run budget` (`node scripts/check-budget.mjs`)**: Reads the manifest and enforces hard budget limits (gzip unless stated; brotli is reported next to it). Figures at the end of P7 (PR 15 of the phase):
    - Initial HTML: ≤ 5 KB (actual 0.42 KB)
-   - Initial JS, the entry and its static imports: ≤ 35 KB (actual 30.38 KB)
-   - Initial CSS: ≤ 10 KB (actual 7.69 KB)
+   - Initial JS, the entry and its static imports: ≤ 35 KB (actual 30.10 KB)
+   - Initial CSS: ≤ 10 KB (actual 7.66 KB)
    - Fonts (woff2, read from `dist`): ≤ 45 KB per file (actual 20.38 KB Noto Sans JP 400, 10.79 and 10.61 KB JetBrains Mono 400/500, 9.42 and 9.56 KB Golos Text 400/500)
-   - Total first load: ≤ 160 KB, including the SVG of the initial chunk, the logo (actual 99.26 KB)
-   - Lazy route chunk: ≤ 25 KB; a content chunk (the generated JSON in `entities/prompt/content/`) fails the check: no content is shipped before P12, and the ≤ 40 KB rule returns with it (the largest lazy chunk is the learning session runtime, 9.90 KB; the model is 7.63 KB, `/stats` 5.12 KB and the sync engine 4.81 KB)
+   - Total first load: ≤ 160 KB, including the SVG of the initial chunk, the logo (actual 98.94 KB)
+   - Lazy route chunk: ≤ 25 KB; a content chunk (the generated JSON in `entities/prompt/content/`) fails the check: no content is shipped before P12, and the ≤ 40 KB rule returns with it (the largest lazy chunk is the learning session runtime, 9.90 KB; the model is 8.08 KB, `/progress` 5.76 KB, the sync engine 4.81 KB and the kana details dialog 1.29 KB)
+   - It also fails when the chunk of `src/features/sync/index.ts` or of `src/features/kana-details/ui/kana-details-dialog.tsx` is missing from the manifest, is in the initial chunk or is a static import of a route chunk (the model's chunk has the same check).
    - Since ADR 067 (initial JS 28.24 KB) it also fails when the initial JS is more than one file, when a lazily imported module is folded into it, or when it lacks the Preact integration of `@preact/signals`.
 7. **`pnpm run e2e` (`playwright test`)**: Chromium and WebKit (iPhone 13 emulation) against the production bundle (`vite build` into `dist-e2e`, served by `vite preview` on a port of its own, 5273; ADR 045), then the sync tests (`playwright.sync.config.ts`, `e2e/sync/`: Chromium against `wrangler pages dev` with the real API, a local D1 and a fake OAuth provider, on port 5274; ADR 091), then the latency test (`playwright.latency.config.ts`): it runs a probe build (`pnpm run build:probe`, `vite preview`) with 4× CPU throttling and checks, over two learning sessions of recall, the keystroke p95 budgets and a ceiling on the worst keystroke (ADR 043, 048, 095). `check-budget` fails when `dist` contains the probe.
 

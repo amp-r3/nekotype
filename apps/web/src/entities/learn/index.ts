@@ -45,3 +45,6 @@ export type { CellState, ChartRowInfo, KanaCellInfo } from './lib/chart';
 export { cellInfos, chartRows } from './lib/chart';
 
 export { bestStreakOfDays, dueCount, streakOfDays, streaks } from './lib/progress';
+
+export { canonicalFor } from './lib/canonical';
+export { displayRomaji } from './lib/romaji';

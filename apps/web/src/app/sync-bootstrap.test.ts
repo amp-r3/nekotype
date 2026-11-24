@@ -86,7 +86,7 @@ describe('startSyncBootstrap', () => {
     expect(authError.value).toBe('denied');
     expect(window.location.search).toBe('?x=1');
 
-    navigate('/stats');
+    navigate('/progress');
     await settle();
     expect(authError.value).toBeNull();
     stop();

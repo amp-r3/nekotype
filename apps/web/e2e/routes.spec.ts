@@ -10,6 +10,16 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
     await expect(page).toHaveTitle('Settings — Nekotype');
   });
 
+  // The preview server ignores `_redirects`; the router follows `ROUTE_REDIRECTS` on its own, which
+  // also covers a stale copy of the entry page at the edge. The 301 itself is the smoke test's.
+  test('/stats leads to /progress, with and without the trailing slash', async ({ page }) => {
+    for (const path of ['/stats', '/stats/']) {
+      await page.goto(path);
+      await expect(page).toHaveURL(/\/progress$/);
+      await expect(page.getByRole('heading', { level: 1, name: 'Progress' })).toBeVisible();
+    }
+  });
+
   // The preview server falls back to the entry page for every path; the real 404 status of
   // /learn and /type on Pages is checked by the deployment smoke test (scripts/smoke-deploy.mjs).
   test('/learn and /type are gone: they show the not-found screen', async ({ page }) => {
@@ -53,16 +63,19 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
       Object.assign(window, { navigationMarker: 'kept' });
     });
 
-    await page.getByRole('navigation').getByRole('link', { name: 'stats' }).click();
-    await expect(page).toHaveURL(/\/stats$/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Stats' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'stats' })).toHaveAttribute('aria-current', 'page');
+    await page.getByRole('navigation').getByRole('link', { name: 'progress' }).click();
+    await expect(page).toHaveURL(/\/progress$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Progress' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'progress' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
 
     await page.getByRole('link', { name: 'about' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'About' })).toBeVisible();
 
     await page.goBack();
-    await expect(page.getByRole('heading', { level: 1, name: 'Stats' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Progress' })).toBeVisible();
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByTestId('learn-mastered-count')).toBeVisible();

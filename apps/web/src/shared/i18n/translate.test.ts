@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { en, t, locale, setLocale, initLocale } from './index';
 import { ru } from './ru';
-import { statsEn } from './parts/stats/en';
-import { statsRu } from './parts/stats/ru';
+import { progressEn } from './parts/progress/en';
+import { progressRu } from './parts/progress/ru';
+import { detailsEn } from './parts/details/en';
+import { detailsRu } from './parts/details/ru';
 import { settingsEn } from './parts/settings/en';
 import { settingsRu } from './parts/settings/ru';
 import { aboutEn } from './parts/about/en';
@@ -16,7 +18,8 @@ export type _CheckedRuEnParity = _AssertParity<_RuEnCompileTimeParity>;
 
 const PIECES: readonly (readonly [string, Record<string, string>, Record<string, string>])[] = [
   ['core', en, ru],
-  ['stats', statsEn, statsRu],
+  ['progress', progressEn, progressRu],
+  ['details', detailsEn, detailsRu],
   ['settings', settingsEn, settingsRu],
   ['about', aboutEn, aboutRu],
 ];

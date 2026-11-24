@@ -6,10 +6,10 @@ import { t, loadDictionaryPart } from '@/shared/i18n';
 import { learnTrack } from '@/entities/settings';
 import { initLearn, localDay } from '@/entities/learn';
 import { seedStatsLog } from '../lib/test-util';
-import { StatsPage } from './stats-page';
+import { ProgressPage } from './progress-page';
 
 // The route brings the strings of the screen; here the test does.
-await loadDictionaryPart('stats');
+await loadDictionaryPart('progress');
 
 // happy-dom has no layout: the chart draws once its container has a width.
 vi.stubGlobal(
@@ -59,7 +59,7 @@ describe('learning section: with answers', () => {
     await initLearn(() => 1500);
     container = document.createElement('div');
     document.body.appendChild(container);
-    render(<StatsPage />, container);
+    render(<ProgressPage />, container);
     await act(settle);
 
     const stats = Array.from(container.querySelectorAll('.text-mono-stat')).map(
@@ -87,9 +87,10 @@ describe('learning section: with answers', () => {
     const dotted = Array.from(container.querySelectorAll('[data-testid="activity-cell"].is-run'));
     expect(dotted).toHaveLength(3);
     expect(dotted.at(-1)?.classList.contains('is-today')).toBe(true);
-    // One section with no switch, and no session line below the chart.
-    expect(container.querySelector('h1')?.textContent).toBe(t('page.stats'));
-    expect(container.querySelectorAll('[role="radiogroup"]').length).toBe(1);
+    // The page's track switch and the period switch; no session line below the chart.
+    expect(container.querySelector('h1')?.textContent).toBe(t('page.progress'));
+    expect(container.querySelectorAll('[role="radiogroup"]').length).toBe(2);
+    expect(container.querySelector(`[aria-label="${t('stats.trackShown')}"]`)).not.toBeNull();
     expect(container.querySelector('[data-testid="stats-sessions"]')).toBeNull();
     expect(container.textContent).toContain(`hiragana · ${t('stats.learn.answerCaptionDay')}`);
 
@@ -109,8 +110,17 @@ describe('learning section: with answers', () => {
     });
     expect(container.querySelectorAll('[data-testid="chart-range"]')).toHaveLength(2);
 
-    // Only hiragana has answers: the chart shows it and there is no track switch.
-    expect(container.querySelector(`[aria-label="${t('learn.track.label')}"]`)).toBeNull();
+    // The switch is the page's, and it is view-only: the other track has no answers, and the
+    // learning track of `/` stays.
+    const katakana = Array.from(container.querySelectorAll('[role="radio"]')).find(
+      (el) => el.textContent === t('learn.track.katakana'),
+    );
+    await act(() => {
+      katakana?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(container.textContent).toContain(t('stats.learn.noTrackAnswers.katakana'));
+    expect(container.querySelector('[data-testid="stats-median-chart"]')).toBeNull();
+    expect(container.querySelector('[data-testid="kana-chart"]')).not.toBeNull();
     expect(learnTrack.value).toBe('hiragana');
   });
 });

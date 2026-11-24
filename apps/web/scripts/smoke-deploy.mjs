@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { ROUTE_PATHS } from '../src/app/route-paths.ts';
+import { ROUTE_PATHS, ROUTE_REDIRECTS } from '../src/app/route-paths.ts';
 
 // Smoke test of a deployed build, run by CI after `wrangler pages deploy`. Some behaviour exists
 // only on Cloudflare Pages and cannot be seen on the dev server: a rewrite to /index.html is
@@ -70,6 +70,24 @@ export async function checkDeployment(
     if (path === '/') continue;
     await expectApp(path, 'route  ');
     await expectApp(`${path}/`, 'route  ');
+  }
+
+  // A retired path leads to its screen with a 301 (P8: /stats to /progress), with and without the slash.
+  const expectRedirect = async (path, target) => {
+    const { response } = await get(fetchFn, baseUrl, path);
+    // Pages may answer with an absolute `location`: compare the path.
+    const location = header(response, 'location');
+    const ok =
+      response.status === 301 && location !== '' && new URL(location, baseUrl).pathname === target;
+    lines.push(`${ok ? 'ok  ' : 'FAIL'} moved   ${path} ${describeResponse(response)}`);
+    if (!ok)
+      failures.push(
+        `${path} should answer 301 with location ${target}, got ${describeResponse(response)}`,
+      );
+  };
+  for (const [from, to] of Object.entries(ROUTE_REDIRECTS)) {
+    await expectRedirect(from, to);
+    await expectRedirect(`${from}/`, to);
   }
 
   const expectNotFound = async (path, label) => {

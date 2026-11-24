@@ -1,5 +1,5 @@
 import type { LearnKanaKey } from '@nekotype/shared/types';
-import { canonicalFor } from './prompt';
+import { canonicalFor } from './canonical';
 
 /**
  * The romaji learning shows for a kana (ADR 062): the table's canonical spelling, except ん and ン,

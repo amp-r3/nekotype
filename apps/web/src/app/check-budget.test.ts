@@ -9,6 +9,7 @@ import {
   SIGNALS_MARKER,
   MODEL_CHUNK,
   SYNC_ENTRY,
+  DETAILS_ENTRY,
 } from '../../scripts/check-budget.mjs';
 
 // Random bytes do not compress, so a file of N KB is about N KB raw, gzip and brotli.
@@ -48,6 +49,10 @@ type Fixture = {
   // panel imports (default), folded into the initial chunk, a static import of a route chunk, or
   // missing from the manifest.
   sync?: 'lazy' | 'initial' | 'route' | 'absent';
+  // Where the kana details dialog's chunk is: a chunk of its own that only the host imports
+  // (default), folded into the initial chunk, a static import of a route chunk, or missing from the
+  // manifest.
+  details?: 'lazy' | 'initial' | 'route' | 'absent';
   // Where the model's chunk (named `model`) is: shared by lazy chunks (default), folded into the
   // initial chunk, a static import of a route chunk, or missing from the manifest.
   model?: 'lazy' | 'initial' | 'route' | 'absent';
@@ -115,9 +120,9 @@ function makeDist(f: Fixture): string {
     manifest[lazy.src] = { file: `assets/lazy${i}.js`, src: lazy.src, isDynamicEntry: true };
   }
   if (f.lazyInInitial === true) {
-    manifest['src/pages/stats/index.ts'] = {
+    manifest['src/pages/progress/index.ts'] = {
       file: 'assets/index.js',
-      src: 'src/pages/stats/index.ts',
+      src: 'src/pages/progress/index.ts',
       isDynamicEntry: true,
     };
   }
@@ -143,6 +148,24 @@ function makeDist(f: Fixture): string {
       isDynamicEntry: true,
       imports: sync === 'route' ? [SYNC_ENTRY] : [],
     };
+  }
+  const details = f.details ?? 'lazy';
+  if (details !== 'absent') {
+    write(root, 'assets/details.js', blob(1));
+    manifest[DETAILS_ENTRY] = {
+      file: details === 'initial' ? 'assets/index.js' : 'assets/details.js',
+      src: DETAILS_ENTRY,
+      isDynamicEntry: details !== 'initial',
+    };
+    if (details === 'route') {
+      write(root, 'assets/progress.js', blob(1));
+      manifest['src/pages/progress/index.ts'] = {
+        file: 'assets/progress.js',
+        src: 'src/pages/progress/index.ts',
+        isDynamicEntry: true,
+        imports: [DETAILS_ENTRY],
+      };
+    }
   }
   const model = f.model ?? 'lazy';
   if (model !== 'absent') {
@@ -176,7 +199,7 @@ describe('check-budget', () => {
   it('passes a build within every budget', () => {
     const { failures, lines } = checkBudget(
       makeDist({
-        lazy: [{ src: 'src/pages/stats/index.ts', kb: 20 }],
+        lazy: [{ src: 'src/pages/progress/index.ts', kb: 20 }],
       }),
     );
     expect(failures).toEqual([]);
@@ -248,7 +271,7 @@ describe('check-budget', () => {
 
   it('fails when a lazily imported module is folded into the initial chunk', () => {
     expect(failuresFor({ lazyInInitial: true })).toEqual([
-      expect.stringContaining('src/pages/stats/index.ts is imported lazily'),
+      expect.stringContaining('src/pages/progress/index.ts is imported lazily'),
     ]);
   });
 
@@ -266,6 +289,29 @@ describe('check-budget', () => {
   it('fails when a route chunk imports the sync engine statically', () => {
     expect(failuresFor({ sync: 'route' })).toEqual([
       expect.stringContaining('static import of the route chunk assets/settings.js'),
+    ]);
+  });
+
+  it('passes when the kana details are a chunk that only the host imports', () => {
+    expect(failuresFor({ details: 'lazy' })).toEqual([]);
+  });
+
+  it('fails when the kana details are in the initial chunk', () => {
+    const failures = failuresFor({ details: 'initial' });
+    expect(
+      failures.some((f) => f.includes('kana details dialog') && f.includes('initial chunk')),
+    ).toBe(true);
+  });
+
+  it('fails when a route chunk imports the kana details statically', () => {
+    expect(failuresFor({ details: 'route' })).toEqual([
+      'The kana details dialog is a static import of the route chunk assets/progress.js',
+    ]);
+  });
+
+  it('fails when the kana details are missing from the manifest', () => {
+    expect(failuresFor({ details: 'absent' })).toEqual([
+      `${DETAILS_ENTRY} is not in the manifest: its lazy loading cannot be checked`,
     ]);
   });
 
@@ -321,13 +367,13 @@ describe('check-budget', () => {
   it('does not count lazy chunks in the initial JS', () => {
     const failures = failuresFor({
       jsKb: 30,
-      lazy: [{ src: 'src/pages/stats/index.ts', kb: 24 }],
+      lazy: [{ src: 'src/pages/progress/index.ts', kb: 24 }],
     });
     expect(failures).toEqual([]);
   });
 
   it('applies 25 KB to a lazy route chunk', () => {
-    const failures = failuresFor({ lazy: [{ src: 'src/pages/stats/index.ts', kb: 26 }] });
+    const failures = failuresFor({ lazy: [{ src: 'src/pages/progress/index.ts', kb: 26 }] });
     expect(failures).toEqual([expect.stringContaining('Lazy route chunk')]);
   });
 
@@ -341,7 +387,7 @@ describe('check-budget', () => {
         expect.stringContaining('no content is shipped before P12'),
       ]);
     }
-    expect(failuresFor({ lazy: [{ src: 'src/pages/stats/index.ts', kb: 20 }] })).toEqual([]);
+    expect(failuresFor({ lazy: [{ src: 'src/pages/progress/index.ts', kb: 20 }] })).toEqual([]);
   });
 
   it('a route chunk is not mistaken for content because of its file name', () => {

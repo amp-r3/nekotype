@@ -73,7 +73,7 @@ A distractor MUST be of the same script and MUST NOT share any accepted spelling
 - The state is not conveyed by colour alone: each state and the due mark have a marker that does not depend on colour, and the cell's tooltip and `aria-label` name them.
 - The tooltip gives the median answer time and the accuracy of the last 10 recall answers ("n of 10" while there are fewer) and, for a learned or mastered kana, the date its predicted recall reaches 0.90 or that the review is due.
 - Activating a cell of an introduced kana (click, tap, Enter or Space) opens a details panel under its row with the tooltip's lines, the kana's confusions, highest count first, and its recognition accuracy (ADR 062). A locked cell has no panel. The tooltip is not shown on a cell whose panel is open.
-- Sessions count in the `learn` counters, read from the log. The daily median and the best streak are on `/stats` ([Metrics](metrics.md#screens)).
+- Sessions count in the `learn` counters, read from the log. The daily median and the best streak are on `/progress` ([Metrics](metrics.md#screens)).
 
 ## Session summary
 

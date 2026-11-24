@@ -15,7 +15,7 @@ describe('prefetch: the other screens, after the first render', () => {
 
   it('ignores failures: a rejected screen neither throws nor stops the others', async () => {
     const loadRoute = vi.fn((path: string) =>
-      path === '/stats' ? Promise.reject(new Error('offline')) : Promise.resolve(),
+      path === '/progress' ? Promise.reject(new Error('offline')) : Promise.resolve(),
     );
     const extra = vi.fn(() => Promise.reject(new Error('offline')));
     const other = vi.fn(() => Promise.resolve());

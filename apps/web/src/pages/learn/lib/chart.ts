@@ -1,10 +1,10 @@
 import type { LearnKanaKey, Track } from '@nekotype/shared/types';
 import type { RowCategory } from '@nekotype/engine';
-import type { ChartCell, ChartLegend, ChartRow, KanaChartPanelLine } from '@/shared/ui/kana-chart';
+import type { ChartCell, ChartLegend, ChartRow } from '@/shared/ui/kana-chart';
 import { locale, t } from '@/shared/i18n';
 import { chartRows, keyOf } from '@/entities/learn';
 import type { KanaCellInfo } from '@/entities/learn';
-import { displayRomaji } from './romaji';
+import { displayRomaji } from '@/entities/learn';
 
 const SEPARATOR = ' · ';
 
@@ -16,11 +16,6 @@ function dateOf(timestamp: number): string {
   return new Intl.DateTimeFormat(locale.value, { day: 'numeric', month: 'short' }).format(
     timestamp,
   );
-}
-
-/** The romaji of a kana as the chart shows it. */
-export function romajiOf(key: LearnKanaKey): string {
-  return displayRomaji(key);
 }
 
 /**
@@ -36,7 +31,9 @@ export function kanaStateLines(info: KanaCellInfo): readonly string[] {
       info.opensNext ? [state, t('learn.chart.opensNext')].join(SEPARATOR) : state,
     ];
   }
-  const heading = [info.kana, romajiOf(info.key)].filter((part) => part !== '').join(SEPARATOR);
+  const heading = [info.kana, displayRomaji(info.key)]
+    .filter((part) => part !== '')
+    .join(SEPARATOR);
   const state = [t(`learn.chart.state.${info.state}`)];
   if (info.state === 'learned' || info.state === 'mastered') {
     if (info.due) state.push(t('learn.chart.due'));
@@ -80,43 +77,6 @@ export function chartModel(
       };
     }),
   }));
-}
-
-/** The lines of the details panel of an activated cell (design 94): the state with the review
- * timing, the median and accuracy, the mixups and the recognition accuracy. */
-export function kanaPanelLines(info: KanaCellInfo): readonly KanaChartPanelLine[] {
-  const lines = kanaStateLines(info);
-  const mixups: KanaChartPanelLine =
-    info.confusions.length === 0
-      ? { text: t('learn.chart.noMixups') }
-      : {
-          text: `${t('learn.chart.mixups')} ${info.confusions
-            .map((mixup) => `${mixup.key.slice(mixup.key.indexOf(':') + 1)} ×${mixup.count}`)
-            .join(', ')}`,
-          segments: [
-            { text: `${t('learn.chart.mixups')} ` },
-            ...info.confusions.flatMap((mixup, at) => [
-              ...(at > 0 ? [{ text: ', ' }] : []),
-              { text: mixup.key.slice(mixup.key.indexOf(':') + 1), kana: true },
-              { text: ` ×${mixup.count}` },
-            ]),
-          ],
-        };
-  const correct = info.recognitions - info.recognitionErrors;
-  const recognition =
-    info.recognitions === 0
-      ? t('learn.chart.noRecognition')
-      : t('learn.chart.recognition', {
-          accuracy: percent(correct / info.recognitions),
-          ok: correct,
-          total: info.recognitions,
-        });
-  return [
-    { text: lines[1] ?? '' },
-    { text: lines[2] ?? '', dim: true },
-    mixups,
-    { text: recognition, dim: true },
-  ];
 }
 
 /** The captions of the chart's blocks, by row category. */

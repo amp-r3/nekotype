@@ -534,43 +534,6 @@ button.nk-cell.is-locked {
   transform: none;
 }
 
-.nk-chart__details {
-  box-sizing: border-box;
-  /* As wide as its block: an open panel never widens the block and moves the blocks beside it. */
-  width: 0;
-  min-width: 100%;
-  padding: var(--space-2) 0 var(--space-3) 36px;
-}
-
-/* The details of a kana: the one surface in the table (design 94). */
-.nk-chart__panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  max-width: 360px;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm);
-  background: var(--bg-raised);
-}
-
-.nk-chart__panel-head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-/* The label of `close` lines up with the panel's right padding. */
-.nk-chart__close {
-  margin-left: auto;
-  margin-right: calc(-1 * var(--space-3));
-}
-
-.nk-chart__panel-lines {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
 .nk-chart__legend {
   display: flex;
   flex-wrap: wrap;

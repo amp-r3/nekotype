@@ -44,5 +44,3 @@ export {
   createErrorLog,
   isKanaKey,
 } from './engine';
-
-export { canonicalFor } from './canonical';

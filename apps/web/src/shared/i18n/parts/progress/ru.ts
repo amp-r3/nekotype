@@ -1,6 +1,6 @@
-import type { statsEn } from './en';
+import type { progressEn } from './en';
 
-export const statsRu = {
+export const progressRu = {
   'stats.learn.answerCaptionDay':
     'медиана времени ответа по памяти за день, мс · столбик: средняя половина дня · меньше — лучше',
   'stats.learn.answerCaptionWeek':
@@ -44,5 +44,8 @@ export const statsRu = {
   'stats.activity.none': 'нет ответов',
   'stats.empty.title': 'Ответов пока нет',
   'stats.empty.text': 'Закончите сессию обучения: здесь появятся серия, активность и время ответа.',
+  'stats.trackShown': 'показать дорожку',
+  'stats.learn.noTrackAnswers.hiragana': 'ответов по хирагане пока нет',
+  'stats.learn.noTrackAnswers.katakana': 'ответов по катакане пока нет',
   'stats.empty.action': 'к обучению',
-} as const satisfies Record<keyof typeof statsEn, string>;
+} as const satisfies Record<keyof typeof progressEn, string>;

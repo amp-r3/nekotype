@@ -3,7 +3,7 @@ import type { Track } from '@nekotype/shared/types';
 import { t } from '@/shared/i18n';
 import { Segmented } from '@/shared/ui';
 
-/** The script switch: hiragana or katakana. */
+/** The script switch: hiragana or katakana. It only chooses what the page shows. */
 export function TrackSwitch({
   value,
   onChange,
@@ -19,7 +19,7 @@ export function TrackSwitch({
       ]}
       value={value}
       onChange={onChange}
-      ariaLabel={t('learn.track.label')}
+      ariaLabel={t('stats.trackShown')}
     />
   );
 }

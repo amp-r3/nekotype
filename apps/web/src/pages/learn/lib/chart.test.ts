@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { LearnKanaKey } from '@nekotype/shared/types';
 import { cellInfos, keyOf } from '@/entities/learn';
 import type { KanaCellInfo } from '@/entities/learn';
-import { chartBlockLabels, chartLegend, chartModel, kanaPanelLines, kanaStateLines } from './chart';
+import { chartBlockLabels, chartLegend, chartModel, kanaStateLines } from './chart';
 import { answer, intro, learnedEvents, viewOfEvents } from './test-util';
 
 const START = new Date(2026, 4, 1, 12).getTime();
@@ -68,34 +68,6 @@ describe('kanaStateLines', () => {
   it('gives a locked kana no romaji, and names the one that opens next', () => {
     expect(kanaStateLines(cellOf(keyOf('hiragana', 'お')))).toEqual(['お', 'locked · opens next']);
     expect(kanaStateLines(cellOf(keyOf('hiragana', 'き')))).toEqual(['き', 'locked']);
-  });
-});
-
-describe('kanaPanelLines', () => {
-  it('holds the state, the median and accuracy, the confusions, most first, and the recognition accuracy', () => {
-    const lines = kanaPanelLines(cellOf(a, BEFORE));
-    expect(lines[0]?.text).toMatch(/^learned · next review: .+/);
-    expect(lines.slice(1)).toEqual([
-      { text: 'median 900 ms · accuracy 100%', dim: true },
-      {
-        text: 'mixed up with い ×2, え ×1',
-        segments: [
-          { text: 'mixed up with ' },
-          { text: 'い', kana: true },
-          { text: ' ×2' },
-          { text: ', ' },
-          { text: 'え', kana: true },
-          { text: ' ×1' },
-        ],
-      },
-      { text: 'recognition accuracy 40% (2 of 5)', dim: true },
-    ]);
-  });
-  it('says so when there is nothing yet', () => {
-    expect(kanaPanelLines(cellOf(i)).slice(2)).toEqual([
-      { text: 'no mixups yet' },
-      { text: 'no recognition answers yet', dim: true },
-    ]);
   });
 });
 

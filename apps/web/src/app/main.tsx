@@ -5,6 +5,7 @@ import { schedulePrefetch } from './prefetch';
 import { settingsReady } from '@/entities/settings';
 import { effect } from '@preact/signals';
 import { startRouter } from '@/shared/lib';
+import { ROUTE_REDIRECTS } from './route-paths';
 import './styles/index.css';
 
 // The test build's probe of the model's cost; dead code in the production build.
@@ -14,8 +15,9 @@ if (__LATENCY_PROBE__) {
   });
 }
 
+// First, so the shown path is the redirected one before anything reads it.
+startRouter(ROUTE_REDIRECTS);
 const ready = initApp();
-startRouter();
 
 const root = document.getElementById('app');
 if (root) {

@@ -5,9 +5,9 @@ import { act } from 'preact/test-utils';
 import { t, loadDictionaryPart } from '@/shared/i18n';
 import { initLearn, localDay } from '@/entities/learn';
 import { seedStatsLog } from '../lib/test-util';
-import { StatsPage } from './stats-page';
+import { ProgressPage } from './progress-page';
 
-await loadDictionaryPart('stats');
+await loadDictionaryPart('progress');
 
 // happy-dom has no layout: the chart draws once its container has a width.
 vi.stubGlobal(
@@ -60,7 +60,7 @@ describe('learning section: the answer-time periods and tracks', () => {
     await initLearn(() => 1500);
     container = document.createElement('div');
     document.body.appendChild(container);
-    render(<StatsPage />, container);
+    render(<ProgressPage />, container);
     await act(settle);
 
     // Both tracks have answers: the switch is there; the default period is 30 days.

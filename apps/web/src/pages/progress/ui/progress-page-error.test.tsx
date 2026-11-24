@@ -18,7 +18,7 @@ vi.mock('@/shared/lib', async () => {
   };
 });
 
-const { StatsPage } = await import('./stats-page');
+const { ProgressPage } = await import('./progress-page');
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 const settle = (): Promise<void> => sleep(30);
@@ -40,9 +40,9 @@ describe('stats page: loading and error', () => {
   it('shows the loading text, then the error with a retry that leads to the empty state', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
-    render(<StatsPage />, container);
+    render(<ProgressPage />, container);
     // The title stays in every state.
-    expect(container.querySelector('h1')?.textContent).toBe(t('page.stats'));
+    expect(container.querySelector('h1')?.textContent).toBe(t('page.progress'));
     expect(container.textContent).toContain(t('route.loading'));
 
     await act(settle);

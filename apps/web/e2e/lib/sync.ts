@@ -52,7 +52,7 @@ export async function playLearningSession(page: Page): Promise<void> {
   await answerSession(page);
 }
 
-/** The totals of `/stats` that the other device reads: sessions started and finished. */
+/** The totals of `/progress` that the other device reads: sessions started and finished. */
 export function sessionCounts(page: Page): { started: Locator; finished: Locator } {
   return {
     started: page.getByTestId('stats-started'),

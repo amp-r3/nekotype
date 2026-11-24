@@ -2,7 +2,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
-import { StatsPage } from './stats-page';
+import { ProgressPage } from './progress-page';
 import { t } from '@/shared/i18n';
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
@@ -13,7 +13,7 @@ async function loaded(container: HTMLElement): Promise<void> {
   }
 }
 
-describe('stats page: nothing learned yet', () => {
+describe('progress page: nothing learned yet', () => {
   let container: HTMLDivElement;
 
   afterEach(() => {
@@ -24,16 +24,21 @@ describe('stats page: nothing learned yet', () => {
   it('shows the empty state with one action to the learning screen', async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
-    render(<StatsPage />, container);
+    render(<ProgressPage />, container);
     await act(() => loaded(container));
 
-    expect(container.querySelector('h1')?.textContent).toBe(t('page.stats'));
+    expect(container.querySelector('h1')?.textContent).toBe(t('page.progress'));
     expect(container.textContent).toContain(t('stats.empty.title'));
     expect(container.textContent).toContain(t('stats.empty.text'));
     const action = Array.from(container.querySelectorAll('button')).find(
       (button) => button.textContent === t('stats.empty.action'),
     );
     expect(action).toBeDefined();
+    // The table is there with every kana locked, and nothing in it opens.
+    const cells = Array.from(container.querySelectorAll('[data-testid="kana-cell"]'));
+    expect(cells.length).toBeGreaterThan(100);
+    expect(cells.every((cell) => cell.getAttribute('data-state') === 'locked')).toBe(true);
+    expect(container.querySelector('[aria-haspopup]')).toBeNull();
     // The sleeping cat is decorative.
     expect(container.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
     // No numbers of an empty state are shown as if they were real.

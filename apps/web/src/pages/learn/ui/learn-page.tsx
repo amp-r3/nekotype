@@ -2,8 +2,9 @@ import type { JSX } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { t, tParts, tPluralParts } from '@/shared/i18n';
 import { Button, Notice, Parts, Segmented } from '@/shared/ui';
-import { KanaChart, KanaChartPanel } from '@/shared/ui/kana-chart';
-import { chartBlockLabels, chartLegend, chartModel, kanaPanelLines, romajiOf } from '../lib/chart';
+import { KanaChart } from '@/shared/ui/kana-chart';
+import { openKanaDetails } from '@/features/kana-details';
+import { chartBlockLabels, chartLegend, chartModel } from '../lib/chart';
 import { learnTargetMs, learnTrack, setTrack } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
 import { databaseMode, defaultClock } from '@/shared/lib';
@@ -276,18 +277,8 @@ export function LearnPage(): JSX.Element {
               ariaLabel={t('learn.chart.label')}
               blockLabels={chartBlockLabels()}
               legend={chartLegend(track)}
-              renderDetails={(cell, close) => {
-                const info = infos.get(keyOf(track, cell.kana));
-                if (info === undefined) return null;
-                return (
-                  <KanaChartPanel
-                    kana={info.kana}
-                    romaji={romajiOf(info.key)}
-                    lines={kanaPanelLines(info)}
-                    closeLabel={t('learn.chart.close')}
-                    onClose={close}
-                  />
-                );
+              onOpen={(kana) => {
+                openKanaDetails(keyOf(track, kana));
               }}
             />
           </div>

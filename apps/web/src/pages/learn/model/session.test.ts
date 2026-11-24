@@ -3,7 +3,7 @@ import { signal } from '@preact/signals';
 import type { LearnKanaKey } from '@nekotype/shared/types';
 import { onSyncRequest } from '@/shared/lib';
 import type { LearnStore } from '@/entities/learn';
-import { canonicalFor } from '../lib/prompt';
+import { canonicalFor } from '@/entities/learn';
 import type { Strictness } from '../lib/prompt';
 import { createLearnSession } from './session';
 import type { LearnSession, SessionStore, TaskPort } from './session';

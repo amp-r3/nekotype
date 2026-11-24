@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { locale, setLocale } from './index';
 import type * as I18n from './index';
 import { ru } from './ru';
-import { statsEn } from './parts/stats/en';
+import { progressEn } from './parts/progress/en';
 import { settingsRu } from './parts/settings/ru';
-import { statsRu } from './parts/stats/ru';
+import { progressRu } from './parts/progress/ru';
 import { aboutEn } from './parts/about/en';
 import { aboutRu } from './parts/about/ru';
 import { MemoryKeyValueStore, STORAGE_KEYS } from '@/shared/lib';
@@ -35,8 +35,8 @@ describe('locale: the parts of the dictionary that belong to one screen', () => 
     const i18n = await freshI18n();
     expect(i18n.t('stats.learn.streakCurrent')).toBe('stats.learn.streakCurrent');
 
-    await i18n.loadDictionaryPart('stats');
-    expect(i18n.t('stats.learn.streakCurrent')).toBe(statsEn['stats.learn.streakCurrent']);
+    await i18n.loadDictionaryPart('progress');
+    expect(i18n.t('stats.learn.streakCurrent')).toBe(progressEn['stats.learn.streakCurrent']);
   });
 
   it('a language switch brings every part asked for so far', async () => {
@@ -51,11 +51,11 @@ describe('locale: the parts of the dictionary that belong to one screen', () => 
   it('a part asked for while a switch loads ends in the new language', async () => {
     const i18n = await freshI18n();
     const toRussian = i18n.setLocale('ru', new MemoryKeyValueStore());
-    const part = i18n.loadDictionaryPart('stats');
+    const part = i18n.loadDictionaryPart('progress');
     await Promise.all([toRussian, part]);
 
     expect(i18n.locale.value).toBe('ru');
-    expect(i18n.t('stats.learn.streakCurrent')).toBe(statsRu['stats.learn.streakCurrent']);
+    expect(i18n.t('stats.learn.streakCurrent')).toBe(progressRu['stats.learn.streakCurrent']);
   });
 
   it('a part loaded in Russian is loaded again in English after a switch back', async () => {

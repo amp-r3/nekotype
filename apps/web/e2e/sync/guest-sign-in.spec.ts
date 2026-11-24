@@ -27,7 +27,7 @@ test.describe('a guest signs in (storage-sync.md, "Guest, sign-in and sign-out")
     await signIn(device, user);
     await expectSyncStatus(device, 'synced');
 
-    await device.goto('/stats');
+    await device.goto('/progress');
     const counts = sessionCounts(device);
     await expect(counts.started).toHaveText('1');
     await expect(counts.finished).toHaveText('1');

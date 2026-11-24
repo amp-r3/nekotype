@@ -16,9 +16,9 @@ describe('router: History API without dependencies', () => {
 
   it('starts at the current location', () => {
     stop();
-    window.history.replaceState(null, '', '/stats');
+    window.history.replaceState(null, '', '/progress');
     stop = startRouter();
-    expect(currentPath.value).toBe('/stats');
+    expect(currentPath.value).toBe('/progress');
   });
 
   it('navigate shows the path and adds a history entry', () => {
@@ -53,9 +53,24 @@ describe('router: History API without dependencies', () => {
 
   it('follows popstate (the back button)', () => {
     navigate('/learn');
-    window.history.replaceState(null, '', '/stats');
+    window.history.replaceState(null, '', '/progress');
     window.dispatchEvent(new PopStateEvent('popstate'));
-    expect(currentPath.value).toBe('/stats');
+    expect(currentPath.value).toBe('/progress');
+  });
+
+  it('replaces a retired path with its target, on start and on popstate', () => {
+    stop();
+    window.history.replaceState(null, '', '/old/');
+    const length = window.history.length;
+    stop = startRouter({ '/old': '/new' });
+    expect(currentPath.value).toBe('/new');
+    expect(window.location.pathname).toBe('/new');
+    expect(window.history.length).toBe(length);
+
+    window.history.replaceState(null, '', '/old');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    expect(currentPath.value).toBe('/new');
+    expect(window.location.pathname).toBe('/new');
   });
 
   it('stops following after the returned function is called', () => {

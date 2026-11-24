@@ -1,6 +1,8 @@
 import { LOG_PAGE_EVENTS, encodePage } from '@nekotype/shared/runtime';
+import { describe, foldLog } from '@nekotype/model';
+import type { LearnView } from '@nekotype/model';
 import type { LogEvent } from '@nekotype/shared/types';
-import { answer, start } from '@nekotype/model/testing';
+import { answer, intro, start } from '@nekotype/model/testing';
 import { getDatabase } from '@/shared/lib';
 import { dayStart, keyOf } from '@/entities/learn';
 
@@ -51,4 +53,23 @@ export async function seedStatsLog(
     next: numbered.length + 1,
     lastAt: numbered.at(-1)?.at ?? 0,
   });
+}
+
+export { answer, intro };
+
+/** Tests only: numbers the events of one device and folds them into a view. */
+export function viewOfEvents(events: readonly LogEvent[], targetMs = 1500): LearnView {
+  const numbered = events.map((event, index) => ({ ...event, dev: 'd1', n: index + 1 }));
+  const snapshot = foldLog(numbered, { targetMs, stats: true }).snapshot();
+  if (snapshot.stats === null) throw new Error('the fold has no statistics');
+  return describe(snapshot.state, snapshot.stats);
+}
+
+/** An introduction and five fast, correct recalls 40 s apart: the kana is learned at the end. */
+export function learnedEvents(kana: string, at: number): LogEvent[] {
+  const key = keyOf('hiragana', kana);
+  return [
+    intro(key, { at }),
+    ...Array.from({ length: 5 }, (_, i) => answer(key, { at: at + 40_000 * (i + 1), ms: 900 })),
+  ];
 }

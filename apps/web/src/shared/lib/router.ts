@@ -30,12 +30,29 @@ export function navigate(to: string, options: { readonly replace?: boolean } = {
   _path.value = next;
 }
 
-/** Follows the back and forward buttons. Returns the function that stops it. */
-export function startRouter(): () => void {
+/** Where an address that is no longer a screen leads, by path (`app/route-paths.ts`). */
+export type Redirects = Readonly<Record<string, string>>;
+
+// The location, with a redirected path already replaced in the history: the browser's address and
+// the shown path agree, and the back button does not return to the old address.
+function resolvedPath(redirects: Redirects): string {
+  const path = locationPath();
+  const target = redirects[path];
+  if (target === undefined) return path;
+  window.history.replaceState(null, '', target);
+  return normalize(target);
+}
+
+/**
+ * Follows the back and forward buttons, and replaces the paths of `redirects` with their targets,
+ * on start and on every `popstate`: the dev server, `vite preview` and a stale copy of `index.html`
+ * at the edge answer a retired path with the application. Returns the function that stops it.
+ */
+export function startRouter(redirects: Redirects = {}): () => void {
   const onPopState = (): void => {
-    _path.value = locationPath();
+    _path.value = resolvedPath(redirects);
   };
-  _path.value = locationPath();
+  _path.value = resolvedPath(redirects);
   window.addEventListener('popstate', onPopState);
   return () => {
     window.removeEventListener('popstate', onPopState);

@@ -1,5 +1,5 @@
-// The strings of the stats screen (`/stats`): a chunk of their own, loaded with the screen.
-export const statsEn = {
+// The strings of the progress screen (`/progress`): a chunk of their own, loaded with the screen.
+export const progressEn = {
   'stats.learn.answerCaptionDay':
     'median recall answer time of a day, ms · bar: the middle half of the day · lower is better',
   'stats.learn.answerCaptionWeek':
@@ -44,5 +44,8 @@ export const statsEn = {
   'stats.empty.title': 'No answers yet',
   'stats.empty.text':
     'Finish a learning session: the streak, the activity and the answer times will appear here.',
+  'stats.trackShown': 'track shown',
+  'stats.learn.noTrackAnswers.hiragana': 'no hiragana answers yet',
+  'stats.learn.noTrackAnswers.katakana': 'no katakana answers yet',
   'stats.empty.action': 'to learning',
 } as const satisfies Record<string, string>;
