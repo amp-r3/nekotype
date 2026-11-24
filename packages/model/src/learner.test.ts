@@ -23,7 +23,7 @@ describe('pressure and what follows from it', () => {
       const s = withLearner({ observed });
       expect(pressure(s)).toBe(0);
       expect(requestedRetention(s)).toBe(0.9);
-      expect(learningLimit(s)).toBe(4);
+      expect(learningLimit(s)).toBe(5);
       expect(recallsToLearn(s)).toBe(5);
     }
   });
@@ -40,7 +40,7 @@ describe('pressure and what follows from it', () => {
     const s = withLearner({ observed: 0.86 });
     expect(pressure(s)).toBeCloseTo(0.4, 10);
     expect(requestedRetention(s)).toBeCloseTo(0.932, 10);
-    expect(learningLimit(s)).toBe(3); // round(4 − 1.2)
+    expect(learningLimit(s)).toBe(3); // round(5 − 1.6)
     expect(recallsToLearn(s)).toBe(6);
   });
 });

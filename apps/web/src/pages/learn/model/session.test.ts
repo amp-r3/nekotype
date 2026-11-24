@@ -103,6 +103,20 @@ describe('learning session: introductions', () => {
     expect(env.store.view.value?.kana.get(hira('あ'))?.recall).toEqual([]);
   });
 
+  it('introduces the five vowels one after another in a first session (LEARN_MAX = 5)', async () => {
+    const env = await setup();
+    env.session.start();
+    const shown: string[] = [];
+    for (let i = 0; i < 5; i++) {
+      const task = env.session.task.value;
+      shown.push(task?.kind === 'introduction' ? task.kana : (task?.kind ?? 'none'));
+      answerRight(env);
+    }
+    expect(shown).toEqual(['あ', 'い', 'う', 'え', 'お']);
+    // The limit is reached: the sixth task is one of the five learning kana.
+    expect(env.session.task.value?.kind).not.toBe('introduction');
+  });
+
   it('moves the ghost hint with each letter and ignores a wrong key without an error', async () => {
     const env = await setup();
     env.session.start();
@@ -461,7 +475,7 @@ describe('learning session: recognition', () => {
   it('puts the kana most confused with the answer among the options', async () => {
     // あ is learning with three recognition errors that gave め, a kana nothing else suggests.
     const env = await setup({
-      seed: 2,
+      seed: 1,
       seedLog: (store, clock) => {
         store.introduce(hira('あ'));
         for (let i = 0; i < 3; i++) {

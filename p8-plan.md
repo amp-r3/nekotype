@@ -3,6 +3,7 @@
 Working file of phase P8 ([phases.md](docs/spec/phases.md), item 9). It tells the executor of each pull request what to build, in which order, and which decisions are already made. It is not part of `docs/`: the last pull request of the phase moves it to `docs/archive/`.
 
 - Written on 2026-11-23 against `main` at aa045fb (PR 227 merged: P8 specified in `phases.md`).
+- Changed on 2026-11-24 by PR L ([ADR 109](docs/adr/109-five-kana-learning-at-once.md)): `LEARN_MAX` 4 → 5 in a pull request of its own before PR 1, the Status table, section 7 and the expected ADR numbers of section 3.7 (one up).
 - Changed on 2026-11-24 by the design export (PR D, decisions 140–152): the brief's decision column, Q2, D1, D7, D11, D13, D14 and the cards of PRs 1–6.
 - Changed on 2026-11-23 by [ADR 106](docs/adr/106-design-sessions-in-a-workbench-artifact.md): the design system is cleaned up before the session ([M0](#m0-the-clean-up-of-the-design-system--before-m1), [PR C](#pr-c--design-clean-up-export)), the session runs in rounds in a workbench artifact ([M1](#m1-the-design-session--after-pr-c-before-pr-d)), and the expected ADR numbers moved up by two.
 - Where this plan and `docs/spec/` disagree, the spec wins until the pull request named here changes the spec. Every such change is listed in [section 3.8](#38-spec-changes) with its pull request.
@@ -18,6 +19,7 @@ The executor of a pull request fills its row (see [section 8](#8-instructions-fo
 | --- | ------------------------ | ------- | ------------ |
 | C   | `docs/design-cleanup`    | done    | #230         |
 | D   | `docs/p8-design`         | done    | #231         |
+| L   | `p8-learn-max`           | open    |              |
 | 1   | `p8-01-model-home`       | waiting |              |
 | 2   | `p8-02-progress-details` | waiting |              |
 | 3   | `p8-03-insights`         | waiting |              |
@@ -38,7 +40,7 @@ The executor of a pull request fills its row (see [section 8](#8-instructions-fo
 - the home, "Progress", the kana details dialog, the session summary, the session screen and the navigation, per the export;
 - the spec, `README.md` and `docs/architecture/` for all of the above.
 
-**What stays:** the model's rules and constants (ADR 100); the planner and one kind of session; the log, sync format 3 and the server; settings as one document (`learn.track` already syncs); the input engine and the input source; the hot-path rule (0 renders per recall keystroke, at most 1 on the answer); every budget limit; one dark theme.
+**What stays:** the model's rules and constants (ADR 100), but `LEARN_MAX`, which PR L raises from 4 to 5 before PR 1 ([ADR 109](docs/adr/109-five-kana-learning-at-once.md)); the planner and one kind of session; the log, sync format 3 and the server; settings as one document (`learn.track` already syncs); the input engine and the input source; the hot-path rule (0 renders per recall keystroke, at most 1 on the answer); every budget limit; one dark theme.
 
 **Out of scope:**
 
@@ -372,7 +374,7 @@ Every pull request goes to `main`. Reasons:
 
 ### 3.7 Documents and decision records
 
-- **ADRs,** each with the next free number when its pull request is opened (today the last is 106, the design workflow; the expected numbers follow): **107** in PR C (the clean-up of the design system: the catch-up with P7, the phase numbers of ADR 099, the typing trainer's leftovers, the cover); **108** in PR D (the P8 design export: the screens, the later phases drawn switched off, and the format of the forecast change if it amends ADR 100 point 6); **109** in PR 1 (the home's data from the model: the reason from the first task, weak kana, `introducedIn`, seeded plays); **110** in PR 2 (`/progress` with a 301 at the edge and in the router; the kana details dialog as a lazy feature slice; the view-only track switch); **111** in PR 3 (insights on the main thread in scheduler callbacks, what got stronger from the last start, the forecast history in schema 7).
+- **ADRs,** each with the next free number when its pull request is opened (today the last is 109, five kana learning at once; the expected numbers follow): **107** in PR C (the clean-up of the design system: the catch-up with P7, the phase numbers of ADR 099, the typing trainer's leftovers, the cover); **108** in PR D (the P8 design export: the screens, the later phases drawn switched off, and the format of the forecast change if it amends ADR 100 point 6); **109** in PR L (five kana learning at once, amending ADR 100 point 2); **110** in PR 1 (the home's data from the model: the reason from the first task, weak kana, `introducedIn`, seeded plays); **111** in PR 2 (`/progress` with a 301 at the edge and in the router; the kana details dialog as a lazy feature slice; the view-only track switch); **112** in PR 3 (insights on the main thread in scheduler callbacks, what got stronger from the last start, the forecast history in schema 7).
 - No A-item is added: A47–A52 hold the model, and phases.md holds P8's screens.
 - `docs/architecture/` changes with the code: `model.md` (PR 1; PR 3 removes "no caller before P8"), `layout.md` and `pages.md` (PR 2, PR 4, PR 5), `entities.md` (PR 3), `sync.md` (PR 3: the cleared stores), `quality-gates.md` (PR 2, PR 4).
 - `README.md`: the routes (PR 2), how learning looks on `/` (PR 4).
@@ -559,8 +561,9 @@ Common to all: the branch is cut from fresh `main`; the acceptance items are tho
 | --- | ---------- | ------------------------ |
 | C   | M0         | —                        |
 | D   | C, M1      | —                        |
-| 1   | D          | 2                        |
-| 2   | D          | 1, 3                     |
+| L   | D          | 2                        |
+| 1   | D, L       | 2                        |
+| 2   | D          | L, 1, 3                  |
 | 3   | 1, M2      | 2                        |
 | 4   | 2, 3, M3   | —                        |
 | 5   | 4          | —                        |
@@ -586,15 +589,26 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Done when:** `pnpm run docs:check` passes; every row of 4.2 names a decision; cards 1–6 name the export's components and strings; the maintainer approved the rewritten cards.
 - **Size:** documents only.
 
+### PR L — Five kana learning at once
+
+- **Branch:** `p8-learn-max`. **Depends on:** PR D; the maintainer's consent to the constant (given on 2026-11-24).
+- **Goal.** `LEARN_MAX` 4 → 5, so a row of five kana opens in one go and a first session introduces the five vowels. A change to a constant of ADR 100, so a pull request of its own outside rule 3c, with the run of `pnpm --filter @nekotype/sim run p7` before and after in the description (P7 plan, rule 3b). Pressure keeps its formula: `max(1, round(LEARN_MAX − p × (LEARN_MAX − 1)))`, 5 → 1.
+- **Changes:** `packages/model/src/constants.ts`; the model tests that count the limit (`learner.test.ts`, `planner.test.ts`, `forecast.test.ts`, `index.test.ts`); `apps/web/src/pages/learn/model/session.test.ts` (the five vowels in a first session; the confusion test's seed).
+- **Acceptance:** none of P8; every criterion of the P7 acceptance (ADR 100, point 10) that the sim measures still holds.
+- **Docs:** ADR 109 with ADR 100's Status line and its row in `docs/adr/README.md`; `docs/spec/learning.md` (Unlocking, Memory, Constants); A47 in `docs/spec/decisions.md`; this plan.
+- **Preview URL:** a fresh start: the first session introduces あ い う え お one after another before any other task.
+- **Done when:** the model and web tests pass; the `p7` tables before and after are in the description and meet the P7 lines (day ≤ 8, review retention ≥ 90%, ≤ 10 min a day, slow learners within 2 points, forecast off by ≤ 1); CI is green with the latency gate.
+- **Size:** about 150 lines, most of them documents.
+
 ### PR 1 — The home's data in the model
 
-- **Branch:** `p8-01-model-home`. **Depends on:** PR D.
+- **Branch:** `p8-01-model-home`. **Depends on:** PRs D and L.
 - **Goal.** `reasonOf`, `isWeak`, `introducedIn` and `seededRng` ([D1](#d1-the-reason-for-continue), [D10](#d10-forecast-history)).
 - **Creates:** `packages/model/src/home.ts`, `src/rng.ts` and their tests.
 - **Changes:** `src/constants.ts` (`WEAK_*`), `src/stats.ts` and `src/fold.ts` (`introducedIn`), `src/view.ts` (`KanaView.introducedIn`; `stability` for every introduced kana, [D12](#d12-the-kana-details-dialog)), `src/index.ts`, `src/testing/synthetic-log.ts` (uses `seededRng`), `src/fold.properties.test.ts` if it lists the statistics it compares.
 - **Tests:** each kind of reason on built states, and `review.due` equal to the kana with `dueFrom ≤ now`; `none` with `nextAt` the smallest `dueFrom`; a property over 200 seeded logs (prefixes of `syntheticLog` and the fold's generator): the kind of the reason agrees with `nextTask`'s first task; `new` of the other track under `TRACK_LAG`; weak at the boundaries (4 and 5 recalls, accuracy 0.8 and 0.7, confusions 1 and 2), a learned kana never weak; `introducedIn` from an `intro` and from an answer that introduces, copied by `snapshot()` and `clone()`, converging across devices; `syntheticLog({ answers: 1000, seed: 1 })` unchanged by the move of the generator; a learning kana's view has its memory's stability and `nextReviewAt` null; `strongerSince` lists the same kana as before.
 - **Acceptance:** 2 (model side), 8 (the data of settling).
-- **Docs:** ADR 109; S1; `docs/architecture/model.md`.
+- **Docs:** ADR 110; S1; `docs/architecture/model.md`.
 - **Preview URL:** nothing changes.
 - **Done when:** `pnpm --filter @nekotype/model test` passes with the coverage thresholds; `verify:quick` passes; budgets unchanged.
 - **Size:** about 700 lines.
@@ -613,7 +627,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Deletes:** `pages/stats`, `pages/learn/lib/romaji.ts` and `lib/prompt/canonical.ts` (moved), `KanaChartPanel`.
 - **Tests:** the redirect lists equal the code; the router replaces `/stats` and `/stats/`; the smoke test expects 301 to `/progress`; the dialog opens from a chart cell by click, Enter and Space, Esc closes it and the focus returns to the cell, its title names the kana, a locked cell opens nothing, `openKanaDetails` does nothing while `immersive`; the memory row reads `holds less than a day` under one day and `holds about {n} days` above, without ` · mastered from 21 days` when mastered; the Progress switch never writes `learn.track` and the answer-time chart follows it; the budget test fails when the dialog is in the initial chunk or statically imported by a route; the Progress page renders loading, error, no data and the blocks; the open navigation link has `aria-current="page"`.
 - **Acceptance:** 6, 7, 14 (Progress and the dialog).
-- **Docs:** ADR 110; S2–S5; `README.md` (the routes); `docs/architecture/` (`layout.md`, `pages.md`, `quality-gates.md`).
+- **Docs:** ADR 111; S2–S5; `README.md` (the routes); `docs/architecture/` (`layout.md`, `pages.md`, `quality-gates.md`).
 - **Preview URL:** `/progress` shows the switch by the title, the chart and the statistics; switching the track changes the chart and the answer time, not `/`; `/stats` lands on `/progress`; a chart cell opens the dialog by mouse and keyboard, Esc closes it; the navigation reads `learn · progress · settings` with the open page underlined; `/` still has its chart.
 - **Done when:** `verify:quick` passes; CI is green with the e2e; the initial JS and CSS within D14; the dialog and Progress are lazy chunks.
 - **Size:** about 1,500 lines, much of it moved.
@@ -626,7 +640,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Changes:** `entities/learn/model/learn-store.ts` (`startSnapshot`, `version`, `loadedModel`, the dynamic import of `insights.ts`, the probe mark, cancelling at `startSession`), `model/log.ts` (`clearLog` clears `forecasts`), `entities/learn/index.ts`; `shared/lib/idb/schema.ts` (7, `forecasts`; the `PRE_RELEASE` comment says P14); `features/sync/model/account.ts` (`USER_STORES`); `scripts/check-budget.mjs` and its test only if `insights.ts` needs a check like the model's.
 - **Tests:** with a held fake scheduler nothing is computed until its callbacks run, and Continue's reason is there before; step 1 publishes the outline and what got stronger, step 2 the forecast; a stale request does nothing; `startSession` drops a pending request; the same state gives the same outline and forecast; `startSnapshot` after a full fold, after an incremental `start`, after a pull, and null without a `start`; what got stronger after a first session lists the introduced kana; the history: created once per row and day, never for `beyond` or `complete`, settled when the row's last kana is introduced with `actual` from `introducedIn`, deleted when `actual < 1`, passed in order of `at`, the correction applied from the third settled forecast (a fixed state with three settled records of ratio 2 doubles the median), trimmed to 10 settled and 60 open; reset, sign-out and account deletion clear `forecasts`, the guest merge keeps it; a database of schema 6 is reset to 7.
 - **Acceptance:** 3 and 4 (computation), 8, 9.
-- **Docs:** ADR 111; S6, S7; `docs/architecture/` (`entities.md`, `model.md`, `sync.md`).
+- **Docs:** ADR 112; S6, S7; `docs/architecture/` (`entities.md`, `model.md`, `sync.md`).
 - **Preview URL:** the app starts with empty data (schema 7) and behaves as before.
 - **Done when:** `verify:quick` passes; CI is green with the latency gate (it runs: `entities/learn/model/` changed); initial JS and CSS within D14; after the merge the maintainer does M3.
 - **Size:** about 1,200 lines.
@@ -676,7 +690,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
   - the export against the code: each screen of the code matches its preview in the design artifact — the home, Progress, the dialog, the session with its ticks, the summary, the navigation (a list in the description); the states of P9–P12 are in the previews under `later` (decision 152) and none of them is in the code;
   - `pnpm run build && pnpm run budget` and the CI figures of the latency, `model-cost` and `home-cost` tests;
   - `docs/research/2026-11-NN-p8-acceptance.md` (the day of the check) with a row per acceptance item, its line, its measure and its proof, and its row in `docs/README.md`.
-- **Docs:** S11; `README.md` and `docs/architecture/` reread against the code; `docs/adr/README.md` has ADRs 106–111; this file moved to `docs/archive/p8-plan.md` with a note on top; its row in `docs/README.md` removed.
+- **Docs:** S11; `README.md` and `docs/architecture/` reread against the code; `docs/adr/README.md` has ADRs 106–112; this file moved to `docs/archive/p8-plan.md` with a note on top; its row in `docs/README.md` removed.
 - **Done when:** every row of the table below names a passing test or check in the description.
 - **Size:** about 400 lines, documents.
 
@@ -711,7 +725,7 @@ One executor takes one pull request of section 7.
 3. **Rules of P8:**
    - a. The design comes first: no code pull request before PR D is merged, and no visual decision outside the export.
    - b. Nothing of P9–P12 is built: their states stay in the design.
-   - c. The model's rules and constants do not change. The additions of PR 1 label and count; they choose no task. A change to the planner, the fold's rules or a constant of ADR 100 stops the pull request (P7 plan, rule 3b).
+   - c. The model's rules and constants do not change. The additions of PR 1 label and count; they choose no task. A change to the planner, the fold's rules or a constant of ADR 100 stops the pull request (P7 plan, rule 3b); such a change is a pull request of its own with a sim run and an ADR, as PR L was.
    - d. Nothing new on the hot path: no insights, planner call, fold or IndexedDB access in a key handler of a task; nothing computes during a session; the render rule (0, at most 1) holds.
    - e. Insights run in the injected `Scheduler`'s callbacks, never in a render.
    - f. The raw keystroke log is never persisted; the forecast history is never synced.
