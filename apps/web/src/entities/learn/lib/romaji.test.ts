@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { displayRomaji } from './romaji';
-import { keyOf } from '@/entities/learn';
+import { keyOf } from './tracks';
 
 describe('displayRomaji', () => {
   it('is the canonical spelling of the table', () => {

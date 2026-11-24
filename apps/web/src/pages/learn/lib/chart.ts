@@ -4,7 +4,7 @@ import type { ChartCell, ChartLegend, ChartRow, KanaChartPanelLine } from '@/sha
 import { locale, t } from '@/shared/i18n';
 import { chartRows, keyOf } from '@/entities/learn';
 import type { KanaCellInfo } from '@/entities/learn';
-import { displayRomaji } from './romaji';
+import { displayRomaji } from '@/entities/learn';
 
 const SEPARATOR = ' · ';
 
