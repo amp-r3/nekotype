@@ -20,6 +20,7 @@ export {
   initLearn,
   introduce,
   learnReady,
+  learnVersion,
   learnStatus,
   learnView,
   modelState,
@@ -29,6 +30,16 @@ export {
   retryLearn,
   startSession,
 } from './model/learn-store';
+
+export type {
+  ForecastBasis,
+  ForecastState,
+  Insights,
+  ShownForecast,
+  StrongerState,
+} from './model/insights-types';
+export { insights, reasonAt, requestInsights } from './model/insights-state';
+export type { Outline, Reason, RowId, Stronger } from '@nekotype/model';
 
 export type { LearnMessage, LogMeta } from './model/log';
 export {

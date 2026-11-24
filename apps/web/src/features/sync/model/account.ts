@@ -3,7 +3,14 @@ import { isObject } from '@nekotype/shared/runtime';
 import type { FetchLike } from '@/shared/api';
 import { apiFetch } from '@/shared/api';
 import type { ChangeChannel, Db, TypedChannel, Write } from '@/shared/lib';
-import { LOG_STORE, META_STORE, OUTBOX_STORE, SYNC_KEY, uuidv7 } from '@/shared/lib';
+import {
+  FORECASTS_STORE,
+  LOG_STORE,
+  META_STORE,
+  OUTBOX_STORE,
+  SYNC_KEY,
+  uuidv7,
+} from '@/shared/lib';
 import { LOG_META_KEY, PULLED_ID_KEY, SENT_N_KEY, isLogMeta } from '@/entities/learn';
 import type { LearnMessage } from '@/entities/learn';
 import type { AuthProvider, SignInCheck } from '@/entities/user';
@@ -11,7 +18,7 @@ import { readPendingSignIn, readProfile } from '../lib/profile';
 import type { Profile } from '../lib/profile';
 
 /** The stores that hold a user's data; sign-out and another account clear them (D19, Q3). */
-const USER_STORES = [LOG_STORE, OUTBOX_STORE, 'settings'] as const;
+const USER_STORES = [LOG_STORE, OUTBOX_STORE, FORECASTS_STORE, 'settings'] as const;
 
 /** The user keys of `meta`. `schemaVersion` and `keyIntervals` (the device's K) stay. */
 const USER_META_KEYS = [

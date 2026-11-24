@@ -34,7 +34,7 @@ export {
 export type { ChangeChannel, ChannelMessage, TypedChannel } from './idb/channel';
 export { changeChannel, typedChannel } from './idb/channel';
 export type { Db, Read, Write } from './idb/idb';
-export { LOG_STORE, META_STORE, OUTBOX_STORE, SYNC_KEY } from './idb/local-sync';
+export { FORECASTS_STORE, LOG_STORE, META_STORE, OUTBOX_STORE, SYNC_KEY } from './idb/local-sync';
 export { createMemoryDb } from './idb/memory-db';
 export { recordWrites } from './idb/record-writes';
 export type { DatabaseMode, DatabaseProvider } from './idb/database';

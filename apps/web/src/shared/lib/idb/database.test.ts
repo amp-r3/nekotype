@@ -101,6 +101,22 @@ describe('openDatabase', () => {
     expect(info).toHaveBeenCalledTimes(1);
   });
 
+  it('resets a database of schema 6 (P7) and creates the store forecasts (schema 7, P8)', async () => {
+    const old = await openRaw(factory, DATABASE_NAME, ['settings', 'log', 'outbox', 'meta']);
+    await old.db.put('meta', 'schemaVersion', 6);
+    await old.db.put('log', 'own:open', { kept: false });
+    old.db.close();
+
+    const db = await openDatabase(factory);
+
+    expect(SCHEMA_VERSION).toBe(7);
+    expect(db.hasStores(['forecasts'])).toBe(true);
+    expect(await db.getAll('forecasts')).toEqual([]);
+    expect(await db.getAll('log')).toEqual([]);
+    expect(await db.get('meta', 'schemaVersion')).toBe(7);
+    expect(info).toHaveBeenCalledTimes(1);
+  });
+
   it('resets a database of schema 5 (P6) and creates the store log (schema 6, P7)', async () => {
     const old = await openRaw(factory, DATABASE_NAME, [
       'settings',
@@ -115,12 +131,11 @@ describe('openDatabase', () => {
 
     const db = await openDatabase(factory);
 
-    expect(SCHEMA_VERSION).toBe(6);
     expect(db.hasStores(['log'])).toBe(true);
     expect(await db.getAll('log')).toEqual([]);
     // `delta` and `snapshot` left with sync format 3 (PR 11).
     expect(db.hasStores(['delta', 'snapshot'])).toBe(false);
-    expect(await db.get('meta', 'schemaVersion')).toBe(6);
+    expect(await db.get('meta', 'schemaVersion')).toBe(SCHEMA_VERSION);
     expect(info).toHaveBeenCalledTimes(1);
   });
 

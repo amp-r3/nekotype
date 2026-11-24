@@ -75,6 +75,22 @@ A distractor MUST be of the same script and MUST NOT share any accepted spelling
 - Activating a cell of an introduced kana (click, tap, Enter or Space) opens a details panel under its row with the tooltip's lines, the kana's confusions, highest count first, and its recognition accuracy (ADR 062). A locked cell has no panel. The tooltip is not shown on a cell whose panel is open.
 - Sessions count in the `learn` counters, read from the log. The daily median and the best streak are on `/progress` ([Metrics](metrics.md#screens)).
 
+## Forecast
+
+The home and the session summary show how many sessions the next row of the selected track needs: `low`, `median` and `high` (the 10th, 50th and 90th percentile of the model's plays), for the first row of the track with a kana not introduced. Its states:
+
+- `ready`: a range of 1 to 60 sessions, with a `basis`: `model` while the learner has fewer than 20 learning answers (the model predicts the answers), `habits` from 20 answers on (the learner's own shares), `corrected` once three forecasts have settled;
+- `beyond`: the median is over 60 sessions; the row has no forecast;
+- `complete`: every kana of the track is introduced.
+
+It is computed outside the first render and outside any key handler, with a fixed seed, so the same log gives the same numbers; it is not computed during a session.
+
+**The history.** The first forecast shown for a row on a local day is kept on the device with the number of sessions started before it. It settles once every kana of its row is introduced: it took the number of the session that introduced the row's last kana minus the sessions before it. A result below 1 (a pull brought sessions older than the forecast) drops the record. From the third settled forecast, the forecast is multiplied by the median ratio of actual to forecast of the last ten. The history is never synced and is cleared with the log ([Storage](storage-sync.md)).
+
+## What got stronger
+
+The kana whose state rose, or that stayed learned or mastered with their stability at least doubled, since the last session started: the current view is compared with the state just before the last `start` of the log, of any device. Before the first session there is nothing to compare (`first`); after it, every kana the session introduced is listed.
+
 ## Session summary
 
 Shown at the end of a learning session; a chunk of its own. It lists kana of both tracks:

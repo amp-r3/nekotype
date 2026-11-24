@@ -36,7 +36,12 @@ function fakeChannel(): FakeChannel {
 }
 
 function setup(
-  options: { db?: Db; targetMs?: number; loadModel?: LearnStoreDeps['loadModel'] } = {},
+  options: {
+    db?: Db;
+    targetMs?: number;
+    loadModel?: LearnStoreDeps['loadModel'];
+    loadInsights?: LearnStoreDeps['loadInsights'];
+  } = {},
 ) {
   const db = options.db ?? createMemoryDb();
   const clock = new TestClock();
@@ -50,6 +55,7 @@ function setup(
     scheduler,
     targetMs: () => target.ms,
     loadModel: options.loadModel ?? (() => import('@nekotype/model')),
+    loadInsights: options.loadInsights ?? (() => import('./insights')),
     newId,
     tz: () => 60,
     channel,
@@ -360,5 +366,123 @@ describe('failed writes', () => {
     const stored = await readLog(db);
     expect(stored.map((e) => e.t === 'intro' && e.k)).toEqual([A, I]);
     expect(env.onWriteFailed).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('startSnapshot (P8 D3)', () => {
+  const stateOf = (env: Awaited<ReturnType<typeof ready>>): readonly LearnKanaKey[] => [
+    ...(env.store.startSnapshot()?.state.items.keys() ?? []),
+  ];
+
+  it('is null while the log has no start', async () => {
+    const env = await ready();
+    expect(env.store.startSnapshot()).toBeNull();
+    env.store.introduce(A);
+    expect(env.store.startSnapshot()).toBeNull();
+  });
+
+  it('is the state just before the start the store applies', async () => {
+    const env = await ready();
+    env.store.startSession();
+    expect(stateOf(env)).toEqual([]);
+    env.store.introduce(A);
+    recall(env.store, A);
+    env.store.endSession();
+    // The snapshot does not move until the next start.
+    expect(stateOf(env)).toEqual([]);
+    env.clock.advance(60_000);
+    env.store.startSession();
+    expect(stateOf(env)).toEqual([A]);
+    expect(env.store.startSnapshot()?.stats?.started).toBe(1);
+  });
+
+  it('is rebuilt by a full fold: the load, a pull and a log out of order', async () => {
+    const first = await ready();
+    first.store.startSession();
+    first.store.introduce(A);
+    first.store.endSession();
+    first.clock.advance(60_000);
+    first.store.startSession();
+    first.store.introduce(I);
+    await settle(first);
+
+    // Another tab of the device loads the same log: the snapshot is before its last start.
+    const loaded = setup({ db: first.db });
+    await loaded.store.init();
+    expect(stateOf(loaded)).toEqual([A]);
+
+    // A pulled row of another device that sorts before the last start moves it.
+    const row: LogEvent = { t: 'start', at: 1000, dev: OTHER, n: 1, tz: 0 };
+    const intro: LogEvent = { t: 'intro', at: 1001, dev: OTHER, n: 2, k: 'hiragana:う' };
+    await first.db.put('log', rowPageKey(1), encodePage([row, intro]));
+    await first.store.reload();
+    expect(stateOf(first)).toEqual(['hiragana:う', A]);
+
+    // The log emptied: no start.
+    await first.store.reset();
+    expect(first.store.startSnapshot()).toBeNull();
+  });
+
+  it('equals the plain fold: the split changes nothing', async () => {
+    const env = await ready();
+    env.store.startSession();
+    env.store.introduce(A);
+    recall(env.store, A);
+    env.store.endSession();
+    env.clock.advance(60_000);
+    env.store.startSession();
+    recall(env.store, A);
+    await settle(env);
+    const events = await readLog(env.db);
+    const { foldLog, describe: describeView } = await import('@nekotype/model');
+    const snapshot = foldLog(events, { targetMs: 1500, stats: true }).snapshot();
+    const split = setup({ db: env.db });
+    await split.store.init();
+    expect(snapshot.stats).not.toBeNull();
+    if (snapshot.stats !== null) {
+      expect(split.store.view.value).toEqual(describeView(snapshot.state, snapshot.stats));
+    }
+  });
+});
+
+describe('what the insights hook into', () => {
+  it('version grows by one at each publish', async () => {
+    const env = await ready();
+    const v = env.store.version.value;
+    env.store.introduce(A);
+    expect(env.store.version.value).toBe(v + 1);
+    env.store.startSession();
+    expect(env.store.version.value).toBe(v + 2);
+  });
+
+  it('tells the session start and the reset, and the listener can leave', async () => {
+    const env = await ready();
+    const started = vi.fn();
+    const reset = vi.fn();
+    const leave = env.store.onSessionStart(started);
+    env.store.onReset(reset);
+    env.store.startSession();
+    expect(started).toHaveBeenCalledTimes(1);
+    env.channel.receive({ kind: 'reset' });
+    expect(reset).toHaveBeenCalledTimes(1);
+    await env.store.reset();
+    expect(reset).toHaveBeenCalledTimes(2);
+    leave();
+    env.store.startSession();
+    expect(started).toHaveBeenCalledTimes(1);
+  });
+
+  it('holds the model and the insights module once ready; a failed insights load is no error', async () => {
+    const env = setup({});
+    expect(env.store.loadedModel()).toBeNull();
+    expect(env.store.loadedInsights()).toBeNull();
+    await env.store.init();
+    expect(env.store.loadedModel()).not.toBeNull();
+    expect(env.store.loadedInsights()?.computeStepOne).toBeTypeOf('function');
+
+    const failing = setup({ loadInsights: () => Promise.reject(new Error('offline')) });
+    await failing.store.init();
+    expect(failing.store.status.value).toBe('ready');
+    expect(failing.store.loadedInsights()).toBeNull();
   });
 });
