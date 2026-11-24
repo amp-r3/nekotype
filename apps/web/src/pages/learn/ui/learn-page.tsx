@@ -277,8 +277,8 @@ export function LearnPage(): JSX.Element {
               ariaLabel={t('learn.chart.label')}
               blockLabels={chartBlockLabels()}
               legend={chartLegend(track)}
-              onOpen={(cell) => {
-                openKanaDetails(keyOf(track, cell.kana));
+              onOpen={(kana) => {
+                openKanaDetails(keyOf(track, kana));
               }}
             />
           </div>

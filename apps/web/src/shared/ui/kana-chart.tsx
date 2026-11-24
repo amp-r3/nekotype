@@ -45,7 +45,7 @@ export type KanaChartProps = {
   readonly legend?: ChartLegend;
   // An activated introduced cell (click, `Enter`, `Space`) asks the caller to show its details; the
   // chart draws none. Without it cells do not open.
-  readonly onOpen?: (cell: ChartCell) => void;
+  readonly onOpen?: (kana: string) => void;
 };
 
 const ARROWS: Readonly<Record<string, GridKey>> = {
@@ -127,7 +127,7 @@ export function KanaChart({
   function activate(cell: ChartCell): void {
     if (onOpen === undefined || cell.state === 'locked') return;
     focusCell(cell.id);
-    onOpen(cell);
+    onOpen(cell.kana);
   }
 
   function renderRow(row: ChartRow, rowAt: number): JSX.Element {

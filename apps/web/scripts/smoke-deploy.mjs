@@ -75,7 +75,10 @@ export async function checkDeployment(
   // A retired path leads to its screen with a 301 (P8: /stats to /progress), with and without the slash.
   const expectRedirect = async (path, target) => {
     const { response } = await get(fetchFn, baseUrl, path);
-    const ok = response.status === 301 && header(response, 'location') === target;
+    // Pages may answer with an absolute `location`: compare the path.
+    const location = header(response, 'location');
+    const ok =
+      response.status === 301 && location !== '' && new URL(location, baseUrl).pathname === target;
     lines.push(`${ok ? 'ok  ' : 'FAIL'} moved   ${path} ${describeResponse(response)}`);
     if (!ok)
       failures.push(

@@ -1,5 +1,6 @@
 import type { ComponentType, JSX } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { currentPath } from '@/shared/lib';
 import { loadKanaDetails } from '../lib/loader';
 import { closeKanaDetails, openKanaKey } from '../model/open';
 import type { KanaDetailsDialogProps } from './kana-details-dialog';
@@ -13,6 +14,15 @@ import type { KanaDetailsDialogProps } from './kana-details-dialog';
 export function KanaDetailsHost(): JSX.Element | null {
   const key = openKanaKey.value;
   const [Dialog, setDialog] = useState<ComponentType<KanaDetailsDialogProps> | null>(null);
+
+  // The dialog belongs to the screen that opened it: another screen (Back, a link) closes it.
+  const path = currentPath.value;
+  const shownOn = useRef(path);
+  useEffect(() => {
+    if (shownOn.current === path) return;
+    shownOn.current = path;
+    closeKanaDetails();
+  }, [path]);
 
   useEffect(() => {
     if (key === null || Dialog !== null) return;

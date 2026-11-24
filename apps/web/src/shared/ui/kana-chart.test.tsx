@@ -112,8 +112,8 @@ describe('KanaChart', () => {
       <KanaChart
         rows={rows}
         ariaLabel="x"
-        onOpen={(cell) => {
-          opened.push({ kana: cell.kana, focused: document.activeElement });
+        onOpen={(kana) => {
+          opened.push({ kana, focused: document.activeElement });
         }}
       />,
     );

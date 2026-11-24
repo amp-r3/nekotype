@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { loadDictionaryPart, t } from '@/shared/i18n';
-import { setImmersive } from '@/shared/lib';
+import { navigate, setImmersive } from '@/shared/lib';
 import { KEY_A, KEY_I, KEY_U, sampleView } from '../test-view';
 import { closeKanaDetails, openKanaDetails, openKanaKey } from '../model/open';
 import { KanaDetailsHost } from './kana-details-host';
@@ -86,6 +86,18 @@ describe('the kana details dialog', () => {
     });
     expect(openKanaKey.value).toBeNull();
     expect(document.activeElement).toBe(opener);
+  });
+
+  it('closes when the screen changes', async () => {
+    await open(KEY_A);
+    await act(() => {
+      navigate('/settings');
+    });
+    expect(openKanaKey.value).toBeNull();
+    expect(dialog()?.open).toBe(false);
+    await act(() => {
+      navigate('/');
+    });
   });
 
   it('opens a second time after it was closed', async () => {

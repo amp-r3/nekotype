@@ -86,6 +86,15 @@ describe('smoke test of a deployment', () => {
     expect(failures).toEqual(['/progress should answer 200 with the application, got 308 -> /']);
   });
 
+  it('accepts a 301 with an absolute location', async () => {
+    const fetchFn = healthy({
+      '/stats': () =>
+        new Response(null, { status: 301, headers: { location: 'https://x.pages.dev/progress' } }),
+    });
+    const { failures } = await checkDeployment('https://x.pages.dev', { fetchFn });
+    expect(failures).toEqual([]);
+  });
+
   it('catches a retired path that is served as the application or leads elsewhere', async () => {
     const fetchFn = healthy({
       '/stats': () => page(200, HTML),
