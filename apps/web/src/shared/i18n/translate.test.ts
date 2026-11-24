@@ -3,6 +3,8 @@ import { en, t, locale, setLocale, initLocale } from './index';
 import { ru } from './ru';
 import { progressEn } from './parts/progress/en';
 import { progressRu } from './parts/progress/ru';
+import { homeEn } from './parts/home/en';
+import { homeRu } from './parts/home/ru';
 import { detailsEn } from './parts/details/en';
 import { detailsRu } from './parts/details/ru';
 import { settingsEn } from './parts/settings/en';
@@ -19,6 +21,7 @@ export type _CheckedRuEnParity = _AssertParity<_RuEnCompileTimeParity>;
 const PIECES: readonly (readonly [string, Record<string, string>, Record<string, string>])[] = [
   ['core', en, ru],
   ['progress', progressEn, progressRu],
+  ['home', homeEn, homeRu],
   ['details', detailsEn, detailsRu],
   ['settings', settingsEn, settingsRu],
   ['about', aboutEn, aboutRu],
@@ -45,11 +48,11 @@ describe('i18n: translations and locale handling', () => {
   it('translates strings for active locale with parameter interpolation', async () => {
     await setLocale('en');
     expect(t('app.title')).toBe('Nekotype');
-    expect(t('learn.mastered', { done: 7, total: 104 })).toBe('mastered 7 of 104');
+    expect(t('learn.reason.new', { row: 'the m row' })).toBe('next: the m row');
 
     await setLocale('ru');
     expect(t('app.title')).toBe('Nekotype');
-    expect(t('learn.mastered', { done: 7, total: 104 })).toBe('освоено 7 из 104');
+    expect(t('learn.reason.new', { row: 'ряд m' })).toBe('дальше: ряд m');
 
     // Reset back to en
     await setLocale('en');

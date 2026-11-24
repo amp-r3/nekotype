@@ -35,12 +35,13 @@ describe('learn page: the progress cannot be read', () => {
 
     const buttons = (): HTMLButtonElement[] => Array.from(container.querySelectorAll('button'));
     const byText = (text: string): HTMLButtonElement | undefined =>
-      buttons().find((button) => button.textContent === text);
+      buttons().find((button) => button.textContent.startsWith(text));
     expect(container.textContent).toContain(t('learn.loadError'));
-    expect(container.querySelector('[data-testid="kana-chart"]')).toBeNull();
+    // What an unread state would only guess at is not shown as if it were real.
+    expect(container.querySelector('[data-testid="home-reason"]')).toBeNull();
+    expect(container.querySelector('[data-testid="home-path"]')).toBeNull();
+    expect(container.querySelector('[data-testid="learn-streak"]')).toBeNull();
     expect(byText(t('learn.continue'))?.disabled).toBe(true);
-    // The numbers of an unread state are not shown as if they were real.
-    expect(container.querySelector('[data-testid="learn-mastered-count"]')).toBeNull();
 
     failing = false;
     await act(async () => {
@@ -48,12 +49,19 @@ describe('learn page: the progress cannot be read', () => {
       await settle();
     });
     expect(container.textContent).not.toContain(t('learn.loadError'));
-    expect(container.querySelector('[data-testid="kana-chart"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="home-reason"]')).not.toBeNull();
     expect(byText(t('learn.continue'))?.disabled).toBe(false);
     // The stored log was never replaced by an empty one: the page shows it after the retry.
     expect(await db.getAll('log')).toEqual(stored);
-    expect(
-      container.querySelectorAll('[data-testid="kana-cell"]:not([data-state="locked"])'),
-    ).toHaveLength(1);
+    for (
+      let i = 0;
+      i < 100 && container.querySelector('[data-testid="home-block-basic"]') === null;
+      i++
+    ) {
+      await act(settle);
+    }
+    expect(container.querySelector('[data-testid="home-block-basic"]')?.textContent).toContain(
+      '1/46',
+    );
   });
 });

@@ -3,7 +3,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { getDatabase } from '@/shared/lib';
-import { t } from '@/shared/i18n';
+import { tPlural } from '@/shared/i18n';
 import { LearnPage } from './learn-page';
 import { key, seedLog } from '../lib/test-util';
 
@@ -13,7 +13,7 @@ import { key, seedLog } from '../lib/test-util';
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
 const DAY = 24 * 3600 * 1000;
 
-describe('learn page: due: N and the due marks', () => {
+describe('learn page: the reason when kana are due', () => {
   let container: HTMLDivElement;
 
   afterEach(() => {
@@ -21,7 +21,7 @@ describe('learn page: due: N and the due marks', () => {
     container.remove();
   });
 
-  it('counts the due kana of both tracks and marks the learned ones among them', async () => {
+  it('counts the due kana of both tracks in the reason, and plans the session in the outline', async () => {
     const db = await getDatabase();
     await seedLog(db, Date.now() - 30 * DAY, (store, clock) => {
       for (const kana of ['あ', 'い']) {
@@ -62,13 +62,24 @@ describe('learn page: due: N and the due marks', () => {
     render(<LearnPage />, container);
     await act(settle);
 
-    const marked = container.querySelectorAll('[data-testid="kana-cell"][data-due="true"]');
-    expect(Array.from(marked).map((cell) => cell.textContent)).toEqual(['あ', 'い']);
-    expect(container.querySelector('[data-testid="learn-due"]')?.textContent).toBe(
-      t('learn.due', { n: 3 }),
+    expect(container.querySelector('[data-testid="home-reason"]')?.textContent).toBe(
+      tPlural('learn.reason.review', 3),
     );
-    // Introduced kana are shown whatever their state; the rest is locked.
-    const open = container.querySelectorAll('[data-testid="kana-cell"]:not([data-state="locked"])');
-    expect(Array.from(open).map((cell) => cell.textContent)).toEqual(['あ', 'い', 'う']);
+    expect(container.querySelector('[data-testid="home-reason"]')?.textContent).toBe(
+      '3 kana are due for review',
+    );
+    // The outline comes from the insights, a moment after the reason.
+    for (
+      let i = 0;
+      i < 100 && container.querySelector('[data-testid="home-outline"]') === null;
+      i++
+    ) {
+      await act(settle);
+    }
+    expect(container.querySelector('[data-testid="home-outline"]')?.textContent).toMatch(
+      /^about \d+ tasks: \d+ reviews?/,
+    );
+    // The chart is on /progress: the home draws no table.
+    expect(container.querySelector('[data-testid="kana-chart"]')).toBeNull();
   });
 });

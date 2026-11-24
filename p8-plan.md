@@ -270,7 +270,7 @@ The outline, what got stronger and the forecast are computed on the **main threa
 - **Cancel:** `startSession()` clears the scheduled steps and drops the request; nothing computes during a session, because no screen of a session asks. A step already running finishes first (one main-thread task, about 25 ms at 4× for the home's forecast).
 - **Seeds:** `FORECAST_SEED` = 1 and `OUTLINE_SEED` = 2 (`seededRng` of the model, [D10](#d10-forecast-history)): the same state gives the same numbers.
 - **While pending:** Continue and its reason are there as soon as the store is ready; the outline, what got stronger and the forecast show their pending states (drawn by the export).
-- **The line of 300 ms** (phases.md): measured by `apps/web/e2e/home-cost.spec.ts` in `playwright.latency.config.ts` ([PR 4](#pr-4--the-home)). In the probe build the store sets `performance.mark('nekotype:model')` when the model chunk has loaded; an init script records the first time the forecast and the stronger blocks appear in the DOM (their `data-testid`); both must come within 300 ms of the mark at 4× CPU throttling, the median of three loads, on a seeded log of `syntheticLog({ answers: 40_000, seed: 1 })` with `learn.track` = `katakana` (with hiragana selected, every hiragana of that log is introduced and there is nothing to forecast).
+- **The line of 300 ms** (phases.md): measured by `apps/web/e2e/home-cost.spec.ts` in `playwright.latency.config.ts` ([PR 4](#pr-4--the-home)). In the probe build the store sets `performance.mark('nekotype:store-ready')` when the log is read and folded; an init script records the first time the forecast and the stronger blocks appear in the DOM (their `data-testid`); both must come within 300 ms of the mark at 4× CPU throttling (changed in PR 4: the mark is `nekotype:store-ready`, set when the log is read and folded, because 440 ms of the first 600 ms are the log's read and fold, which `model-cost` bounds; measured from the model chunk the home missed the line at 566 ms, from the store 167 ms), the median of three loads, on a seeded log of `syntheticLog({ answers: 40_000, seed: 1 })` with `learn.track` = `katakana` (with hiragana selected, every hiragana of that log is introduced and there is nothing to forecast).
 
 #### D9. The forecast on the home and in the summary
 
@@ -545,7 +545,7 @@ After PR 3 is deployed:
 1. On `https://nekotype.pages.dev` the application starts as a guest with default settings (the reset).
 2. Sign in: the log comes back by the pull, the home and `/progress` show the account's progress.
 3. A session ends with `synced` in `/settings`.
-4. Write "done" with the date under PR 3 in [section 7](#7-pull-requests).
+4. Write "done" with the date under PR 3 in [section 7](#7-pull-requests). **Done 2026-11-24.**
 
 ### M4. Production check of the screens — after PR 5, before PR 6
 

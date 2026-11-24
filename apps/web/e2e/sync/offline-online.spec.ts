@@ -27,7 +27,7 @@ test.describe('a session answered offline (storage-sync.md, "Sync triggers")', (
     await page.getByRole('link', { name: 'settings', exact: true }).click();
     await expectSyncStatus(page, 'synced');
     await page.getByRole('link', { name: 'learn', exact: true }).click();
-    await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
+    await expect(page.getByTestId('home-reason')).toBeVisible();
 
     await context.setOffline(true);
     await page.getByRole('button', { name: 'continue' }).click();

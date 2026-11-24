@@ -7,25 +7,29 @@ afterEach(async () => {
 
 describe('tParts', () => {
   it('splits a string into the text and the values of its parameters', () => {
-    expect(tParts('learn.mastered', { done: 7, total: 104 })).toEqual([
-      { text: 'mastered ', param: false },
-      { text: '7', param: true },
-      { text: ' of ', param: false },
-      { text: '104', param: true },
+    expect(tParts('learn.reason.new', { row: 'the m row' })).toEqual([
+      { text: 'next: ', param: false },
+      { text: 'the m row', param: true },
     ]);
   });
 
   it('keeps a parameter at the start or the end, and a missing one as text', () => {
-    expect(tParts('learn.due', { n: 3 })).toEqual([
-      { text: 'due: ', param: false },
-      { text: '3', param: true },
+    expect(tParts('learn.reason.newOther', { row: 'the vowels', track: 'katakana' })).toEqual([
+      { text: 'next: ', param: false },
+      { text: 'the vowels', param: true },
+      { text: ', ', param: false },
+      { text: 'katakana', param: true },
     ]);
-    expect(tParts('learn.due')).toEqual([{ text: 'due: {n}', param: false }]);
+    expect(tParts('learn.path.title', { track: 'katakana' })).toEqual([
+      { text: 'path · ', param: false },
+      { text: 'katakana', param: true },
+    ]);
+    expect(tParts('learn.reason.new')).toEqual([{ text: 'next: {row}', param: false }]);
   });
 
   it('joins back to the string `t` gives', () => {
-    const parts = tParts('learn.mastered', { done: 7, total: 104 });
-    expect(parts.map((part) => part.text).join('')).toBe('mastered 7 of 104');
+    const parts = tParts('learn.reason.newOther', { row: 'the vowels', track: 'katakana' });
+    expect(parts.map((part) => part.text).join('')).toBe('next: the vowels, katakana');
   });
 });
 

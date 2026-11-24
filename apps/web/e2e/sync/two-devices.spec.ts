@@ -42,7 +42,7 @@ test.describe('two devices of one account (storage-sync.md, "Batches")', () => {
     await contextB.setOffline(true);
     await b.getByRole('link', { name: 'settings', exact: true }).click();
     await b.getByRole('link', { name: 'learn', exact: true }).click();
-    await expect(b.getByTestId('learn-mastered-count')).toBeVisible();
+    await expect(b.getByTestId('home-reason')).toBeVisible();
     await b.getByRole('button', { name: 'continue' }).click();
     await answerSession(b);
     await playLearningSession(a);
@@ -58,10 +58,10 @@ test.describe('two devices of one account (storage-sync.md, "Batches")', () => {
     await expectSyncStatus(a, 'synced');
 
     // A reads what B sent when it starts again; the pull and the new fold come after the first paint.
-    await a.goto('/');
-    await b.goto('/');
-    await expect(a.getByTestId('learn-mastered-count')).toBeVisible();
-    await expect(b.getByTestId('learn-mastered-count')).toBeVisible();
+    await a.goto('/progress');
+    await b.goto('/progress');
+    await expect(a.getByTestId('kana-chart')).toBeVisible();
+    await expect(b.getByTestId('kana-chart')).toBeVisible();
     await expect
       .poll(async () => (await chartStates(a)).join(',') === (await chartStates(b)).join(','))
       .toBe(true);

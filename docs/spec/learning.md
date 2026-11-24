@@ -58,22 +58,30 @@ A distractor MUST be of the same script and MUST NOT share any accepted spelling
 
 ## `/` screen
 
-- Track switch, one primary "Continue", and the progress line: "mastered X of N" (N is the number of the selected track's kana, X its mastered kana), the current streak and, when there is any, "due: n" (n is the number of due kana of both tracks, which is what "Continue" reviews; the part is hidden at 0). A first-visit line stays until the first answer.
-- **Kana chart** of the selected track, one cell per kana, laid out by rows as in the design system:
+The learning home: it answers "what now". No kana table is here; it is on `/progress` ([Metrics](metrics.md#screens)). On a desktop the action and "since the last session" stand on the left and the path on the right; below 640px they stack in the order action, path, since the last session.
 
-  | State    | Condition                          |
-  | -------- | ---------------------------------- |
-  | Locked   | not introduced                     |
-  | Learning | introduced, learning               |
-  | Learned  | learned, stability under 21 days   |
-  | Mastered | learned, stability 21 days or more |
+- **Top.** The track switch (the choice is saved and everything below follows it) and, from the first answer on, the current streak, shared by both tracks (`streak: 6 days`; a zero shows as it is).
+- **The action.** The _reason_ for Continue, one line, then "continue" (Enter) with the outline of the session. The reason is a label of what the session does first, read from the planner's first task, so it never promises what the session does not do:
 
-  A due kana (learned or mastered, due by the model) also carries a due mark; a learning kana never does. The locked kana that opens next is named in its tooltip.
+  | Reason     | When                                                               | Wording                                                                             |
+  | ---------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+  | `review`   | the first task is a review: kana of either track are due           | `5 kana are due for review`                                                         |
+  | `weak`     | a learning kana first, and some learning kana are weak             | `practise 1 weak kana: ぬ`                                                          |
+  | `learning` | a learning kana first, none weak                                   | `finish learning 2 kana`                                                            |
+  | `new`      | the first task introduces a kana; the row may be the other track's | `next: the m row`; the first visit `next: the vowels`; `next: the vowels, katakana` |
+  | `none`     | the planner offers nothing                                         | `nothing to review now`                                                             |
 
-- The state is not conveyed by colour alone: each state and the due mark have a marker that does not depend on colour, and the cell's tooltip and `aria-label` name them.
-- The tooltip gives the median answer time and the accuracy of the last 10 recall answers ("n of 10" while there are fewer) and, for a learned or mastered kana, the date its predicted recall reaches 0.90 or that the review is due.
-- Activating a cell of an introduced kana (click, tap, Enter or Space) opens a details panel under its row with the tooltip's lines, the kana's confusions, highest count first, and its recognition accuracy (ADR 062). A locked cell has no panel. The tooltip is not shown on a cell whose panel is open.
-- Sessions count in the `learn` counters, read from the log. The daily median and the best streak are on `/progress` ([Metrics](metrics.md#screens)).
+  A kana is weak while it is learning and either has at least 5 recall answers among the last 10 with an accuracy under 0.8, or confusions summing to at least 2; the weak kana are listed after the reason. The reason is planned again when the learn view or the track changes, when the tab becomes visible and every minute while the home is shown; it changes the screen only when it changed.
+
+- **The outline** after "continue": `about 30 tasks: 6 reviews, 2 new kana`, computed after the first paint with a fixed seed; a part at 0 is left out, and learning tasks count in the total only. Not shown with nothing to do.
+- **Nothing to do** (`none`): the reason and, under it, `next review: tomorrow at 9:15` (`at 18:40` today, `12 Nov, 9:15` later); there is no "continue", and neither a click nor Enter starts a session. One kind of session exists, and it would end with no task.
+- **The katakana suggestion.** While hiragana is selected, the 46 basic hiragana are learned and no katakana kana is introduced: the line `The basic hiragana are learned. You can start katakana.` with `start katakana`, over the reason; with nothing to do it comes after the reason and its button is the primary action. It sets the track to katakana, cannot be dismissed and ends once a katakana kana is introduced.
+- **The path** of the selected track: the forecast line, then the blocks (basic, voiced, combinations, and extended for katakana) as buttons with their name, `introduced/total` and a tick per row; the open block, the current one by default, lists its rows as columns with their kana. A row is _done_ when every kana of it is introduced, _current_ when it is the first row not done (the row the forecast names), _locked_ otherwise, also when it holds a kana introduced out of order.
+- **The forecast line** under the path's title is the [Forecast](#forecast) of the selected track: a range (`the whole m row opens in 2–4 sessions`), one number with "about" when low equals high, a rough-estimate note while the basis is the model or the learner's habits, `no forecast for the m row yet` when over 60 sessions, `every hiragana is open` when the track is complete. While it computes the line keeps its height.
+- **Since the last session** ([What got stronger](#what-got-stronger)): the kana as table cells in the state they have now, grouped `new`, `learned`, `mastered`, `stronger` (a kana is in one group; one that was locked is new); each is a button that opens the kana's details. `no changes since the last session` when none; not shown on the first visit (no answer yet).
+- A reserved status line under the action: loading, storage unavailable, a load error with retry, a sign-in notice. Until the progress has loaded "continue" is disabled and the numbers are not shown.
+- "Continue" takes the focus when the screen is ready (with nothing to do, the katakana suggestion does if it is shown), so Enter starts the session. The reason, the forecast, the path and the cells are never computed in a key handler of a task, and nothing of them runs during a session.
+- Sessions count in the `learn` counters, read from the log. The daily median and the best streak are on `/progress`.
 
 ## Forecast
 

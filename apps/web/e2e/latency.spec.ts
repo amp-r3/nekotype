@@ -73,7 +73,7 @@ test(`keystroke latency of recall stays within the budgets at ${THROTTLE}x CPU t
   const client = await page.context().newCDPSession(page);
   await client.send('Emulation.setCPUThrottlingRate', { rate: THROTTLE });
 
-  await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
+  await expect(page.getByTestId('home-reason')).toBeVisible();
   await page.getByRole('button', { name: 'continue' }).click();
   // The input source, and the probe with it, loads with the session chunk (ADR 067).
   await expect(page.getByTestId('task-session')).toHaveText(

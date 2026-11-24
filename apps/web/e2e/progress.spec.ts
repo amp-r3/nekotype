@@ -149,6 +149,7 @@ test.describe('the kana table on /progress', () => {
     await expect(page.getByTestId('kana-cell').first()).toHaveText('ア');
     await expect(page.getByText('no katakana answers yet')).toBeVisible();
     await page.getByRole('navigation').getByRole('link', { name: 'learn' }).click();
-    await expect(page.getByTestId('kana-cell').first()).toHaveText('あ');
+    // The learning track is still hiragana: the home's path says so.
+    await expect(page.locator('#home-path-title')).toHaveText('path · hiragana');
   });
 });

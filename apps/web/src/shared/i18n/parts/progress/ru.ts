@@ -1,6 +1,13 @@
 import type { progressEn } from './en';
 
 export const progressRu = {
+  'stats.chart.label': 'таблица кан',
+  'stats.chart.vowels': 'гласные',
+  'stats.chart.due': 'пора повторить',
+  'stats.chart.nextReview': 'повторение: {date}',
+  'stats.chart.stats': 'медиана {ms} мс · точность {accuracy}%',
+  'stats.chart.answers': '{n} из 10 ответов',
+  'stats.chart.opensNext': 'откроется следующей',
   'stats.learn.answerCaptionDay':
     'медиана времени ответа по памяти за день, мс · столбик: средняя половина дня · меньше — лучше',
   'stats.learn.answerCaptionWeek':

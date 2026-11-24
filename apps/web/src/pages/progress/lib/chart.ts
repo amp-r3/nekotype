@@ -28,7 +28,7 @@ export function kanaStateLines(info: KanaCellInfo): readonly string[] {
     const state = t('learn.chart.state.locked');
     return [
       info.kana,
-      info.opensNext ? [state, t('learn.chart.opensNext')].join(SEPARATOR) : state,
+      info.opensNext ? [state, t('stats.chart.opensNext')].join(SEPARATOR) : state,
     ];
   }
   const heading = [info.kana, displayRomaji(info.key)]
@@ -36,20 +36,20 @@ export function kanaStateLines(info: KanaCellInfo): readonly string[] {
     .join(SEPARATOR);
   const state = [t(`learn.chart.state.${info.state}`)];
   if (info.state === 'learned' || info.state === 'mastered') {
-    if (info.due) state.push(t('learn.chart.due'));
+    if (info.due) state.push(t('stats.chart.due'));
     else if (info.dueAt !== null)
-      state.push(t('learn.chart.nextReview', { date: dateOf(info.dueAt) }));
+      state.push(t('stats.chart.nextReview', { date: dateOf(info.dueAt) }));
   }
   const lines = [heading, state.join(SEPARATOR)];
   // An introduced kana with no recall answer yet has no median to show.
   if (info.answers === 0) return lines;
   const stats = [
-    t('learn.chart.stats', {
+    t('stats.chart.stats', {
       ms: Math.round(info.medianMs),
       accuracy: percent(info.accuracy),
     }),
   ];
-  if (info.answers < 10) stats.push(t('learn.chart.answers', { n: info.answers }));
+  if (info.answers < 10) stats.push(t('stats.chart.answers', { n: info.answers }));
   return [...lines, stats.join(SEPARATOR)];
 }
 
@@ -61,7 +61,7 @@ export function chartModel(
   return chartRows(track).map((row) => ({
     id: row.id,
     head: row.head,
-    label: row.id === 'vowels' ? t('learn.chart.vowels') : row.name,
+    label: row.id === 'vowels' ? t('stats.chart.vowels') : row.name,
     block: row.category,
     cells: row.kana.map((kana): ChartCell | null => {
       const info = kana === null ? undefined : infos.get(keyOf(track, kana));
@@ -98,7 +98,7 @@ export function chartLegend(track: Track): ChartLegend {
       learning: t('learn.chart.state.learning'),
       learned: t('learn.chart.state.learned'),
       mastered: t('learn.chart.state.mastered'),
-      due: t('learn.chart.due'),
+      due: t('stats.chart.due'),
     },
   };
 }

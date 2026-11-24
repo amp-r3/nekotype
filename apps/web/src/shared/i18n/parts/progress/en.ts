@@ -1,5 +1,12 @@
 // The strings of the progress screen (`/progress`): a chunk of their own, loaded with the screen.
 export const progressEn = {
+  'stats.chart.label': 'kana table',
+  'stats.chart.vowels': 'vowels',
+  'stats.chart.due': 'review due',
+  'stats.chart.nextReview': 'next review: {date}',
+  'stats.chart.stats': 'median {ms} ms · accuracy {accuracy}%',
+  'stats.chart.answers': '{n} of 10 answers',
+  'stats.chart.opensNext': 'opens next',
   'stats.learn.answerCaptionDay':
     'median recall answer time of a day, ms · bar: the middle half of the day · lower is better',
   'stats.learn.answerCaptionWeek':

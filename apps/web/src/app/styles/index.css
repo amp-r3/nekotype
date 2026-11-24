@@ -389,59 +389,42 @@ html {
   display: none;
 }
 
-/* ---- The kana chart ----------------------------------------------------------------------- */
+/* ---- The learning home ------------------------------------------------------------------
+   Below 640px one column: the action, the path, since the last session. From 640px four columns:
+   the action and "since the last session" on the left, the path on the right (design decision 140). */
 
-.nk-chart {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-/* Blocks stand side by side and wrap: on a desktop they fill the width, on a phone they stack. */
-.nk-chart__grid {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+.nk-home {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
   gap: var(--space-8);
 }
 
-.nk-chart__block {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
+@media (min-width: 640px) {
+  .nk-home {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'act act path path'
+      'str str path path';
+    column-gap: var(--space-12);
+  }
 
-.nk-chart__caption {
-  margin-bottom: var(--space-1);
-  padding-left: 36px;
-  color: var(--fur-dim);
-}
+  .nk-home__act {
+    grid-area: act;
+  }
 
-.nk-chart__row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
+  .nk-home__path {
+    grid-area: path;
+  }
 
-.nk-chart__head {
-  flex: none;
-  width: 32px;
-  padding-right: var(--space-1);
-  text-align: right;
-  color: var(--fur-dim);
-  font-family: var(--font-mono);
-  font-size: var(--text-ui-caption);
-}
-
-.nk-chart__slot {
-  position: relative;
-}
-
-@media (max-width: 639px) {
-  .nk-chart__grid {
-    gap: var(--space-6);
+  .nk-home__since {
+    grid-area: str;
   }
 }
+
+/* ---- The kana cell -------------------------------------------------------------------------
+   Drawn by the kana chart of /progress and by "since the last session" on the home. */
 
 /* A cell is 44px square; the state is shown by border, fill and marks, not by colour alone. */
 .nk-cell {
@@ -505,59 +488,4 @@ button.nk-cell.is-locked {
   height: var(--space-2);
   background: currentColor;
   clip-path: polygon(0 0, 100% 0, 100% 100%);
-}
-
-.nk-chart__tip {
-  position: absolute;
-  z-index: 10;
-  bottom: calc(100% + var(--space-2));
-  left: 50%;
-  transform: translateX(-50%);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  background: var(--fur);
-  color: var(--on-fur);
-  font-size: var(--text-ui-caption);
-  line-height: 1.4;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-.nk-chart__tip.is-start {
-  left: 0;
-  transform: none;
-}
-
-.nk-chart__tip.is-end {
-  left: auto;
-  right: 0;
-  transform: none;
-}
-
-.nk-chart__legend {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1) var(--space-2);
-  color: var(--fur-dim);
-}
-
-.nk-chart__legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-/* The due mark is not a state: set apart from the four. */
-.nk-chart__legend-due {
-  margin-left: var(--space-6);
-}
-
-.nk-cell.nk-chart__swatch {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  font-size: var(--text-jp-body);
 }

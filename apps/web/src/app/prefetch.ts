@@ -1,12 +1,12 @@
 import { preloadLocale } from '@/shared/i18n';
 import { prefetchKanaDetails } from '@/features/kana-details';
-import { prefetchSessionRuntime, prefetchSummaryPanel } from '@/pages/learn';
+import { prefetchHomePanels, prefetchSessionRuntime, prefetchSummaryPanel } from '@/pages/learn';
 import { routes } from './routes';
 import { ROUTE_PATHS } from './route-paths';
 
 export type PrefetchDeps = {
   readonly loadRoute: (path: (typeof ROUTE_PATHS)[number]) => Promise<unknown>;
-  // The other lazy pieces: the session runtime, the session summary, the kana details and both whole dictionaries.
+  // The other lazy pieces: the session runtime, the session summary, the home's panels, the kana details and both whole dictionaries.
   readonly loadExtras: readonly (() => Promise<unknown>)[];
 };
 
@@ -46,6 +46,7 @@ export function schedulePrefetch(): void {
         loadRoute: (path) => routes[path].load(),
         loadExtras: [
           prefetchSummaryPanel,
+          prefetchHomePanels,
           prefetchKanaDetails,
           prefetchSessionRuntime,
           () => preloadLocale('en'),
