@@ -1,3 +1,4 @@
+import './chart.css';
 import type { LearnView } from '@nekotype/model';
 import type { JSX } from 'preact';
 import { t } from '@/shared/i18n';
@@ -21,7 +22,7 @@ export function ProgressChart({
     <div className="w-full">
       <KanaChart
         rows={chartModel(track, cellInfos(track, view, now))}
-        ariaLabel={t('learn.chart.label')}
+        ariaLabel={t('stats.chart.label')}
         blockLabels={chartBlockLabels()}
         legend={chartLegend(track)}
         onOpen={(kana) => {

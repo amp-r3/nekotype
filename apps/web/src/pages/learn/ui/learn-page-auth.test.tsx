@@ -58,12 +58,12 @@ describe('learn page after a sign-in', () => {
     render(<LearnPage />, container);
     await act(settle);
     expect(notice()).toContain(t('learn.loading'));
-    expect(container.querySelector('[data-testid="kana-cell"]')).toBeNull();
+    expect(container.querySelector('[data-testid="home-reason"]')).toBeNull();
 
     await act(async () => {
       setSignInCheck('idle');
       await settle();
     });
-    expect(container.querySelector('[data-testid="kana-cell"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="home-reason"]')).not.toBeNull();
   });
 });

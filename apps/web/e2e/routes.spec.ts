@@ -58,7 +58,7 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
     page,
   }) => {
     await page.goto('/');
-    await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
+    await expect(page.getByTestId('home-reason')).toBeVisible();
     await page.evaluate(() => {
       Object.assign(window, { navigationMarker: 'kept' });
     });
@@ -78,7 +78,7 @@ test.describe('routes: direct visits, navigation without a reload, settings', ()
     await expect(page.getByRole('heading', { level: 1, name: 'Progress' })).toBeVisible();
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
+    await expect(page.getByTestId('home-reason')).toBeVisible();
 
     // No document load happened on the way.
     expect(await page.evaluate(() => Reflect.get(window, 'navigationMarker'))).toBe('kept');

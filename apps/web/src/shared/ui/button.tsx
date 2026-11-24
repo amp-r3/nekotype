@@ -11,6 +11,8 @@ export type ButtonProps = {
   readonly children: ComponentChildren;
   // The key after the label (`enter`, `ctrl + enter`), drawn bare (design Button `hint`).
   readonly hint?: ComponentChildren;
+  // Classes of the hint's key, e.g. `pointer-coarse:hidden` where there is no keyboard.
+  readonly hintClassName?: string;
   readonly onClick?: (e: MouseEvent) => void;
   readonly disabled?: boolean;
   readonly className?: string;
@@ -27,6 +29,7 @@ export function Button({
   size = 'md',
   children,
   hint,
+  hintClassName,
   onClick,
   disabled = false,
   className = '',
@@ -69,7 +72,7 @@ export function Button({
     >
       {children}
       {hint !== undefined && (
-        <Kbd bare className={variant === 'primary' ? 'text-on-fur' : undefined}>
+        <Kbd bare className={cx(variant === 'primary' && 'text-on-fur', hintClassName)}>
           {hint}
         </Kbd>
       )}

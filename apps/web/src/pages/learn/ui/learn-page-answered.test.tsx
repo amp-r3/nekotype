@@ -21,7 +21,7 @@ describe('learn page: after the first answer', () => {
     await setLocale('en');
   });
 
-  it('shows the streak, in the plural of the language, and not the first-visit line', async () => {
+  it('shows the streak, in the plural of the language', async () => {
     const db = await getDatabase();
     // One answer a day for six days, the last of them now.
     await seedLog(db, Date.now() - 5 * 86_400_000, (store, clock) => {
@@ -50,7 +50,6 @@ describe('learn page: after the first answer', () => {
     const streak = (): string | null | undefined =>
       container.querySelector('[data-testid="learn-streak"]')?.textContent;
     expect(streak()).toBe('streak: 6 days');
-    expect(container.querySelector('[data-testid="learn-first"]')).toBeNull();
 
     // The number is set apart in its own span.
     expect(container.querySelector('[data-testid="learn-streak"] .font-mono')?.textContent).toBe(

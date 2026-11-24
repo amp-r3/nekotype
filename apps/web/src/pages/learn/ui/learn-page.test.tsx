@@ -8,21 +8,15 @@ import { t } from '@/shared/i18n';
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 30));
 
-// The model is a lazy chunk: wait until the chart is drawn instead of guessing the time.
-async function untilChart(root: HTMLElement): Promise<void> {
+// The model is a lazy chunk: wait until the home has its reason instead of guessing the time.
+async function until(root: HTMLElement, selector: string): Promise<void> {
   for (let i = 0; i < 100; i += 1) {
-    if (root.querySelector('[data-testid="kana-cell"]')) return;
+    if (root.querySelector(selector)) return;
     await act(settle);
   }
 }
 
-function unlockedKana(root: HTMLElement): string {
-  return Array.from(root.querySelectorAll('[data-testid="kana-cell"]:not([data-state="locked"])'))
-    .map((cell) => cell.textContent)
-    .join('');
-}
-
-describe('learn page: the top of the learning screen', () => {
+describe('learn page: the learning home', () => {
   let container: HTMLDivElement;
 
   afterEach(() => {
@@ -30,65 +24,93 @@ describe('learn page: the top of the learning screen', () => {
     container.remove();
   });
 
-  it('shows the progress and a chart of locked kana once the log has loaded', async () => {
+  function mount(): void {
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<LearnPage />, container);
-    await untilChart(container);
+  }
 
-    expect(container.querySelector('[data-testid="learn-mastered-count"]')?.textContent).toBe(
-      t('learn.mastered', { done: 0, total: 104 }),
+  it('a fresh start reads "next: the vowels", has no streak, no chart and nothing stronger', async () => {
+    mount();
+    await until(container, '[data-testid="home-reason"]');
+
+    expect(container.querySelector('[data-testid="home-reason"]')?.textContent).toBe(
+      'next: the vowels',
     );
-    expect(container.querySelectorAll('[data-testid="kana-cell"]')).toHaveLength(104);
-    expect(unlockedKana(container)).toBe('');
-    // Nothing is due: the part is not there, and there is no review button.
-    expect(container.querySelector('[data-testid="learn-due"]')).toBeNull();
+    expect(container.querySelector('[data-testid="kana-chart"]')).toBeNull();
+    expect(container.querySelector('[data-testid="kana-cell"]')).toBeNull();
+    expect(container.querySelector('[data-testid="learn-streak"]')).toBeNull();
+    expect(container.querySelector('[data-testid="home-stronger"]')).toBeNull();
     const labels = Array.from(container.querySelectorAll('button')).map((el) => el.textContent);
-    expect(labels).toContain(t('learn.continue'));
-    expect(labels.filter((label) => label.startsWith('review'))).toEqual([]);
+    expect(labels).toContain(`${t('learn.continue')}${t('key.enter')}`);
+  });
+
+  it('draws the path of the track and its forecast once the lazy parts have loaded', async () => {
+    mount();
+    await until(container, '[data-testid="home-forecast"]');
+
+    expect(container.querySelector('#home-path-title')?.textContent).toBe('path · hiragana');
+    const blocks = Array.from(container.querySelectorAll('[data-testid^="home-block-"]'));
+    expect(blocks.map((b) => b.getAttribute('data-testid'))).toEqual([
+      'home-block-basic',
+      'home-block-dakuten',
+      'home-block-yoon',
+    ]);
+    // The current block is open, the others are closed, and each button names the panel it opens.
+    expect(blocks.map((b) => b.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false']);
+    for (const block of blocks) {
+      const panel = container.querySelector(`#${block.getAttribute('aria-controls') ?? ''}`);
+      expect(panel).not.toBeNull();
+    }
+    const current = container.querySelector('[aria-current="step"]');
+    expect(current?.getAttribute('aria-label')).toBe('the vowels: 0 of 5 open, you are here');
+    // No answers yet: the forecast is from the model's prediction, a rough estimate.
+    expect(container.querySelector('[data-testid="home-forecast"]')?.textContent).toContain(
+      'A rough estimate for now.',
+    );
+    expect(container.querySelector('[data-testid="home-forecast"]')?.textContent).toMatch(
+      /^all the vowels open in (about \d+ sessions?|\d+–\d+ sessions)/,
+    );
+  });
+
+  it('opens another block with a click and closes the first', async () => {
+    mount();
+    await until(container, '[data-testid="home-block-dakuten"]');
+    const dakuten = container.querySelector('[data-testid="home-block-dakuten"]');
+    await act(() => {
+      dakuten?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(
+      Array.from(container.querySelectorAll('[data-testid^="home-block-"]')).map((b) =>
+        b.getAttribute('aria-expanded'),
+      ),
+    ).toEqual(['false', 'true', 'false']);
   });
 
   it('keeps the hidden field out of the Tab order and out of the tree on the home view', async () => {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-    render(<LearnPage />, container);
-    await untilChart(container);
+    mount();
+    await until(container, '[data-testid="home-reason"]');
     const field = container.querySelector('input');
     expect(field?.tabIndex).toBe(-1);
     expect(field?.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('hides the streak before the first answer and shows the first-visit line instead', async () => {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-    render(<LearnPage />, container);
-    await untilChart(container);
-    expect(container.querySelector('[data-testid="learn-streak"]')).toBeNull();
-    expect(container.querySelector('[data-testid="learn-first"]')?.textContent).toBe(
-      t('learn.first', { kana: 'あ い う え お' }),
-    );
-  });
-
   it('gives `continue` the focus once the screen is ready, and names the buttons in lower case', async () => {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-    render(<LearnPage />, container);
+    mount();
     for (
       let i = 0;
-      i < 100 && document.activeElement?.textContent !== t('learn.continue');
+      i < 100 && !document.activeElement?.textContent.startsWith(t('learn.continue'));
       i += 1
     ) {
       await act(settle);
     }
-    expect(document.activeElement?.textContent).toBe(t('learn.continue'));
+    expect(document.activeElement?.textContent).toBe(`${t('learn.continue')}${t('key.enter')}`);
     expect(t('learn.continue')).toBe('continue');
   });
 
-  it('switches the track', async () => {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-    render(<LearnPage />, container);
-    await untilChart(container);
+  it('switches the track: the path, and with it its four blocks and the reason, follow', async () => {
+    mount();
+    await until(container, '[data-testid="home-block-basic"]');
 
     const katakana = Array.from(container.querySelectorAll('[role="radio"]')).find(
       (el) => el.textContent === t('learn.track.katakana'),
@@ -98,13 +120,11 @@ describe('learn page: the top of the learning screen', () => {
       katakana?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(container.querySelector('[data-testid="learn-mastered-count"]')?.textContent).toBe(
-      t('learn.mastered', { done: 0, total: 125 }),
-    );
-    expect(container.querySelector('[data-testid="learn-first"]')?.textContent).toBe(
-      t('learn.first', { kana: 'ア イ ウ エ オ' }),
-    );
-    expect(unlockedKana(container)).toBe('');
     expect(learnTrack.value).toBe('katakana');
+    expect(container.querySelector('#home-path-title')?.textContent).toBe('path · katakana');
+    expect(container.querySelectorAll('[data-testid^="home-block-"]')).toHaveLength(4);
+    expect(container.querySelector('[data-testid="home-reason"]')?.textContent).toBe(
+      'next: the vowels',
+    );
   });
 });

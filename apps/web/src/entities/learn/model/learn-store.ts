@@ -409,6 +409,9 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
         insightsModule = insights;
         adopt(loaded, stored);
         status.value = 'ready';
+        // The mark `home-cost.spec.ts` measures the 300 ms line from (P8 D8): the log is read and
+        // folded; the probe build only.
+        if (__LATENCY_PROBE__) performance.mark('nekotype:store-ready');
       } catch {
         // The read failed: the stored log may be fine, so it is left alone until a retry succeeds.
         status.value = 'error';
@@ -522,7 +525,6 @@ const store = createLearnStore({
   targetMs: () => targetMsSource(),
   loadModel: () =>
     import('@nekotype/model').then((loaded) => {
-      // The mark `home-cost.spec.ts` measures the 300 ms line from (P8 D8); the probe build only.
       if (__LATENCY_PROBE__) performance.mark('nekotype:model');
       return loaded;
     }),

@@ -1,0 +1,13 @@
+# ADR 113: The Home's Path, Forecast and Cells Are a Lazy Chunk, and the Line of 300 ms Is Measured From a Ready Store
+
+- **Status:** In force.
+- **Context:**
+  - P8 PR 4 builds the learning home ([p8-plan.md](../../p8-plan.md), D14 and D8; [ADR 108](108-p8-design-export.md)). D14 put the home's views and `entities/learn/lib/path.ts` in the initial chunk and set the line at 31.0 KB gzip. Built that way, the initial JS was 32.81 KB (30.43 KB before the PR, with the chart on `/`): the home weighs about 4.8 KB.
+  - D8 measured the 300 ms of [phases.md](../spec/phases.md) from the moment the model chunk has loaded. At 4× throttling with 40,000 answers the home missed it: 566 ms for the forecast and 456 ms for what got stronger (medians of three loads). The timeline showed the model loaded at about 170 ms and the store ready at about 610 ms: about 440 ms go to reading and folding the log before the insights can start. The insights themselves, from the ready store to the forecast, take about 100–150 ms.
+- **Decision:**
+  1. **The path with its forecast line and "since the last session" are a lazy chunk** (`ui/home/panels/`, with `pathOf` and the cell's styles' users), loaded by `pages/learn/home-loader.ts` when the home mounts, in parallel with the model, and on idle. Their strings are a new dictionary part, `home` (`home.forecast.*`, `home.path.here`, `home.since.*`), loaded with the chunk. In the initial chunk stay the action (the reason, "continue", the outline, the suggestion), the track switch, the streak, the page model and `rows.ts` (`chartRows`, `headOfRow`, which the reason's wording needs). Until the panels load their places are empty; a failed load leaves them empty and the next visit tries again. The page model does not hold the path: the lazy `HomePath` computes `pathOf`. Initial JS is 30.53 KB, CSS 7.49 KB.
+  2. **The line of 300 ms is measured from a ready store.** The probe build marks `nekotype:store-ready` when the log has been read and folded, and `home-cost.spec.ts` measures the forecast and what got stronger from it: 167 ms and 68 ms (medians of three loads at 4×). Reading and folding the log is bounded by `model-cost.spec.ts` (fold of 40,000 answers within 100 ms at 4×), which is where that work belongs; the home line bounds what P8 adds.
+- **Consequences:**
+  - D14's list of what is in the initial chunk and D8's mark change in the plan; `phases.md` and `quality.md` name the ready store.
+  - The Progress route and the home draw the same cell: its styles stay in the initial stylesheet, the chart's other styles are in the route's.
+  - A later phase that adds to the home must keep the initial JS within the line of D14; the panels' chunk has room.

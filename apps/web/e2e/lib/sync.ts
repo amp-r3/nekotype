@@ -21,7 +21,7 @@ export async function signIn(page: Page, user: string): Promise<void> {
   await page.goto('/settings');
   await page.getByRole('button', { name: 'sign in with Google' }).click();
   await page.waitForURL('/');
-  await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
+  await expect(page.getByTestId('home-reason')).toBeVisible();
   await page.getByRole('link', { name: 'settings', exact: true }).click();
   await expect(page.getByTestId('account-name')).toHaveText(user);
 }
@@ -47,7 +47,7 @@ export async function answerSession(page: Page): Promise<void> {
 /** One learning session of 30 tasks on `/`, started from the table and played correctly. */
 export async function playLearningSession(page: Page): Promise<void> {
   await page.goto('/');
-  await expect(page.getByTestId('learn-mastered-count')).toBeVisible();
+  await expect(page.getByTestId('home-reason')).toBeVisible();
   await page.getByRole('button', { name: 'continue' }).click();
   await answerSession(page);
 }
@@ -60,7 +60,7 @@ export function sessionCounts(page: Page): { started: Locator; finished: Locator
   };
 }
 
-/** The chart states of `/` as one string, one letter per kana cell in table order. */
+/** The chart states of `/progress` as one string, one letter per kana cell in table order. */
 export async function chartStates(page: Page): Promise<string[]> {
   return page
     .getByTestId('kana-cell')

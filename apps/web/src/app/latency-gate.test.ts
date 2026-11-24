@@ -20,6 +20,7 @@ describe('latency gate on pull requests (ADR 074)', () => {
       'apps/web/vite.config.ts',
       'apps/web/e2e/latency.spec.ts',
       'apps/web/e2e/model-cost.spec.ts',
+      'apps/web/e2e/home-cost.spec.ts',
       'apps/web/src/app/model-probe.ts',
       'apps/web/scripts/latency-gate.mjs',
       'apps/web/scripts/latency-gate.d.mts',

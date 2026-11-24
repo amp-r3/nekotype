@@ -1,8 +1,10 @@
-import { kanaRows } from '@nekotype/engine';
-import type { RowCategory } from '@nekotype/engine';
 import type { ChartState, LearnView } from '@nekotype/model';
 import type { LearnKanaKey, Track } from '@nekotype/shared/types';
+import { chartRows } from './rows';
 import { keyOf } from './tracks';
+
+export { chartRows };
+export type { ChartRowInfo } from './rows';
 
 export type CellState = ChartState;
 
@@ -28,43 +30,6 @@ export type KanaCellInfo = {
   readonly recognitions: number;
   readonly recognitionErrors: number;
 };
-
-export type ChartRowInfo = {
-  readonly id: string;
-  readonly category: RowCategory;
-  /** The consonant of the row, empty for the vowels. */
-  readonly head: string;
-  /** The name of the row from the kana table (romaji). */
-  readonly name: string;
-  /** One slot per column; `null` is a gap. */
-  readonly kana: readonly (string | null)[];
-};
-
-const COLUMNS_OF_Y: readonly number[] = [0, 2, 4];
-
-function headOf(id: string, name: string, category: RowCategory): string {
-  if (id === 'vowels') return '';
-  if (id === 'w_n') return 'w';
-  if (category === 'extended') return (name.split(' ')[0] ?? id).toLowerCase();
-  return id;
-}
-
-/** The rows of a track for the chart; only the row of や ゆ よ has gaps, to line up the vowels. */
-export function chartRows(track: Track): readonly ChartRowInfo[] {
-  return kanaRows(track).map((row) => ({
-    id: row.id,
-    category: row.category,
-    head: headOf(row.id, row.name, row.category),
-    name: row.name,
-    kana:
-      row.id === 'y'
-        ? Array.from({ length: 5 }, (_, column) => {
-            const at = COLUMNS_OF_Y.indexOf(column);
-            return at === -1 ? null : (row.kana[at] ?? null);
-          })
-        : row.kana,
-  }));
-}
 
 /** The cell of every kana of a track, by key. `now` decides which kana are due. */
 export function cellInfos(

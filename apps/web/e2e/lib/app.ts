@@ -34,6 +34,15 @@ export async function seedLog(
   await page.reload();
 }
 
+/** Writes the `learn.track` setting (the other settings are the defaults) and reloads. */
+export async function seedTrack(page: Page, track: 'hiragana' | 'katakana'): Promise<void> {
+  await putRecord(page, 'settings', 'current', {
+    learn: { strictness: 'learner', track, targetMs: 1500, sound: true },
+    updatedAt: 1,
+  });
+  await page.reload();
+}
+
 async function putRecord(page: Page, store: string, key: string, value: unknown): Promise<void> {
   await page.evaluate(
     async ({ store, key, value, schemaVersion }) => {

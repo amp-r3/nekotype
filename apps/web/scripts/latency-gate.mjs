@@ -25,6 +25,7 @@ export const LATENCY_PATHS = [
   'apps/web/src/app/sync-bootstrap.ts',
   'apps/web/e2e/latency.spec.ts',
   'apps/web/e2e/model-cost.spec.ts',
+  'apps/web/e2e/home-cost.spec.ts',
   'apps/web/src/app/model-probe.ts',
   'apps/web/e2e/lib/',
   'apps/web/playwright.latency.config.ts',

@@ -17,6 +17,7 @@ const LOADERS: Readonly<Record<Locale, Readonly<Record<Piece, () => Promise<Word
   en: {
     core: () => Promise.resolve(en),
     progress: () => import('./parts/progress/en').then((module) => module.progressEn),
+    home: () => import('./parts/home/en').then((module) => module.homeEn),
     details: () => import('./parts/details/en').then((module) => module.detailsEn),
     settings: () => import('./parts/settings/en').then((module) => module.settingsEn),
     about: () => import('./parts/about/en').then((module) => module.aboutEn),
@@ -24,6 +25,7 @@ const LOADERS: Readonly<Record<Locale, Readonly<Record<Piece, () => Promise<Word
   ru: {
     core: () => import('./ru').then((module) => module.ru),
     progress: () => import('./parts/progress/ru').then((module) => module.progressRu),
+    home: () => import('./parts/home/ru').then((module) => module.homeRu),
     details: () => import('./parts/details/ru').then((module) => module.detailsRu),
     settings: () => import('./parts/settings/ru').then((module) => module.settingsRu),
     about: () => import('./parts/about/ru').then((module) => module.aboutRu),

@@ -1,6 +1,6 @@
 # ADR 112: Insights on the Main Thread in Scheduler Callbacks, What Got Stronger From the Last Start, and the Forecast History in Schema 7
 
-- **Status:** In force.
+- **Status:** In force; the mark of the 300 ms line moved to a ready store by [ADR 113](113-lazy-home-panels-and-the-home-line.md).
 - **Context:**
   - The P8 home and the session summary show an outline of the next session, the kana that got stronger since the last session started and a forecast of the next row ([ADR 108](108-p8-design-export.md); [p8-plan.md](../../p8-plan.md), D3, D8 and D10). The model computes all three ([ADR 100](100-knowledge-model-fsrs-planner-and-answer-log.md), [ADR 110](110-home-data-from-the-model.md)); nothing in the app calls them yet.
   - The forecast takes about 10 ms in Node for the row the home asks for and about 52 ms in the worst measured state; the fold of 40,000 answers takes 29 ms. At 4× CPU throttling the whole is 100–235 ms, under the 300 ms of [phases.md](../spec/phases.md).

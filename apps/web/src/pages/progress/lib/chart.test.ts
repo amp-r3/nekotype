@@ -1,9 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import type { LearnKanaKey } from '@nekotype/shared/types';
+import { loadDictionaryPart } from '@/shared/i18n';
 import { cellInfos, keyOf } from '@/entities/learn';
 import type { KanaCellInfo } from '@/entities/learn';
 import { chartBlockLabels, chartLegend, chartModel, kanaStateLines } from './chart';
 import { answer, intro, learnedEvents, viewOfEvents } from './test-util';
+
+// The chart's strings are the `progress` part of the dictionary, loaded with the route.
+await loadDictionaryPart('progress');
 
 const START = new Date(2026, 4, 1, 12).getTime();
 const a = keyOf('hiragana', 'あ');

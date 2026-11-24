@@ -1,6 +1,7 @@
 import type { JSX } from 'preact';
 import { useRef, useState } from 'preact/hooks';
 import { cx } from '../lib';
+import { cellStateClass } from './kana-cell';
 import { moveInGrid } from './kana-chart-nav';
 import type { GridKey } from './kana-chart-nav';
 
@@ -54,11 +55,6 @@ const ARROWS: Readonly<Record<string, GridKey>> = {
   ArrowUp: 'up',
   ArrowDown: 'down',
 };
-
-/** The class of a state: `learned` has the fill the old `confident` had (ADR 104). */
-function stateClass(state: ChartCellState): string {
-  return state === 'learned' ? 'is-st-learned' : `is-${state}`;
-}
 
 const LEGEND_STATES: readonly ChartCellState[] = ['locked', 'learning', 'learned', 'mastered'];
 
@@ -151,7 +147,7 @@ export function KanaChart({
                   }}
                   className={cx(
                     'nk-cell font-jp',
-                    stateClass(cell.state),
+                    cellStateClass(cell.state),
                     cell.due && 'is-due',
                     Array.from(cell.kana).length > 1 ? 'text-jp-cell-sm' : 'text-jp-cell',
                   )}
@@ -252,7 +248,7 @@ export function KanaChart({
             <span key={state} className="nk-chart__legend-item">
               <span
                 aria-hidden="true"
-                className={cx('nk-cell nk-chart__swatch font-jp', stateClass(state))}
+                className={cx('nk-cell nk-chart__swatch font-jp', cellStateClass(state))}
               >
                 {legend.sample}
               </span>

@@ -52,8 +52,14 @@ export {
   rowPageKey,
 } from './model/log';
 
-export type { CellState, ChartRowInfo, KanaCellInfo } from './lib/chart';
-export { cellInfos, chartRows } from './lib/chart';
+export type { CellState, KanaCellInfo } from './lib/chart';
+export type { ChartRowInfo } from './lib/rows';
+export { cellInfos } from './lib/chart';
+export { chartRows } from './lib/rows';
+
+export type { PathBlock, PathRow, RowState, TrackPath } from './lib/path';
+export { pathOf } from './lib/path';
+export { headOfRow } from './lib/rows';
 
 export { bestStreakOfDays, dueCount, streakOfDays, streaks } from './lib/progress';
 
