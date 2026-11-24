@@ -24,7 +24,7 @@ The executor of a pull request fills its row (see [section 8](#8-instructions-fo
 | 1   | `p8-01-model-home`       | done    | #233         |
 | 2   | `p8-02-progress-details` | done    | #234         |
 | 3   | `p8-03-insights`         | done    | #235         |
-| 4   | `p8-04-home`             | waiting |              |
+| 4   | `p8-04-home`             | done    | #236         |
 | 5   | `p8-05-session-summary`  | waiting |              |
 | 6   | `p8-06-close`            | waiting |              |
 
