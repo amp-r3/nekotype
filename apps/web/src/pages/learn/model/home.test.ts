@@ -142,6 +142,14 @@ describe('home page model', () => {
     answered.model.dispose();
   });
 
+  it('the streak is 0, not null, after a missed day', () => {
+    const view = viewOfEvents(learnedEvents('あ', 1_700_000_000_000 - 3 * DAY));
+    const missed = setup({ view });
+    expect(missed.model.first.value).toBe(false);
+    expect(missed.model.streak.value).toBe(0);
+    missed.model.dispose();
+  });
+
   it('suggests katakana only on hiragana, once the basic hiragana are learned and katakana is not started', () => {
     const view = viewOfEvents(basicLearned());
     const on = setup({ view });

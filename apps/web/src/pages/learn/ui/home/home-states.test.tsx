@@ -109,6 +109,27 @@ describe('home: the reason of Continue (H1)', () => {
   });
 });
 
+describe('home: the insights pending (H3)', () => {
+  it('has the reason and a working Continue while the outline, the forecast and what got stronger are not there', async () => {
+    const onStart = vi.fn();
+    mount(
+      <>
+        {action({ reason: { kind: 'review', due: 2 }, outline: null, onStart })}
+        <HomeForecast state={{ kind: 'pending' }} track="hiragana" />
+        <HomeSince state={{ kind: 'pending' }} onOpen={() => undefined} />
+      </>,
+    );
+    expect(reasonText()).toBe('2 kana are due for review');
+    expect(container.querySelector('[data-testid="home-outline"]')).toBeNull();
+    expect(container.querySelector('[data-testid="home-forecast"]')).toBeNull();
+    expect(container.querySelector('[data-testid="home-stronger"]')).toBeNull();
+    const button = container.querySelector('button');
+    expect(button?.disabled).toBe(false);
+    await act(() => button?.click());
+    expect(onStart).toHaveBeenCalledOnce();
+  });
+});
+
 describe('home: the outline (D7)', () => {
   const show = (outline: Outline): string | undefined => {
     mount(action({ reason: { kind: 'review', due: 2 }, outline }));
@@ -434,6 +455,16 @@ describe('home: since the last session (H10)', () => {
     expect(container.querySelector('[data-testid="since-cell"]')?.className).toContain(
       'text-jp-cell-sm',
     );
+  });
+
+  it('lists a long first session: every kana is a cell, in its group', () => {
+    const many = Array.from('あいうえおかきくけこさしすせそ').map((k) =>
+      item(k, 'locked', 'learning'),
+    );
+    mount(<HomeSince onOpen={() => undefined} state={ready(many)} />);
+    expect(
+      container.querySelectorAll('[data-group="new"] [data-testid="since-cell"]'),
+    ).toHaveLength(15);
   });
 
   it('says so when nothing changed', () => {

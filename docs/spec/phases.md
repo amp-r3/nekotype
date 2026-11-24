@@ -109,7 +109,7 @@ The MVP is delivered in fifteen sequential phases. At the end of every phase `ve
      - P12: the words the learner can read, on `/` and in the summary.
    - **Acceptance:**
      - `/` shows the action with its reason, the forecast or its absence, the path, the outline, what got stronger and the streak, and no chart; the state with nothing to offer has a test;
-     - "Continue" works before the forecast and what got stronger are ready; both are computed outside the first render and outside keystroke handlers, and with a 4× CPU slowdown in Chromium they appear within 300 ms of the model chunk loading for a log of 40,000 answers;
+     - "Continue" works before the forecast and what got stronger are ready; both are computed outside the first render and outside keystroke handlers, and with a 4× CPU slowdown in Chromium they appear within 300 ms of the store being ready (the log read and folded) for a log of 40,000 answers ([ADR 113](../adr/113-lazy-home-panels-and-the-home-line.md));
      - `/stats` redirects to `/progress`; neither "Progress" nor the kana details dialog is in the initial chunk, and every budget holds;
      - the forecast history is settled when its row is introduced and corrects the forecast from the third settled forecast on (unit tests); a database of schema 6 is reset;
      - a keystroke of a recall task renders nothing (`session-screen.test.tsx`), and the latency test holds;
