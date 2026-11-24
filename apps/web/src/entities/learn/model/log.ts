@@ -7,7 +7,7 @@ import {
 } from '@nekotype/shared/runtime';
 import type { EventDraft, LogEvent, LogPage } from '@nekotype/shared/types';
 import type { Db, Write } from '@/shared/lib';
-import { LOG_STORE, META_STORE } from '@/shared/lib';
+import { FORECASTS_STORE, LOG_STORE, META_STORE } from '@/shared/lib';
 
 // The learning log in IndexedDB (P7 plan, D16): pages of events in the store `log`, the identity
 // of the next own event in `meta`. The state is never stored: it is the fold of what this reads.
@@ -198,6 +198,8 @@ export async function readUnsent(db: Db, sentN: number): Promise<readonly LogEve
 export async function clearLog(db: Db): Promise<void> {
   await db.write([
     { op: 'clear', store: LOG_STORE },
+    // The forecast history measures this log against its forecasts: it goes with it (D10).
+    { op: 'clear', store: FORECASTS_STORE },
     { op: 'delete', store: META_STORE, key: LOG_META_KEY },
     { op: 'delete', store: META_STORE, key: SENT_N_KEY },
     { op: 'delete', store: META_STORE, key: PULLED_ID_KEY },

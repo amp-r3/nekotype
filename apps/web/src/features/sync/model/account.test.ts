@@ -136,11 +136,14 @@ describe('GET /api/me at the start (D19)', () => {
     const db = createMemoryDb();
     await db.put('meta', 'pendingSignIn', { provider: 'github' });
     await seedOwn(db, 2);
+    await db.put('forecasts', 'hiragana:vowels@1', { row: 'x' });
     const h = harness(db);
     h.answer = () => json(200, me('user-1'));
 
     await h.account.check();
 
+    // The guest's forecast history goes with the guest's log.
+    expect(await db.getAll('forecasts')).toEqual([{ row: 'x' }]);
     expect(await db.get('meta', 'userId')).toBe('user-1');
     expect(typeof (await db.get('meta', 'deviceId'))).toBe('string');
     expect(await db.get('meta', 'lastSeq')).toBe(0);
@@ -160,10 +163,13 @@ describe('GET /api/me at the start (D19)', () => {
     await db.put('meta', 'sessionExpired', true);
     await db.put('meta', 'profile', { displayName: 'old', email: null, provider: 'github' });
     await seedOwn(db, 2);
+    await db.put('forecasts', 'hiragana:vowels@1', { row: 'x' });
     const h = harness(db);
     h.answer = () => json(200, me('user-1', 'shiro'));
 
     await h.account.check();
+
+    expect(await db.getAll('forecasts')).toEqual([{ row: 'x' }]);
 
     expect(await db.get('meta', 'sessionExpired')).toBeUndefined();
     expect(await db.get('meta', 'deviceId')).toBe('dev-a');
@@ -214,6 +220,7 @@ describe('another user signs in (storage-sync.md, "Different user")', () => {
     await db.put('meta', 'pendingSignIn', { provider: 'google' });
     await seedOwn(db, 2);
     await db.put('settings', 'current', settingsAt(500));
+    await db.put('forecasts', 'hiragana:vowels@1', { row: 'x' });
     return db;
   }
 
@@ -255,6 +262,7 @@ describe('another user signs in (storage-sync.md, "Different user")', () => {
     expect(await db.get('meta', 'log')).toBeUndefined();
     expect(await db.getAll('log')).toEqual([]);
     expect(await db.get('settings', 'current')).toBeUndefined();
+    expect(await db.getAll('forecasts')).toEqual([]);
     // The device's own keys stay.
     expect(await db.get('meta', 'keyIntervals')).toEqual([120, 140]);
     expect(await db.get('meta', 'schemaVersion')).toBe(5);
@@ -379,9 +387,11 @@ describe('sign-out', () => {
     await db.put('meta', 'profile', { displayName: 'a', email: null, provider: 'github' });
     await db.put('meta', 'keyIntervals', [100]);
     await db.put('settings', 'current', settingsAt(500));
+    await db.put('forecasts', 'hiragana:vowels@1', { row: 'x' });
     const h = harness(db);
 
     expect(await h.account.signOut()).toBe(true);
+    expect(await db.getAll('forecasts')).toEqual([]);
 
     expect(h.calls.logout).toBe(1);
     for (const key of ['userId', 'deviceId', 'lastSeq', 'profile']) {
@@ -452,6 +462,7 @@ describe('deleteAccount', () => {
     await db.put('meta', 'profile', { displayName: 'a', email: null, provider: 'github' });
     await db.put('meta', 'keyIntervals', [100]);
     await db.put('settings', 'current', settingsAt(500));
+    await db.put('forecasts', 'hiragana:vowels@1', { row: 'x' });
     await seedOwn(db, 2);
     const requests: { input: string; method: string | undefined }[] = [];
     const channels = {
@@ -486,6 +497,7 @@ describe('deleteAccount', () => {
     }
     expect(await db.get('meta', 'keyIntervals')).toEqual([100]);
     expect(await db.get('settings', 'current')).toBeUndefined();
+    expect(await db.getAll('forecasts')).toEqual([]);
     expect(await db.get('meta', 'log')).toBeUndefined();
     expect(channels.learn.posts).toEqual([{ kind: 'reset' }]);
     expect(channels.settings.posts).toEqual(['reset']);

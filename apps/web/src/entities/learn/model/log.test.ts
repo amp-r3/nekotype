@@ -145,8 +145,10 @@ describe('clearLog', () => {
     await db.put('meta', 'sentN', 2);
     await db.put('meta', 'pulledId', 5);
     await db.put('meta', 'deviceId', 'keep');
+    await db.put('forecasts', 'hiragana:vowels@1', { row: 'x' });
     await clearLog(db);
     expect(await readLog(db)).toEqual([]);
+    expect(await db.getAll('forecasts')).toEqual([]);
     expect(await db.get('meta', 'log')).toBeUndefined();
     expect(await db.get('meta', 'sentN')).toBeUndefined();
     expect(await db.get('meta', 'pulledId')).toBeUndefined();

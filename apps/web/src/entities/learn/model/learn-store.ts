@@ -11,6 +11,7 @@ import type {
   TimeoutHandle,
 } from '@nekotype/shared/types';
 import type * as ModelModule from '@nekotype/model';
+import type * as InsightsModule from './insights';
 import type { Db, TypedChannel } from '@/shared/lib';
 import {
   META_STORE,
@@ -39,6 +40,7 @@ type Model = typeof ModelModule;
 type Fold = ModelModule.Fold;
 type LearnView = ModelModule.LearnView;
 type ModelState = ModelModule.ModelState;
+export type StartSnapshot = ReturnType<Fold['snapshot']>;
 
 const INTERVALS_KEY = 'keyIntervals';
 
@@ -66,6 +68,11 @@ export type LearnStoreDeps = {
   readonly targetMs: () => number;
   /** The model chunk. */
   readonly loadModel: () => Promise<Model>;
+  /**
+   * The insights chunk (`insights.ts`, P8 D8): loaded with the model so that it is there when the
+   * home asks. A failure is not an error of the store: the insights stay pending.
+   */
+  readonly loadInsights?: () => Promise<typeof InsightsModule>;
   /** A new UUID for the log device id. */
   readonly newId: () => string;
   /** The device's UTC offset in minutes east of UTC, for the `start` event. */
@@ -81,6 +88,18 @@ export interface LearnStore {
   readonly view: ReadonlySignal<LearnView | null>;
   /** The live fold state for the planner, read at each task; null until ready. */
   modelState: () => ModelState | null;
+  /** Grows by one at every publish of `view` (P8 D8). */
+  readonly version: ReadonlySignal<number>;
+  /** The state just before the last `start` of the log; null without one (P8 D3). */
+  startSnapshot: () => StartSnapshot | null;
+  /** The model module; null until ready. */
+  loadedModel: () => Model | null;
+  /** The insights module; null until ready, and after a failed load. */
+  loadedInsights: () => typeof InsightsModule | null;
+  /** Called when this tab starts a session: the insights stop. Returns the way to unsubscribe. */
+  onSessionStart: (listener: () => void) => () => void;
+  /** Called when the log was emptied (reset, sign-out, another account): what is derived goes. */
+  onReset: (listener: () => void) => () => void;
   /**
    * `loading` until the log and the model chunk are both read; `error` when either fails. After an
    * error nothing is written, so the stored log is never replaced by an empty one.
@@ -124,7 +143,12 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   const status = signal<LearnStatus>('loading');
   const ready = computed(() => status.value === 'ready');
 
+  const version = signal(0);
+  const startListeners = new Set<() => void>();
+  const resetListeners = new Set<() => void>();
   let model: Model | null = null;
+  let insightsModule: typeof InsightsModule | null = null;
+  let startSnap: StartSnapshot | null = null;
   let fold: Fold | null = null;
   let foldedTarget = deps.targetMs();
   /** The events of the log in order, repeats dropped: what the fold was built from. */
@@ -149,6 +173,7 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
     const snapshot = fold.snapshot();
     if (snapshot.stats === null) return;
     view.value = model.describe(snapshot.state, snapshot.stats);
+    version.value = version.peek() + 1;
   };
 
   const isOrdered = (events: readonly LogEvent[], loaded: Model): boolean => {
@@ -160,10 +185,32 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
     return true;
   };
 
+  /**
+   * Folds the whole log. The fold is split at the last `start` (P8 D3): the prefix is folded and
+   * copied, then the rest applies to the same fold, so the cost is that of the plain fold.
+   */
+  const foldWhole = (loaded: Model): Fold => {
+    let last = -1;
+    for (let i = log.length - 1; i >= 0; i -= 1) {
+      if (log[i]?.t === 'start') {
+        last = i;
+        break;
+      }
+    }
+    if (last < 0) {
+      startSnap = null;
+      return loaded.foldLog(log, foldOptions());
+    }
+    const folded = loaded.foldLog(log.slice(0, last), foldOptions());
+    startSnap = folded.snapshot();
+    for (const event of log.slice(last)) folded.apply(event);
+    return folded;
+  };
+
   const refold = (): void => {
     if (model === null) return;
     foldedTarget = deps.targetMs();
-    fold = model.foldLog(log, foldOptions());
+    fold = foldWhole(model);
     publish();
   };
 
@@ -186,9 +233,12 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   /** Applies one event to the fold; false when the log was folded again. */
   const place = (event: LogEvent): void => {
     if (model === null || fold === null) return;
+    const beforeStart = event.t === 'start' ? fold.snapshot() : null;
     const result = fold.apply(event);
-    if (result === 'applied') log.push(event);
-    else if (result === 'out-of-order') insert(event, model);
+    if (result === 'applied') {
+      log.push(event);
+      if (beforeStart !== null) startSnap = beforeStart;
+    } else if (result === 'out-of-order') insert(event, model);
   };
 
   const ensureMeta = (): LogMeta => {
@@ -314,10 +364,12 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
     intervalsDirty = false;
     log = [];
     meta = null;
+    startSnap = null;
     if (model !== null) {
       fold = model.createFold(foldOptions());
       publish();
     }
+    for (const listener of resetListeners) listener();
   };
 
   deps.channel?.listen((message) => {
@@ -349,7 +401,12 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
       status.value = 'loading';
       try {
         // The log and the model chunk load together.
-        const [loaded, stored] = await Promise.all([deps.loadModel(), readStored()]);
+        const [loaded, stored, insights] = await Promise.all([
+          deps.loadModel(),
+          readStored(),
+          deps.loadInsights?.().catch(() => null) ?? null,
+        ]);
+        insightsModule = insights;
         adopt(loaded, stored);
         status.value = 'ready';
       } catch {
@@ -363,6 +420,18 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   return {
     view,
     modelState: () => fold?.state ?? null,
+    version,
+    startSnapshot: () => startSnap,
+    loadedModel: () => model,
+    loadedInsights: () => insightsModule,
+    onSessionStart(listener) {
+      startListeners.add(listener);
+      return () => startListeners.delete(listener);
+    },
+    onReset(listener) {
+      resetListeners.add(listener);
+      return () => resetListeners.delete(listener);
+    },
     status,
     ready,
     init,
@@ -379,6 +448,8 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
     },
 
     startSession() {
+      // Nothing computes during a session (P8 rule 3d): the insights drop their pending steps.
+      for (const listener of startListeners) listener();
       emit({ t: 'start', at: deps.clock.now(), tz: deps.tz() });
     },
 
@@ -449,7 +520,13 @@ const store = createLearnStore({
   clock: defaultClock,
   scheduler: defaultScheduler,
   targetMs: () => targetMsSource(),
-  loadModel: () => import('@nekotype/model'),
+  loadModel: () =>
+    import('@nekotype/model').then((loaded) => {
+      // The mark `home-cost.spec.ts` measures the 300 ms line from (P8 D8); the probe build only.
+      if (__LATENCY_PROBE__) performance.mark('nekotype:model');
+      return loaded;
+    }),
+  loadInsights: () => import('./insights'),
   newId: () => uuidv7(defaultClock.now()),
   tz: () => -new Date().getTimezoneOffset(),
   channel: typedChannel('nekotype:learn', isLearnMessage),
@@ -476,6 +553,12 @@ export function initLearn(targetMs: () => number): Promise<void> {
 
 export const learnView: ReadonlySignal<LearnView | null> = store.view;
 export const modelState = store.modelState;
+export const learnVersion: ReadonlySignal<number> = store.version;
+export const startSnapshot = store.startSnapshot;
+export const loadedModel = store.loadedModel;
+export const loadedInsights = store.loadedInsights;
+export const onSessionStart = store.onSessionStart;
+export const onLearnReset = store.onReset;
 export const learnStatus: ReadonlySignal<LearnStatus> = store.status;
 export const learnReady: ReadonlySignal<boolean> = store.ready;
 export const retryLearn = store.retry;
