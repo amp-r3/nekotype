@@ -6,7 +6,8 @@ export type DialogProps = {
   readonly open: boolean;
   // Omitted while a request runs (design decisions 115, 122): no `✕`, `Esc` and the backdrop do nothing.
   readonly onClose?: (() => void) | undefined;
-  readonly title: string;
+  // Text, or the runs of a title that is not plain text (the kana details: a kana and its romaji).
+  readonly title: ComponentChildren;
   readonly closeLabel: string;
   // The safe action comes first and receives the initial focus (design Dialog); without it the
   // dialog's own first control, `✕`, gets it.

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { progressEn } from './parts/progress/en';
+import { detailsEn } from './parts/details/en';
 import { settingsEn } from './parts/settings/en';
 import { aboutEn } from './parts/about/en';
 
@@ -11,6 +12,7 @@ const SRC = join(import.meta.dirname, '..', '..');
 
 const PARTS: readonly (readonly [string, Record<string, string>, RegExp])[] = [
   ['progress', progressEn, /^pages\/progress\//],
+  ['details', detailsEn, /^features\/kana-details\//],
   // The "another account" dialog loads the settings part before it shows (design decision 118).
   ['settings', settingsEn, /^(pages\/settings|features\/sync\/ui)\//],
   ['about', aboutEn, /^pages\/about\//],

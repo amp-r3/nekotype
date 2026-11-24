@@ -28,6 +28,9 @@ export const SIGNALS_MARKER = 'ReactiveTextNode';
 // The sync engine is for signed-in users: its chunk is loaded by a dynamic import that a user key
 // guards, never with the first load or with a screen (p5-plan.md, D17).
 export const SYNC_ENTRY = 'src/features/sync/index.ts';
+// The kana details dialog opens from the table, the home and the summary, never during a session:
+// its chunk is loaded by a dynamic import of the host and is idle-prefetched (P8 plan, D12).
+export const DETAILS_ENTRY = 'src/features/kana-details/ui/kana-details-dialog.tsx';
 // The knowledge model is a chunk of its own, named in `vite.config.ts` (codeSplitting): the learn
 // store loads it by a dynamic import and the session runtime shares it. Never with the first load,
 // never a static import of a route (P7 plan, D22). A shared chunk has no `src` in the manifest, so
@@ -174,22 +177,23 @@ export function checkBudget(distDir) {
     }
   }
 
-  // The sync engine stays a chunk of its own that no first load and no screen pulls in.
-  const syncChunk = manifest[SYNC_ENTRY];
-  if (syncChunk === undefined) {
-    failures.push(`${SYNC_ENTRY} is not in the manifest: its lazy loading cannot be checked`);
-  } else {
-    if (initial.has(SYNC_ENTRY) || initialJs.includes(syncChunk.file)) {
-      failures.push(
-        `The sync engine (${SYNC_ENTRY}) is in the initial chunk: a guest would load it`,
-      );
+  // The sync engine and the kana details stay chunks of their own that no first load and no screen
+  // pulls in.
+  for (const [entry, what] of [
+    [SYNC_ENTRY, 'The sync engine'],
+    [DETAILS_ENTRY, 'The kana details dialog'],
+  ]) {
+    const lazyChunk = manifest[entry];
+    if (lazyChunk === undefined) {
+      failures.push(`${entry} is not in the manifest: its lazy loading cannot be checked`);
+      continue;
+    }
+    if (initial.has(entry) || initialJs.includes(lazyChunk.file)) {
+      failures.push(`${what} (${entry}) is in the initial chunk: a first visit would load it`);
     }
     for (const [key, chunk] of Object.entries(manifest)) {
-      if (
-        ROUTE_ENTRY.test(chunk.src ?? key) &&
-        staticImports(manifest, key, initial).has(SYNC_ENTRY)
-      ) {
-        failures.push(`The sync engine is a static import of the route chunk ${chunk.file}`);
+      if (ROUTE_ENTRY.test(chunk.src ?? key) && staticImports(manifest, key, initial).has(entry)) {
+        failures.push(`${what} is a static import of the route chunk ${chunk.file}`);
       }
     }
   }

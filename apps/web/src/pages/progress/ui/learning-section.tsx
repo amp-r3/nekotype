@@ -4,7 +4,7 @@ import { useMemo, useState } from 'preact/hooks';
 import { locale, t, tParts, tPlural, tPluralParts } from '@/shared/i18n';
 import { Button, Notice, Parts } from '@/shared/ui';
 import { Stat } from '@/shared/ui/stat';
-import { learnTargetMs, learnTrack } from '@/entities/settings';
+import { learnTargetMs } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
 import { dayStart, keysOfTrack, streaks } from '@/entities/learn';
 import { activeDaysIn, activityDays } from '../lib/activity';
@@ -15,7 +15,6 @@ import { timeAxis, type ChartRange } from '../lib/trend';
 import { ActivityMap } from './activity-map';
 import { PeriodSwitch } from './period-switch';
 import { StatsChart } from './stats-chart';
-import { TrackSwitch } from './track-switch';
 import { useNarrow } from './use-narrow';
 
 const MONO = 'text-mono-romaji text-fur font-mono';
@@ -30,12 +29,13 @@ const ACTIVE_WINDOW = 30;
 export function LearningSection({
   view,
   today,
+  track,
 }: {
   readonly view: LearnView;
   readonly today: number;
+  /** The track the page shows: its switch is view-only and never writes `learn.track`. */
+  readonly track: LearnTrack;
 }): JSX.Element {
-  // The chart's switch is local: looking at the other track here does not change the track on `/`.
-  const [chosen, setChosen] = useState<LearnTrack>(learnTrack.value);
   const [period, setPeriod] = useState<Period>('30');
   const narrow = useNarrow();
   const dateFormat = useMemo(
@@ -47,19 +47,7 @@ export function LearningSection({
   const stats = view.stats;
 
   const { current, best } = streaks(stats.days, today);
-  const withMedians = {
-    hiragana: hasRecall(stats.days, 'hiragana'),
-    katakana: hasRecall(stats.days, 'katakana'),
-  };
-  const both = withMedians.hiragana && withMedians.katakana;
-  // With one track that has answers, the chart shows it and there is nothing to switch.
-  const track: LearnTrack = both
-    ? chosen
-    : withMedians.katakana
-      ? 'katakana'
-      : withMedians.hiragana
-        ? 'hiragana'
-        : chosen;
+  const answered = hasRecall(stats.days, track);
   const activity = activityDays(stats.days, today);
   const { weekly, span, bars } = dayBars(stats.days, track, period, today);
   const axis = msAxis(bars, target);
@@ -152,15 +140,20 @@ export function LearningSection({
 
       <section className="flex flex-col gap-4">
         <h2 className="text-ui-heading text-fur">{t('stats.learn.answerTime')}</h2>
-        <p className="text-ui-caption text-fur-dim -mt-3">
-          {both ? caption : `${t(`learn.track.${track}`)} · ${caption}`}
-        </p>
-        {/* The first segment's text lines up with the left edge (design `.stats__fgroup`). */}
-        <div className="-ml-2 flex flex-wrap items-center gap-x-6 gap-y-4">
-          {both && <TrackSwitch value={track} onChange={setChosen} />}
-          <PeriodSwitch value={period} onChange={setPeriod} />
-        </div>
-        {bars.length > 0 ? (
+        {answered && (
+          <>
+            <p className="text-ui-caption text-fur-dim -mt-3">
+              {`${t(`learn.track.${track}`)} · ${caption}`}
+            </p>
+            {/* The first segment's text lines up with the left edge (design `.stats__fgroup`). */}
+            <div className="-ml-2 flex flex-wrap items-center gap-x-6 gap-y-4">
+              <PeriodSwitch value={period} onChange={setPeriod} />
+            </div>
+          </>
+        )}
+        {!answered ? (
+          <Notice>{t(`stats.learn.noTrackAnswers.${track}`)}</Notice>
+        ) : bars.length > 0 ? (
           <StatsChart
             key={track}
             testId="stats-median-chart"

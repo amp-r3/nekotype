@@ -17,12 +17,14 @@ const LOADERS: Readonly<Record<Locale, Readonly<Record<Piece, () => Promise<Word
   en: {
     core: () => Promise.resolve(en),
     progress: () => import('./parts/progress/en').then((module) => module.progressEn),
+    details: () => import('./parts/details/en').then((module) => module.detailsEn),
     settings: () => import('./parts/settings/en').then((module) => module.settingsEn),
     about: () => import('./parts/about/en').then((module) => module.aboutEn),
   },
   ru: {
     core: () => import('./ru').then((module) => module.ru),
     progress: () => import('./parts/progress/ru').then((module) => module.progressRu),
+    details: () => import('./parts/details/ru').then((module) => module.detailsRu),
     settings: () => import('./parts/settings/ru').then((module) => module.settingsRu),
     about: () => import('./parts/about/ru').then((module) => module.aboutRu),
   },

@@ -44,5 +44,8 @@ export const progressEn = {
   'stats.empty.title': 'No answers yet',
   'stats.empty.text':
     'Finish a learning session: the streak, the activity and the answer times will appear here.',
+  'stats.trackShown': 'track shown',
+  'stats.learn.noTrackAnswers.hiragana': 'no hiragana answers yet',
+  'stats.learn.noTrackAnswers.katakana': 'no katakana answers yet',
   'stats.empty.action': 'to learning',
 } as const satisfies Record<string, string>;

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { loadDictionaryPart, t } from '@/shared/i18n';
 import { cx, currentPath, databaseMode, immersive, navigate } from '@/shared/lib';
 import { Footer, Link, Nav } from '@/shared/ui';
+import { KanaDetailsHost } from '@/features/kana-details';
 import { authAvailable, sessionExpired, signInCheck, userId } from '@/entities/user';
 import lockupUrl from '@/assets/logo/lockup.svg';
 import { LangSwitch } from './lang-switch';
@@ -84,6 +85,7 @@ export function App(): JSX.Element {
         </main>
 
         <AnotherAccount />
+        <KanaDetailsHost />
 
         {!immersive.value && (
           <Footer

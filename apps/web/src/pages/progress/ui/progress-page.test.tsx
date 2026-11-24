@@ -13,7 +13,7 @@ async function loaded(container: HTMLElement): Promise<void> {
   }
 }
 
-describe('stats page: nothing learned yet', () => {
+describe('progress page: nothing learned yet', () => {
   let container: HTMLDivElement;
 
   afterEach(() => {
@@ -34,6 +34,11 @@ describe('stats page: nothing learned yet', () => {
       (button) => button.textContent === t('stats.empty.action'),
     );
     expect(action).toBeDefined();
+    // The table is there with every kana locked, and nothing in it opens.
+    const cells = Array.from(container.querySelectorAll('[data-testid="kana-cell"]'));
+    expect(cells.length).toBeGreaterThan(100);
+    expect(cells.every((cell) => cell.getAttribute('data-state') === 'locked')).toBe(true);
+    expect(container.querySelector('[aria-haspopup]')).toBeNull();
     // The sleeping cat is decorative.
     expect(container.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
     // No numbers of an empty state are shown as if they were real.

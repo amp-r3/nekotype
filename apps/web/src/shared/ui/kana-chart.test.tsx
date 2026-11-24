@@ -2,7 +2,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
-import { KanaChart, KanaChartPanel } from './kana-chart';
+import { KanaChart } from './kana-chart';
 import type { ChartCell, ChartCellState, ChartRow } from './kana-chart';
 
 const cell = (kana: string, state: ChartCellState = 'learning', due = false): ChartCell => ({
@@ -106,27 +106,44 @@ describe('KanaChart', () => {
     expect(tips[0]?.textContent).toBe('いlearning');
   });
 
-  it('opens the details of an unlocked cell under its row, and Esc returns the focus', async () => {
+  it('asks to open an unlocked cell by click, Enter and Space, with the cell focused first', async () => {
+    const opened: { kana: string; focused: Element | null }[] = [];
     const root = mount(
-      <KanaChart rows={rows} ariaLabel="x" renderDetails={(c) => <span>details {c.kana}</span>} />,
+      <KanaChart
+        rows={rows}
+        ariaLabel="x"
+        onOpen={(cell) => {
+          opened.push({ kana: cell.kana, focused: document.activeElement });
+        }}
+      />,
     );
-    const a = byKana(root, 'い');
-    a.focus();
+    const i = byKana(root, 'い');
+    expect(i.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(i.hasAttribute('aria-expanded')).toBe(false);
     await act(() => {
-      a.click();
+      i.click();
     });
-    expect(a.getAttribute('aria-expanded')).toBe('true');
-    expect(root.querySelector('[data-testid="kana-details"]')?.textContent).toBe('details い');
-    byKana(root, 'う').focus();
-    await press(byKana(root, 'う'), 'Escape');
-    expect(root.querySelector('[data-testid="kana-details"]')).toBeNull();
-    expect(document.activeElement).toBe(a);
-    // A locked cell does not open.
+    // A keyboard activation of a button is a click: the browser sends it on `Enter` and `Space`.
+    await act(() => {
+      i.click();
+    });
+    expect(opened).toEqual([
+      { kana: 'い', focused: i },
+      { kana: 'い', focused: i },
+    ]);
+    // A locked cell opens nothing and promises nothing.
     await act(() => {
       byKana(root, 'う').click();
     });
+    expect(opened).toHaveLength(2);
+    expect(byKana(root, 'う').hasAttribute('aria-haspopup')).toBe(false);
+    // The chart draws no details of its own, and has no `Esc` of its own.
     expect(root.querySelector('[data-testid="kana-details"]')).toBeNull();
-    expect(byKana(root, 'う').hasAttribute('aria-expanded')).toBe(false);
+  });
+
+  it('has no popup on any cell without onOpen', () => {
+    const root = mount(<KanaChart rows={rows} ariaLabel="x" />);
+    expect(root.querySelector('[aria-haspopup]')).toBeNull();
   });
 
   it('groups the rows of each block under its caption, the blocks side by side', () => {
@@ -152,42 +169,5 @@ describe('KanaChart', () => {
     const legend = root.querySelector('[data-testid="kana-legend"]');
     expect(legend?.textContent).toBe('あlockedあlearningあlearnedあmasteredあreview due');
     expect(legend?.querySelector('.is-due')).not.toBeNull();
-  });
-
-  it('shows no tooltip on a cell whose details are open, and Esc in the details closes them', async () => {
-    const root = mount(
-      <KanaChart
-        rows={rows}
-        ariaLabel="x"
-        renderDetails={(c, close) => (
-          <KanaChartPanel
-            kana={c.kana}
-            romaji="i"
-            lines={[{ text: 'learning' }, { text: 'median', dim: true }]}
-            closeLabel="close"
-            onClose={close}
-          />
-        )}
-      />,
-    );
-    const i = byKana(root, 'い');
-    await act(() => {
-      i.focus();
-    });
-    expect(root.querySelectorAll('[data-testid="kana-tooltip"]')).toHaveLength(1);
-    await act(() => {
-      i.click();
-    });
-    expect(root.querySelector('[data-testid="kana-tooltip"]')).toBeNull();
-    const panel = root.querySelector('[data-testid="kana-panel"]');
-    expect(panel?.textContent).toBe('いicloselearningmedian');
-    const close = Array.from(panel?.querySelectorAll('button') ?? []).find(
-      (button) => button.textContent === 'close',
-    );
-    if (close === undefined) throw new Error('no close button');
-    close.focus();
-    await press(close, 'Escape');
-    expect(root.querySelector('[data-testid="kana-panel"]')).toBeNull();
-    expect(document.activeElement).toBe(i);
   });
 });

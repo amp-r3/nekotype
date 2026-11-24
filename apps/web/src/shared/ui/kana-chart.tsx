@@ -1,7 +1,6 @@
-import type { ComponentChildren, JSX } from 'preact';
+import type { JSX } from 'preact';
 import { useRef, useState } from 'preact/hooks';
 import { cx } from '../lib';
-import { Button } from './button';
 import { moveInGrid } from './kana-chart-nav';
 import type { GridKey } from './kana-chart-nav';
 
@@ -44,8 +43,9 @@ export type KanaChartProps = {
   // The caption of each block, by `ChartRow.block`.
   readonly blockLabels?: Readonly<Record<string, string>>;
   readonly legend?: ChartLegend;
-  // Details under the row of an activated cell; without it cells do not open.
-  readonly renderDetails?: (cell: ChartCell, close: () => void) => ComponentChildren;
+  // An activated introduced cell (click, `Enter`, `Space`) asks the caller to show its details; the
+  // chart draws none. Without it cells do not open.
+  readonly onOpen?: (cell: ChartCell) => void;
 };
 
 const ARROWS: Readonly<Record<string, GridKey>> = {
@@ -94,13 +94,12 @@ export function KanaChart({
   ariaLabel,
   blockLabels,
   legend,
-  renderDetails,
+  onOpen,
 }: KanaChartProps): JSX.Element {
   const first = rows.flatMap((row) => row.cells).find((cell) => cell !== null);
   const [stop, setStop] = useState<string | undefined>(first?.id);
   const [hover, setHover] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
-  const [open, setOpen] = useState<string | null>(null);
   const buttons = useRef(new Map<string, HTMLButtonElement>());
 
   const present = rows.map((row) => row.cells.map((cell) => cell !== null));
@@ -114,20 +113,6 @@ export function KanaChart({
     buttons.current.get(id)?.focus();
   }
 
-  function close(): void {
-    if (open === null) return;
-    const id = open;
-    setOpen(null);
-    focusCell(id);
-  }
-
-  // Esc anywhere in the chart, the open details included, closes them and returns to the cell.
-  function onGridKeyDown(event: KeyboardEvent): void {
-    if (event.key !== 'Escape' || open === null) return;
-    event.preventDefault();
-    close();
-  }
-
   function onCellKeyDown(event: KeyboardEvent, rowAt: number, slot: number, cell: ChartCell): void {
     const key = ARROWS[event.key];
     if (key === undefined) return;
@@ -137,13 +122,15 @@ export function KanaChart({
     if (target !== null && target !== undefined && target.id !== cell.id) focusCell(target.id);
   }
 
+  // The cell takes the focus first: Safari does not focus a button on a click, and the dialog gives
+  // the focus back to the element that was focused when it opened.
   function activate(cell: ChartCell): void {
-    if (renderDetails === undefined || cell.state === 'locked') return;
-    setOpen(open === cell.id ? null : cell.id);
+    if (onOpen === undefined || cell.state === 'locked') return;
+    focusCell(cell.id);
+    onOpen(cell);
   }
 
   function renderRow(row: ChartRow, rowAt: number): JSX.Element {
-    const openCell = row.cells.find((cell) => cell !== null && cell.id === open);
     const filled = row.cells.length;
     return (
       <div key={row.id} className="nk-chart__group">
@@ -172,17 +159,14 @@ export function KanaChart({
                   tabIndex={cell.id === tabStop ? 0 : -1}
                   aria-label={cell.label}
                   aria-disabled={cell.state === 'locked' ? true : undefined}
-                  aria-expanded={
-                    renderDetails !== undefined && cell.state !== 'locked'
-                      ? open === cell.id
-                      : undefined
+                  aria-haspopup={
+                    onOpen !== undefined && cell.state !== 'locked' ? 'dialog' : undefined
                   }
                   data-testid="kana-cell"
                   data-kana={cell.kana}
                   data-state={cell.state}
                   data-due={cell.due ? 'true' : undefined}
                   onClick={() => {
-                    setStop(cell.id);
                     activate(cell);
                   }}
                   onKeyDown={(event) => {
@@ -206,8 +190,8 @@ export function KanaChart({
                 >
                   {cell.kana}
                 </button>
-                {/* Above the cell, so it never covers the row below or the open details. */}
-                {tip === cell.id && open !== cell.id && (
+                {/* Above the cell, so it never covers the row below. */}
+                {tip === cell.id && (
                   <span
                     aria-hidden="true"
                     className={cx(
@@ -228,13 +212,6 @@ export function KanaChart({
             ),
           )}
         </div>
-        {openCell !== undefined && openCell !== null && renderDetails !== undefined && (
-          <div role="row">
-            <div role="gridcell" className="nk-chart__details" data-testid="kana-details">
-              {renderDetails(openCell, close)}
-            </div>
-          </div>
-        )}
       </div>
     );
   }
@@ -245,7 +222,6 @@ export function KanaChart({
         role="grid"
         aria-label={ariaLabel}
         className="nk-chart__grid"
-        onKeyDown={onGridKeyDown}
         onMouseLeave={() => {
           setHover(null);
         }}
@@ -294,74 +270,6 @@ export function KanaChart({
           </span>
         </div>
       )}
-    </div>
-  );
-}
-
-// A run of a line with its own tone: the kana `fur` in `jp-body`, the rest `fur-dim`.
-export type KanaChartPanelSegment = {
-  readonly text: string;
-  readonly kana?: boolean;
-};
-
-export type KanaChartPanelLine = {
-  // The whole line as plain text (also what tests and screen readers read).
-  readonly text: string;
-  // Set when the line has runs of different tones; they join to `text`.
-  readonly segments?: readonly KanaChartPanelSegment[];
-  // Secondary lines are drawn in `fur-dim`.
-  readonly dim?: boolean;
-};
-
-export type KanaChartPanelProps = {
-  readonly kana: string;
-  readonly romaji: string;
-  readonly lines: readonly KanaChartPanelLine[];
-  readonly closeLabel: string;
-  readonly onClose: () => void;
-};
-
-/** The details of an activated cell: a panel with everything known about the kana (design 94). */
-export function KanaChartPanel({
-  kana,
-  romaji,
-  lines,
-  closeLabel,
-  onClose,
-}: KanaChartPanelProps): JSX.Element {
-  return (
-    <div className="nk-chart__panel" data-testid="kana-panel">
-      <div className="nk-chart__panel-head">
-        <span className="font-jp text-jp-test-sm text-fur" lang="ja">
-          {kana}
-        </span>
-        <span className="text-mono-romaji text-fur-dim font-mono">{romaji}</span>
-        <Button variant="text" size="sm" className="nk-chart__close" onClick={onClose}>
-          {closeLabel}
-        </Button>
-      </div>
-      <div className="nk-chart__panel-lines text-ui-body">
-        {lines.map((line, at) => (
-          <p
-            key={at}
-            className={
-              line.dim === true || line.segments !== undefined ? 'text-fur-dim' : 'text-fur'
-            }
-          >
-            {line.segments === undefined
-              ? line.text
-              : line.segments.map((segment, index) =>
-                  segment.kana === true ? (
-                    <span key={index} className="font-jp text-jp-body text-fur" lang="ja">
-                      {segment.text}
-                    </span>
-                  ) : (
-                    segment.text
-                  ),
-                )}
-          </p>
-        ))}
-      </div>
     </div>
   );
 }

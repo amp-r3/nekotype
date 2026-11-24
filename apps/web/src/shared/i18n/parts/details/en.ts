@@ -1,0 +1,23 @@
+// The strings of the kana details dialog: a chunk of their own, loaded with the dialog.
+export const detailsEn = {
+  'details.close': 'close',
+  'details.row.state': 'state',
+  'details.row.memory': 'memory',
+  'details.row.recall': 'recall',
+  'details.row.mixups': 'mixed up with',
+  'details.row.recognition': 'recognition',
+  'details.due': 'review due',
+  'details.nextReview': 'next review: {date}',
+  'details.holds.one': 'holds about {count} day',
+  'details.holds.few': 'holds about {count} days',
+  'details.holds.many': 'holds about {count} days',
+  'details.holds.other': 'holds about {count} days',
+  'details.holdsLess': 'holds less than a day',
+  'details.masteredFrom': 'mastered from {days} days',
+  'details.stats': 'median {ms} ms · accuracy {accuracy}%',
+  'details.answers': '{n} of 10 answers',
+  'details.noRecall': 'no recall answers yet',
+  'details.none': 'none yet',
+  'details.recognition': '{accuracy}% ({ok} of {total})',
+  'details.noRecognition': 'no answers yet',
+} as const;
