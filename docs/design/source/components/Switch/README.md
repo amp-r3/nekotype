@@ -1,6 +1,6 @@
 # Switch
 
-A switch for a binary setting. No setting uses it yet; the sound setting of P10 does (decision 131).
+A switch for a binary setting. Its setting is the sound of P10, `kana sound` / `звук каны` in the Learning section of `/settings` (decision 151); the `ScreenSettings` preview shows it with `later` → P10.
 
 **In code: `Toggle`** — track 32×16, knob 12px, label to the right of the track. The system keeps its own spec (decisions.md, 14): label and description on the left, 34×20 track on the right, so a settings row can carry a description and the control sits at a predictable edge.
 

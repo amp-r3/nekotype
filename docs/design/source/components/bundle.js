@@ -157,8 +157,11 @@
           s.kind && h('span', { className: 'nk-task__kind' }, L[s.kind], ' · '),
           h('span', { className: 'nk-task__n', 'data-slot': 'n' }, s.n), ' ' + L.of + ' ', h('span', { className: 'nk-task__n' }, s.total)),
         p.onLeave && h(Button, { variant: 'text', size: 'sm', className: 'nk-task__leave', onClick: p.onLeave }, L.leave)),
-      h('div', { className: 'nk-task__stage' }, stage),
-      kind === 'recognition' && h('div', { className: 'nk-task__options', role: 'group', 'aria-label': p.optionsLabel }, p.children),
+      s.total > 0 && h('div', { className: 'nk-task__ticks', 'aria-hidden': true }, Array.apply(null, Array(s.total)).map(function (_, i) {
+        return h('span', { key: i, className: cx('nk-task__tick', i < s.n - 1 && 'is-done', i === s.n - 1 && 'is-current', (s.misses || []).indexOf(i) >= 0 && 'is-miss') });
+      })),
+      h('div', { className: 'nk-task__stage' }, p.later || stage),
+      kind === 'recognition' && !p.later && h('div', { className: 'nk-task__options', role: 'group', 'aria-label': p.optionsLabel }, p.children),
       h('div', { className: 'nk-task__blur ui-label', 'aria-hidden': true }, L.blur),
       h('div', { className: 'nk-task__notice' }, p.notice || h(Notice, { reserve: true })),
       h('div', { className: 'nk-task__foot ui-caption' },
@@ -463,9 +466,7 @@
     next: function (d) { return 'next review: ' + d; },
     stats: function (m, a) { return 'median ' + m + ' ms · accuracy ' + a + '%'; },
     answers: function (n) { return n + ' of 10 answers'; },
-    date: function (iso) { var d = new Date(iso + 'T00:00:00'); return d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; },
-    mixedWith: 'mixed up with', noMixups: 'no mixups yet', noRecog: 'no recognition answers yet',
-    recog: function (p, a, b) { return 'recognition accuracy ' + p + '% (' + a + ' of ' + b + ')'; }, close: 'close'
+    date: function (iso) { var d = new Date(iso + 'T00:00:00'); return d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; }
   };
   /* Tooltip / aria-label lines of a kana (exception to Tooltip's one-line rule). An introduced kana without a recall
      answer yet has no third line. */
@@ -479,34 +480,11 @@
     if (d.answers) lines.push(L.stats(d.median, d.acc) + (d.answers < 10 ? ' · ' + L.answers(d.answers) : ''));
     return lines;
   }
-  /* Activation details (decision 94): a panel on `bg-raised` under the row of the activated cell, with everything known
-     about the kana — head (kana, romaji, close), the state and review line, the median and accuracy line (the tooltip's
-     lines 2 and 3), the mixups (kana chosen instead of this one in recognition, most first) and the recognition accuracy. */
-  function KanaChartDetails(p) {
-    var L = Object.assign({}, KC_LABELS, p.labels), k = p.kana, d = p.data || {}, romaji = p.romaji || function () { return ''; };
-    var mx = (d.mixups || []).slice().sort(function (a, b) { return b[1] - a[1]; }), rc = d.recog || [0, 0];
-    var lines = kanaStateLines(k, p.data, L, romaji, null);
-    return h('div', { className: 'nk-kc__panel', 'aria-live': 'polite' },
-      h('div', { className: 'nk-kc__detail-head' },
-        h('span', { className: 'jp-test-sm nk-kc__detail-kana', lang: 'ja' }, k),
-        h('span', { className: 'mono-romaji nk-dim' }, romaji(k)),
-        p.onClose && h(Button, { variant: 'text', size: 'sm', className: 'nk-kc__close', onClick: p.onClose }, L.close)),
-      h('div', { className: 'nk-kc__detail-lines ui-body' },
-        h('div', null, lines[1]),
-        h('div', { className: 'nk-dim' }, lines[2]),
-        h('div', null, mx.length
-          ? [h('span', { key: 'l', className: 'nk-dim' }, L.mixedWith + ' '), mx.map(function (m, i) {
-              return h('span', { key: m[0], className: 'nk-kc__mix' }, h('span', { className: 'jp-body', lang: 'ja' }, m[0]), h('span', { className: 'nk-dim' }, ' ×' + m[1]), i < mx.length - 1 ? ', ' : '');
-            })]
-          : h('span', { className: 'nk-dim' }, L.noMixups)),
-        h('div', { className: 'nk-dim' }, rc[1] ? L.recog(Math.round(rc[0] / rc[1] * 100), rc[0], rc[1]) : L.noRecog)));
-  }
   function KanaChart(p) {
     var script = p.script || 'hiragana', data = p.data || {};
     var L = Object.assign({}, KC_LABELS, p.labels);
     var romaji = p.romaji || function () { return ''; };
     var act = useState(null), active = act[0];
-    var det = useState(null), open = det[0];
     var grid = useRef(null);
     var rows = rowsFor(script), first = cellsOf(rows[0], script)[0];
     function isLocked(k) { return !data[k]; }
@@ -516,10 +494,9 @@
       if (!d) return 'is-st-locked';
       return 'is-st-' + d.state + (d.state === 'mastered' ? ' is-mastered' : '') + (isDue(d) ? ' is-due' : '');
     }
-    /* Arrows: ← → along the row (then the next row), ↑ ↓ to the nearest column of the row above / below, across blocks. Esc closes the details. */
+    /* Arrows: ← → along the row (then the next row), ↑ ↓ to the nearest column of the row above / below, across blocks. */
     function nav(e) {
       var el = document.activeElement;
-      if (e.key === 'Escape' && open) { e.preventDefault(); var back = grid.current.querySelector('[data-k="' + open + '"]'); det[1](null); if (back) back.focus(); return; }
       var d = { ArrowRight: [0, 1], ArrowLeft: [0, -1], ArrowDown: [1, 0], ArrowUp: [-1, 0] }[e.key]; if (!d) return;
       if (!el || !el.hasAttribute('data-k')) return;
       e.preventDefault();
@@ -534,16 +511,8 @@
       }
       if (target) target.focus();
     }
-    function activate(k) {
-      if (p.onSelect) p.onSelect(k);
-      if (isLocked(k)) return;
-      det[1](open === k ? null : k);
-    }
-    function details(k) {
-      return h('div', { className: 'nk-kc__detail', role: 'row', key: 'detail' },
-        h('div', { role: 'gridcell', 'aria-colspan': 6 }, h(KanaChartDetails, { kana: k, data: data[k], romaji: romaji, labels: p.labels,
-          onClose: function () { det[1](null); var c = grid.current.querySelector('[data-k="' + k + '"]'); if (c) c.focus(); } })));
-    }
+    /* Activation of an introduced kana opens its details in the page's dialog (decision 147); a locked kana opens nothing. */
+    function activate(k) { if (!isLocked(k) && p.onOpen) p.onOpen(k); }
     var ri = 0;
     function block(g) {
       var gr = rows.filter(function (r) { return r.group === g; }); if (!gr.length) return null;
@@ -559,14 +528,14 @@
               if (!k) return h('span', { key: ci, className: 'nk-kc__gap', role: 'gridcell' });
               var lines = stateLines(k);
               return h('button', { key: ci, type: 'button', role: 'gridcell', 'data-k': k, 'data-r': rIndex, 'data-c': ci, lang: 'ja', 'aria-label': lines.join(', '),
-                'aria-disabled': isLocked(k) || undefined, 'aria-expanded': !isLocked(k) ? open === k : undefined,
+                'aria-disabled': isLocked(k) || undefined, 'aria-haspopup': !isLocked(k) && p.onOpen ? 'dialog' : undefined,
                 tabIndex: active === k || (!active && k === first) ? 0 : -1,
                 className: cx('nk-kc__cell', k.length > 1 ? 'jp-cell-sm' : 'jp-cell', cellCls(k), active === k && 'is-active'),
                 onFocus: function () { act[1](k); }, onMouseEnter: function () { act[1](k); }, onClick: function () { activate(k); } },
-                k, active === k && open !== k && h('span', { className: cx('nk-kc__tip ui-caption', ci === 0 && 'is-start', ci >= n - 1 && n > 2 && 'is-end'), role: 'tooltip', lang: p.lang },
+                k, active === k && h('span', { className: cx('nk-kc__tip ui-caption', ci === 0 && 'is-start', ci >= n - 1 && n > 2 && 'is-end'), role: 'tooltip', lang: p.lang },
                   lines.map(function (t, i) { return h('span', { key: i, className: 'nk-kc__tip-line' }, t); })));
             }));
-          return open && cells.indexOf(open) >= 0 ? [row, details(open)] : row;
+          return row;
         }));
     }
     var sample = script === 'hiragana' ? 'あ' : 'ア';
@@ -626,7 +595,7 @@
     Button: Button, Segmented: Segmented, Switch: Switch, Input: Input, Select: Select, Tooltip: Tooltip,
     Stat: Stat, ResultChart: ResultChart, ActivityMap: ActivityMap, KanaChart: KanaChart,
     OptionCard: OptionCard, Nav: Nav, Footer: Footer,
-    Cat: Cat, EmptyState: EmptyState, Icon: Icon, KanaTask: KanaTask, KanaChartDetails: KanaChartDetails, kanaStateLines: kanaStateLines, isDue: isDue, KC_LABELS: KC_LABELS,
+    Cat: Cat, EmptyState: EmptyState, Icon: Icon, KanaTask: KanaTask, kanaStateLines: kanaStateLines, isDue: isDue, KC_LABELS: KC_LABELS,
     /* not components: */ createTaskController: createTaskController, useNarrow: useNarrow, useCoarse: useCoarse, TASK_LABELS: TASK_LABELS, KANA_ROWS: ROWS, kanaRows: rowsFor, kanaOf: kanaOf
   });
 })();
