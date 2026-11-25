@@ -1,5 +1,5 @@
 import type { LearnKanaKey, Rng, Track } from '@nekotype/shared/types';
-import { DAY_MS, RECOGNITION_SHARE, STEP_MS, TRACK_LAG } from './constants';
+import { DAY_MS, RECOGNITION_SHARE, REVIEW_WAIT_MS, STEP_MS, TRACK_LAG } from './constants';
 import { itemSlots } from './fold';
 import type { ItemState, ModelState } from './fold';
 import { intervalFactor } from './fsrs';
@@ -101,7 +101,9 @@ export function nextTask(state: ModelState, ctx: PlanContext): PlannedTask | nul
   for (const slot of slots) {
     const { key, item } = slot;
     const isDue =
-      item.phase === 'learned' && item.lastAt + item.memory.stability * factor * DAY_MS <= ahead;
+      item.phase === 'learned' &&
+      now - item.lastAt >= REVIEW_WAIT_MS &&
+      item.lastAt + item.memory.stability * factor * DAY_MS <= ahead;
     if (item.phase === 'learning') learning += 1;
     if (slot === previousSlot) {
       previousItem = item;

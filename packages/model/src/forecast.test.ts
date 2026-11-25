@@ -240,8 +240,8 @@ describe('forecastRow', () => {
 });
 
 describe('outlineSession', () => {
-  it('counts the tasks of the next session of an empty log (a seeded play: kana graduate within it)', () => {
-    expect(outlineSession(EMPTY, ctx())).toEqual({ reviews: 2, learning: 22, introductions: 6 });
+  it('counts the tasks of the next session of an empty log (a seeded play: kana graduate within it, and are not reviewed within REVIEW_WAIT_MS)', () => {
+    expect(outlineSession(EMPTY, ctx())).toEqual({ reviews: 0, learning: 24, introductions: 6 });
   });
 
   it('puts the reviews that are due first', () => {

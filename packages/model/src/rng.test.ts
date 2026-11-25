@@ -19,9 +19,9 @@ describe('seededRng', () => {
 
   it('keeps the generator of syntheticLog: the same log as before the move', () => {
     const events = syntheticLog({ answers: 1000, seed: 1 });
-    expect(events).toHaveLength(1083);
+    expect(events).toHaveLength(1099);
     expect(createHash('sha256').update(JSON.stringify(events)).digest('hex')).toBe(
-      '7ae1a83372d1d2830c990c3ebb9e527700f9269f071df23627ab2cad62734f6e',
+      'cf08902433cfa59e3188fe69936c4ae692e73a35b80488564b49b2e0f0e2c9ff',
     );
   });
 });

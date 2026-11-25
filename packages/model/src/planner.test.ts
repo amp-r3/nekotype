@@ -1,6 +1,13 @@
 import type { LearnKanaKey, Rng, Track } from '@nekotype/shared/types';
 import { describe, expect, it } from 'vitest';
-import { DAY_MS, HORIZON_DEFAULT_MS, RECOGNITION_SHARE, STEP_MS, TRACK_LAG } from './constants';
+import {
+  DAY_MS,
+  HORIZON_DEFAULT_MS,
+  RECOGNITION_SHARE,
+  REVIEW_WAIT_MS,
+  STEP_MS,
+  TRACK_LAG,
+} from './constants';
 import { createFold } from './fold';
 import type { ItemState, ModelState } from './fold';
 import { retrievability } from './fsrs';
@@ -190,6 +197,65 @@ describe('due kana', () => {
     const h = horizonMs(state);
     const recall = retrievability(3.7, (from + h - (NOW - DAY_MS)) / DAY_MS);
     expect(Math.abs(recall - requestedRetention(state))).toBeLessThan(1e-9);
+  });
+
+  it('waits REVIEW_WAIT_MS after the last answer of a kana', () => {
+    // Due by its memory alone: a fresh kana, its stability under the horizon.
+    const answeredAt = NOW - REVIEW_WAIT_MS + 1;
+    const state = stateOf({
+      [A]: item({ lastAt: answeredAt, memory: { difficulty: 5, stability: 0.4 } }),
+    });
+    expect(dueFrom(state, A)).toBe(answeredAt + REVIEW_WAIT_MS);
+    expect(nextTask(state, ctx())?.kind).toBe('introduction');
+    expect(nextTask(state, ctx({ now: NOW + 1 }))).toEqual({
+      kind: 'recall',
+      key: A,
+      review: true,
+    });
+  });
+
+  it('spaces the reviews of a fresh kana (two fresh kana do not take turns)', () => {
+    const fold = createFold({ targetMs: 1500, stats: false });
+    const rng = seeded(3);
+    let n = 0;
+    let at = NOW;
+    const early: string[] = [];
+    // Back-to-back sessions of one sitting, every answer correct.
+    for (let session = 0; session < 6; session += 1) {
+      fold.apply({ t: 'start', at, dev: 'd', n: (n += 1), tz: 0 });
+      let previous: LearnKanaKey | null = null;
+      for (let i = 0; i < 30; i += 1) {
+        const task = nextTask(fold.state, { now: at, track: 'hiragana', previous, rng });
+        if (task === null) break;
+        if (task.kind === 'introduction') {
+          fold.apply({ t: 'intro', at, dev: 'd', n: (n += 1), k: task.key });
+        } else {
+          const last = fold.state.items.get(task.key)?.lastAt ?? Number.NEGATIVE_INFINITY;
+          if (task.kind === 'recall' && task.review && at - last < REVIEW_WAIT_MS) {
+            early.push(task.key);
+          }
+          fold.apply({
+            t: 'answer',
+            at,
+            dev: 'd',
+            n: (n += 1),
+            task: task.kind,
+            k: task.key,
+            ok: true,
+            ms: 1200,
+            hint: false,
+            wrong: null,
+            alt: null,
+          });
+        }
+        previous = task.key;
+        at += 4000;
+      }
+      fold.apply({ t: 'end', at, dev: 'd', n: (n += 1) });
+      at += 60_000;
+    }
+    expect([...fold.state.items.values()].some((s) => s.phase === 'learned')).toBe(true);
+    expect(early).toEqual([]);
   });
 
   it('has no due moment for a kana that is not learned', () => {

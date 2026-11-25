@@ -9,6 +9,7 @@ import {
   PRESSURE_SPAN,
   RETENTION,
   RETENTION_MAX,
+  REVIEW_WAIT_MS,
 } from './constants';
 import type { ModelState } from './fold';
 import { intervalFactor } from './fsrs';
@@ -58,10 +59,14 @@ export function horizonMs(state: Observed): number {
   return horizonValue;
 }
 
-/** A learned kana: the moment from which it is due; null otherwise. */
+/**
+ * A learned kana: the moment from which it is due; null otherwise. Never sooner than
+ * REVIEW_WAIT_MS after its last answer: a freshly learned kana has a stability under the horizon,
+ * and without the wait it would be due again right after each review.
+ */
 export function dueFrom(state: ModelState, key: LearnKanaKey): number | null {
   const item = state.items.get(key);
   if (item?.phase !== 'learned') return null;
   const days = item.memory.stability * intervalFactor(requestedRetention(state));
-  return item.lastAt + days * DAY_MS - horizonMs(state);
+  return Math.max(item.lastAt + days * DAY_MS - horizonMs(state), item.lastAt + REVIEW_WAIT_MS);
 }
