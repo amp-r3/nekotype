@@ -1,7 +1,13 @@
-import type { openSession, SessionScreen, SummaryScreen } from './ui/session-runtime';
+import type {
+  openSession,
+  openSummaryModel,
+  SessionScreen,
+  SummaryScreen,
+} from './ui/session-runtime';
 
 type SessionRuntime = {
   readonly openSession: typeof openSession;
+  readonly openSummaryModel: typeof openSummaryModel;
   readonly SessionScreen: typeof SessionScreen;
   readonly SummaryScreen: typeof SummaryScreen;
 };

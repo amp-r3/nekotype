@@ -13,7 +13,13 @@ const SRC = join(import.meta.dirname, '..', '..');
 
 const PARTS: readonly (readonly [string, Record<string, string>, RegExp])[] = [
   ['progress', progressEn, /^pages\/progress\//],
-  ['home', homeEn, /^pages\/learn\/ui\/home\/panels\//],
+  // The summary panel loads this part with its chunk (`summary-loader.ts`) and shares the kana
+  // buttons with the home's panels.
+  [
+    'home',
+    homeEn,
+    /^pages\/learn\/ui\/(home\/panels\/|summary-panel|summary-forecast|kana-buttons)/,
+  ],
   ['details', detailsEn, /^features\/kana-details\//],
   // The "another account" dialog loads the settings part before it shows (design decision 118).
   ['settings', settingsEn, /^(pages\/settings|features\/sync\/ui)\//],

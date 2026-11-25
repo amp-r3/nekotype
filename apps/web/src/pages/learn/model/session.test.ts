@@ -3,7 +3,8 @@ import { signal } from '@preact/signals';
 import type { LearnKanaKey } from '@nekotype/shared/types';
 import { onSyncRequest } from '@/shared/lib';
 import type { LearnStore } from '@/entities/learn';
-import { canonicalFor } from '@/entities/learn';
+import { canonicalFor, insights } from '@/entities/learn';
+import type { ShownForecast } from '@/entities/learn';
 import type { Strictness } from '../lib/prompt';
 import { createLearnSession } from './session';
 import type { LearnSession, SessionStore, TaskPort } from './session';
@@ -501,6 +502,126 @@ describe('learning session: recognition', () => {
       if (found === null) answerRight(env);
     }
     expect(found).toContain(hira('め'));
+  });
+});
+
+describe('learning session: misses and the forecast before (P8 D9, D13)', () => {
+  it('marks a recall answered with an error, when its record runs and not in the key handler', async () => {
+    const env = await setup({ seed: 11 });
+    env.session.start();
+    until(env, 'recall');
+    const task = env.session.task.value;
+    if (task?.kind !== 'recall') throw new Error('not recall');
+    const index = task.n - 1;
+    show(env.session);
+    typeRomaji(env.session, 'x');
+    typeRomaji(env.session, canonicalFor(task.key));
+    expect(env.session.misses.value).not.toContain(index);
+    env.scheduler.flush();
+    expect(env.session.misses.value).toContain(index);
+  });
+
+  it('does not mark a clean recall, and marks Esc', async () => {
+    const env = await setup({ seed: 11 });
+    env.session.start();
+    until(env, 'recall');
+    expect(env.session.misses.value).toEqual([]);
+    const clean = env.session.task.value;
+    if (clean?.kind !== 'recall') throw new Error('not recall');
+    show(env.session);
+    typeRomaji(env.session, canonicalFor(clean.key));
+    env.scheduler.flush();
+    expect(env.session.misses.value).toEqual([]);
+    until(env, 'recall');
+    const next = env.session.task.value;
+    if (next?.kind !== 'recall') throw new Error('not recall');
+    show(env.session);
+    env.session.handleIntent({ kind: 'reveal' });
+    typeRomaji(env.session, canonicalFor(next.key));
+    env.scheduler.flush();
+    expect(env.session.misses.value).toEqual([next.n - 1]);
+  });
+
+  it('marks a wrong choice of recognition with the choice, and a right one never', async () => {
+    const env = await setup({ seed: 5 });
+    env.session.start();
+    until(env, 'recognition');
+    const task = env.session.task.value;
+    if (task?.kind !== 'recognition') throw new Error('not recognition');
+    show(env.session);
+    env.session.choose(task.options.findIndex((option) => option !== task.key));
+    expect(env.session.misses.value).toEqual([task.n - 1]);
+  });
+
+  it('never asks for the insights, from the start to the summary (rule 3d)', async () => {
+    const env = await setup({ tasks: 4 });
+    env.session.start();
+    for (let guard = 0; env.session.phase.value !== 'summary'; guard++) {
+      if (guard > 20) throw new Error('no summary');
+      answerRight(env);
+    }
+    expect(insights.value).toBeNull();
+  });
+
+  it('does not mark an introduction', async () => {
+    const env = await setup();
+    env.session.start();
+    answerRight(env);
+    expect(env.session.misses.value).toEqual([]);
+  });
+
+  it('starts a new session with no misses', async () => {
+    const env = await setup({ seed: 5 });
+    env.session.start();
+    until(env, 'recognition');
+    const task = env.session.task.value;
+    if (task?.kind !== 'recognition') throw new Error('not recognition');
+    show(env.session);
+    env.session.choose(task.options.findIndex((option) => option !== task.key));
+    env.session.start();
+    expect(env.session.misses.value).toEqual([]);
+  });
+
+  it('reads the forecast before the session before the store drops its request', async () => {
+    const order: string[] = [];
+    const clock = new Clock0();
+    const scheduler = new Timers();
+    const store = await readyStore(clock, scheduler);
+    const startSession = vi.spyOn(store, 'startSession').mockImplementation(() => {
+      order.push('startSession');
+    });
+    const forecast: ShownForecast = {
+      row: 'hiragana:vowels',
+      low: 2,
+      median: 3,
+      high: 4,
+      raw: 3,
+      basis: 'corrected',
+    };
+    const session = createLearnSession({
+      track: 'hiragana',
+      store,
+      clock,
+      scheduler,
+      rng: seededRng(1),
+      audio: { play: vi.fn() },
+      strictness: () => 'learner',
+      forecastBefore: () => {
+        order.push('forecast');
+        return forecast;
+      },
+    });
+    expect(session.forecastBefore).toBeNull();
+    session.start();
+    expect(order).toEqual(['forecast', 'startSession']);
+    expect(session.forecastBefore).toBe(forecast);
+    expect(startSession).toHaveBeenCalledOnce();
+  });
+
+  it('has no forecast before when none is given', async () => {
+    const env = await setup();
+    env.session.start();
+    expect(env.session.forecastBefore).toBeNull();
   });
 });
 

@@ -1,5 +1,6 @@
-import type { LearnView } from '@nekotype/model';
+import type { KanaView, LearnView } from '@nekotype/model';
 import type { LearnKanaKey } from '@nekotype/shared/types';
+import type { ForecastState, ShownForecast } from '@/entities/learn';
 
 /** Changes in the median answer time smaller than this are not listed. */
 export const CHANGE_MIN_MS = 100;
@@ -24,6 +25,15 @@ export type Mixup = {
   readonly chosen: LearnKanaKey;
 };
 
+/**
+ * How the forecast of the session's track moved with the session (P8 plan, D9). `before` is the
+ * forecast shown when the session started, null when none was ready for the track.
+ */
+export type ForecastChange = {
+  readonly before: ShownForecast | null;
+  readonly after: ForecastState;
+};
+
 export type SessionSummary = {
   /** Kana introduced in the session. */
   readonly introduced: readonly LearnKanaKey[];
@@ -35,6 +45,8 @@ export type SessionSummary = {
   readonly mixups: readonly Mixup[];
   /** Recall: kana typed with errors. */
   readonly errors: readonly LearnKanaKey[];
+  /** The state of each kana of `introduced` and `learned` at the end: the colour of its cell. */
+  readonly states: ReadonlyMap<LearnKanaKey, KanaView['state']>;
 };
 
 export type SummaryInput = {
@@ -63,12 +75,19 @@ export function summarize(input: SummaryInput): SessionSummary {
   const introduced: LearnKanaKey[] = [];
   const learned: LearnKanaKey[] = [];
   const changes: MedianChange[] = [];
+  const states = new Map<LearnKanaKey, KanaView['state']>();
   for (const [key, now] of after.kana) {
     const was = before.kana.get(key);
     if (was === undefined) continue;
-    if (was.state === 'locked' && now.state !== 'locked') introduced.push(key);
+    if (was.state === 'locked' && now.state !== 'locked') {
+      introduced.push(key);
+      states.set(key, now.state);
+    }
     const known = now.state === 'learned' || now.state === 'mastered';
-    if ((was.state === 'locked' || was.state === 'learning') && known) learned.push(key);
+    if ((was.state === 'locked' || was.state === 'learning') && known) {
+      learned.push(key);
+      states.set(key, now.state);
+    }
     if (was.recall.length >= RECALL_WINDOW) {
       changes.push({ key, from: was.medianMs, to: now.medianMs });
     }
@@ -83,5 +102,13 @@ export function summarize(input: SummaryInput): SessionSummary {
     .sort((a, b) => delta(b) - delta(a))
     .slice(0, CHANGE_LIMIT);
 
-  return { introduced, learned, faster, slower, mixups: input.mixups, errors: input.errors };
+  return {
+    introduced,
+    learned,
+    faster,
+    slower,
+    mixups: input.mixups,
+    errors: input.errors,
+    states,
+  };
 }

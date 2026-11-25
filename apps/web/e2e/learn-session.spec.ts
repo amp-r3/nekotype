@@ -4,7 +4,10 @@ import { learnedLog } from './lib/kana';
 import { answer } from './lib/learn';
 
 test.describe('learning session on /', () => {
-  test('a full session of 30 tasks ends on the summary @mobile', async ({ page, isMobile }) => {
+  test('a full session of 30 tasks ends on the summary, `home` shows what got stronger @mobile', async ({
+    page,
+    isMobile,
+  }) => {
     await page.goto('/');
     await expect(page.getByTestId('home-reason')).toBeVisible();
     await page.getByRole('button', { name: 'continue' }).click();
@@ -20,10 +23,30 @@ test.describe('learning session on /', () => {
 
     await expect(page.getByRole('heading', { name: 'session summary' })).toBeVisible();
     await expect(page.getByRole('navigation')).toBeVisible();
-    // The first session introduces kana, so there is something to show or the line.
-    await expect(page.getByRole('button', { name: /continue/ })).toBeVisible();
-    // Enter from the hidden field starts the next session (the table button has a unit test).
-    await page.keyboard.press('Enter');
+    // The first session opened the vowels: the forecast change names them, and what it introduced
+    // is a row of cells that open the details.
+    await expect(page.getByTestId('summary-forecast')).toContainText('the vowels are fully open');
+    await expect(page.getByRole('button', { name: /^continue/ })).toBeVisible();
+    const introduced = page.getByTestId('summary-introduced').getByTestId('summary-cell');
+    await expect(introduced.first()).toBeVisible();
+    await introduced.first().click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(introduced.first()).toBeFocused();
+
+    // `home` returns to `/`: the kana the session raised are under "since the last session".
+    await page.getByRole('button', { name: 'home' }).click();
+    await expect(page.getByTestId('home-reason')).toBeVisible();
+    const stronger = page.getByTestId('home-stronger').getByTestId('since-cell');
+    await expect(stronger.first()).toBeVisible();
+    await stronger.first().click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // Continue starts the next session, and leaving it shows the home again.
+    await page.getByRole('button', { name: /^continue/ }).click();
     await expect(page.getByTestId('task-session')).toHaveText('learning · 1 of 30');
     await page.getByRole('button', { name: 'leave session' }).click();
     await expect(page.getByTestId('home-reason')).toBeVisible();

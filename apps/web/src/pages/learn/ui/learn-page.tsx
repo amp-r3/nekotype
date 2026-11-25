@@ -4,6 +4,7 @@ import { t } from '@/shared/i18n';
 import { learnTargetMs } from '@/entities/settings';
 import { initLearn } from '@/entities/learn';
 import type { LearnSession } from '../model/session';
+import type { SummaryModel } from '../model/summary';
 import { loadSessionRuntime } from '../session-loader';
 import type { SessionRuntime } from '../session-loader';
 import { HomeScreen } from './home/home-screen';
@@ -17,12 +18,22 @@ export function LearnPage(): JSX.Element {
   const [view, setView] = useState<View>('home');
   const [session, setSession] = useState<LearnSession | null>(null);
   const [runtime, setRuntime] = useState<SessionRuntime | null>(null);
+  const [summaryModel, setSummaryModel] = useState<SummaryModel | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     void initLearn(() => learnTargetMs.value);
   }, []);
+
+  // The summary's model lives while the summary is shown: it asks for the insights, and it ends
+  // when another session starts, the home shows, or the page goes.
+  useEffect(
+    () => () => {
+      summaryModel?.dispose();
+    },
+    [summaryModel],
+  );
 
   // The session code is a chunk of its own. The field is focused here, inside the click, before
   // the chunk is awaited, so a phone keeps its keyboard.
@@ -37,14 +48,16 @@ export function LearnPage(): JSX.Element {
       return;
     }
     const next = loaded.openSession();
+    setSummaryModel(null);
     setRuntime(loaded);
     setSession(next);
     setView('session');
     next.start();
   }, []);
 
-  const toTable = useCallback((): void => {
+  const toHome = useCallback((): void => {
     session?.leave();
+    setSummaryModel(null);
     setView('home');
   }, [session]);
 
@@ -83,8 +96,9 @@ export function LearnPage(): JSX.Element {
         <runtime.SessionScreen
           session={session}
           inputRef={inputRef}
-          onLeave={toTable}
+          onLeave={toHome}
           onEnd={() => {
+            setSummaryModel(runtime.openSummaryModel(session));
             setView('summary');
           }}
         />
@@ -93,16 +107,25 @@ export function LearnPage(): JSX.Element {
   }
 
   const summary = session?.summary.value ?? null;
-  if (view === 'summary' && summary !== null && runtime !== null) {
+  if (
+    view === 'summary' &&
+    session !== null &&
+    summary !== null &&
+    runtime !== null &&
+    summaryModel !== null
+  ) {
     return (
       <>
         {hiddenInput}
         <runtime.SummaryScreen
           summary={summary}
+          model={summaryModel}
+          track={session.track}
           onContinue={() => {
-            void startSession();
+            // Nothing to do: the model offers no task, so a session would end empty (D2).
+            if (summaryModel.canStart.peek()) void startSession();
           }}
-          onTable={toTable}
+          onHome={toHome}
           inputRef={inputRef}
         />
       </>

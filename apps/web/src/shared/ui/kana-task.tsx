@@ -11,6 +11,8 @@ export type TaskSession = {
   // The task on display, from 1; it grows after every task, introductions included.
   readonly n: number;
   readonly total: number;
+  // The 0-based numbers of the finished tasks answered with an error: their ticks are `miss`.
+  readonly misses?: readonly number[];
 };
 
 // Every string the task shows, from the caller's dictionary.
@@ -110,6 +112,23 @@ export function KanaTask({
           </Button>
         )}
       </div>
+      {session.total > 0 && (
+        // Decorative: the session line says `7 of 30`. One tick per task; the answered ones keep
+        // their colour, so the ticks render with the task and a keystroke renders nothing.
+        <div className="nk-task__ticks" aria-hidden="true" data-testid="task-ticks">
+          {Array.from({ length: session.total }, (_, i) => (
+            <span
+              key={i}
+              className={cx(
+                'nk-task__tick',
+                i < session.n - 1 && 'is-done',
+                i === session.n - 1 && 'is-current',
+                session.misses?.includes(i) === true && 'is-miss',
+              )}
+            />
+          ))}
+        </div>
+      )}
       <div data-task-stage className="nk-task__stage">
         {kind === 'introduction' && (
           <>

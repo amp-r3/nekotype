@@ -16,7 +16,7 @@ import { requestSync } from '@/shared/lib';
 import { compile, isComplete, start, step } from '../lib/prompt';
 import type { MatchState, Matcher, Strictness } from '../lib/prompt';
 import { displayRomaji, trackOfKey } from '@/entities/learn';
-import type { AnswerInput, Keystroke } from '@/entities/learn';
+import type { AnswerInput, Keystroke, ShownForecast } from '@/entities/learn';
 import { ANSWER_PAUSE_MS, SESSION_TASKS } from '../lib/constants';
 import { recognitionOptions } from '../lib/distractors';
 import { summarize } from '../lib/summary';
@@ -87,6 +87,11 @@ export type LearnSessionDeps = {
   /** Read at each task, so a change of the setting applies to the next one. */
   readonly strictness: () => Strictness;
   readonly tasks?: number;
+  /**
+   * The forecast shown for the session's track when it starts, or null when none was ready: the
+   * summary compares it with the one after the session (P8 plan, D9). Read once, in `start()`.
+   */
+  readonly forecastBefore?: () => ShownForecast | null;
 };
 
 export interface LearnSession {
@@ -96,6 +101,16 @@ export interface LearnSession {
   readonly notice: ReadonlySignal<Notice>;
   readonly phase: ReadonlySignal<Phase>;
   readonly summary: ReadonlySignal<SessionSummary | null>;
+  /**
+   * The 0-based numbers of the finished tasks answered with an error (a rejected key or Esc in
+   * recall, a wrong choice in recognition): the ticks under the session line (design 149). It
+   * grows when the answer is recorded, never in the key handler of a recall.
+   */
+  readonly misses: ReadonlySignal<readonly number[]>;
+  /** The track the session plans from. */
+  readonly track: Track;
+  /** The forecast of the session's track when it started; null when none was ready. */
+  readonly forecastBefore: ShownForecast | null;
   readonly total: number;
   /** Shows the first task. */
   start: () => void;
@@ -144,6 +159,8 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
   const notice = signal<Notice>({ kind: 'none' });
   const phase = signal<Phase>('idle');
   const summary = signal<SessionSummary | null>(null);
+  const misses = signal<readonly number[]>([]);
+  let forecastBefore: ShownForecast | null = null;
 
   let port: TaskPort | null = null;
   let count = 0;
@@ -190,6 +207,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
         slower: [],
         mixups,
         errors: [...errors],
+        states: new Map(),
       };
     }
     phase.value = 'summary';
@@ -274,8 +292,10 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
       const answered = { keystrokes: [...keystrokes], ok, firstError };
       const strictness = deps.strictness();
       if (!ok) errors.add(key);
+      const index = count - 1;
       port?.finish(ok ? 'correct' : 'miss');
       defer(() => {
+        if (!answered.ok) misses.value = [...misses.value, index];
         store.recordAnswer({
           task: 'recall',
           key,
@@ -348,12 +368,20 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
     notice,
     phase,
     summary,
+    misses,
+    track,
+    get forecastBefore() {
+      return forecastBefore;
+    },
     total,
 
     start() {
       before = store.view.value;
+      // Read before `startSession`, which drops the insights request (D8).
+      forecastBefore = deps.forecastBefore?.() ?? null;
       count = 0;
       previous = null;
+      misses.value = [];
       store.startSession();
       showNext();
     },
@@ -399,6 +427,8 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
         if (!mixups.some((m) => m.key === current.key && m.chosen === chosen)) {
           mixups.push({ key: current.key, chosen });
         }
+        // The choice renders the screen anyway, so the tick turns with it.
+        misses.value = [...misses.value, count - 1];
         notice.value = { kind: 'next' };
         phase.value = 'waiting';
         choice.value = { chosen, correct };

@@ -1,5 +1,6 @@
 import type { ReadonlySignal } from '@preact/signals';
 import { signal } from '@preact/signals';
+import { loadDictionaryPart } from '@/shared/i18n';
 import type { SummaryPanel } from './ui/summary-panel';
 
 // The summary is a chunk of its own: it shows only when a session ends.
@@ -13,8 +14,9 @@ export const summaryLoadFailed: ReadonlySignal<boolean> = _failed;
 function fetchPanel(): Promise<boolean> {
   if (_panel.value !== null) return Promise.resolve(true);
   if (inflight !== undefined) return inflight;
-  const request = import('./ui/summary-panel')
-    .then((module) => {
+  // The forecast change's strings are the dictionary part `home`, which the home loads too.
+  const request = Promise.all([import('./ui/summary-panel'), loadDictionaryPart('home')])
+    .then(([module]) => {
       _panel.value = module.SummaryPanel;
       return true;
     })

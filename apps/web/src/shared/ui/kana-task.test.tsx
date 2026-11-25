@@ -54,6 +54,44 @@ function resize(width: number): void {
   window.happyDOM.setViewport({ width, height: 768 });
 }
 
+describe('KanaTask ticks (design decision 149)', () => {
+  const ticks = (): string[] =>
+    Array.from(container.querySelectorAll('.nk-task__tick')).map((tick) => tick.className);
+
+  it('draws one decorative tick per task: done, the current one, the rest, and a miss', () => {
+    mount({
+      kind: 'recall',
+      kana: 'あ',
+      session: { kind: 'learning', n: 4, total: 6, misses: [1] },
+    });
+    const root = container.querySelector('[data-testid="task-ticks"]');
+    expect(root?.getAttribute('aria-hidden')).toBe('true');
+    expect(ticks().map((name) => name.replace('nk-task__tick', '').trim())).toEqual([
+      'is-done',
+      'is-done is-miss',
+      'is-done',
+      'is-current',
+      '',
+      '',
+    ]);
+  });
+
+  it('turns the current tick to a miss when its task is answered with an error', () => {
+    mount({
+      kind: 'recall',
+      kana: 'あ',
+      session: { kind: 'learning', n: 2, total: 3, misses: [1] },
+    });
+    expect(ticks()[1]).toContain('is-miss');
+    expect(ticks()[1]).toContain('is-current');
+  });
+
+  it('draws no ticks for a session of no tasks', () => {
+    mount({ kind: 'recall', kana: 'あ', session: { kind: 'learning', n: 1, total: 0 } });
+    expect(container.querySelector('[data-testid="task-ticks"]')).toBeNull();
+  });
+});
+
 describe('KanaTask', () => {
   it('does not rebuild the controller when the window width changes', async () => {
     resize(1024);

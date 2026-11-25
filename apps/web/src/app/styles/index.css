@@ -94,6 +94,32 @@ html {
   color: var(--fur-dim);
 }
 
+/* A tick per task of the session (design 149): done, current, the rest, answered with an error. */
+.nk-task__ticks {
+  display: flex;
+  gap: var(--stroke-mark);
+  height: var(--stroke-mark);
+  margin-top: calc(-1 * var(--space-1));
+}
+
+.nk-task__tick {
+  flex: 1 1 0;
+  border-radius: var(--radius-xs);
+  background: var(--line-strong);
+}
+
+.nk-task__tick.is-done {
+  background: var(--fur-dim);
+}
+
+.nk-task__tick.is-current {
+  background: var(--eye);
+}
+
+.nk-task__tick.is-miss {
+  background: var(--miss);
+}
+
 .nk-task__n {
   color: var(--fur);
   font-variant-numeric: tabular-nums;

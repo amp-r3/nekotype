@@ -167,6 +167,41 @@ describe('learning session screen', () => {
     expect(next.filter((name) => name === 'KanaTask')).toHaveLength(1);
   });
 
+  it('draws a tick per task and turns the tick of a task answered with an error to a miss on the next task', async () => {
+    const env = await setup(11);
+    await mount(env.session);
+    await toTask(env, 'recall');
+    const task = env.session.task.value;
+    if (task?.kind !== 'recall') throw new Error('not recall');
+    const ticks = (): string[] =>
+      Array.from(container.querySelectorAll('.nk-task__tick')).map((tick) => tick.className);
+    expect(ticks()).toHaveLength(30);
+    expect(ticks()[task.n - 1]).toContain('is-current');
+
+    // A wrong key and the right answer: the answer renders nothing at all (the tick is recorded
+    // with the answer, after the key), and the next task draws the miss.
+    expect(
+      await rendered(() => {
+        press('x');
+      }),
+    ).toEqual([]);
+    for (const char of canonicalFor(task.key))
+      expect(
+        await rendered(() => {
+          press(char);
+        }),
+      ).toEqual([]);
+    expect(ticks()[task.n - 1]).not.toContain('is-miss');
+    await act(async () => {
+      env.timers.flush();
+      await tick();
+    });
+    expect(ticks()[task.n - 1]).toContain('is-miss');
+    expect(ticks()[task.n - 1]).toContain('is-done');
+    expect(ticks().filter((name) => name.includes('is-miss'))).toHaveLength(1);
+    expect(ticks()[task.n]).toContain('is-current');
+  });
+
   it('renders at most once for a recognition answer', async () => {
     const env = await setup(5);
     await mount(env.session);

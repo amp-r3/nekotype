@@ -110,6 +110,9 @@ export function SessionScreen({
 
   const task = session.task.value;
   const choice = session.choice.value;
+  // The ticks: a tick turns `miss` once its task is answered with an error, and the screen renders
+  // for that answer (once) or for the next task; never for a keystroke.
+  const misses = session.misses.value;
 
   useEffect(() => {
     if (live.current !== null && task !== null) live.current.textContent = announce(task);
@@ -203,7 +206,7 @@ export function SessionScreen({
       <KanaTask
         kind={task.kind}
         {...shown}
-        session={{ kind: 'learning', n: task.n, total: session.total }}
+        session={{ kind: 'learning', n: task.n, total: session.total, misses }}
         labels={labels()}
         notice={
           waiting ? (
