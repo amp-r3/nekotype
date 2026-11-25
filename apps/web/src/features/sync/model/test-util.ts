@@ -348,7 +348,7 @@ export async function appendOwn(db: Db, count: number, dev = LOG_DEV): Promise<v
 
 export function settingsAt(updatedAt: number): ValidSettings {
   return {
-    learn: { strictness: 'learner', track: 'hiragana', targetMs: 1500, sound: true },
+    learn: { strictness: 'learner', track: 'hiragana', sound: true },
     updatedAt,
   };
 }

@@ -15,7 +15,7 @@ const VOWELS: readonly LearnKanaKey[] = [A, I, 'hiragana:う', 'hiragana:え', '
 const ROW = 'hiragana:vowels';
 
 function folded(events: readonly LogEvent[]) {
-  const fold = model.foldLog(events, { targetMs: 1500, stats: true });
+  const fold = model.foldLog(events, { stats: true });
   const snapshot = fold.snapshot();
   if (snapshot.stats === null) throw new Error('no statistics');
   return { fold, state: snapshot.state, view: model.describe(snapshot.state, snapshot.stats) };

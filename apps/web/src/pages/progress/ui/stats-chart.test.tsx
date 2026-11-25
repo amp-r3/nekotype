@@ -156,17 +156,4 @@ describe('StatsChart', () => {
     expect(tipEl()?.classList.contains('is-start')).toBe(false);
     expect(tipEl()?.classList.contains('is-end')).toBe(false);
   });
-
-  it('draws the reference line with its label under the bars', () => {
-    mount(600, bars, { reference: { value: 1000, label: 'target 1000 ms' } });
-    const reference = container.querySelector('[data-testid="chart-reference"]');
-    expect(reference?.textContent).toBe('target 1000 ms');
-    const bar = container.querySelector('.nk-rc__range');
-    expect(bar).not.toBeNull();
-    // The bars follow the reference in the document: they are drawn over it.
-    expect(
-      (reference?.compareDocumentPosition(bar ?? container) ?? 0) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).not.toBe(0);
-  });
 });

@@ -37,6 +37,15 @@ describe('stored records', () => {
     expect(batch === null ? 0 : lastNOf(batch.request)).toBeNull();
   });
 
+  it('reads the settings of a batch of an earlier version without the target answer time', () => {
+    const base = outbox();
+    const legacy = { ...settingsAt(4), learn: { ...settingsAt(4).learn, targetMs: 1500 } };
+    const batch = readOutbox({ ...base, request: { ...base.request, settings: legacy } });
+    expect(batch?.seq).toBe(1);
+    expect(batch?.request.settings).toEqual(settingsAt(4));
+    expect(batch?.request.log).toEqual(base.request.log);
+  });
+
   it('rejects an outbox of format 2', () => {
     const old = outbox();
     expect(readOutbox({ ...old, request: { ...old.request, v: 2 } })).toBeNull();

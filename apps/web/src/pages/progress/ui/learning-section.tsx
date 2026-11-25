@@ -4,7 +4,6 @@ import { useMemo, useState } from 'preact/hooks';
 import { locale, t, tParts, tPlural, tPluralParts } from '@/shared/i18n';
 import { Button, Notice, Parts } from '@/shared/ui';
 import { Stat } from '@/shared/ui/stat';
-import { learnTargetMs } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
 import { dayStart, keysOfTrack, streaks } from '@/entities/learn';
 import { activeDaysIn, activityDays } from '../lib/activity';
@@ -43,14 +42,13 @@ export function LearningSection({
     [locale.value],
   );
 
-  const target = learnTargetMs.value;
   const stats = view.stats;
 
   const { current, best } = streaks(stats.days, today);
   const answered = hasRecall(stats.days, track);
   const activity = activityDays(stats.days, today);
   const { weekly, span, bars } = dayBars(stats.days, track, period, today);
-  const axis = msAxis(bars, target);
+  const axis = msAxis(bars);
   const xAxis = timeAxis(period, dayStart(today - span + 1), today, narrow, (ms) =>
     dateFormat.format(ms),
   );
@@ -163,7 +161,6 @@ export function LearningSection({
             xTicks={xAxis.ticks}
             yDomain={axis.domain}
             yTicks={axis.ticks}
-            reference={{ value: target, label: t('stats.learn.target', { ms: target }) }}
             height={narrow ? 200 : 240}
             label={`${t('stats.learn.answerTime')} · ${caption}`}
           />

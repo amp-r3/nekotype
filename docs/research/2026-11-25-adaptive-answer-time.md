@@ -2,7 +2,7 @@
 
 The production model grades a correct recall good (3) when it takes at most `settings.learn.targetMs` (1500 ms by default) and hard (2) when it is slower (A48, [ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md), point 4; `eachEffect` in `packages/model/src/grade.ts`). The "strictness" and "target answer time" settings are to leave the UI, so the question is which line between good and hard should follow the learner by itself. Time is to stay in the grade.
 
-This note decides nothing; the maintainer does. It changes neither the model nor the app. The numbers come from `packages/sim` at the commit of this note (`pnpm --filter @nekotype/sim run answer-time`, one table per `PART`). Every run uses the production model through `createProductionPolicy`, with 100 seeds over 60 days, and a cell is a median unless it says otherwise.
+This note decides nothing; the maintainer accepted its recommendation on 2026-11-25 as [ADR 115](../adr/115-answer-time-graded-against-the-learners-pace.md) (share 10%, no target line on the chart). The note itself changed neither the model nor the app. The numbers come from `packages/sim` at the commit of this note (`pnpm --filter @nekotype/sim run answer-time`, one table per `PART`). Every run uses the production model through `createProductionPolicy`, with 100 seeds over 60 days, and a cell is a median unless it says otherwise.
 
 ## In short
 

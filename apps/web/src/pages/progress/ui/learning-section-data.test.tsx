@@ -56,7 +56,7 @@ describe('learning section: with answers', () => {
 
     // The log and the model chunk load before the page renders: a slow first import of the
     // model must not leave the test on the loading line.
-    await initLearn(() => 1500);
+    await initLearn();
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<ProgressPage />, container);
@@ -96,10 +96,8 @@ describe('learning section: with answers', () => {
 
     // One bar per day with answers (30 days by default); the gap days have none.
     expect(container.querySelectorAll('[data-testid="chart-range"]')).toHaveLength(4);
-    // The target is a dashed line with its label.
-    const target = container.querySelector('[data-testid="chart-reference"]');
-    expect(target?.querySelector('line')?.getAttribute('class')).toBe('nk-rc__ref');
-    expect(target?.textContent).toBe(t('stats.learn.target', { ms: 1500 }));
+    // No target line: the line between good and hard is the learner's pace (ADR 115).
+    expect(container.querySelector('line[stroke-dasharray], .nk-rc__ref')).toBeNull();
 
     // 7 days: the two last days only.
     const sevenDays = Array.from(container.querySelectorAll('[role="radio"]')).find(

@@ -1,16 +1,19 @@
 import { createFold, forecastRow, habitsOf, ITEMS, nextTask, SESSION_TASKS } from '@nekotype/model';
 import type { Fold, ModelState } from '@nekotype/model';
-import type { LearnKanaKey, LogEvent, Track } from '@nekotype/shared/types';
+import type { AnswerEvent, LearnKanaKey, LogEvent, Track } from '@nekotype/shared/types';
 import type { Item } from '../items';
 import { recognitionOptions } from '../options';
 import { createRng } from '../rng';
 import type { Answer, Policy, Session, Task } from '../policy';
 import type { PolicyFactory } from '../run';
 
-/** The target answer time of the fold's grades, as the app's default (ms). */
-const TARGET_MS = 1500;
 /** The longest answer time an event holds. */
 const MS_CAP = 10_000;
+
+export interface ProductionOptions {
+  readonly line?: ((answer: AnswerEvent) => number) | undefined;
+  readonly deviceOf?: ((at: number) => string) | undefined;
+}
 
 /**
  * The production knowledge model as a policy (P7 plan, D10): a `Fold` of the log and `nextTask`
@@ -18,10 +21,16 @@ const MS_CAP = 10_000;
  * writes no rule of the fold or the planner (rule 3a). Sim items map to keys by position: the
  * simulator's items are in `ITEMS` order, hiragana first. `track`: the selected track, or a
  * function of the state that picks it (the learner who follows the katakana suggestion).
+ * `options.line`: the fold's line for a timed answer instead of the learner's pace (ADR 115), for
+ * the research rules of the adaptive answer-time note. `options.deviceOf`: the `dev` of the events
+ * at a time ('sim' without it).
  */
 export function createProductionPolicy(
   selected: Track | ((state: ModelState) => Track) = 'hiragana',
+  options: ProductionOptions = {},
 ): PolicyFactory {
+  const { line } = options;
+  const deviceOf = options.deviceOf ?? ((): string => 'sim');
   const trackOf = (state: ModelState): Track =>
     typeof selected === 'string' ? selected : selected(state);
   return (items, rng) => {
@@ -39,7 +48,7 @@ export function createProductionPolicy(
     };
     // The forecast draws from a stream of its own: asking for one never changes the run.
     const forecastRng = createRng(0x2545f491);
-    const fold: Fold = createFold({ targetMs: TARGET_MS, stats: false });
+    const fold: Fold = createFold(line === undefined ? { stats: false } : { stats: false, line });
     let n = 0;
     const emit = (event: LogEvent): void => {
       if (fold.apply(event) !== 'applied') {
@@ -56,7 +65,7 @@ export function createProductionPolicy(
         let started = false;
         let ended = false;
         const finish = (now: number): void => {
-          if (started && !ended) emit({ t: 'end', at: now, dev: 'sim', n: (n += 1) });
+          if (started && !ended) emit({ t: 'end', at: now, dev: deviceOf(now), n: (n += 1) });
           ended = true;
         };
         return {
@@ -64,7 +73,7 @@ export function createProductionPolicy(
           next(now) {
             if (ended) return undefined;
             if (!started) {
-              emit({ t: 'start', at: now, dev: 'sim', n: (n += 1), tz: 0 });
+              emit({ t: 'start', at: now, dev: deviceOf(now), n: (n += 1), tz: 0 });
               started = true;
             }
             if (count >= SESSION_TASKS) {
@@ -97,7 +106,7 @@ export function createProductionPolicy(
           },
           record(answer: Answer) {
             const key = keyOfId(answer.task.item);
-            const base = { at: answer.at, dev: 'sim', n: (n += 1) };
+            const base = { at: answer.at, dev: deviceOf(answer.at), n: (n += 1) };
             if (answer.task.kind === 'introduction') {
               emit({ ...base, t: 'intro', k: key });
               return;

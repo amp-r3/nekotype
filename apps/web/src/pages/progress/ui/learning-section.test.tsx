@@ -57,7 +57,7 @@ describe('learning section: the answer-time periods and tracks', () => {
 
     // The log and the model chunk load before the page renders: a slow first import of the
     // model must not leave the test on the loading line.
-    await initLearn(() => 1500);
+    await initLearn();
     container = document.createElement('div');
     document.body.appendChild(container);
     render(<ProgressPage />, container);

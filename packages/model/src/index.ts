@@ -67,6 +67,7 @@ export type {
   ModelState,
   Phase,
 } from './fold';
+export type { Pace } from './pace';
 export { nextTask } from './planner';
 export type { PlanContext, PlannedTask } from './planner';
 export { describe } from './view';

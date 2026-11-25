@@ -78,9 +78,9 @@ function batch(seq: number, over: Partial<SyncRequest> = {}): SyncRequest {
   };
 }
 
-function settings(updatedAt: number, targetMs = 1500): ValidSettings {
+function settings(updatedAt: number, track: 'hiragana' | 'katakana' = 'hiragana'): ValidSettings {
   return {
-    learn: { strictness: 'learner', track: 'hiragana', targetMs, sound: true },
+    learn: { strictness: 'learner', track, sound: true },
     updatedAt,
   };
 }
@@ -212,23 +212,23 @@ describe('POST /api/sync, format 3', () => {
   it('keeps the account settings on the first batch of a device and takes newer ones later', async () => {
     const { id, cookie } = await newUser();
     const s = setup();
-    const targetMs = async (): Promise<number | null> => {
+    const track = async (): Promise<string | null> => {
       const row = await env.DB.prepare('SELECT json FROM user_settings WHERE user_id = ?')
         .bind(id)
         .first();
       const parsed: unknown = JSON.parse(String(row?.['json']));
-      return isSettings(parsed) ? parsed.learn.targetMs : null;
+      return isSettings(parsed) ? parsed.learn.track : null;
     };
-    await post(s, cookie, batch(1, { settings: settings(10, 2000) }));
+    await post(s, cookie, batch(1, { settings: settings(10, 'katakana') }));
     await post(s, cookie, {
       ...batch(1, { deviceId: B, log: page(B, 1, 1) }),
-      settings: settings(5, 1000),
+      settings: settings(5, 'hiragana'),
     });
-    expect(await targetMs()).toBe(2000);
-    await post(s, cookie, batch(2, { settings: settings(20, 2500) }));
-    expect(await targetMs()).toBe(2500);
-    await post(s, cookie, batch(3, { settings: settings(15, 1000) }));
-    expect(await targetMs()).toBe(2500);
+    expect(await track()).toBe('katakana');
+    await post(s, cookie, batch(2, { settings: settings(20, 'hiragana') }));
+    expect(await track()).toBe('hiragana');
+    await post(s, cookie, batch(3, { settings: settings(15, 'katakana') }));
+    expect(await track()).toBe('hiragana');
   });
 
   it('takes a batch with settings and no log, and writes no row for it', async () => {

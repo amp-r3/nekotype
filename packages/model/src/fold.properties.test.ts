@@ -9,7 +9,7 @@ import { describe as describeState } from './view';
 import type { Fold } from './fold';
 import { answer, end, intro, start } from './testing';
 
-const OPTIONS = { targetMs: 1500, stats: true };
+const OPTIONS = { stats: true };
 const KEYS: readonly LearnKanaKey[] = [
   'hiragana:あ',
   'hiragana:い',

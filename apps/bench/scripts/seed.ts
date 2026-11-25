@@ -45,7 +45,7 @@ function schema(): string {
 /** Settings of the bench user; a finished session of `measure.ts` sends them newer, as a device would. */
 export function benchSettings(updatedAt: number): ValidSettings {
   return {
-    learn: { strictness: 'learner', track: 'hiragana', targetMs: 1500, sound: true },
+    learn: { strictness: 'learner', track: 'hiragana', sound: true },
     updatedAt,
   };
 }

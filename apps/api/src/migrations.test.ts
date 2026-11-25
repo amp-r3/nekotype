@@ -1,5 +1,5 @@
 import { env } from 'cloudflare:workers';
-import { isSettings } from '@nekotype/shared/runtime';
+import { readSettings } from '@nekotype/shared/runtime';
 import { describe, expect, it } from 'vitest';
 
 // Migration 0002 rewrites the rows of P5 and 0003 drops the typing table and columns (p6-plan.md,
@@ -120,7 +120,8 @@ describe('migration 0002', () => {
       await text('SELECT json FROM user_settings WHERE user_id = ?', 'm-synced'),
     );
     expect(settings).toEqual({ learn: P5_SETTINGS.learn, updatedAt: 7 });
-    expect(isSettings(settings)).toBe(true);
+    // The target answer time of the document is dropped when a client reads it (ADR 115).
+    expect(readSettings(settings)).not.toBeNull();
 
     for (const id of ['m-synced', 'm-new']) {
       expect(await text('SELECT kana_stats FROM user_stats WHERE user_id = ?', id)).toBe('{}');

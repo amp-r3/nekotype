@@ -23,14 +23,6 @@ export const settingsSchema = v.strictObject({
   learn: v.strictObject({
     strictness,
     track: v.picklist(['hiragana', 'katakana']),
-    // 1000–3000 in steps of 250.
-    targetMs: v.pipe(
-      v.number(),
-      v.integer(),
-      v.minValue(1000),
-      v.maxValue(3000),
-      v.multipleOf(250),
-    ),
     sound: v.boolean(),
   }),
   updatedAt: finite,

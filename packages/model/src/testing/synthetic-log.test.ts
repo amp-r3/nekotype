@@ -22,14 +22,14 @@ describe('syntheticLog', () => {
       expect(compareEvents(previous, e)).toBeLessThan(0);
       return e;
     });
-    const fold = foldLog(events, { targetMs: 1500, stats: true });
+    const fold = foldLog(events, { stats: true });
     expect(fold.ignored).toBe(0);
     expect(fold.stats?.started).toBe(fold.stats?.finished);
   });
 
   it('holds both tracks and a katakana row still to come at 40,000 answers', () => {
     const events = syntheticLog({ answers: 40_000, seed: 1 });
-    const { state } = foldLog(events, { targetMs: 1500, stats: false });
+    const { state } = foldLog(events, { stats: false });
     const introduced = (track: string): number =>
       [...state.items.keys()].filter((key) => ITEMS.get(key)?.track === track).length;
     expect(introduced('hiragana')).toBe(104);

@@ -3,18 +3,9 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
 import type { Strictness } from '@nekotype/engine';
 import { Button, Dialog, ResetIcon, Segmented } from '@/shared/ui';
-import { Select } from '@/shared/ui/select';
 import { resetLearning } from '@/entities/learn';
 import { authAvailable, beginSignIn, userId } from '@/entities/user';
-import {
-  learnStrictness,
-  setLearnStrictness,
-  learnTargetMs,
-  setTargetMs,
-} from '@/entities/settings';
-
-// 1000 to 3000 ms in steps of 250: nine values, which do not fit one row of segments at 360 px.
-const TARGETS = Array.from({ length: 9 }, (_, step) => 1000 + step * 250);
+import { learnStrictness, setLearnStrictness } from '@/entities/settings';
 
 function Section({
   title,
@@ -122,22 +113,6 @@ export function SettingsPage(): JSX.Element {
             onChange={setLearnStrictness}
             ariaLabel={t('settings.learn.strictness')}
           />
-        </SettingRow>
-        <SettingRow label={t('settings.learn.target')} hint={t('settings.learn.targetHint')}>
-          <div className="w-[160px] flex-none max-sm:w-full">
-            <Select
-              ariaLabel={t('settings.learn.target')}
-              testId="settings-target-ms"
-              value={String(learnTargetMs.value)}
-              options={TARGETS.map((ms) => ({
-                value: String(ms),
-                label: t('settings.learn.targetValue', { ms }),
-              }))}
-              onChange={(value) => {
-                setTargetMs(Number(value));
-              }}
-            />
-          </div>
         </SettingRow>
       </Section>
 

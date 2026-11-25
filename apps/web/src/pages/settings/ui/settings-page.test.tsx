@@ -5,7 +5,6 @@ import { act } from 'preact/test-utils';
 import { SettingsPage } from './settings-page';
 import { initLearn, introduce, keyOf, learnView } from '@/entities/learn';
 import { t, loadDictionaryPart } from '@/shared/i18n';
-import { learnTargetMs } from '@/entities/settings';
 import { initUser } from '@/entities/user';
 import { createMemoryDb } from '@/shared/lib';
 
@@ -34,7 +33,7 @@ describe('settings page: Reset progress', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     const key = keyOf('hiragana', 'あ');
-    await initLearn(() => 1500);
+    await initLearn();
     introduce(key);
     expect(learnView.value?.kana.get(key)?.state).toBe('learning');
 
@@ -52,23 +51,6 @@ describe('settings page: Reset progress', () => {
     expect(learnView.value?.kana.get(key)?.state).toBe('locked');
   });
 
-  it('changes the target answer time with a select of nine values', async () => {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-    render(<SettingsPage />, container);
-    const select = container.querySelector<HTMLSelectElement>('[data-testid="settings-target-ms"]');
-    if (!select) throw new Error('no select');
-    expect(Array.from(select.options).map((option) => option.textContent)).toEqual(
-      [1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000].map((ms) => `${String(ms)} ms`),
-    );
-    expect(select.value).toBe('1500');
-    await act(() => {
-      select.value = '2250';
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    expect(learnTargetMs.value).toBe(2250);
-  });
-
   it('is in sections, with what each setting does, and no range input', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -82,7 +64,8 @@ describe('settings page: Reset progress', () => {
       t('settings.account.title'),
     ]);
     expect(container.textContent).toContain(t('settings.learn.strictnessHint'));
-    expect(container.textContent).toContain(t('settings.learn.targetHint'));
+    // The target answer time left the settings (ADR 115): the line is the learner's pace.
+    expect(container.querySelector('select')).toBeNull();
     expect(container.querySelector('input[type="range"]')).toBeNull();
     // The labels are lower case.
     expect(t('settings.learn.strictness')).toBe('learning strictness');

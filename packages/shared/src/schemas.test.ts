@@ -6,7 +6,7 @@ import { deviceIdSchema, reportRequestSchema, settingsSchema, syncRequestSchema 
 const ID = '0192f0a0-0000-7000-8000-000000000001';
 
 const settings = {
-  learn: { strictness: 'learner', track: 'hiragana', targetMs: 1500, sound: true },
+  learn: { strictness: 'learner', track: 'hiragana', sound: true },
   updatedAt: 0,
 };
 
@@ -15,11 +15,8 @@ const ok = (schema: v.GenericSchema, value: unknown) => v.safeParse(schema, valu
 describe('the schemas agree with the guards of shared/runtime', () => {
   const settingsCases: unknown[] = [
     settings,
-    { ...settings, learn: { ...settings.learn, targetMs: 1000 } },
-    { ...settings, learn: { ...settings.learn, targetMs: 3000 } },
-    { ...settings, learn: { ...settings.learn, targetMs: 1100 } },
-    { ...settings, learn: { ...settings.learn, targetMs: 3250 } },
-    { ...settings, learn: { ...settings.learn, targetMs: Number.NaN } },
+    { ...settings, learn: { ...settings.learn, targetMs: 1500 } },
+    { ...settings, learn: { ...settings.learn, extra: 1 } },
     { ...settings, learn: { ...settings.learn, track: 'both' } },
     { ...settings, learn: { ...settings.learn, sound: 1 } },
     { ...settings, updatedAt: '0' },

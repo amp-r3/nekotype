@@ -25,7 +25,7 @@ function seeded(seed: number): Rng {
   };
 }
 
-const EMPTY = foldLog([], { targetMs: 1500, stats: false }).state;
+const EMPTY = foldLog([], { stats: false }).state;
 
 function withLearner(over: Partial<ModelState['learner']>): ModelState {
   return { ...EMPTY, learner: { ...EMPTY.learner, ...over } };
@@ -105,10 +105,7 @@ describe('nextRow', () => {
   it('is the first row with a kana not introduced', () => {
     expect(nextRow(EMPTY, 'hiragana')).toBe('hiragana:vowels');
     const first = trackItems('hiragana')[0];
-    const state = foldLog([intro(first?.key ?? 'hiragana:あ')], {
-      targetMs: 1500,
-      stats: false,
-    }).state;
+    const state = foldLog([intro(first?.key ?? 'hiragana:あ')], { stats: false }).state;
     // The row of あ is complete only when all five are in.
     expect(nextRow(state, 'hiragana')).toBe('hiragana:vowels');
   });
@@ -116,7 +113,7 @@ describe('nextRow', () => {
   it('moves on when a row is complete, and is null when every kana is introduced', () => {
     const rowA = trackItems('hiragana').filter((item) => item.row === 'hiragana:vowels');
     const events = rowA.map((item, i) => intro(item.key, { n: i + 1, at: i }));
-    const state = foldLog(events, { targetMs: 1500, stats: false }).state;
+    const state = foldLog(events, { stats: false }).state;
     expect(nextRow(state, 'hiragana')).not.toBe('hiragana:vowels');
     expect(nextRow(allHiraganaLearned(), 'hiragana')).toBeNull();
     expect(nextRow(allHiraganaLearned(), 'katakana')).toBe('katakana:vowels');

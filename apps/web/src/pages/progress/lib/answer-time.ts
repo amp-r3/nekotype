@@ -85,11 +85,12 @@ export function dayBars(
 }
 
 /**
- * The y axis in ms: covers every `lo`, `hi` and the target, with at most four intervals of 250,
- * 500 ms or more; the target is never on the upper edge.
+ * The y axis in ms: covers every `lo` and `hi`, with at most four intervals of 250, 500 ms or
+ * more; the highest `hi` is never on the upper edge. Without bars, 0 to 1000 ms.
  */
-export function msAxis(bars: readonly DayBar[], targetMs: number): Axis {
-  const low = Math.min(targetMs, ...bars.map((bar) => bar.lo));
-  const high = Math.max(targetMs, ...bars.map((bar) => bar.hi));
+export function msAxis(bars: readonly DayBar[]): Axis {
+  if (bars.length === 0) return axisOf(0, 1000, STEPS_MS);
+  const low = Math.min(...bars.map((bar) => bar.lo));
+  const high = Math.max(...bars.map((bar) => bar.hi));
   return axisOf(Math.max(0, low), Math.floor(high) + 1, STEPS_MS);
 }

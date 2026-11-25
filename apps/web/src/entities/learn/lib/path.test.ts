@@ -81,7 +81,7 @@ describe('pathOf', () => {
       for (let count = 0; count <= keys.length; count += 7) {
         const events = keys.slice(0, count).map((key, i) => intro(key, { at: NOW + i }));
         const numbered = events.map((event, i) => ({ ...event, dev: 'd1', n: i + 1 }));
-        const state = foldLog(numbered, { targetMs: 1500, stats: false }).snapshot().state;
+        const state = foldLog(numbered, { stats: false }).snapshot().state;
         expect(pathOf(viewOfEvents(events), track).current).toBe(nextRow(state, track));
       }
     }

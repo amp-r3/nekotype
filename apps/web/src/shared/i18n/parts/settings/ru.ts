@@ -8,10 +8,6 @@ export const settingsRu = {
   'settings.learn.strictnessHint': 'Мягкая также принимает «si» для し и «tu» для つ.',
   'settings.learn.relaxed': 'мягкая',
   'settings.learn.strictIme': 'строгая IME',
-  'settings.learn.target': 'целевое время ответа',
-  'settings.learn.targetHint':
-    'Ответы медленнее цели считаются более трудными, и их повторения приходят раньше.',
-  'settings.learn.targetValue': '{ms} мс',
   'settings.data.title': 'Данные',
   'settings.data.reset': 'сбросить прогресс',
   'settings.data.resetAction': 'сбросить',

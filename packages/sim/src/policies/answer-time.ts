@@ -1,17 +1,23 @@
+import type { AnswerEvent } from '@nekotype/shared/types';
 import type { Answer, Policy, Session } from '../policy';
 import type { PolicyFactory } from '../run';
 
 /**
  * Adaptive answer-time thresholds for the production model (adaptive answer-time research,
  * docs/research/2026-11-25-adaptive-answer-time.md). A rule decides whether a correct recall is
- * good or hard from the correct recalls before it only, as a fold of the log would; `withAnswerTime`
- * wraps the production policy and hands its fold an answer time on the right side of its fixed
- * target (1500 ms), so the model's code is untouched: a good recall reaches the fold as at most
- * 1500 ms, a hard one as at least 1501 ms. The fold reads an answer's time only for the grade.
+ * good or hard from the correct recalls before it only, as a fold of the log would;
+ * `withAnswerTime` makes the production fold grade by it through the fold's `line` option. The
+ * model's own rule since ADR 115 is `MODEL`, which leaves the fold its pace.
  */
 
-/** The model's fixed target, which the wrapper maps every decision onto. */
-const MODEL_TARGET_MS = 1500;
+/** The target answer time before ADR 115 (ms). */
+const TARGET_MS = 1500;
+/** A fold line that grades a correct timed answer good, or hard. */
+const GOOD = Number.POSITIVE_INFINITY;
+const HARD = Number.NEGATIVE_INFINITY;
+
+/** The fold's line for a timed answer: a research rule's, or none to leave the model its pace. */
+export type Line = ((answer: AnswerEvent) => number) | undefined;
 /** The longest answer time an event holds. */
 const MS_CAP = 10_000;
 
@@ -68,6 +74,8 @@ export interface Rule {
   readonly soft: number;
   /** Until a level has `answers` correct recalls, `before` decides. */
   readonly cold: { readonly answers: number; readonly before: 'fixed' | 'none' | 'hard' };
+  /** The model grades by this rule itself (ADR 115): the fold keeps its own line. */
+  readonly inModel?: boolean;
 }
 
 /** The base candidate: the median of the last 50 correct recalls × 1.2, 1500 ms before 20. */
@@ -84,10 +92,22 @@ export const BASE: Rule = {
 export const FIXED: Rule = {
   ...BASE,
   name: 'fixed 1500',
-  level: { kind: 'fixed', ms: MODEL_TARGET_MS },
+  level: { kind: 'fixed', ms: TARGET_MS },
 };
 
 export const NO_TIME: Rule = { ...BASE, name: 'no time', level: { kind: 'none' } };
+
+/** The rule of the model since ADR 115: a streaming 90th percentile per device. */
+export const PACE_P90: Rule = {
+  ...BASE,
+  name: 'tracker p90, by device',
+  level: { kind: 'tracker', q: 0.9, step: 0.05, k: 1 },
+  by: 'dev',
+  cold: { answers: 20, before: 'none' },
+};
+
+/** The same rule left to the model: the fold grades by its own pace. */
+export const MODEL: Rule = { ...PACE_P90, name: 'the model (ADR 115)', inModel: true };
 
 interface Estimator {
   count: number;
@@ -241,7 +261,7 @@ export function createThreshold(rule: Rule): Threshold {
       if (warm === null) {
         switch (rule.cold.before) {
           case 'fixed':
-            return { good: a.ms <= MODEL_TARGET_MS ? 1 : 0, threshold: MODEL_TARGET_MS };
+            return { good: a.ms <= TARGET_MS ? 1 : 0, threshold: TARGET_MS };
           case 'none':
             return { good: 1, threshold: Number.NaN };
           case 'hard':
@@ -287,17 +307,21 @@ export function hash01(n: number): number {
 }
 
 /**
- * `base` with `rule` deciding good and hard. `deviceOf` is the device of an answer at a time (the
- * event's `dev`). `last()` is the statistics of the policy made last: the harness makes one per run.
+ * `base` with `rule` deciding good and hard: `base(line)` is the production policy whose fold takes
+ * that line. `deviceOf` is the device of an answer at a time (the event's `dev`). `last()` is the
+ * statistics of the policy made last: the harness makes one per run. A rule `inModel` leaves the
+ * fold its pace and is judged here only for the statistics.
  */
 export function withAnswerTime(
-  base: PolicyFactory,
+  base: (line: Line) => PolicyFactory,
   rule: Rule,
   deviceOf: (at: number) => string,
 ): { readonly factory: PolicyFactory; readonly last: () => TimeStats | undefined } {
   let stats: TimeStats | undefined;
   const factory: PolicyFactory = (items, rng) => {
-    const inner = base(items, rng);
+    // The decision on the answer being recorded: the fold asks for its line while it applies it.
+    let decision = GOOD;
+    const inner = base(rule.inModel === true ? undefined : () => decision)(items, rng);
     const threshold = createThreshold(rule);
     const own: TimeStats = { at: [], good: [], threshold: [] };
     stats = own;
@@ -334,8 +358,9 @@ export function withAnswerTime(
             own.good.push(good);
             own.threshold.push(j.threshold);
             threshold.observe(a);
-            const ms = good ? Math.min(a.ms, MODEL_TARGET_MS) : Math.max(a.ms, MODEL_TARGET_MS + 1);
-            session.record({ ...answer, ms });
+            decision = good ? GOOD : HARD;
+            session.record(answer);
+            decision = GOOD;
           },
         };
       },

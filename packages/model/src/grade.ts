@@ -40,7 +40,7 @@ export interface EffectSink {
  */
 export function eachEffect(
   answer: AnswerEvent,
-  targetMs: number,
+  line: number,
   sink: EffectSink,
   item: KanaItem | undefined,
 ): void {
@@ -77,7 +77,7 @@ export function eachEffect(
     }
   }
 
-  const byTime: Grade = answer.ms <= targetMs && !answer.hint ? 3 : 2;
+  const byTime: Grade = answer.ms <= line && !answer.hint ? 3 : 2;
   switch (task) {
     case 'recall':
     case 'build': {
@@ -107,7 +107,7 @@ export function eachEffect(
       return;
     }
     case 'fluency':
-      if (answer.ms <= targetMs) sink.grade(k, 3, true);
+      if (answer.ms <= line) sink.grade(k, 3, true);
       return;
     case 'dictation':
       sink.grade(k, byTime, true);
@@ -122,19 +122,20 @@ export function eachEffect(
  * grade is computed when the log is folded and is never stored. `learned`: whether a kana is
  * learned at this point of the fold.
  *
- * "By time" is good (3) when `ms <= targetMs` and no hint, else hard (2). A wrong answer is
+ * "By time" is good (3) when `ms <= line` and no hint, else hard (2). `line` is the answer's
+ * pace in ms (ADR 115), which the fold works out; Infinity for a task not graded by time. A wrong answer is
  * "again" (1) on the kana asked. Credit and pair reviews are `main: false`.
  */
 export function effectsOf(
   answer: AnswerEvent,
-  targetMs: number,
+  line: number,
   learned: (key: LearnKanaKey) => boolean,
 ): readonly Effect[] {
   const effects: Effect[] = [];
   const item = isWordKey(answer.k) ? undefined : ITEMS.get(answer.k);
   eachEffect(
     answer,
-    targetMs,
+    line,
     {
       grade(key, grade, main) {
         effects.push({ kind: 'grade', key, grade, main });

@@ -60,7 +60,7 @@ describe('storage: KeyValueStore implementations and guards', () => {
 
   it('guards validate valid settings and reject invalid/corrupted payloads', () => {
     const valid = {
-      learn: { strictness: 'learner', track: 'hiragana', targetMs: 1500, sound: true },
+      learn: { strictness: 'learner', track: 'hiragana', sound: true },
       updatedAt: 0,
     };
     expect(isSettings(valid)).toBe(true);

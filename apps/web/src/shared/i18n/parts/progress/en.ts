@@ -19,7 +19,6 @@ export const progressEn = {
   'stats.answers.few': '{count} answers',
   'stats.answers.many': '{count} answers',
   'stats.answers.other': '{count} answers',
-  'stats.learn.target': 'target {ms} ms',
   'stats.learn.streakCurrent': 'current streak',
   'stats.learn.masteredOf': 'of {total}',
   'stats.learn.masteredTrack': 'mastered · {track}',

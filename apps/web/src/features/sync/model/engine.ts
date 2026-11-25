@@ -1,9 +1,9 @@
 import type { Clock, PullResponse, Scheduler, TimeoutHandle } from '@nekotype/shared/types';
 import {
   MAX_SYNC_BODY_BYTES,
-  isPullResponse,
-  isSettings,
   isSyncResponse,
+  readPullResponse,
+  readSettings,
 } from '@nekotype/shared/runtime';
 import type { ApiResult, FetchLike } from '@/shared/api';
 import type { ChangeChannel, Db, TypedChannel, Write } from '@/shared/lib';
@@ -170,7 +170,8 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
       db.get(META_STORE, 'settingsSyncedAt'),
       hasUnsentEvents(),
     ]);
-    const unsent = isSettings(settings) && settings.updatedAt > (asTimestamp(syncedAt) ?? 0);
+    const local = readSettings(settings);
+    const unsent = local !== null && local.updatedAt > (asTimestamp(syncedAt) ?? 0);
     return outbox !== undefined || unsentEvents || unsent ? 'pending' : 'synced';
   };
 
@@ -203,12 +204,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
     server: PullResponse['settings'],
     flag: { settings: boolean },
   ): Write[] => {
-    const after = settingsAfter(
-      isSettings(local) ? local : null,
-      asTimestamp(syncedAt) ?? 0,
-      sentAt,
-      server,
-    );
+    const after = settingsAfter(readSettings(local), asTimestamp(syncedAt) ?? 0, sentAt, server);
     const writes: Write[] = [metaPut('settingsSyncedAt', after.syncedAt)];
     if (after.replace !== null) {
       flag.settings = true;
@@ -289,12 +285,12 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
         break;
       }
       networkFailed = false;
-      if (!isPullResponse(result.body)) {
+      const page = readPullResponse(result.body);
+      if (page === null) {
         // A page this version cannot read: it will not read it later either (A28).
         await putMeta([['syncBlockedAtVersion', appVersion]]);
         break;
       }
-      const page = result.body;
       await storePage(page);
       rows += page.rows.length;
       after = Math.max(after, page.last);
@@ -370,8 +366,9 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
         { store: META_STORE, key: 'settingsSyncedAt' },
         { store: META_STORE, key: PULLED_ID_KEY },
       ],
-      ([outbox, settings, lastSeq, syncedAt, pulledId]) => {
+      ([outbox, stored, lastSeq, syncedAt, pulledId]) => {
         if (outbox !== undefined) return [];
+        const settings = readSettings(stored);
         const batch = buildBatch(
           {
             deviceId,
@@ -380,7 +377,7 @@ export function createSyncEngine(deps: SyncEngineDeps): SyncEngine {
             unsent,
             firstN: sentN + 1,
             settings:
-              isSettings(settings) && settings.updatedAt > (asTimestamp(syncedAt) ?? 0)
+              settings !== null && settings.updatedAt > (asTimestamp(syncedAt) ?? 0)
                 ? settings
                 : null,
           },

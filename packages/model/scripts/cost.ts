@@ -22,10 +22,10 @@ function seeded(seed: number): { next(): number } {
 const events = syntheticLog({ answers: ANSWERS, seed: 1 });
 const fold: number[] = [];
 const forecast: number[] = [];
-let last = foldLog(events, { targetMs: 1500, stats: true });
+let last = foldLog(events, { stats: true });
 for (let run = 0; run <= RUNS; run += 1) {
   const t0 = performance.now();
-  last = foldLog(events, { targetMs: 1500, stats: true });
+  last = foldLog(events, { stats: true });
   const t1 = performance.now();
   const row = nextRow(last.state, 'katakana');
   if (row === null) throw new Error('every katakana is introduced: the log has no row to come');
