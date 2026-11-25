@@ -6,20 +6,20 @@
 
 > A lightweight, keyboard-first web app for learning Hiragana and Katakana from zero, with an adaptive knowledge model, spaced reviews and progress tracking, instantaneous feedback, dual-tier romaji matching and zero latency.
 
-**Status.** The code implements phases P0–P7 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md), [ADR 093](docs/adr/093-learning-only-words-in-learning.md), [ADR 099](docs/adr/099-learning-home-methods-and-phases-after-p6.md)): `/` teaches hiragana and katakana with introductions, recall, recognition and reviews that a knowledge model plans (FSRS-6, ADR 100), with the answers kept as a log in IndexedDB. Phase P6 removed the typing trainer: its screen, `/type`, answers 404. Phase P7 replaced confidence, unlocking and the Leitner boxes with the model, whose state is a fold of the log: what syncs is the learning log and settings only (sync format 3: the own events go to the server as batches, one D1 row each, and the events of other devices are pulled; IndexedDB schema 6; [ADR 100](docs/adr/100-knowledge-model-fsrs-planner-and-answer-log.md), [ADR 102](docs/adr/102-sync-format-3-server.md)). Since P5 a user can sign in with Google or GitHub on production: progress and settings sync through Pages Functions and D1, the account can be deleted, and `POST /api/reports` takes reports of a wrong reading or translation (Turnstile; the client's report dialog returns with words in P12).
+**Status.** The code implements phases P0–P8 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md), [ADR 093](docs/adr/093-learning-only-words-in-learning.md), [ADR 099](docs/adr/099-learning-home-methods-and-phases-after-p6.md)): `/` teaches hiragana and katakana with introductions, recall, recognition and reviews that a knowledge model plans (FSRS-6, ADR 100), with the answers kept as a log in IndexedDB. Phase P6 removed the typing trainer: its screen, `/type`, answers 404. Phase P7 replaced confidence, unlocking and the Leitner boxes with the model, whose state is a fold of the log: what syncs is the learning log and settings only (sync format 3: the own events go to the server as batches, one D1 row each, and the events of other devices are pulled; [ADR 100](docs/adr/100-knowledge-model-fsrs-planner-and-answer-log.md), [ADR 102](docs/adr/102-sync-format-3-server.md)). Phase P8 made `/` a learning home: Continue with the reason for what the session does first, the outline of the session, the forecast of the next row, the path through the track and what got stronger since the last session; the kana table and the statistics moved to `/progress` (`/stats` redirects there), a kana opens its details in a dialog, and the forecasts shown are kept on the device to correct the next ones (IndexedDB schema 7). Since P5 a user can sign in with Google or GitHub on production: progress and settings sync through Pages Functions and D1, the account can be deleted, and `POST /api/reports` takes reports of a wrong reading or translation (Turnstile; the client's report dialog returns with words in P12).
 
-Next come the learning home and the progress screen (P8), which show the forecast and the outline the model already computes, more learning methods (P9), kana audio (P10), a placement test and mnemonics (P11), then words in learning (P12) and vocabulary (P13).
+Next come more learning methods (P9), kana audio (P10), a placement test and mnemonics (P11), then words in learning (P12) and vocabulary (P13).
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Max%20Strict-blue.svg)](https://www.typescriptlang.org/)
 [![FSD: Verified](https://img.shields.io/badge/Architecture-Feature--Sliced%20Design-orange.svg)](https://feature-sliced.design/)
-[![Bundle Budget](https://img.shields.io/badge/First%20Load-99.3%20KB%20%2F%20160%20KB-success.svg)](#-performance-budgets)
+[![Bundle Budget](https://img.shields.io/badge/First%20Load-99.8%20KB%20%2F%20160%20KB-success.svg)](#-performance-budgets)
 
 ---
 
 ## ✨ Features
 
-- **🌱 Learning on `/`:** two tracks (hiragana, katakana); one "Continue" starts a session of 30 tasks (introduction, recall by typing, recognition among 4 options) that a planner chooses from the learner's memory: new kana when fewer than four are being learned and the kana they are built from are learned, learning kana back after 30 s to 8 min, learned kana before their recall falls below 90% (reviews of both tracks); the home says what "Continue" does and why (`5 kana are due for review`, `practise 1 weak kana: ぬ`, `next: the m row`, or that there is nothing to review and when the next review comes), outlines the session, forecasts in sessions when the next row opens, shows the path through the blocks and rows of the track, lists what got stronger since the last session (each kana opens a dialog with its details: state, memory, recall, mixups, recognition) and the streak, and offers katakana once the basic hiragana are learned; the kana table and the daily answer-time chart are on `/progress`.
+- **🌱 Learning on `/`:** two tracks (hiragana, katakana); one "Continue" starts a session of 30 tasks (introduction, recall by typing, recognition among 4 options) that a planner chooses from the learner's memory: new kana when fewer than five are being learned and the kana they are built from are learned, learning kana back after 30 s to 8 min, learned kana before their recall falls below 90% (reviews of both tracks); the home says what "Continue" does and why (`5 kana are due for review`, `practise 1 weak kana: ぬ`, `next: the m row`, or that there is nothing to review and when the next review comes), outlines the session, forecasts in sessions when the next row opens, shows the path through the blocks and rows of the track, lists what got stronger since the last session (each kana opens a dialog with its details: state, memory, recall, mixups, recognition) and the streak, and offers katakana once the basic hiragana are learned; the kana table and the daily answer-time chart are on `/progress`.
 - **⚡ Zero-Latency Input:** Driven by an immutable Non-deterministic Finite Automaton (NFA) engine and fine-grained Preact signals. Keystrokes of recall update without component tree re-renders.
 - **🎯 Two-Tier Romaji Matching:**
   - **Strict IME Mode:** Strictly enforces official Microsoft IME / Google Japanese Input romaji keystrokes (e.g. `ti` → ち, `thi` → ティ, `who` → ウォ, `wo` → を).
@@ -156,17 +156,17 @@ CI runs `verify` (with e2e) on every pull request, and on `main` unless the tree
 
 Nekotype adheres to strict first-load asset caps, checked by `pnpm run budget` (part of `verify`) from the Vite manifest. Figures of the current build:
 
-| Asset                      | Budget Limit | Actual (gzip / woff2) | Status                    |
-| -------------------------- | ------------ | --------------------- | ------------------------- |
-| **Initial HTML**           | $\le 5$ KB   | **0.42 KB**           | ✅ Passed                 |
-| **Initial JavaScript**     | $\le 35$ KB  | **30.38 KB**          | ✅ Passed                 |
-| **Initial CSS**            | $\le 10$ KB  | **7.69 KB**           | ✅ Passed                 |
-| **Noto Sans JP 400**       | $\le 45$ KB  | **20.38 KB** (woff2)  | ✅ Passed                 |
-| **JetBrains Mono 400/500** | $\le 45$ KB  | **10.79 / 10.61 KB**  | ✅ Passed                 |
-| **Golos Text 400/500**     | $\le 45$ KB  | **9.42 / 9.56 KB**    | ✅ Passed                 |
-| **Total First Load**       | $\le 160$ KB | **99.26 KB**          | ✅ Passed (62% of budget) |
-| **Lazy content chunk**     | $\le 40$ KB  | none shipped (P12)    | —                         |
-| **Lazy route chunk**       | $\le 25$ KB  | **9.90 KB** (largest) | ✅ Passed                 |
+| Asset                      | Budget Limit | Actual (gzip / woff2)  | Status                    |
+| -------------------------- | ------------ | ---------------------- | ------------------------- |
+| **Initial HTML**           | $\le 5$ KB   | **0.42 KB**            | ✅ Passed                 |
+| **Initial JavaScript**     | $\le 35$ KB  | **30.86 KB**           | ✅ Passed                 |
+| **Initial CSS**            | $\le 10$ KB  | **7.76 KB**            | ✅ Passed                 |
+| **Noto Sans JP 400**       | $\le 45$ KB  | **20.38 KB** (woff2)   | ✅ Passed                 |
+| **JetBrains Mono 400/500** | $\le 45$ KB  | **10.79 / 10.61 KB**   | ✅ Passed                 |
+| **Golos Text 400/500**     | $\le 45$ KB  | **9.42 / 9.56 KB**     | ✅ Passed                 |
+| **Total First Load**       | $\le 160$ KB | **99.79 KB**           | ✅ Passed (62% of budget) |
+| **Lazy content chunk**     | $\le 40$ KB  | none shipped (P12)     | —                         |
+| **Lazy route chunk**       | $\le 25$ KB  | **10.41 KB** (largest) | ✅ Passed                 |
 
 ---
 

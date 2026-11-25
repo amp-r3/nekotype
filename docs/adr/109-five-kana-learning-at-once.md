@@ -4,7 +4,7 @@
 - **Context:**
   - [ADR 100](100-knowledge-model-fsrs-planner-and-answer-log.md), point 2, introduces a new kana when fewer than 4 kana are learning; pressure lowers the limit from 4 towards 1 (`learningLimit`, `round(LEARN_MAX − p × (LEARN_MAX − 1))`, at least 1). The constant is `LEARN_MAX` in `packages/model/src/constants.ts`, simulated for candidate A4 in the P7 research.
   - Most basic rows hold five kana (the vowels, k, s, t, n, h, m, r). With 4, a first session introduces あ い う え and leaves お until one of them is learned, so the first row a learner meets opens in two steps. P8 shows the learner the path by rows ([ADR 108](108-p8-design-export.md), point 1: `next: the vowels`), and the maintainer asked on 2026-11-24 that a row of five open in one go.
-  - A model constant changes only with a run of `pnpm --filter @nekotype/sim run p7` and the maintainer's consent (P7 plan, rule 3b); rule 3c of [p8-plan.md](../../p8-plan.md) keeps it out of the phase's pull requests, so this is a pull request of its own before P8 PR 1. The maintainer gave the consent on 2026-11-24.
+  - A model constant changes only with a run of `pnpm --filter @nekotype/sim run p7` and the maintainer's consent (P7 plan, rule 3b); rule 3c of [p8-plan.md](../archive/p8-plan.md) keeps it out of the phase's pull requests, so this is a pull request of its own before P8 PR 1. The maintainer gave the consent on 2026-11-24.
 - **Decision:**
   1. `LEARN_MAX` is 5: the planner introduces a new kana when fewer than 5 kana are learning. A first session introduces あ い う え お one after another.
   2. Pressure works as before on the new maximum: the limit is `max(1, round(5 − 4p))`, so 5 at no pressure, 3 at `p` = 0.4 and 0.5, 1 at full pressure.

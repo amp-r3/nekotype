@@ -1,4 +1,4 @@
-/* The answer-time chart of /stats (design ResultChart). Lives here, not in the initial stylesheet, so it
+/* The answer-time chart of /progress (design ResultChart). Lives here, not in the initial stylesheet, so it
    ships with the lazy chunk (S17). `nk-rc`, because `nk-chart` is the kana chart's (index.css). */
 .nk-rc {
   position: relative;

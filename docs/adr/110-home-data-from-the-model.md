@@ -2,7 +2,7 @@
 
 - **Status:** In force.
 - **Context:**
-  - The P8 home ([ADR 108](108-p8-design-export.md)) answers "what now" with one Continue and the reason for what the session does first, and later settles each forecast it showed once its row is introduced ([p8-plan.md](../../p8-plan.md), D1 and D10). The model gives neither a reason nor the session in which a kana was introduced, and the app has no seeded generator, so the same state would give a different outline and forecast on each run.
+  - The P8 home ([ADR 108](108-p8-design-export.md)) answers "what now" with one Continue and the reason for what the session does first, and later settles each forecast it showed once its row is introduced ([p8-plan.md](../archive/p8-plan.md), D1 and D10). The model gives neither a reason nor the session in which a kana was introduced, and the app has no seeded generator, so the same state would give a different outline and forecast on each run.
   - [ADR 100](100-knowledge-model-fsrs-planner-and-answer-log.md), point 2, makes the planner choose every task of a session, the first one included; a label that named a mode could promise something the session does not do.
 - **Decision:** `@nekotype/model` gains four things; none of them changes a rule or a constant of ADR 100.
   1. **`reasonOf(state, view, { now, track })`** returns `review` (with `due`), `weak` (with `keys`), `learning` (with `learning`), `new` (with `key` and `row`) or `none` (with `nextAt`). It is read from `nextTask` with `previous: null` and an `rng` that always draws recall, so the label cannot promise what the planner does not offer. `none` holds exactly when the planner offers nothing.
