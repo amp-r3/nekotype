@@ -1,6 +1,8 @@
 import type { homeEn } from './en';
 
 export const homeRu = {
+  'home.path.blocks': 'блоки пути',
+  'home.path.block': '{name}: открыто {n} из {total}',
   'home.path.here': '{row}: открыто {n} из {total}, вы здесь',
   'home.forecast.range.one': 'весь ряд {head} откроется через {low}–{high} сессию',
   'home.forecast.range.few': 'весь ряд {head} откроется через {low}–{high} сессии',

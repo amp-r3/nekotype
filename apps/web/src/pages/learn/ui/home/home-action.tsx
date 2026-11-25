@@ -3,6 +3,7 @@ import type { Outline, Reason } from '@nekotype/model';
 import type { Track } from '@nekotype/shared/types';
 import { t } from '@/shared/i18n';
 import { Button, Parts } from '@/shared/ui';
+import { Cat } from '@/shared/ui/cat';
 import { outlineParts, reasonParts, weakKana, whenOf } from '../../lib/home-copy';
 
 const NUMBERS = 'text-mono-romaji text-fur font-mono';
@@ -64,6 +65,8 @@ export function HomeAction({
   return (
     <div className="flex flex-col items-start gap-4">
       {!none && suggestion}
+      {/* Nothing to do: the cat sleeps over the reason (design decision 154). */}
+      {none && <Cat mood="sleep" size={96} />}
       {/* The line keeps its height while the store loads, so the button does not jump. */}
       {reason === null ? (
         <p aria-hidden="true" className="min-h-8" />

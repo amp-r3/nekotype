@@ -141,6 +141,38 @@ describe('Segmented', () => {
   });
 });
 
+describe('Segmented options with content', () => {
+  it('shows the content, keeps the label as the name, and the arrows still move between options', () => {
+    const onChange = vi.fn();
+    mount(
+      <Segmented
+        tall
+        options={[
+          { value: 'a', label: 'basic: 3 of 46 kana open', content: <span>あ</span> },
+          { value: 'b', label: 'voiced: 0 of 25 kana open', content: <span>が</span> },
+        ]}
+        value="a"
+        onChange={onChange}
+        ariaLabel="blocks"
+      />,
+    );
+    const items = container.querySelectorAll('[role="radio"]');
+    expect(items[0]?.textContent).toBe('あ');
+    expect(items[0]?.getAttribute('aria-label')).toBe('basic: 3 of 46 kana open');
+    expect(items[0]?.className).toContain('min-h-control-sm');
+    items[0]?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
+    );
+    expect(onChange).toHaveBeenCalledWith('b');
+    expect(document.activeElement).toBe(items[1]);
+  });
+
+  it('leaves a plain option without an aria-label', () => {
+    mount(<Segmented options={[{ value: 'a', label: 'A' }]} value="a" onChange={() => {}} />);
+    expect(container.querySelector('[role="radio"]')?.hasAttribute('aria-label')).toBe(false);
+  });
+});
+
 describe('Segmented size lg', () => {
   it('uses the heading text and a wider gap', () => {
     mount(
