@@ -38,7 +38,7 @@ function stateOf(
   items: ReadonlyMap<LearnKanaKey, ItemState>,
   confusions: ModelState['confusions'] = new Map(),
 ): ModelState {
-  const base = createFold({ targetMs: 1500, stats: false }).state;
+  const base = createFold({ stats: false }).state;
   return { ...base, items, confusions };
 }
 
@@ -207,7 +207,7 @@ describe('reasonOf along a played log', () => {
   const events: readonly LogEvent[] = syntheticLog({ answers: 1500, seed: 1 });
 
   it('agrees with the planner for either draw at about 200 points of one log', () => {
-    const fold = createFold({ targetMs: 1500, stats: true });
+    const fold = createFold({ stats: true });
     const step = Math.max(1, Math.floor(events.length / 200));
     const seen = new Set<string>();
     events.forEach((event, i) => {

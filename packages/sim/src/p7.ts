@@ -193,7 +193,7 @@ if (want('cost')) {
   const timings: number[] = [];
   for (let run = 0; run < 6; run += 1) {
     const t = performance.now();
-    foldLog(events, { targetMs: 1500, stats: true });
+    foldLog(events, { stats: true });
     if (run > 0) timings.push(performance.now() - t);
   }
   console.log(

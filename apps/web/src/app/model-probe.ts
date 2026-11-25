@@ -36,7 +36,7 @@ function measure(events: readonly LogEvent[], runs: number): Cost {
   const now = (events.at(-1)?.at ?? 0) + 3_600_000;
   for (let run = 0; run <= runs; run += 1) {
     const t0 = performance.now();
-    const folded = foldLog(events, { targetMs: 1500, stats: true });
+    const folded = foldLog(events, { stats: true });
     const t1 = performance.now();
     const row = nextRow(folded.state, 'katakana');
     if (row === null) throw new Error('every katakana row is introduced: nothing to forecast');

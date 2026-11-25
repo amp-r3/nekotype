@@ -4,9 +4,9 @@ import { answer, intro, start } from '@nekotype/model/testing';
 import type { LearnKanaKey, LogEvent } from '@nekotype/shared/types';
 
 /** Tests only: numbers the events 1, 2, 3, … of one device and folds them into a view. */
-export function viewOfEvents(events: readonly LogEvent[], targetMs = 1500): LearnView {
+export function viewOfEvents(events: readonly LogEvent[]): LearnView {
   const numbered = events.map((event, index) => ({ ...event, dev: 'd1', n: index + 1 }));
-  const snapshot = foldLog(numbered, { targetMs, stats: true }).snapshot();
+  const snapshot = foldLog(numbered, { stats: true }).snapshot();
   if (snapshot.stats === null) throw new Error('the fold has no statistics');
   return describeState(snapshot.state, snapshot.stats);
 }

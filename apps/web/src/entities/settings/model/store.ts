@@ -6,14 +6,11 @@ import type { ValidSettings } from '@/shared/lib';
 import type { ChangeChannel, Clock, Db } from '@/shared/lib';
 import { changeChannel, defaultClock, isSettings, reportWriteFailure } from '@/shared/lib';
 
-export const DEFAULT_LEARN_TARGET_MS = 1500;
-
 const SETTINGS_STORE = 'settings';
 const SETTINGS_KEY = 'current';
 
 const _learnStrictness = signal<Strictness>('learner');
 const _learnTrack = signal<LearnTrack>('hiragana');
-const _learnTargetMs = signal<number>(DEFAULT_LEARN_TARGET_MS);
 // Played after each task from P10; stored so that the document round-trips.
 const _learnSound = signal<boolean>(true);
 const _updatedAt = signal<number>(0);
@@ -21,7 +18,6 @@ const _settingsReady = signal<boolean>(false);
 
 export const learnStrictness: ReadonlySignal<Strictness> = _learnStrictness;
 export const learnTrack: ReadonlySignal<LearnTrack> = _learnTrack;
-export const learnTargetMs: ReadonlySignal<number> = _learnTargetMs;
 /** True once the settings have been read from the database (or defaults were taken). */
 export const settingsReady: ReadonlySignal<boolean> = _settingsReady;
 
@@ -35,7 +31,6 @@ function snapshot(): ValidSettings {
     learn: {
       strictness: _learnStrictness.value,
       track: _learnTrack.value,
-      targetMs: _learnTargetMs.value,
       sound: _learnSound.value,
     },
     updatedAt: _updatedAt.value,
@@ -45,7 +40,6 @@ function snapshot(): ValidSettings {
 function applyDefaults(): void {
   _learnStrictness.value = 'learner';
   _learnTrack.value = 'hiragana';
-  _learnTargetMs.value = DEFAULT_LEARN_TARGET_MS;
   _learnSound.value = true;
   _updatedAt.value = 0;
 }
@@ -71,7 +65,6 @@ function persist(): void {
 function apply(saved: ValidSettings): void {
   _learnStrictness.value = saved.learn.strictness;
   _learnTrack.value = saved.learn.track;
-  _learnTargetMs.value = saved.learn.targetMs;
   _learnSound.value = saved.learn.sound;
   _updatedAt.value = saved.updatedAt;
 }
@@ -124,11 +117,5 @@ export function setLearnStrictness(strictness: Strictness): void {
 
 export function setTrack(track: LearnTrack): void {
   _learnTrack.value = track;
-  persist();
-}
-
-export function setTargetMs(ms: number): void {
-  if (!Number.isInteger(ms) || ms < 1000 || ms > 3000 || ms % 250 !== 0) return;
-  _learnTargetMs.value = ms;
   persist();
 }

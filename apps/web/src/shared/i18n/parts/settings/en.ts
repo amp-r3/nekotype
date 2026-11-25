@@ -7,10 +7,6 @@ export const settingsEn = {
   'settings.learn.strictnessHint': 'Relaxed also accepts «si» for し and «tu» for つ.',
   'settings.learn.relaxed': 'relaxed',
   'settings.learn.strictIme': 'strict IME',
-  'settings.learn.target': 'target answer time',
-  'settings.learn.targetHint':
-    'Answers slower than the target count as harder, so their reviews come sooner.',
-  'settings.learn.targetValue': '{ms} ms',
   'settings.data.title': 'Data',
   'settings.data.reset': 'reset progress',
   'settings.data.resetAction': 'reset',

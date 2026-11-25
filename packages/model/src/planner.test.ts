@@ -74,7 +74,7 @@ function stateOf(
   items: Readonly<Record<string, ItemState>>,
   learner: Partial<ModelState['learner']> = {},
 ): ModelState {
-  const base = createFold({ targetMs: 1500, stats: false }).state;
+  const base = createFold({ stats: false }).state;
   const map = new Map<LearnKanaKey, ItemState>();
   for (const [name, value] of Object.entries(items)) {
     const key = KEYS.get(name);
@@ -215,7 +215,7 @@ describe('due kana', () => {
   });
 
   it('spaces the reviews of a fresh kana (two fresh kana do not take turns)', () => {
-    const fold = createFold({ targetMs: 1500, stats: false });
+    const fold = createFold({ stats: false });
     const rng = seeded(3);
     let n = 0;
     let at = NOW;

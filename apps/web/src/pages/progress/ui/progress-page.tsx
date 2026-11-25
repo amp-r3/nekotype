@@ -5,7 +5,7 @@ import { t } from '@/shared/i18n';
 import { Button, Notice } from '@/shared/ui';
 import { EmptyState } from '@/shared/ui/empty-state';
 import { defaultClock, navigate } from '@/shared/lib';
-import { learnTargetMs, learnTrack } from '@/entities/settings';
+import { learnTrack } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
 import { initLearn, learnStatus, learnView, localDay, retryLearn } from '@/entities/learn';
 import { LearningSection } from './learning-section';
@@ -15,7 +15,7 @@ import { TrackSwitch } from './track-switch';
 // Progress: the kana table of the shown track, then the statistics (design decisions 130, 137, 146).
 export function ProgressPage(): JSX.Element {
   useEffect(() => {
-    void initLearn(() => learnTargetMs.value);
+    void initLearn();
   }, []);
 
   // The switch only chooses what this page shows: it starts at the learning track of `/` and never

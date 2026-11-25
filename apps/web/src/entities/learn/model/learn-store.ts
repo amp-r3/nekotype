@@ -1,4 +1,4 @@
-import { computed, effect, signal, untracked } from '@preact/signals';
+import { computed, signal } from '@preact/signals';
 import type { ReadonlySignal } from '@preact/signals';
 import { decodePage, encodePage } from '@nekotype/shared/runtime';
 import type {
@@ -64,8 +64,6 @@ export type LearnStoreDeps = {
   readonly db: () => Promise<Db>;
   readonly clock: Clock;
   readonly scheduler: Scheduler;
-  /** The target answer time; grades fold with the current one, so a change folds again. */
-  readonly targetMs: () => number;
   /** The model chunk. */
   readonly loadModel: () => Promise<Model>;
   /**
@@ -110,8 +108,6 @@ export interface LearnStore {
   init: () => Promise<void>;
   /** Loads again after an error. Never rejects. */
   retry: () => Promise<void>;
-  /** A changed target answer time: grades fold again. */
-  retarget: () => void;
   startSession: () => void;
   endSession: () => void;
   introduce: (key: LearnKanaKey) => void;
@@ -138,6 +134,9 @@ function sameIdentity(a: LogEvent, b: LogEvent): boolean {
   return a.dev === b.dev && a.n === b.n && a.at === b.at;
 }
 
+/** Grades follow the learner's pace, which the fold works out from the log (ADR 115). */
+const FOLD_OPTIONS: { readonly stats: true } = { stats: true };
+
 export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   const view = signal<LearnView | null>(null);
   const status = signal<LearnStatus>('loading');
@@ -150,7 +149,6 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   let insightsModule: typeof InsightsModule | null = null;
   let startSnap: StartSnapshot | null = null;
   let fold: Fold | null = null;
-  let foldedTarget = deps.targetMs();
   /** The events of the log in order, repeats dropped: what the fold was built from. */
   let log: LogEvent[] = [];
   let meta: LogMeta | null = null;
@@ -162,11 +160,6 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   let pending: TimeoutHandle | null = null;
   let writing: Promise<void> = Promise.resolve();
   let loading: Promise<void> | null = null;
-
-  const foldOptions = (): { targetMs: number; stats: true } => ({
-    targetMs: foldedTarget,
-    stats: true,
-  });
 
   const publish = (): void => {
     if (model === null || fold === null) return;
@@ -199,9 +192,9 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
     }
     if (last < 0) {
       startSnap = null;
-      return loaded.foldLog(log, foldOptions());
+      return loaded.foldLog(log, FOLD_OPTIONS);
     }
-    const folded = loaded.foldLog(log.slice(0, last), foldOptions());
+    const folded = loaded.foldLog(log.slice(0, last), FOLD_OPTIONS);
     startSnap = folded.snapshot();
     for (const event of log.slice(last)) folded.apply(event);
     return folded;
@@ -209,7 +202,6 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
 
   const refold = (): void => {
     if (model === null) return;
-    foldedTarget = deps.targetMs();
     fold = foldWhole(model);
     publish();
   };
@@ -366,7 +358,7 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
     meta = null;
     startSnap = null;
     if (model !== null) {
-      fold = model.createFold(foldOptions());
+      fold = model.createFold(FOLD_OPTIONS);
       publish();
     }
     for (const listener of resetListeners) listener();
@@ -445,11 +437,6 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
       return init();
     },
 
-    retarget() {
-      if (status.value !== 'ready' || deps.targetMs() === foldedTarget) return;
-      refold();
-    },
-
     startSession() {
       // Nothing computes during a session (P8 rule 3d): the insights drop their pending steps.
       for (const listener of startListeners) listener();
@@ -516,13 +503,10 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
   };
 }
 
-let targetMsSource: () => number = () => 1500;
-
 const store = createLearnStore({
   db: getDatabase,
   clock: defaultClock,
   scheduler: defaultScheduler,
-  targetMs: () => targetMsSource(),
   loadModel: () =>
     import('@nekotype/model').then((loaded) => {
       if (__LATENCY_PROBE__) performance.mark('nekotype:model');
@@ -535,21 +519,8 @@ const store = createLearnStore({
   onWriteFailed: reportWriteFailure,
 });
 
-let watching = false;
-
-/** Binds `settings.learn.targetMs` and loads the log and the model; `/` and `/progress` call it. */
-export function initLearn(targetMs: () => number): Promise<void> {
-  targetMsSource = targetMs;
-  if (!watching) {
-    watching = true;
-    // A changed target folds the log again; `untracked` keeps the effect off the view.
-    effect(() => {
-      targetMs();
-      untracked(() => {
-        store.retarget();
-      });
-    });
-  }
+/** Loads the log and the model; `/` and `/progress` call it. */
+export function initLearn(): Promise<void> {
   return store.init();
 }
 

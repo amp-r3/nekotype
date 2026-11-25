@@ -16,6 +16,8 @@ import { ITEMS, isWordKey } from './items';
 import type { KanaItem } from './items';
 import { recallsToLearn } from './learner';
 import { compareEvents, eventKey, localDay } from './order';
+import { allDevices, countsForPace, isTimed, lineOf, logMs, notePace, oneDevice } from './pace';
+import type { LivePace, Pace, TimedTask } from './pace';
 import {
   copyStats,
   emptyStats,
@@ -60,6 +62,11 @@ export type LearnerState = {
   readonly outcomes: { readonly learning: readonly boolean[]; readonly review: readonly boolean[] };
   /** Per `dev`, the `tz` of its last session start. */
   readonly tz: Readonly<Record<string, number>>;
+  /**
+   * The paces of ADR 115, keyed by `oneDevice(task, dev)` and `allDevices(task)`: what separates a
+   * good timed answer from a hard one.
+   */
+  readonly pace: ReadonlyMap<string, Pace>;
 };
 
 export type ModelState = {
@@ -67,10 +74,17 @@ export type ModelState = {
   readonly learner: LearnerState;
   /** asked → given → count; only counts above 0. */
   readonly confusions: ReadonlyMap<LearnKanaKey, ReadonlyMap<LearnKanaKey, number>>;
-  readonly targetMs: number;
 };
 
-export type FoldOptions = { readonly targetMs: number; readonly stats: boolean };
+export type FoldOptions = {
+  readonly stats: boolean;
+  /**
+   * The line in ms of a timed answer instead of its pace: the forecast's plays grade every
+   * correct answer good, and the simulator grades by rules of its own. The pace still follows
+   * the answers.
+   */
+  readonly line?: (answer: AnswerEvent) => number;
+};
 export type ApplyResult = 'applied' | 'duplicate' | 'out-of-order';
 
 export interface Fold {
@@ -144,6 +158,7 @@ type MutableLearner = {
   /** Read from `LearnerLists`. */
   readonly outcomes: { readonly learning: readonly boolean[]; readonly review: readonly boolean[] };
   tz: Record<string, number>;
+  pace: Map<string, LivePace>;
 };
 
 /**
@@ -215,6 +230,7 @@ const START: LearnerState = {
   observed: OBSERVED_START,
   outcomes: { learning: [], review: [] },
   tz: {},
+  pace: new Map(),
 };
 
 /** A fold's learner from `from` (copied) and its lists. */
@@ -243,6 +259,7 @@ function learnerOf(from: LearnerState): { learner: MutableLearner; lists: Learne
       },
     },
     tz: { ...from.tz },
+    pace: new Map([...from.pace].map(([key, p]) => [key, { level: p.level, count: p.count }])),
   };
   return { learner, lists };
 }
@@ -259,6 +276,7 @@ function copyLearner(l: LearnerState): LearnerState {
     observed: l.observed,
     outcomes: { learning: [...l.outcomes.learning], review: [...l.outcomes.review] },
     tz: { ...l.tz },
+    pace: new Map([...l.pace].map(([key, p]) => [key, { level: p.level, count: p.count }])),
   };
 }
 
@@ -358,12 +376,17 @@ class LiveFold implements Fold, EffectSink {
   private answerDay = 0;
   private correctRecall = false;
   private answerSlot: KeptSlot | undefined = undefined;
+  // The paces of the last timed task and device answered: a log is long runs of one device.
+  private paceTask: TimedTask | null = null;
+  private paceDev: string | null = null;
+  private paceOwn: LivePace | undefined = undefined;
+  private paceAll: LivePace | undefined = undefined;
 
   constructor(data: Data, options: FoldOptions) {
     this.data = data;
     this.options = options;
     const { items, learner, confusions } = data;
-    this.state = { items, learner, confusions, targetMs: options.targetMs };
+    this.state = { items, learner, confusions };
     const { slots, slotByKey } = this;
     for (const [key, item] of items) {
       const slot = newSlot(key, item);
@@ -440,7 +463,6 @@ class LiveFold implements Fold, EffectSink {
         items: new Map(data.items),
         learner: copyLearner(data.learner),
         confusions: copyConfusions(data.confusions),
-        targetMs: this.options.targetMs,
       },
       stats: data.stats === null ? null : snapshotStats(data.stats),
     };
@@ -583,7 +605,35 @@ class LiveFold implements Fold, EffectSink {
     this.answerDay = day;
     this.correctRecall = a.task === 'recall' && a.ok;
     this.answerSlot = slot;
-    eachEffect(a, this.options.targetMs, this, kana);
+    const { task } = a;
+    if (!isTimed(task)) {
+      eachEffect(a, Number.POSITIVE_INFINITY, this, kana);
+      return;
+    }
+    // ADR 115: the line is the pace before the answer; a correct answer without a hint moves it.
+    this.lookUpPaces(task, a.dev);
+    const line = this.options.line?.(a) ?? lineOf(this.paceOwn, this.paceAll);
+    eachEffect(a, line, this, kana);
+    if (countsForPace(a)) {
+      const x = logMs(a.ms);
+      notePace((this.paceOwn ??= this.newPace(oneDevice(task, a.dev))), x);
+      notePace((this.paceAll ??= this.newPace(allDevices(task))), x);
+    }
+  }
+
+  private lookUpPaces(task: TimedTask, dev: string): void {
+    if (task === this.paceTask && dev === this.paceDev) return;
+    const { pace } = this.data.learner;
+    this.paceOwn = pace.get(oneDevice(task, dev));
+    this.paceAll = pace.get(allDevices(task));
+    this.paceTask = task;
+    this.paceDev = dev;
+  }
+
+  private newPace(key: string): LivePace {
+    const pace: LivePace = { level: 0, count: 0 };
+    this.data.learner.pace.set(key, pace);
+    return pace;
   }
 }
 

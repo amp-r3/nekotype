@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { MAX_SYNC_BODY_BYTES, isPullResponse, isSyncResponse, mergeSettings } from './runtime';
 import type { ValidSettings } from './types';
 
-function settings(updatedAt: number, targetMs = 1500): ValidSettings {
+function settings(updatedAt: number, track: 'hiragana' | 'katakana' = 'hiragana'): ValidSettings {
   return {
-    learn: { strictness: 'learner', track: 'hiragana', targetMs, sound: true },
+    learn: { strictness: 'learner', track, sound: true },
     updatedAt,
   };
 }
@@ -40,14 +40,14 @@ describe('guards', () => {
 
 describe('mergeSettings', () => {
   it('last write wins on updatedAt', () => {
-    expect(mergeSettings(settings(5), settings(9, 2000), 7)?.learn.targetMs).toBe(2000);
-    expect(mergeSettings(settings(9), settings(5, 2000), 7)?.learn.targetMs).toBe(1500);
+    expect(mergeSettings(settings(5), settings(9, 'katakana'), 7)?.learn.track).toBe('katakana');
+    expect(mergeSettings(settings(9), settings(5, 'katakana'), 7)?.learn.track).toBe('hiragana');
     expect(mergeSettings(settings(5), null, 7)?.updatedAt).toBe(5);
     expect(mergeSettings(null, settings(5), 7)?.updatedAt).toBe(5);
   });
 
   it('on seq 1 the account settings win, and a new account takes the guest settings', () => {
-    expect(mergeSettings(settings(5), settings(99, 2000), 1)?.learn.targetMs).toBe(1500);
-    expect(mergeSettings(null, settings(99, 2000), 1)?.learn.targetMs).toBe(2000);
+    expect(mergeSettings(settings(5), settings(99, 'katakana'), 1)?.learn.track).toBe('hiragana');
+    expect(mergeSettings(null, settings(99, 'katakana'), 1)?.learn.track).toBe('katakana');
   });
 });

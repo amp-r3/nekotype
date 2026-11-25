@@ -13,7 +13,6 @@ import { describe as describeState } from './view';
 const KA = 'hiragana:か';
 const KI = 'hiragana:き';
 const A = 'hiragana:あ';
-const TARGET = 1500;
 
 const EMPTY_STATS: LogStats = {
   kana: new Map(),
@@ -36,7 +35,7 @@ function item(over: Partial<ItemState> & Pick<ItemState, 'phase'>): ItemState {
 
 /** A state with the given items and nothing else. */
 function stateOf(items: ReadonlyMap<LearnKanaKey, ItemState>): ModelState {
-  return { ...createFold({ targetMs: TARGET, stats: false }).state, items };
+  return { ...createFold({ stats: false }).state, items };
 }
 
 /** Entries of one phase for the given kana. */
@@ -146,7 +145,7 @@ describe('describe: statistics of a kana', () => {
 
 describe('describe: confusions', () => {
   it('highest count first, then track order', () => {
-    const fold = createFold({ targetMs: TARGET, stats: true });
+    const fold = createFold({ stats: true });
     let n = 0;
     const wrong = (given: LearnKanaKey, times: number) => {
       for (let i = 0; i < times; i += 1) {
@@ -222,7 +221,7 @@ describe('describe: opens next, track counts and the katakana suggestion', () =>
 
 describe('describe: from a folded log', () => {
   it('carries the statistics through', () => {
-    const fold = createFold({ targetMs: TARGET, stats: true });
+    const fold = createFold({ stats: true });
     fold.apply(start(0, { at: 0, n: 1 }));
     fold.apply(intro(KA, { at: 1, n: 2 }));
     fold.apply(answer(KA, { at: 2, n: 3, ms: 800 }));

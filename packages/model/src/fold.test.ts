@@ -1,8 +1,8 @@
 import type { LearnKanaKey, LogEvent } from '@nekotype/shared/types';
 import { describe, expect, it } from 'vitest';
-import { DAY_MS, GAP_MIN_MS } from './constants';
+import { DAY_MS, GAP_MIN_MS, PACE_MIN } from './constants';
 import { createFold, foldLog } from './fold';
-import type { Fold } from './fold';
+import type { Fold, FoldOptions } from './fold';
 import { firstMemory, nextMemory } from './fsrs';
 import { answer, end, intro, start } from './testing';
 
@@ -16,8 +16,8 @@ const KATA_KA = 'katakana:カ';
 const THREE: readonly LearnKanaKey[] = [KA, KI, TA];
 
 /** A fold that numbers and spaces events itself: `at` and `n` grow with every call. */
-function session(startAt = 0) {
-  const fold = createFold({ targetMs: TARGET, stats: false });
+function session(startAt = 0, options: FoldOptions = { stats: false }) {
+  const fold = createFold(options);
   let at = startAt;
   let n = 0;
   const next = (step = 1000) => ({ at: (at += step), n: (n += 1) });
@@ -220,7 +220,7 @@ describe('local days', () => {
   it('uses the zone of the device that wrote the event for the same-day formula', () => {
     // 23:30 and 00:30 UTC: one local day at +60 minutes (00:30 and 01:30), two at UTC.
     const run = (tz: number) => {
-      const fold = createFold({ targetMs: TARGET, stats: false });
+      const fold = createFold({ stats: false });
       const t0 = DAY_MS - HOUR / 2;
       fold.apply(start(tz, { at: t0 - 1, n: 1 }));
       fold.apply(intro(KA, { at: t0, n: 2 }));
@@ -236,7 +236,7 @@ describe('local days', () => {
   });
 
   it('keeps a zone per device and tz 0 for a device with no start', () => {
-    const fold = createFold({ targetMs: TARGET, stats: false });
+    const fold = createFold({ stats: false });
     fold.apply(start(-300, { dev: 'a', at: 1, n: 1 }));
     fold.apply(start(540, { dev: 'b', at: 2, n: 1 }));
     expect(fold.state.learner.tz).toEqual({ a: -300, b: 540 });
@@ -312,7 +312,7 @@ describe('credit, pairs and confusions', () => {
   });
 
   it('gives no effect to a slow fluency answer and does not touch the streak', () => {
-    const s = session();
+    const s = session(0, { stats: false, line: () => TARGET });
     s.intro(KA);
     s.answer(KA);
     const before = s.item(KA);
@@ -324,7 +324,7 @@ describe('credit, pairs and confusions', () => {
 
 describe('ignored events', () => {
   it('skips an unknown kana, counts it and never throws', () => {
-    const fold = createFold({ targetMs: TARGET, stats: false });
+    const fold = createFold({ stats: false });
     expect(fold.apply(intro('hiragana:x', { n: 1 }))).toBe('applied');
     expect(fold.apply(answer('katakana:zz', { at: 1, n: 2 }))).toBe('applied');
     expect(fold.ignored).toBe(2);
@@ -336,7 +336,7 @@ describe('ignored events', () => {
 
 describe('apply', () => {
   it('returns duplicate and out-of-order and changes nothing', () => {
-    const fold = createFold({ targetMs: TARGET, stats: false });
+    const fold = createFold({ stats: false });
     expect(fold.apply(intro(KA, { at: 10, n: 2 }))).toBe('applied');
     const before = fold.snapshot();
     expect(fold.apply(intro(KA, { at: 10, n: 2 }))).toBe('duplicate');
@@ -350,7 +350,7 @@ describe('apply', () => {
   it('knows a repeated n of any number, as a set would, in a clone too', () => {
     // Whole numbers from 0 up are kept as bits; any other number (and a large one) in a set.
     const odd = [0, -0, 8192, 2 ** 22, 2 ** 40, 1.5, -3, Number.NaN];
-    const fold = createFold({ targetMs: TARGET, stats: false });
+    const fold = createFold({ stats: false });
     let at = 0;
     const applied = odd.map((n) => fold.apply(end({ at: (at += 1), n })));
     expect(applied).toEqual(['applied', 'duplicate', ...odd.slice(2).map(() => 'applied')]);
@@ -372,18 +372,18 @@ describe('foldLog, snapshot, clone', () => {
   ];
 
   it('equals applying the sorted events one by one, in any order, with repeats', () => {
-    const one = createFold({ targetMs: TARGET, stats: false });
+    const one = createFold({ stats: false });
     for (const e of log) one.apply(e);
     const shuffled = [log[3], log[0], log[4], log[3], log[1], log[2], log[0]].flatMap((e) =>
       e === undefined ? [] : [e],
     );
-    const all = foldLog(shuffled, { targetMs: TARGET, stats: false });
+    const all = foldLog(shuffled, { stats: false });
     expect(all.snapshot()).toEqual(one.snapshot());
     expect(all.last).toEqual(one.last);
   });
 
   it('gives a snapshot that a later apply does not change', () => {
-    const fold = foldLog(log, { targetMs: TARGET, stats: false });
+    const fold = foldLog(log, { stats: false });
     const snap = fold.snapshot();
     const frozen = structuredClone({
       items: [...snap.state.items],
@@ -400,16 +400,98 @@ describe('foldLog, snapshot, clone', () => {
   });
 
   it('gives a clone that is independent of the original', () => {
-    const fold = foldLog(log, { targetMs: TARGET, stats: false });
-    const copy: Fold = fold.clone({ targetMs: 99 });
+    const fold = foldLog(log, { stats: false });
+    const copy: Fold = fold.clone();
     const before = fold.snapshot();
-    expect(copy.state.targetMs).toBe(99);
     expect(copy.snapshot().state.items).toEqual(before.state.items);
     copy.apply(answer(KA, { at: 100, n: 6, ok: false, wrong: SA }));
     copy.apply(start(60, { at: 101, n: 7 }));
     expect(fold.snapshot()).toEqual(before);
     expect(fold.apply(answer(KA, { at: 100, n: 6 }))).toBe('applied');
     expect(copy.apply(answer(KA, { at: 100, n: 6 }))).toBe('duplicate');
-    expect(fold.clone().state.targetMs).toBe(TARGET);
+  });
+
+  it('gives a clone the line of its original, or the one it is given', () => {
+    const fold = foldLog(log, { stats: false, line: () => 0 });
+    const hard = fold.clone();
+    hard.apply(answer(KA, { at: 100, n: 6, ms: 1 }));
+    const good = fold.clone({ line: () => Number.POSITIVE_INFINITY });
+    good.apply(answer(KA, { at: 100, n: 6, ms: 1 }));
+    const hardMemory = hard.state.items.get(KA)?.memory;
+    const goodMemory = good.state.items.get(KA)?.memory;
+    expect(goodMemory?.difficulty).toBeLessThan(hardMemory?.difficulty ?? 0);
+  });
+});
+
+describe('pace (ADR 115)', () => {
+  /** A fold with KA learning, and a correct recall of `ms` on `dev` that returns KA's grade. */
+  function grader() {
+    const s = session();
+    s.intro(KA);
+    return {
+      s,
+      recall(ms: number, over: Partial<Parameters<typeof answer>[1]> = {}): 2 | 3 {
+        const before = s.item(KA)?.memory.difficulty ?? 0;
+        s.answer(KA, { ms, ...over });
+        const after = s.item(KA)?.memory.difficulty ?? 0;
+        // A good grade lowers the difficulty toward its target; a hard one raises it.
+        return after > before ? 2 : 3;
+      },
+    };
+  }
+
+  it('grades every correct answer good until a pace has PACE_MIN answers', () => {
+    const g = grader();
+    for (let i = 0; i < PACE_MIN; i++) expect(g.recall(9000)).toBe(3);
+    expect(g.s.fold.state.learner.pace.get('recall:d1')?.count).toBe(PACE_MIN);
+    expect(g.s.fold.state.learner.pace.get('recall')?.count).toBe(PACE_MIN);
+  });
+
+  it('grades a correct recall slower than the device pace hard', () => {
+    const g = grader();
+    for (let i = 0; i < PACE_MIN; i++) g.recall(1000);
+    expect(g.recall(1000)).toBe(3);
+    expect(g.recall(3000)).toBe(2);
+    expect(g.recall(3000, { hint: true })).toBe(2);
+  });
+
+  it('gives a new device the pace of every device until it has its own', () => {
+    const g = grader();
+    for (let i = 0; i < PACE_MIN; i++) g.recall(1000);
+    expect(g.recall(3000, { dev: 'd2' })).toBe(2);
+    for (let i = 0; i < PACE_MIN; i++) g.recall(3000, { dev: 'd2' });
+    // d2's own pace is about 3000 ms now; d1 keeps its own.
+    expect(g.recall(2900, { dev: 'd2' })).toBe(3);
+    expect(g.recall(2900)).toBe(2);
+  });
+
+  it('moves only on correct timed answers without a hint, per task', () => {
+    const g = grader();
+    g.recall(1000);
+    g.recall(9000, { ok: false });
+    g.recall(9000, { hint: true });
+    g.s.answer(KA, { task: 'recognition', ms: 9000 });
+    g.s.answer(KA, { task: 'dictation', ms: 2000 });
+    const { pace } = g.s.fold.state.learner;
+    expect(pace.get('recall:d1')).toEqual({ level: Math.log(1000), count: 1 });
+    expect(pace.get('dictation:d1')).toEqual({ level: Math.log(2000), count: 1 });
+    expect(pace.has('recognition')).toBe(false);
+  });
+
+  it('follows a streaming 90th percentile: about one correct recall in ten is hard', () => {
+    const s = session();
+    s.intro(KA);
+    let hard = 0;
+    let state = 7;
+    for (let i = 0; i < 2000; i++) {
+      // A deterministic spread of times around 1200 ms.
+      state = (state * 48271) % 2147483647;
+      const ms = Math.round(1200 * Math.exp(0.3 * ((state / 2147483647) * 2 - 1) * 1.7));
+      const before = s.item(KA)?.memory.difficulty ?? 0;
+      s.answer(KA, { ms });
+      if (i >= 200 && (s.item(KA)?.memory.difficulty ?? 0) > before) hard += 1;
+    }
+    expect(hard / 1800).toBeGreaterThan(0.07);
+    expect(hard / 1800).toBeLessThan(0.13);
   });
 });

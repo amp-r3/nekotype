@@ -9,7 +9,7 @@ const KI = 'hiragana:き';
 const KATA_KA = 'katakana:カ';
 
 function folded(events: readonly LogEvent[]) {
-  const fold = foldLog(events, { targetMs: 1500, stats: true });
+  const fold = foldLog(events, { stats: true });
   const stats = fold.stats;
   if (stats === null) throw new Error('no stats');
   return stats;
@@ -117,7 +117,7 @@ describe('statistics: sessions', () => {
 
 describe('statistics: copies', () => {
   it('a snapshot does not change when the fold goes on', () => {
-    const fold = createFold({ targetMs: 1500, stats: true });
+    const fold = createFold({ stats: true });
     fold.apply(answer(KA, { at: 1, n: 1, ms: 500 }));
     fold.apply(start(0, { at: 2, n: 2 }));
     const before = fold.snapshot().stats;
@@ -138,7 +138,7 @@ describe('statistics: copies', () => {
   });
 
   it('a clone is independent in both directions', () => {
-    const fold = createFold({ targetMs: 1500, stats: true });
+    const fold = createFold({ stats: true });
     fold.apply(answer(KA, { at: 1, n: 1 }));
     const copy = fold.clone();
     copy.apply(answer(KA, { at: 2, n: 2 }));
@@ -150,13 +150,13 @@ describe('statistics: copies', () => {
   });
 
   it('is null without `stats`, and a clone can drop or start it', () => {
-    const plain = createFold({ targetMs: 1500, stats: false });
+    const plain = createFold({ stats: false });
     plain.apply(answer(KA, { at: 1, n: 1 }));
     expect(plain.stats).toBeNull();
     expect(plain.snapshot().stats).toBeNull();
     const started = plain.clone({ stats: true });
     expect(started.stats?.days.size).toBe(0);
-    const withStats = createFold({ targetMs: 1500, stats: true });
+    const withStats = createFold({ stats: true });
     withStats.apply(answer(KA, { at: 1, n: 1 }));
     expect(withStats.clone({ stats: false }).stats).toBeNull();
   });
@@ -180,7 +180,7 @@ describe('statistics: introducedIn', () => {
   });
 
   it('is copied by a snapshot and a clone, and each side changes alone', () => {
-    const fold = createFold({ targetMs: 1500, stats: true });
+    const fold = createFold({ stats: true });
     fold.apply(start(0, { at: 1, n: 1 }));
     fold.apply(intro(KA, { at: 2, n: 2 }));
     const snapshot = fold.snapshot().stats;

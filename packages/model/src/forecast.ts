@@ -23,6 +23,9 @@ import { horizonMs } from './learner';
 import { nextTask } from './planner';
 import type { PlannedTask } from './planner';
 
+/** The line of a play's answers: a play grades every correct answer good. */
+const ALWAYS_GOOD = (): number => Number.POSITIVE_INFINITY;
+
 export type Habits = {
   /** A sitting's usual length: the median of `sittings` plus the median of `taskMs`; SITTING_DEFAULT_MS while empty. */
   readonly sittingMs: number;
@@ -164,7 +167,8 @@ function startPlay(
   state: ModelState,
   ctx: { readonly track: Track; readonly rng: Rng; readonly habits: Habits; readonly now: number },
 ): Play {
-  const fold = foldFromState(state, { targetMs: state.targetMs, stats: false });
+  // A play's answer has a fixed time: every correct one is good, as the learner's typical answer.
+  const fold = foldFromState(state, { stats: false, line: ALWAYS_GOOD });
   // The zone of one device stands for the learner's; the plays differ by a day edge at most.
   const tz = Object.values(state.learner.tz)[0] ?? 0;
   const play: Play = {

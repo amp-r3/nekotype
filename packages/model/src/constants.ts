@@ -12,6 +12,12 @@ export const LEARN_MAX = 5;
 export const STEP_MS = 30_000;
 /** A learned kana is never due sooner than this after its last answer. */
 export const REVIEW_WAIT_MS = 60_000;
+/** The quantile of a device's correct answer times that separates good from hard (ADR 115). */
+export const PACE_QUANTILE = 0.9;
+/** Step of the streaming quantile, in log ms. */
+export const PACE_STEP = 0.05;
+/** Correct answers a pace needs before it grades. */
+export const PACE_MIN = 20;
 /** Correct recalls in a row to be learned. */
 export const GRADUATE = 5;
 /** Requested retention (the first lever: 0.93, ADR 100). */

@@ -1,7 +1,6 @@
 import type { JSX } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { t } from '@/shared/i18n';
-import { learnTargetMs } from '@/entities/settings';
 import { initLearn } from '@/entities/learn';
 import type { LearnSession } from '../model/session';
 import type { SummaryModel } from '../model/summary';
@@ -23,7 +22,7 @@ export function LearnPage(): JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    void initLearn(() => learnTargetMs.value);
+    void initLearn();
   }, []);
 
   // The summary's model lives while the summary is shown: it asks for the insights at every

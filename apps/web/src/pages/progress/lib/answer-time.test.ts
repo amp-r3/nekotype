@@ -115,20 +115,19 @@ describe('msAxis', () => {
     mid: lo,
     hi,
   });
-  it('holds the target and every lo and hi, in steps of 250 for a narrow range', () => {
-    const axis = msAxis([bar(1100, 1350)], 1500);
-    expect(axis.domain).toEqual([1000, 1750]);
-    expect(axis.ticks).toEqual([1000, 1250, 1500, 1750]);
+  it('holds every lo and hi, in steps of 250 for a narrow range', () => {
+    const axis = msAxis([bar(1100, 1350)]);
+    expect(axis.domain).toEqual([1000, 1500]);
+    expect(axis.ticks).toEqual([1000, 1250, 1500]);
   });
   it('widens the step to keep at most four intervals', () => {
-    const axis = msAxis([bar(800, 3100)], 1500);
+    const axis = msAxis([bar(800, 3100)]);
     expect(axis.domain[0]).toBeLessThanOrEqual(800);
     expect(axis.domain[1]).toBeGreaterThan(3100);
     expect(axis.ticks.length).toBeLessThanOrEqual(5);
   });
-  it('holds the target without bars and never puts it on the top edge', () => {
-    const axis = msAxis([], 1500);
-    expect(axis.domain[0]).toBeLessThanOrEqual(1500);
-    expect(axis.domain[1]).toBeGreaterThan(1500);
+  it('never puts the highest hi on the top edge, and is 0–1000 ms without bars', () => {
+    expect(msAxis([bar(1000, 1500)]).domain[1]).toBeGreaterThan(1500);
+    expect(msAxis([]).domain).toEqual([0, 1000]);
   });
 });

@@ -38,7 +38,6 @@ function fakeChannel(): FakeChannel {
 function setup(
   options: {
     db?: Db;
-    targetMs?: number;
     loadModel?: LearnStoreDeps['loadModel'];
     loadInsights?: LearnStoreDeps['loadInsights'];
   } = {},
@@ -46,14 +45,12 @@ function setup(
   const db = options.db ?? createMemoryDb();
   const clock = new TestClock();
   const scheduler = new ManualScheduler();
-  const target = { ms: options.targetMs ?? 1500 };
   const channel = fakeChannel();
   const onWriteFailed = vi.fn();
   const store = createLearnStore({
     db: () => Promise.resolve(db),
     clock,
     scheduler,
-    targetMs: () => target.ms,
     loadModel: options.loadModel ?? (() => import('@nekotype/model')),
     loadInsights: options.loadInsights ?? (() => import('./insights')),
     newId,
@@ -61,7 +58,7 @@ function setup(
     channel,
     onWriteFailed,
   });
-  return { db, clock, scheduler, store, target, channel, onWriteFailed };
+  return { db, clock, scheduler, store, channel, onWriteFailed };
 }
 
 async function ready(options: Parameters<typeof setup>[0] = {}) {
@@ -235,28 +232,6 @@ describe('folding again', () => {
     // The planner's state holds both
     expect(env.store.modelState()?.items.has(I)).toBe(true);
     expect(env.store.modelState()?.items.has(A)).toBe(true);
-  });
-
-  it('folds the log again with a new target', async () => {
-    const env = await ready({ targetMs: 5000 });
-    env.store.introduce(A);
-    for (let i = 0; i < 3; i += 1) recall(env.store, A, 2000);
-    const before = env.store.modelState()?.items.get(A)?.memory;
-    env.target.ms = 500;
-    env.store.retarget();
-    const after = env.store.modelState()?.items.get(A)?.memory;
-    expect(before).toBeDefined();
-    expect(after).toBeDefined();
-    expect(after).not.toEqual(before);
-    expect(env.store.modelState()?.targetMs).toBe(500);
-  });
-
-  it('does not fold again when the target is the same', async () => {
-    const env = await ready();
-    env.store.introduce(A);
-    const before = env.store.modelState();
-    env.store.retarget();
-    expect(env.store.modelState()).toBe(before);
   });
 
   it('reads the log again when the store of another tab took the same n', async () => {
@@ -435,7 +410,7 @@ describe('startSnapshot (P8 D3)', () => {
     await settle(env);
     const events = await readLog(env.db);
     const { foldLog, describe: describeView } = await import('@nekotype/model');
-    const snapshot = foldLog(events, { targetMs: 1500, stats: true }).snapshot();
+    const snapshot = foldLog(events, { stats: true }).snapshot();
     const split = setup({ db: env.db });
     await split.store.init();
     expect(snapshot.stats).not.toBeNull();

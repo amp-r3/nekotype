@@ -12,7 +12,7 @@ describe('shared/runtime guards', () => {
 
   describe('isSettings', () => {
     const valid = {
-      learn: { strictness: 'learner', track: 'hiragana', targetMs: 1500, sound: true },
+      learn: { strictness: 'learner', track: 'hiragana', sound: true },
       updatedAt: 0,
     };
     const withLearn = (patch: Record<string, unknown>): unknown => ({
@@ -30,13 +30,9 @@ describe('shared/runtime guards', () => {
       expect(isSettings({ ...valid, extra: 1 })).toBe(false);
     });
 
-    it('accepts targetMs from 1000 to 3000 in steps of 250 only', () => {
-      for (const ms of [1000, 1250, 1500, 2750, 3000]) {
-        expect(isSettings(withLearn({ targetMs: ms }))).toBe(true);
-      }
-      for (const ms of [750, 1100, 3250, '1500', Number.NaN]) {
-        expect(isSettings(withLearn({ targetMs: ms }))).toBe(false);
-      }
+    it('rejects the target answer time of earlier versions (ADR 115) and any other key', () => {
+      expect(isSettings(withLearn({ targetMs: 1500 }))).toBe(false);
+      expect(isSettings(withLearn({ extra: true }))).toBe(false);
     });
 
     it('checks the learning fields and updatedAt', () => {

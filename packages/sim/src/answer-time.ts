@@ -4,8 +4,16 @@ import type { ModelState } from '@nekotype/model';
 import { syntheticLog } from '@nekotype/model/testing';
 import { DAY_MS, REFERENCE } from './learner';
 import type { Profile, ReferenceParams } from './learner';
-import { BASE, createThreshold, FIXED, NO_TIME, withAnswerTime } from './policies/answer-time';
-import type { Level, Rule, TimeStats } from './policies/answer-time';
+import {
+  BASE,
+  createThreshold,
+  FIXED,
+  MODEL,
+  NO_TIME,
+  PACE_P90,
+  withAnswerTime,
+} from './policies/answer-time';
+import type { Level, Line, Rule, TimeStats } from './policies/answer-time';
 import { createProductionPolicy } from './policies/production';
 import { simulate } from './run';
 import type { PolicyFactory, RunResult, SimOptions } from './run';
@@ -23,7 +31,11 @@ const want = (part: string): boolean => PART === undefined || PART === part;
 const SEEDS = Number(process.env['SEEDS'] ?? 100);
 const DAYS = 60;
 
-const HIRAGANA = createProductionPolicy();
+/** A production policy whose fold takes `line`, with events of the device of their time. */
+type Production = (line: Line, deviceOf: (at: number) => string) => PolicyFactory;
+
+const HIRAGANA: Production = (line, deviceOf) =>
+  createProductionPolicy('hiragana', { line, deviceOf });
 
 const BASIC_HIRAGANA = trackItems('hiragana')
   .filter((item) => item.category === 'basic')
@@ -33,13 +45,13 @@ const BASIC_HIRAGANA = trackItems('hiragana')
  * The production model for a learner who takes the katakana suggestion: hiragana until the 46
  * basic hiragana are learned (the suggestion of `describe`), then katakana for good.
  */
-const FOLLOWS_SUGGESTION: PolicyFactory = (items, rng) => {
+const FOLLOWS_SUGGESTION: Production = (line, deviceOf) => (items, rng) => {
   let katakana = false;
   const track = (state: ModelState): 'hiragana' | 'katakana' => {
     katakana ||= BASIC_HIRAGANA.every((key) => state.items.get(key)?.phase === 'learned');
     return katakana ? 'katakana' : 'hiragana';
   };
-  return createProductionPolicy(track)(items, rng);
+  return createProductionPolicy(track, { line, deviceOf })(items, rng);
 };
 
 interface Case {
@@ -49,7 +61,7 @@ interface Case {
   readonly timing: Timing;
   readonly tracks: 'hiragana' | 'both';
   readonly placement: number;
-  readonly policy: PolicyFactory;
+  readonly policy: Production;
 }
 
 const learner = (name: string, timing: Partial<Timing> = {}, over: Partial<Case> = {}): Case => ({
@@ -69,7 +81,7 @@ interface Run {
 }
 
 function play(rule: Rule, c: Case, seeds: number = SEEDS): Run[] {
-  const wrapped = withAnswerTime(c.policy, rule, c.timing.device);
+  const wrapped = withAnswerTime((line) => c.policy(line, c.timing.device), rule, c.timing.device);
   const options: SimOptions = { timing: c.timing, tracks: c.tracks, placement: c.placement };
   return Array.from({ length: seeds }, (_, seed) => {
     const result = simulate(wrapped.factory, c.profile, seed + 1, DAYS, c.reference, options);
@@ -189,7 +201,7 @@ const tracker = (q: number): Rule =>
     cold: { answers: 20, before: 'none' },
   });
 /** The recommendation of the note. */
-const RECOMMENDED = tracker(0.9);
+const RECOMMENDED = PACE_P90;
 const oracle = (cut: number): Rule =>
   rule(`oracle: hard below p ${cut}`, { level: { kind: 'oracle', cut } });
 
@@ -664,7 +676,7 @@ if (want('final')) {
       30,
     ],
   ];
-  const rules = [NO_TIME, placebo(0.1), FIXED, BASE, MEDIAN_15, tracker(0.8), RECOMMENDED];
+  const rules = [NO_TIME, placebo(0.1), FIXED, BASE, MEDIAN_15, tracker(0.8), RECOMMENDED, MODEL];
   const rows: string[][] = [];
   for (const [c, known] of cases)
     for (const r of rules) {
@@ -694,7 +706,7 @@ if (want('cost')) {
     return med(timings);
   };
   const fold = time(() => {
-    foldLog(events, { targetMs: 1500, stats: true });
+    foldLog(events, { stats: true });
   });
   const rows = [
     FIXED,

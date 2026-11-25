@@ -18,7 +18,7 @@ describe('learn page after a sign-in', () => {
   // The log and the model chunk load before the page renders, so the notice under test is not
   // hidden behind the loading line on a slow first import.
   beforeAll(async () => {
-    await initLearn(() => 1500);
+    await initLearn();
   });
   afterEach(() => {
     render(null, container);

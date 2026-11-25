@@ -58,9 +58,9 @@ export async function seedStatsLog(
 export { answer, intro };
 
 /** Tests only: numbers the events of one device and folds them into a view. */
-export function viewOfEvents(events: readonly LogEvent[], targetMs = 1500): LearnView {
+export function viewOfEvents(events: readonly LogEvent[]): LearnView {
   const numbered = events.map((event, index) => ({ ...event, dev: 'd1', n: index + 1 }));
-  const snapshot = foldLog(numbered, { targetMs, stats: true }).snapshot();
+  const snapshot = foldLog(numbered, { stats: true }).snapshot();
   if (snapshot.stats === null) throw new Error('the fold has no statistics');
   return describe(snapshot.state, snapshot.stats);
 }

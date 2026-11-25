@@ -20,7 +20,6 @@ export const progressRu = {
   'stats.answers.few': '{count} ответа',
   'stats.answers.many': '{count} ответов',
   'stats.answers.other': '{count} ответа',
-  'stats.learn.target': 'цель {ms} мс',
   'stats.learn.streakCurrent': 'текущая серия',
   'stats.learn.masteredOf': 'из {total}',
   'stats.learn.masteredTrack': 'освоено · {track}',

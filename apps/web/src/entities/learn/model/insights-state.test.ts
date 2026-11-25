@@ -13,7 +13,7 @@ import { ManualScheduler, TestClock } from './test-util';
 const A: LearnKanaKey = 'hiragana:あ';
 
 function folded(events: readonly LogEvent[]) {
-  const fold = model.foldLog(events, { targetMs: 1500, stats: true });
+  const fold = model.foldLog(events, { stats: true });
   const snapshot = fold.snapshot();
   if (snapshot.stats === null) throw new Error('no statistics');
   return { snapshot, view: model.describe(snapshot.state, snapshot.stats) };

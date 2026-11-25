@@ -28,7 +28,9 @@ export function syntheticLog(options: {
   readonly seed: number;
 }): readonly LogEvent[] {
   const rng = seededRng(options.seed);
-  const fold = createFold({ targetMs: 1500, stats: false });
+  // Every correct answer good, as under the 1500 ms target the log was made with (ADR 115): the
+  // fixture, and the model's cost measured on it, stay the same log.
+  const fold = createFold({ stats: false, line: () => Number.POSITIVE_INFINITY });
   const events: LogEvent[] = [];
   const dev = 'synthetic';
   let n = 0;

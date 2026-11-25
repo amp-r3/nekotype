@@ -13,7 +13,7 @@ import {
 } from './learner';
 
 const withLearner = (over: Partial<ModelState['learner']>): ModelState => {
-  const base = createFold({ targetMs: 1500, stats: false }).state;
+  const base = createFold({ stats: false }).state;
   return { ...base, learner: { ...base.learner, ...over } };
 };
 
@@ -57,13 +57,13 @@ describe('horizonMs', () => {
 
 describe('dueFrom', () => {
   it('is null for a new or learning kana', () => {
-    const fold = createFold({ targetMs: 1500, stats: false });
+    const fold = createFold({ stats: false });
     expect(dueFrom(fold.state, 'hiragana:か')).toBeNull();
     fold.apply({ t: 'intro', k: 'hiragana:か', at: 0, dev: 'd', n: 1 });
     expect(dueFrom(fold.state, 'hiragana:か')).toBeNull();
   });
   it('is lastAt + stability × intervalFactor(r) days, minus the horizon', () => {
-    const base = createFold({ targetMs: 1500, stats: false }).state;
+    const base = createFold({ stats: false }).state;
     const items = new Map(base.items).set('hiragana:か', {
       phase: 'learned',
       memory: { stability: 10, difficulty: 5 },
@@ -79,7 +79,7 @@ describe('dueFrom', () => {
     );
   });
   it('is never sooner than REVIEW_WAIT_MS after the last answer', () => {
-    const base = createFold({ targetMs: 1500, stats: false }).state;
+    const base = createFold({ stats: false }).state;
     const items = new Map(base.items).set('hiragana:か', {
       phase: 'learned',
       memory: { stability: 0.4, difficulty: 5 },

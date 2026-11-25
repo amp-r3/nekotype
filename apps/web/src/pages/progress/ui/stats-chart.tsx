@@ -8,8 +8,6 @@ export type StatsChartProps = {
   readonly ranges: readonly ChartRange[];
   /** How many bar slots the x axis holds; sets the bar width. */
   readonly slots?: number;
-  /** A dashed line with its label, under the bars. */
-  readonly reference?: { readonly value: number; readonly label: string };
   readonly xDomain: readonly [number, number];
   readonly xTicks: readonly { readonly x: number; readonly label: string }[];
   readonly yDomain: readonly [number, number];
@@ -31,7 +29,6 @@ const BAR_MIN = 2;
 const BAR_MAX = 8;
 const MID_OVERHANG = 2;
 const MID_HEIGHT = 2;
-const REF_LIFT = 6;
 
 /**
  * The answer-time chart of `/progress` (design ResultChart). It only draws: the series and the axes come from
@@ -41,7 +38,6 @@ const REF_LIFT = 6;
 export function StatsChart({
   ranges,
   slots = 1,
-  reference,
   xDomain,
   xTicks,
   yDomain,
@@ -173,25 +169,6 @@ export function StatsChart({
               </text>
             );
           })}
-          {reference !== undefined && (
-            <g data-testid="chart-reference">
-              <line
-                className="nk-rc__ref"
-                x1={PAD_LEFT}
-                x2={width - PAD_RIGHT}
-                y1={py(reference.value)}
-                y2={py(reference.value)}
-              />
-              <text
-                className="nk-rc__ref-label text-mono-small font-mono"
-                x={width - PAD_RIGHT}
-                y={py(reference.value) - REF_LIFT}
-                text-anchor="end"
-              >
-                {reference.label}
-              </text>
-            </g>
-          )}
           {ranges.map((range, index) => (
             <g key={`r${index}`} data-testid="chart-range">
               <rect

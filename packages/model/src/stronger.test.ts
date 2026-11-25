@@ -31,7 +31,7 @@ function viewOf(entries: [LearnKanaKey, ItemState['phase'], number][]) {
       },
     ]),
   );
-  return describeState({ ...createFold({ targetMs: 1500, stats: false }).state, items }, STATS);
+  return describeState({ ...createFold({ stats: false }).state, items }, STATS);
 }
 
 describe('strongerSince', () => {
