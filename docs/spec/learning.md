@@ -32,7 +32,7 @@ Learning is the core of the product ([ADR 058](../adr/058-learning-first.md)): i
 - **Recording is deferred.** The key handler of a task finishes its view (the buffer, the caret, the hold timer, the sound) and does nothing else; the record is made by a timer a moment later, before the next task is chosen. No fold, grade or IndexedDB call runs in a keystroke handler ([Frontend](frontend.md#hot-path-d16)). An answer recorded is in the log whatever the learner does next, including leaving the session.
 - **After an answer** the result stays on screen for `ANSWER_PAUSE_MS` = 400 and the next task follows. After a wrong recognition choice the next task waits for Enter, Space or a click, so the right option can be read. Keys pressed before the next task is shown are ignored.
 - **Displayed romaji.** Wherever learning shows a kana's romaji (the introduction, the recognition prompt, the romaji revealed by Esc, the chart's tooltip and details), it is `canonicalFor`, except ん and ン, shown as `n`: one `n` completes them at the end of a task, so `nn` would teach a keystroke the learner does not need (ADR 062). Recall accepts every spelling of the learning strictness.
-- **Screen.** Every task is drawn by the design system's `KanaTask` ([Frontend](frontend.md#hot-path-d16), ADR 059): a session line with the progress (`learning · 7 of 30`), the task, one reserved notice line and a line of key hints. There is no timer, and the answer time is not shown. The navigation and the footer are not rendered during a session; "Leave session" in the session line returns to the chart without a confirmation.
+- **Screen.** Every task is drawn by the design system's `KanaTask` ([Frontend](frontend.md#hot-path-d16), ADR 059): a session line with the progress (`learning · 7 of 30`) and "Leave session", under it a row of ticks, one per task (done, the current one, the rest; a task answered with an error is `miss`, as [Metrics](metrics.md) counts an error: a rejected key or Esc in recall, a wrong choice in recognition; the tick turns when the task is answered, never on a keystroke), the task, one reserved notice line and a line of key hints. There is no timer, and the answer time is not shown. The navigation and the footer are not rendered during a session; "Leave session" returns to the home without a confirmation. A session that ends early ends with ticks left.
 - The session ends after its last task with the summary. A session is not resumable (A30): leaving it early keeps every recorded answer, because each answer is in the log, but the summary, held in memory, is lost.
 
 ## Memory and phases
@@ -101,14 +101,18 @@ The kana whose state rose, or that stayed learned or mastered with their stabili
 
 ## Session summary
 
-Shown at the end of a learning session; a chunk of its own. It lists kana of both tracks:
+Shown at the end of a learning session; a chunk of its own, with the dictionary part `home`. It starts with the forecast change, then lists kana of both tracks.
 
-- kana introduced during the session;
+**The forecast change.** The forecast of the session's track as the home shows it (see [Forecast](#forecast)) is kept when the session starts, only when it is `ready` for that track and up to date; the summary asks for the insights when it is shown and again whenever the learn view changes, and reads the result only when it is of the current version and track (otherwise the place keeps its height). It shows medians, `the whole m row opens in about` and under it `3 → 2 sessions` (the home keeps the range: the one comparison where two numbers fit; ADR 108, point 8). A forecast that grew has no colour and no words. When the session opened the row, it first says `the m row is fully open` and gives the next row's forecast alone; with no forecast before the session only the number now is shown; `beyond` and `complete` read as on the home. The vowels have their own wording (`all the vowels open in about`, `the vowels are fully open`). The session itself never asks for the insights.
+
+**What changed.** Every kana listed is a button that opens its details dialog; the new and learned kana are cells with the state they have at the end, under the captions `new` and `learned`:
+
+- kana introduced during the session (`new`);
 - kana learned during the session: locked or learning at the start, learned or mastered at the end;
 - faster and slower kana: for each kana that had 10 recall answers at the start, the change in the median answer time of its last 10 recall answers from the start of the session to its end; changes of at least 100 ms are listed, at most 5 each way, largest first;
 - confused kana: kana chosen instead of the right one in recognition, and kana with errors in recall.
 
-"Continue" (Enter) starts another learning session; "To the table", the second action, returns to the chart. The navigation is shown again on the summary.
+**Actions.** "Continue" (Enter) starts another learning session; "Home", the second action, returns to `/`. The navigation is shown again on the summary. When the planner has nothing to offer ([`/` screen](#-screen)), "Continue" is not there: the summary says `nothing to review now · next review: {when}` and "Home" is the primary action, with Enter. Neither a click nor Enter starts a session that would end empty.
 
 ## Audio
 

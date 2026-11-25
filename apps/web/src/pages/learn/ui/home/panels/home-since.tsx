@@ -2,11 +2,8 @@ import type { JSX } from 'preact';
 import type { LearnKanaKey } from '@nekotype/shared/types';
 import type { Stronger } from '@nekotype/model';
 import { t } from '@/shared/i18n';
-import { cx } from '@/shared/lib';
-import { cellStateClass } from '@/shared/ui/kana-cell';
-import { displayRomaji } from '@/entities/learn';
 import type { StrongerState } from '@/entities/learn';
-import { kanaOfKey } from '../../../lib/home-copy';
+import { KanaCell } from '../../kana-buttons';
 
 export type SinceGroup = 'new' | 'learned' | 'mastered' | 'stronger';
 
@@ -53,39 +50,16 @@ export function HomeSince({
             <div key={group} className="flex flex-col gap-2" data-group={group}>
               <h3 className="text-ui-caption text-fur-dim">{t(`home.since.${group}`)}</h3>
               <ul className="flex flex-wrap gap-1">
-                {items.map((item) => {
-                  const kana = kanaOfKey(item.key);
-                  return (
-                    <li key={item.key}>
-                      <button
-                        type="button"
-                        lang="ja"
-                        className={cx(
-                          'nk-cell font-jp',
-                          cellStateClass(item.to),
-                          Array.from(kana).length > 1 ? 'text-jp-cell-sm' : 'text-jp-cell',
-                        )}
-                        aria-haspopup="dialog"
-                        aria-label={t('home.since.cell', {
-                          kana,
-                          romaji: displayRomaji(item.key),
-                          state: t(`learn.chart.state.${item.to}`),
-                        })}
-                        data-testid="since-cell"
-                        data-kana={kana}
-                        data-state={item.to}
-                        onClick={(event) => {
-                          // Takes the focus first: Safari does not focus a button on a click, and
-                          // the dialog gives the focus back to what had it.
-                          event.currentTarget.focus();
-                          onOpen(item.key);
-                        }}
-                      >
-                        {kana}
-                      </button>
-                    </li>
-                  );
-                })}
+                {items.map((item) => (
+                  <li key={item.key}>
+                    <KanaCell
+                      kanaKey={item.key}
+                      state={item.to}
+                      testId="since-cell"
+                      onOpen={onOpen}
+                    />
+                  </li>
+                ))}
               </ul>
             </div>
           );

@@ -116,7 +116,7 @@ export const ru = {
   'learn.summary.typedWithErrors': 'с ошибками',
   'learn.summary.empty': 'изменений нет. ответы сохранены.',
   'learn.summary.continue': 'продолжить',
-  'learn.summary.toTable': 'к таблице',
+  'learn.summary.home': 'на главную',
   'learn.summary.loading': 'загрузка…',
   'learn.summary.failed': 'не удалось загрузить. проверьте соединение.',
   'learn.summary.retry': 'ещё раз',
