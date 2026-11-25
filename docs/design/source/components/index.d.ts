@@ -71,8 +71,6 @@ export declare function Switch(props: SwitchProps): React.ReactElement;
 export interface FieldProps { label?: React.ReactNode; hint?: React.ReactNode; error?: React.ReactNode }
 export interface InputProps extends FieldProps, React.InputHTMLAttributes<HTMLInputElement> { mono?: boolean }
 export declare function Input(props: InputProps): React.ReactElement;
-export interface SelectProps extends FieldProps, React.SelectHTMLAttributes<HTMLSelectElement> { options: { value: string; label: React.ReactNode; disabled?: boolean }[] }
-export declare function Select(props: SelectProps): React.ReactElement;
 
 export interface TooltipProps { label: React.ReactNode; side?: 'top' | 'bottom'; open?: boolean; children: React.ReactElement }
 export declare function Tooltip(props: TooltipProps): React.ReactElement;
@@ -83,7 +81,7 @@ export declare function Stat(props: StatProps): React.ReactElement;
 
 /** One day (or one week) on the chart: lo–hi is the bar, mid the tick. */
 export interface ChartRange { x: number; lo: number; hi: number; mid: number; tip: string[] }
-/** The answer-time chart of /progress (decisions 109, 130). The page computes the series; the chart only draws. */
+/** The answer-time chart of /progress (decisions 109, 130, 157). The page computes the series; the chart only draws. */
 export interface ResultChartProps {
   /** One bar per day or per week. */
   ranges: ChartRange[];
@@ -92,12 +90,10 @@ export interface ResultChartProps {
   xDomain: [number, number];
   /** false = no x labels (a chart stacked over another one). */
   xTicks?: { x: number; label: string }[] | false;
-  /** The y axis follows the data in steps of 250 or 500 ms and always holds the target (decision 109). */
+  /** The y axis covers the bars: steps of 250, 500, 1000, 2000 or 5000 ms, at most four intervals, the top above the highest bar (decision 157). */
   yDomain: [number, number];
   yTicks?: number[];
   yFormat?: (v: number) => string;
-  /** One dashed hair line, e.g. the target answer time. */
-  reference?: { value: number; label: string };
   height?: number;
   axisWidth?: number;
   /** Index of the bar under the cursor (controlled; previews). */
@@ -282,7 +278,7 @@ declare global {
   interface Window {
     Nekotype: {
       Notice: typeof Notice; Kbd: typeof Kbd; Dialog: typeof Dialog; Button: typeof Button; Segmented: typeof Segmented;
-      Switch: typeof Switch; Input: typeof Input; Select: typeof Select; Tooltip: typeof Tooltip;
+      Switch: typeof Switch; Input: typeof Input; Tooltip: typeof Tooltip;
       Stat: typeof Stat; ResultChart: typeof ResultChart; ActivityMap: typeof ActivityMap;
       KanaChart: typeof KanaChart; OptionCard: typeof OptionCard;
       Nav: typeof Nav; Footer: typeof Footer; Cat: typeof Cat; EmptyState: typeof EmptyState;
