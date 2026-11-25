@@ -3,6 +3,7 @@
 Working file of phase P8 ([phases.md](docs/spec/phases.md), item 9). It tells the executor of each pull request what to build, in which order, and which decisions are already made. It is not part of `docs/`: the last pull request of the phase moves it to `docs/archive/`.
 
 - Written on 2026-11-23 against `main` at aa045fb (PR 227 merged: P8 specified in `phases.md`).
+- Changed on 2026-11-25 by PR E ([ADR 114](docs/adr/114-p8-home-fix-design-export.md), design decisions 153–155): the card of PR 7 and section 3.7.
 - Changed on 2026-11-25 after PR 5: the maintainer found too much empty space under the home on a desktop. A design session of its own (M5, [section 4.3](#43-the-home-fix-m5)), its export (PR E) and the home's code (PR 7) come before M4 and PR 6: the Status table, section 6, the cards and the acceptance table.
 - Changed on 2026-11-24 by PR L ([ADR 109](docs/adr/109-five-kana-learning-at-once.md)): `LEARN_MAX` 4 → 5 in a pull request of its own before PR 1, the Status table, section 7 and the expected ADR numbers of section 3.7 (one up).
 - Changed on 2026-11-24 by PR 4 ([ADR 113](docs/adr/113-lazy-home-panels-and-the-home-line.md)): the home's path, forecast and cells are a lazy chunk with the dictionary part `home` (D14), and the line of 300 ms is measured from a ready store (D8).
@@ -382,7 +383,7 @@ Every pull request goes to `main`. Reasons:
 - No A-item is added: A47–A52 hold the model, and phases.md holds P8's screens.
 - `docs/architecture/` changes with the code: `model.md` (PR 1; PR 3 removes "no caller before P8"), `layout.md` and `pages.md` (PR 2, PR 4, PR 5), `entities.md` (PR 3), `sync.md` (PR 3: the cleared stores), `quality-gates.md` (PR 2, PR 4).
 - `README.md`: the routes (PR 2), how learning looks on `/` (PR 4).
-- **114** in PR E, only when the home fix changes the code or the spec beyond the home's layout and styles ([Decision logs](docs/README.md#decision-logs)); otherwise `decisions.md` records it alone.
+- **114** in PR E: the home fix changes the code and the spec beyond the home's layout and styles (the `Tab` order by width, the path's blocks as a radiogroup, the cat on `/`), so it has an ADR ([Decision logs](docs/README.md#decision-logs)).
 - `docs/design/README.md` loses the note on the P7 code (PR C).
 - `docs/README.md` gets a row for this plan in this pull request; PR 6 removes it.
 - `AGENTS.md` does not change.
@@ -716,13 +717,24 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 ### PR 7 — The home fix
 
 - **Branch:** `p8-07-home-fix`. **Depends on:** PR E.
-- **Goal.** The home as the decisions from 153 draw it. PR E rewrites this card; until then it is a frame.
-- **Changes (expected):** `app/styles/index.css` (`.nk-home` and its areas), the home's views in `pages/learn/ui/home/`; `shared/i18n` only if the export adds a string; `docs/spec/learning.md` and `docs/architecture/pages.md` only if what they say about the home's layout changes.
-- **Tests:** the home's DOM tests stay green in every state H1–H12; a test for each new behaviour the export adds; `e2e/home.spec.ts` on Chromium at a desktop and a phone width when the layout depends on the viewport (layout needs a real browser); `home-cost.spec.ts` still within 300 ms (`pnpm run e2e:latency`, CI is the gate).
+- **Goal.** The home as design decisions 153–155 draw it ([ADR 114](docs/adr/114-p8-home-fix-design-export.md)); the design's README, "Learning home" and "Keyboard", is the reference, and the previews `ScreenLearn` and `ScreenLearnMobile` in the artifact show every state.
+- **Layout (153).**
+  - From 640px the grid's areas are `act act str str` over `path path path path` (`.nk-home` in `app/styles/index.css`); below 640px one column, action, path, since the last session, as now.
+  - The home takes the height between the navigation and the footer and stands at two fifths of the free height: `main` in `app/App.tsx` already grows as a flex column (`flex-1 flex-col`); the learn page and the home fill it, and two empty pseudo-elements of the home share the free space 2 : 3 above and below it. Below 640px they are not drawn. No other page changes.
+  - The DOM follows the screen at its width: `home-screen.tsx` renders the action, then since the last session and the path on a desktop, the path and then since the last session below 640px, with `useMediaQuery('(min-width: 640px)')` of `shared/lib`. `Tab` therefore goes `continue` → the kana of "since the last session" → the path's blocks on a desktop and `continue` → the blocks → the kana on a phone. "Since the last session" stays hidden on the first visit; its half of the top band is empty then.
+- **Nothing to do (154).** `Cat` (`shared/ui/cat.tsx`, `sleep`, 96 px, `aria-hidden`) over the reason when the reason is `none`; nowhere else on `/`. The cat has so far been drawn only by `EmptyState` and the 404 page: if it lands in the initial chunk past the line of D14, stop and ask (a place in the lazy panels is the fallback).
+- **The path (155),** in `ui/home/panels/home-path.tsx`:
+  - The blocks are the app's `Segmented` with `ariaLabel` = the new string `home.path.blocks` (`blocks of the path` / `блоки пути`, in the `home` part). Each option shows the first kana of the block's first row (`kanaOfKey(block.rows[0].keys[0])`, `lang="ja"`, `text-jp-test-sm`; `text-jp-cell` below 640px) over the block's name (`ui-label`) and `introduced/total` (`mono-small`). The kana is `fur` on the selected block, `fur-dim` on a started one (`done` or `current`), `fur-faint` on a locked one; the count of an unselected block is `fur-faint`. Between items a `→` (`font-mono`, 16/24, `fur-faint`) in the middle of the gap (`space-12` between items) and of the item's height; below 640px the gap is `space-6`, the blocks wrap two to a line and the arrows are not drawn.
+  - `Segmented` gains what this needs and nothing else: an option may carry content (a node) beside its string label, which stays the option's accessible name (`blockAria`: `basic: 31 of 46 kana open`), and an item may grow in height (`min-height` of `control-sm`, `padding-bottom` `space-2`, left-aligned). The track switch keeps its look; `segmented.test.tsx` covers the new option.
+  - The selected block replaces `aria-expanded` and `aria-controls`: the radiogroup selects, and the open block's `ol` keeps its `aria-label`. `←` `→` move between blocks, as on the track switch; the choice is kept per track, as now.
+  - The rows: no tick over a column. The head is `mono-small`: `eye` on the current row, `fur-dim` on a done row, `fur-faint` on a locked one; the vowels' head is an empty line of the same height. The kana are `text-jp-cell` from 640px with `space-2` between them (`text-jp-body` and no gap below 640px, where the rows wrap as now). The caret (`nk-caret` of the task: `eye`, `stroke-mark`, `caret-h`, `aria-hidden`, no motion) stands `space-2` left of the first not-introduced kana of the current row. `1/5` stays under the current row. From 640px the rows do not wrap: they share the width with `space-6` between them.
+- **Strings:** `home.path.blocks` in `en` and `ru` (key parity). No other string changes.
+- **Docs:** `docs/spec/learning.md`, "`/` screen": the layout (two bands, the placement, the phone's order), the path's blocks (a chain of the kinds of kana selected like the track switch, no ticks; the caret), nothing to do (the sleeping cat), the `Tab` order; `docs/architecture/pages.md` (the home's grid, the order by width, `home-path.tsx`); `README.md` if its line on `/` names the layout. No ADR: ADR 114 holds the decision.
+- **Tests:** the home's DOM tests stay green in every state H1–H12; new ones: the order of the action, since the last session and the path at a desktop and a phone width (`matchMedia` stubbed); the cat only with `none`; the path's radiogroup (its name, each option's name, `aria-checked` on the open block, ← → change the open block, the caret on the first not-introduced kana of the current row and nowhere else). `e2e/home.spec.ts` on Chromium at 1440 × 900 and 360 × 780: the bands (since the last session to the right of the action, the path under both) and the home's top under the first fifth of the free height; `Tab` order at both widths; no horizontal scroll at 360. `home-cost.spec.ts` still within 300 ms (`pnpm run e2e:latency`, CI is the gate).
 - **Acceptance:** 1, 5, 14 (the home, again).
-- **Preview URL:** the home on a desktop window (about 1440 × 900) in the states the export names: no large empty space under the content; the phone at 360 px as before or better.
+- **Preview URL:** at about 1440 × 900 the home in `review`, the first visit, nothing to do (the cat), a long "since the last session" and the katakana track (four blocks): no large empty space under the content; the blocks read as a choice (あ → が → きゃ) and the caret stands before the next kana; `Tab` from `continue` goes to the cells, then to the blocks. At 360 px the order is as before, the blocks two to a line, no arrows.
 - **Done when:** `verify:quick` passes; CI is green with the latency gate; initial JS ≤ 31.0 KB and CSS ≤ 8.5 KB; after the merge the maintainer does M4.
-- **Size:** set by PR E; a layout fix is expected to stay under 400 lines.
+- **Size:** about 400 lines with the tests.
 
 ### PR 6 — Close the phase
 

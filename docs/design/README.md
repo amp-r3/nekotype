@@ -12,7 +12,7 @@ The visual reference for Nekotype: tokens, components, logo and cat assets. [ADR
 | [`source/assets/`](source/assets/)           | Logo, favicon and the `geometry` cat (ADR 031); all rights reserved, see [BRAND.md](../../BRAND.md) |
 | [`source/decisions.md`](source/decisions.md) | How each design question was resolved; v10 decisions under "After ADR 058"                          |
 
-`source/` is a verbatim export of the [private artifact](https://claude.ai/artifact/22bxWBXuofNxqfnPzuvej1): version 10 with design decisions up to 152. Each export since version 10 is recorded in an ADR ([ADR 062](../adr/062-design-review-of-the-p3-build.md) and later; the [ADR index](../adr/README.md) lists them), and [`source/decisions.md`](source/decisions.md) holds every decision. It keeps the export's folder names and is excluded from Prettier. It is not edited by hand: change the artifact and export again. Live previews of components and screens stay in the artifact, as do the font files.
+`source/` is a verbatim export of the [private artifact](https://claude.ai/artifact/22bxWBXuofNxqfnPzuvej1): version 10 with design decisions up to 155. Each export since version 10 is recorded in an ADR ([ADR 062](../adr/062-design-review-of-the-p3-build.md) and later; the [ADR index](../adr/README.md) lists them), and [`source/decisions.md`](source/decisions.md) holds every decision. It keeps the export's folder names and is excluded from Prettier. It is not edited by hand: change the artifact and export again. Live previews of components and screens stay in the artifact, as do the font files.
 
 ## Changing the design
 
