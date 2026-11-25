@@ -29,7 +29,7 @@ The executor of a pull request fills its row (see [section 8](#8-instructions-fo
 | 4   | `p8-04-home`             | done    | #236         |
 | 5   | `p8-05-session-summary`  | done    | #237         |
 | E   | `docs/p8-home-design`    | done    | #239         |
-| 7   | `p8-07-home-fix`         | waiting |              |
+| 7   | `p8-07-home-fix`         | done    | #240         |
 | 6   | `p8-06-close`            | waiting |              |
 
 ## 1. Goal and scope
