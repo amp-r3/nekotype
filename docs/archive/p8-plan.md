@@ -20,19 +20,19 @@ Working file of phase P8 ([phases.md](../spec/phases.md), item 9). It tells the 
 
 The executor of a pull request fills its row (see [section 8](#8-instructions-for-executor-agents)). Every row goes to `main`: P8 has no integration branch ([D15](#d15-no-integration-branch)).
 
-| PR  | Branch                   | Status  | Pull request |
-| --- | ------------------------ | ------- | ------------ |
-| C   | `docs/design-cleanup`    | done    | #230         |
-| D   | `docs/p8-design`         | done    | #231         |
-| L   | `p8-learn-max`           | done    | #232         |
-| 1   | `p8-01-model-home`       | done    | #233         |
-| 2   | `p8-02-progress-details` | done    | #234         |
-| 3   | `p8-03-insights`         | done    | #235         |
-| 4   | `p8-04-home`             | done    | #236         |
-| 5   | `p8-05-session-summary`  | done    | #237         |
-| E   | `docs/p8-home-design`    | done    | #239         |
-| 7   | `p8-07-home-fix`         | done    | #240         |
-| 6   | `p8-06-close`            | waiting |              |
+| PR  | Branch                   | Status | Pull request |
+| --- | ------------------------ | ------ | ------------ |
+| C   | `docs/design-cleanup`    | done   | #230         |
+| D   | `docs/p8-design`         | done   | #231         |
+| L   | `p8-learn-max`           | done   | #232         |
+| 1   | `p8-01-model-home`       | done   | #233         |
+| 2   | `p8-02-progress-details` | done   | #234         |
+| 3   | `p8-03-insights`         | done   | #235         |
+| 4   | `p8-04-home`             | done   | #236         |
+| 5   | `p8-05-session-summary`  | done   | #237         |
+| E   | `docs/p8-home-design`    | done   | #239         |
+| 7   | `p8-07-home-fix`         | done   | #240         |
+| 6   | `p8-06-close`            | done   | #241         |
 
 ## 1. Goal and scope
 
