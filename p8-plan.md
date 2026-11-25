@@ -3,6 +3,7 @@
 Working file of phase P8 ([phases.md](docs/spec/phases.md), item 9). It tells the executor of each pull request what to build, in which order, and which decisions are already made. It is not part of `docs/`: the last pull request of the phase moves it to `docs/archive/`.
 
 - Written on 2026-11-23 against `main` at aa045fb (PR 227 merged: P8 specified in `phases.md`).
+- Changed on 2026-11-25 after PR 5: the maintainer found too much empty space under the home on a desktop. A design session of its own (M5, [section 4.3](#43-the-home-fix-m5)), its export (PR E) and the home's code (PR 7) come before M4 and PR 6: the Status table, section 6, the cards and the acceptance table.
 - Changed on 2026-11-24 by PR L ([ADR 109](docs/adr/109-five-kana-learning-at-once.md)): `LEARN_MAX` 4 → 5 in a pull request of its own before PR 1, the Status table, section 7 and the expected ADR numbers of section 3.7 (one up).
 - Changed on 2026-11-24 by PR 4 ([ADR 113](docs/adr/113-lazy-home-panels-and-the-home-line.md)): the home's path, forecast and cells are a lazy chunk with the dictionary part `home` (D14), and the line of 300 ms is measured from a ready store (D8).
 - Changed on 2026-11-24 by the design export (PR D, decisions 140–152): the brief's decision column, Q2, D1, D7, D11, D13, D14 and the cards of PRs 1–6.
@@ -26,6 +27,8 @@ The executor of a pull request fills its row (see [section 8](#8-instructions-fo
 | 3   | `p8-03-insights`         | done    | #235         |
 | 4   | `p8-04-home`             | done    | #236         |
 | 5   | `p8-05-session-summary`  | done    | #237         |
+| E   | `docs/p8-home-design`    | waiting |              |
+| 7   | `p8-07-home-fix`         | waiting |              |
 | 6   | `p8-06-close`            | waiting |              |
 
 ## 1. Goal and scope
@@ -379,6 +382,7 @@ Every pull request goes to `main`. Reasons:
 - No A-item is added: A47–A52 hold the model, and phases.md holds P8's screens.
 - `docs/architecture/` changes with the code: `model.md` (PR 1; PR 3 removes "no caller before P8"), `layout.md` and `pages.md` (PR 2, PR 4, PR 5), `entities.md` (PR 3), `sync.md` (PR 3: the cleared stores), `quality-gates.md` (PR 2, PR 4).
 - `README.md`: the routes (PR 2), how learning looks on `/` (PR 4).
+- **114** in PR E, only when the home fix changes the code or the spec beyond the home's layout and styles ([Decision logs](docs/README.md#decision-logs)); otherwise `decisions.md` records it alone.
 - `docs/design/README.md` loses the note on the P7 code (PR C).
 - `docs/README.md` gets a row for this plan in this pull request; PR 6 removes it.
 - `AGENTS.md` does not change.
@@ -481,6 +485,16 @@ Names are those of [section 3](#3-decisions) and of `@nekotype/model`.
 - everything works from the keyboard, and every control has a name for screen readers;
 - no data beyond section 3: a screen that needs other data stops the session and goes to the maintainer before the export.
 
+### 4.3 The home fix (M5)
+
+Added on 2026-11-25, after PR 5. The brief of [M5](#m5-the-home-fix-session--after-pr-5-before-pr-e).
+
+- **The problem.** On a desktop the home leaves too much empty space under its content; the maintainer sees it most on a PC, and Nekotype is still desktop first. Today (PR 4, decision 140) from 640px the home is a grid of four columns, `act act path path` over `str str path path`, rows `auto 1fr`, `align-items: start` (`.nk-home` in `apps/web/src/app/styles/index.css`).
+- **What the session answers:** how the home uses a desktop window's height and width, in every state of [4.1](#41-data-and-states-by-screen) (H1–H12), since the empty space differs by state: the first visit, an empty or a long "since the last session", a path with one block open, nothing to do.
+- **Frames:** desktop at 1120 px and at a wide window (1440 px or more), each at a common laptop height (about 800 px) and a tall one; the phone at 360 px only to show it does not get worse.
+- **Fixed:** the content of the home, its data ([section 3](#3-decisions)) and its copy; the order of what comes first (decision 140, row a of 4.2) unless the maintainer agrees to change it; the constraints of 4.2. A variant that needs data section 3 does not give stops the session and goes to the maintainer.
+- **Kept out:** the other screens. If the fix changes a shared component or a token, the session shows each screen it touches.
+
 ## 5. Answered questions
 
 ### Q1. Can the katakana suggestion be hidden?
@@ -548,9 +562,13 @@ After PR 3 is deployed:
 3. A session ends with `synced` in `/settings`.
 4. Write "done" with the date under PR 3 in [section 7](#7-pull-requests).
 
-### M4. Production check of the screens — after PR 5, before PR 6
+### M4. Production check of the screens — after PR 7, before PR 6
 
-On a desktop and a phone: the home shows the reason, the outline, the forecast (or its absence), the path, what got stronger and the streak; Continue runs a session; the summary shows the forecast change and returns home; a kana opens its details from the home, the summary and the chart, and Esc closes them; `https://nekotype.pages.dev/stats` lands on `/progress`. Write "done" with the date under PR 5.
+On a desktop and a phone: the home shows the reason, the outline, the forecast (or its absence), the path, what got stronger and the streak, laid out as the home fix draws it; Continue runs a session; the summary shows the forecast change and returns home; a kana opens its details from the home, the summary and the chart, and Esc closes them; `https://nekotype.pages.dev/stats` lands on `/progress`. Write "done" with the date under PR 7.
+
+### M5. The home fix session — after PR 5, before PR E
+
+An agent runs the session by the [design workflow](docs/design/workflow.md) in a workbench artifact `Nekotype · P8 home fix`, by [section 4.3](#43-the-home-fix-m5), in one round (two if a shared component or token changes). After approval the agent moves the chosen variant into the design-system artifact as decisions from 153. Check after approval: `decisions.md` has the new decisions after 152; the home's preview draws every state of H1–H12 in the new layout. The workbench is deleted after PR E is merged.
 
 ## 7. Pull requests
 
@@ -568,6 +586,8 @@ Common to all: the branch is cut from fresh `main`; the acceptance items are tho
 | 3   | 1, M2      | 2                        |
 | 4   | 2, 3, M3   | —                        |
 | 5   | 4          | —                        |
+| E   | 5, M5      | —                        |
+| 7   | E          | —                        |
 | 6   | all, M4    | —                        |
 
 Sign-in is hidden on previews: what needs a session is checked locally (`pnpm run dev` with `pnpm run dev:api`) and, after the merge, by the maintainer on production.
@@ -681,8 +701,28 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Acceptance:** 4 (hot path), 10, 11, 14 (summary and session).
 - **Docs:** S10; `docs/architecture/pages.md`.
 - **Preview URL:** a session by keyboard and by tap with the ticks under the session line, a wrong answer's tick turning red; the summary with `3 → 2 sessions`, the kana as cells and `home`; back home, the kana of the session under what got stronger.
-- **Done when:** `verify:quick` passes; CI is green with the latency gate; budgets within D14; after the merge the maintainer does M4.
+- **Done when:** `verify:quick` passes; CI is green with the latency gate; budgets within D14; after the merge comes the home fix (M5), and M4 after PR 7.
 - **Size:** about 900 lines.
+
+### PR E — The home fix export
+
+- **Branch:** `docs/p8-home-design`. **Depends on:** PR 5; M5 (approved by the maintainer).
+- **Goal.** The approved home fix exported from the artifact into `docs/design/source/` (never edited there by hand), and the card of PR 7 rewritten against it.
+- **Docs:** `docs/design/source/` (`README.md` "Learning home", `decisions.md` from 153, the files the export changes); `docs/design/README.md` (the decisions it holds); ADR 114 only as [section 3.7](#37-documents-and-decision-records) says; the token CSS and `tokens.test.ts` only if tokens change; in this plan: the card of PR 7 with the export's layout, components and strings.
+- **Preview URL:** nothing changes.
+- **Done when:** `pnpm run docs:check` passes; the maintainer approved the rewritten card of PR 7; the workbench is deleted after the merge.
+- **Size:** documents only.
+
+### PR 7 — The home fix
+
+- **Branch:** `p8-07-home-fix`. **Depends on:** PR E.
+- **Goal.** The home as the decisions from 153 draw it. PR E rewrites this card; until then it is a frame.
+- **Changes (expected):** `app/styles/index.css` (`.nk-home` and its areas), the home's views in `pages/learn/ui/home/`; `shared/i18n` only if the export adds a string; `docs/spec/learning.md` and `docs/architecture/pages.md` only if what they say about the home's layout changes.
+- **Tests:** the home's DOM tests stay green in every state H1–H12; a test for each new behaviour the export adds; `e2e/home.spec.ts` on Chromium at a desktop and a phone width when the layout depends on the viewport (layout needs a real browser); `home-cost.spec.ts` still within 300 ms (`pnpm run e2e:latency`, CI is the gate).
+- **Acceptance:** 1, 5, 14 (the home, again).
+- **Preview URL:** the home on a desktop window (about 1440 × 900) in the states the export names: no large empty space under the content; the phone at 360 px as before or better.
+- **Done when:** `verify:quick` passes; CI is green with the latency gate; initial JS ≤ 31.0 KB and CSS ≤ 8.5 KB; after the merge the maintainer does M4.
+- **Size:** set by PR E; a layout fix is expected to stay under 400 lines.
 
 ### PR 6 — Close the phase
 
@@ -702,20 +742,20 @@ The items of the P8 acceptance in [phases.md](docs/spec/phases.md), in its order
 
 | #   | Acceptance item                                                                                                                   | PR          | Proved by                                                                                  |
 | --- | --------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------ |
-| 1   | `/` shows the action with its reason, the forecast or its absence, the path, the outline, what got stronger, the streak, no chart | 4           | home DOM tests per state; `e2e/home.spec.ts`                                               |
+| 1   | `/` shows the action with its reason, the forecast or its absence, the path, the outline, what got stronger, the streak, no chart | 4, 7        | home DOM tests per state; `e2e/home.spec.ts`                                               |
 | 2   | The state with nothing to offer has a test                                                                                        | 1, 4        | `home.test.ts` (`none`, `nextAt`); the home's DOM test of H7                               |
 | 3   | Continue works before the forecast and what got stronger are ready                                                                | 3, 4        | `insights-state.test.ts` with a held scheduler; the home's DOM test of H3                  |
 | 4   | Both are computed outside the first render and outside keystroke handlers                                                         | 3, 5        | `insights.test.ts` (scheduler callbacks only); `session.test.ts` (no request in a session) |
-| 5   | At 4× they appear within 300 ms of the model chunk for 40,000 answers                                                             | 4           | `e2e/home-cost.spec.ts` in the latency job                                                 |
+| 5   | At 4× they appear within 300 ms of the model chunk for 40,000 answers                                                             | 4, 7        | `e2e/home-cost.spec.ts` in the latency job                                                 |
 | 6   | `/stats` redirects to `/progress`                                                                                                 | 2           | `redirects.test.ts`, `router.test.ts`, `smoke-deploy.mjs`, `e2e/routes.spec.ts`            |
 | 7   | Neither "Progress" nor the kana details dialog is in the initial chunk, and every budget holds                                    | 2, every PR | `check-budget.mjs` (`DETAILS_ENTRY`, route chunks); the figures of each PR                 |
 | 8   | The forecast history is settled when its row is introduced and corrects from the third settled forecast (unit tests)              | 1, 3        | `forecasts.test.ts`, `insights.test.ts`; `forecast.test.ts` (the ratio)                    |
 | 9   | A database of schema 6 is reset                                                                                                   | 3           | `database.test.ts`                                                                         |
 | 10  | A keystroke of a recall task renders nothing, and the latency test holds                                                          | 5, every PR | `session-screen.test.tsx`; `latency.spec.ts` in CI                                         |
 | 11  | An e2e goes home → session → summary → home and finds a kana under what got stronger                                              | 5           | `e2e/learn-session.spec.ts`                                                                |
-| 12  | The export matches the code, with the states of P9–P12 drawn and switched off                                                     | D, 6        | ADR 108 and the export; the check of PR 6                                                  |
+| 12  | The export matches the code, with the states of P9–P12 drawn and switched off                                                     | D, E, 6     | ADR 108 and the export; the check of PR 6                                                  |
 | 13  | `en` and `ru` keep key parity                                                                                                     | every PR    | the existing parity test                                                                   |
-| 14  | Every new screen and the dialog work from the keyboard and are named for screen readers                                           | 2, 4, 5     | DOM tests by role and name; e2e by keyboard                                                |
+| 14  | Every new screen and the dialog work from the keyboard and are named for screen readers                                           | 2, 4, 5, 7  | DOM tests by role and name; e2e by keyboard                                                |
 | 15  | learning.md, metrics.md, frontend.md and storage-sync.md describe the screens and the forecast history of P8                      | 1–5, 6      | S1–S11; the audit of PR 6                                                                  |
 
 ## 8. Instructions for executor agents
