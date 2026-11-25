@@ -1,6 +1,8 @@
 import type { Item } from './items';
 import { logNormal } from './rng';
 import type { Rng } from './rng';
+import { answerTime } from './timing';
+import type { Timing } from './timing';
 
 /**
  * The reference learner: the "truth" the candidates are measured against. None of the candidates
@@ -61,6 +63,8 @@ export type Profile = 'beginner' | 'knower' | 'forgot';
 export interface RecallResult {
   readonly ok: boolean;
   readonly ms: number;
+  /** The recall probability before the answer (the truth, for an oracle grade only). */
+  readonly p: number;
   /** The kana answered instead, when the error was a confusion with a similar kana. */
   readonly confusedWith: number | undefined;
 }
@@ -85,15 +89,22 @@ function difficultyOf(item: Item, rng: Rng): number {
   return shape * composite * logNormal(rng, 0.25);
 }
 
+/**
+ * `timing`: the answer-time model of the adaptive answer-time research; without it the answer
+ * time is P7's, drawn exactly as before, so parts 1–5 and P7 reproduce.
+ */
 export function createLearner(
   items: readonly Item[],
   profile: Profile,
   start: number,
   rng: Rng,
   params: ReferenceParams = REFERENCE,
+  timing?: Timing,
 ): Learner {
   const difficulty = items.map((item) => difficultyOf(item, rng));
   const traces: Trace[] = items.map((item) => initialTrace(item, profile, start, params.savings));
+  const kanaMotor = timing === undefined ? [] : items.map(() => logNormal(rng, timing.kanaSpread));
+  let practice = 0;
 
   function trace(id: number): Trace {
     const t = traces[id];
@@ -138,9 +149,12 @@ export function createLearner(
     t.last = now;
   }
 
-  function answerMs(id: number, p: number): number {
+  function answerMs(id: number, p: number, now: number): number {
     const keys = items[id]?.keys ?? 2;
-    return (500 + 1800 * (1 - p) + 120 * keys) * logNormal(rng, 0.2);
+    if (timing === undefined) return (500 + 1800 * (1 - p) + 120 * keys) * logNormal(rng, 0.2);
+    const ms = answerTime(timing, { p, keys, at: now, practice, kana: kanaMotor[id] ?? 1 }, rng);
+    practice += 1;
+    return ms;
   }
 
   return {
@@ -149,14 +163,14 @@ export function createLearner(
     recall(id, now) {
       const p = probability(id, now);
       if (rng.next() < p) {
-        const ms = answerMs(id, p);
+        const ms = answerMs(id, p, now);
         strengthen(id, p, 1, now);
         if (params.partsShare > 0) {
           for (const part of items[id]?.parts ?? []) {
             if (trace(part).seen) strengthen(part, probability(part, now), params.partsShare, now);
           }
         }
-        return { ok: true, ms, confusedWith: undefined };
+        return { ok: true, ms, confusedWith: undefined, p };
       }
       const similar = items[id]?.similar ?? [];
       const known = similar.filter((other) => probability(other, now) > 0.5);
@@ -166,13 +180,13 @@ export function createLearner(
           : undefined;
       // The right answer is shown after an error: a lapse, then a new study of the kana.
       lapse(id, now);
-      return { ok: false, ms: answerMs(id, 0), confusedWith };
+      return { ok: false, ms: answerMs(id, 0, now), confusedWith, p };
     },
     recognize(id, options, now) {
       const p = probability(id, now);
       const recalled = rng.next() < p;
       if (recalled || rng.next() < params.familiarity * (p > 0 ? 1 : 0)) {
-        const ms = answerMs(id, recalled ? p : 0.5);
+        const ms = answerMs(id, recalled ? p : 0.5, now);
         if (recalled) strengthen(id, p, params.recognitionShare, now);
         else study(id, now);
         return { ok: true, ms, chosen: id };
@@ -184,7 +198,7 @@ export function createLearner(
       const chosen = pool[Math.floor(rng.next() * pool.length)] ?? id;
       if (chosen === id) study(id, now);
       else lapse(id, now);
-      return { ok: chosen === id, ms: answerMs(id, 0), chosen };
+      return { ok: chosen === id, ms: answerMs(id, 0, now), chosen };
     },
   };
 }

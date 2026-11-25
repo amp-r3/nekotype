@@ -3,6 +3,7 @@ import type { Item } from './items';
 import { createLearner, DAY_MS, REFERENCE } from './learner';
 import type { Learner, Profile, ReferenceParams } from './learner';
 import type { Answer, Policy, Task } from './policy';
+import type { Timing } from './timing';
 import type { Planner } from './policies/fsrs-planner';
 import { createRng } from './rng';
 import type { Rng } from './rng';
@@ -55,6 +56,13 @@ export interface SimOptions {
   readonly daily?: boolean;
   /** Both tracks instead of hiragana only. */
   readonly tracks?: 'hiragana' | 'both';
+  /** The learner's answer-time model (adaptive answer-time research); P7's without it. */
+  readonly timing?: Timing;
+  /**
+   * A placement test (P11) before the first day: this many timed recalls of the basic kana in
+   * track order, given to `Policy.calibrate` only. The learner's memory takes them as recalls.
+   */
+  readonly placement?: number;
 }
 
 /** The longest forecast the forward estimator plays, in sessions. */
@@ -163,6 +171,10 @@ export interface RunResult {
   readonly tasks: number;
   readonly forecasts: Readonly<Record<Estimator, ForecastErrors>>;
   readonly fits: readonly string[];
+  /** Expected kana of the track recalled, each morning before practice (index = day − 1). */
+  readonly known: readonly number[];
+  /** Expected kana of the track recalled 7 and 30 days after the last day, with no practice. */
+  readonly afterBreak: readonly [number, number];
 }
 
 interface Pending {
@@ -209,7 +221,7 @@ export function perform(learner: Learner, items: readonly Item[], task: Task, no
     }
     case 'recall': {
       const r = learner.recall(task.item, now);
-      return { task, ok: r.ok, ms: r.ms, at: now, wrong: r.confusedWith };
+      return { task, ok: r.ok, ms: r.ms, at: now, wrong: r.confusedWith, p: r.p };
     }
     case 'recognition': {
       const r = learner.recognize(task.item, task.options, now);
@@ -252,9 +264,22 @@ export function simulate(
   const rng = createRng(seed);
   const routine = createRng(seed ^ 0x5bd1e995);
   const start = 0;
-  const learner = createLearner(items, profile, start, rng, reference);
+  const learner = createLearner(items, profile, start, rng, reference, options.timing);
   const policy = factory(items, createRng(seed ^ 0x27d4eb2f));
   const lastSeen = new Map<number, number>();
+  const known: number[] = [];
+  const placement = Math.min(options.placement ?? 0, basic.length);
+  if (placement > 0 && policy.calibrate !== undefined) {
+    let now = start + (SITTING_HOURS[0] - 1) * 3_600_000;
+    const answers: Answer[] = [];
+    for (const id of basic.slice(0, placement)) {
+      const task: Task = { item: id, kind: 'recall', options: [], review: true };
+      const answer = perform(learner, items, task, now);
+      answers.push(answer);
+      now += durationOf(answer);
+    }
+    policy.calibrate(answers);
+  }
 
   let readsBasicDay: number | undefined;
   let readsTrackDay: number | undefined;
@@ -416,6 +441,7 @@ export function simulate(
       readsBasicDay = day + 1;
     const all = items.reduce((sum, item) => sum + learner.recallProbability(item.id, morning), 0);
     if (readsTrackDay === undefined && all >= READS_SHARE * items.length) readsTrackDay = day + 1;
+    known.push(all);
     if (kataBasic.length > 0 && readsKatakanaDay === undefined) {
       const kata = kataBasic.reduce((sum, id) => sum + learner.recallProbability(id, morning), 0);
       if (kata >= READS_SHARE * kataBasic.length) readsKatakanaDay = day + 1;
@@ -499,6 +525,9 @@ export function simulate(
     if (day === 6) unlockedWeek = policy.unlocked();
   }
 
+  const end = start + days * DAY_MS;
+  const recalledAt = (t: number): number =>
+    items.reduce((sum, item) => sum + learner.recallProbability(item.id, t), 0);
   return {
     profile,
     readsBasicDay,
@@ -518,5 +547,7 @@ export function simulate(
     tasks,
     forecasts: errors,
     fits: policy.fits ?? [],
+    known,
+    afterBreak: [recalledAt(end + 7 * DAY_MS), recalledAt(end + 30 * DAY_MS)],
   };
 }

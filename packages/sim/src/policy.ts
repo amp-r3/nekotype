@@ -18,6 +18,8 @@ export interface Answer {
   readonly at: number;
   /** The kana chosen in recognition, or the kana a recall error was confused with. */
   readonly wrong: number | undefined;
+  /** A recall's true probability before the answer: only an oracle grade reads it. */
+  readonly p?: number;
 }
 
 export type SessionKind = 'learning' | 'review';
@@ -55,4 +57,9 @@ export interface Policy {
   ): ForecastAnswer | undefined;
   /** The memory model chosen at each fit, when the policy fits one (part 3). */
   readonly fits?: readonly string[];
+  /**
+   * Answers of a placement test before the first session (adaptive answer-time research): a
+   * policy that has it uses them for the answer-time threshold only.
+   */
+  calibrate?(answers: readonly Answer[]): void;
 }

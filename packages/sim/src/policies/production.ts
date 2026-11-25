@@ -1,5 +1,5 @@
 import { createFold, forecastRow, habitsOf, ITEMS, nextTask, SESSION_TASKS } from '@nekotype/model';
-import type { Fold } from '@nekotype/model';
+import type { Fold, ModelState } from '@nekotype/model';
 import type { LearnKanaKey, LogEvent, Track } from '@nekotype/shared/types';
 import type { Item } from '../items';
 import { recognitionOptions } from '../options';
@@ -16,9 +16,14 @@ const MS_CAP = 10_000;
  * The production knowledge model as a policy (P7 plan, D10): a `Fold` of the log and `nextTask`
  * of `@nekotype/model`. It converts the simulator's tasks and answers to keys and events and
  * writes no rule of the fold or the planner (rule 3a). Sim items map to keys by position: the
- * simulator's items are in `ITEMS` order, hiragana first.
+ * simulator's items are in `ITEMS` order, hiragana first. `track`: the selected track, or a
+ * function of the state that picks it (the learner who follows the katakana suggestion).
  */
-export function createProductionPolicy(track: Track = 'hiragana'): PolicyFactory {
+export function createProductionPolicy(
+  selected: Track | ((state: ModelState) => Track) = 'hiragana',
+): PolicyFactory {
+  const trackOf = (state: ModelState): Track =>
+    typeof selected === 'string' ? selected : selected(state);
   return (items, rng) => {
     const keys = keysOf(items);
     const ids = new Map(keys.map((key, id) => [key, id]));
@@ -66,7 +71,12 @@ export function createProductionPolicy(track: Track = 'hiragana'): PolicyFactory
               finish(now);
               return undefined;
             }
-            const planned = nextTask(fold.state, { now, track, previous, rng });
+            const planned = nextTask(fold.state, {
+              now,
+              track: trackOf(fold.state),
+              previous,
+              rng,
+            });
             if (planned === null) {
               finish(now);
               return undefined;
@@ -113,7 +123,7 @@ export function createProductionPolicy(track: Track = 'hiragana'): PolicyFactory
         if (row === undefined) return undefined;
         const { raw, low, median, high } = forecastRow(fold.state, row, {
           now,
-          track,
+          track: trackOf(fold.state),
           rng: forecastRng,
           habits: habitsOf(fold.state),
           history,
