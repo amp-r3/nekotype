@@ -19,7 +19,7 @@ Sign out without unsent data needs no dialog. The another-account dialog opens o
 
 **A request in flight** (decisions 115, 122). While the dialog's request runs — deleting the account — its fields and `cancel` are disabled, the action is disabled and names the request (`deleting…` / `удаление…`), and the dialog cannot be closed: `onClose` is not passed, so there is no `✕` and `Esc` does nothing. Closing would not stop the request.
 
-**Fields** (decision 127). `Input` and `Select` in a dialog take the full width of the body, all the same, filled with `bg`: the dialog is `bg-raised`, the page's field fill would vanish on it.
+**Fields** (decision 127). An `Input` in a dialog takes the full width of the body, filled with `bg`: the dialog is `bg-raised`, the page's field fill would vanish on it.
 
 **Failure** (decisions 116, 122, 127). A dialog with a request has one reserved `Notice` line in its actions row, left of the buttons (`note`; two lines of `ui-label`, 40px; its own row above the buttons below 640px), so a message never changes the dialog's height and no empty band stands above the buttons. `tone="miss"`, one message at a time; the strings are in the `Notice` guidelines. After a failure the fields and actions work again, and the action is the retry.
 

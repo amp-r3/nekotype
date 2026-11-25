@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"namespace":"Nekotype","components":[{"name":"Notice"},{"name":"Kbd"},{"name":"Dialog"},{"name":"Button"},{"name":"Segmented"},{"name":"Switch"},{"name":"Input"},{"name":"Select"},{"name":"Tooltip"},{"name":"Stat"},{"name":"ResultChart"},{"name":"ActivityMap"},{"name":"KanaChart"},{"name":"OptionCard"},{"name":"Nav"},{"name":"Footer"},{"name":"Cat"},{"name":"EmptyState"}]} */
+/* @ds-bundle: {"format":4,"namespace":"Nekotype","components":[{"name":"Notice"},{"name":"Kbd"},{"name":"Dialog"},{"name":"Button"},{"name":"Segmented"},{"name":"Switch"},{"name":"Input"},{"name":"Tooltip"},{"name":"Stat"},{"name":"ResultChart"},{"name":"ActivityMap"},{"name":"KanaChart"},{"name":"OptionCard"},{"name":"Nav"},{"name":"Footer"},{"name":"Cat"},{"name":"EmptyState"}]} */
 (function () {
   'use strict';
   var React = window.React;
@@ -243,20 +243,13 @@
       (p.error || p.hint) && h('div', { id: id + '-m', className: 'nk-input__msg ui-caption' }, p.error || p.hint));
   }
   function fieldProps(p, id, cls) {
-    var rest = omit(p, ['label', 'hint', 'error', 'mono', 'className', 'options', 'counter']);
+    var rest = omit(p, ['label', 'hint', 'error', 'mono', 'className', 'counter']);
     rest.id = id; rest.className = cls;
     if (p.error) rest['aria-invalid'] = true;
     if (p.error || p.hint) rest['aria-describedby'] = id + '-m';
     return rest;
   }
   function Input(p) { var id = useId(); return Field(p, h('input', fieldProps(p, id, cx('nk-input__field', p.mono ? 'mono-romaji' : 'ui-body'))), id); }
-  function Select(p) {
-    var id = useId();
-    return Field(p, h('span', { id: id + '-w', className: 'nk-select' },
-      h('select', fieldProps(p, id, 'nk-input__field nk-select__field ui-body'),
-        (p.options || []).map(function (o) { return h('option', { key: o.value, value: o.value, disabled: o.disabled }, o.label); })),
-      h('span', { className: 'nk-select__arrow', 'aria-hidden': true })), id);
-  }
 
   function Tooltip(p) {
     var st = useState(false);
@@ -328,9 +321,9 @@
   }
 
   /*
-   * ResultChart — the answer-time chart of /progress (lazy chunk; decisions 109, 130). It only draws: the page computes
-   * the series. Layers, back to front: grid · `ranges` (one bar per day or week: lo–hi with a `mid` tick) · `reference`
-   * (one dashed hair line, the target). x is time (ms or a day number), never an index. The y axis follows the data
+   * ResultChart — the answer-time chart of /progress (lazy chunk; decisions 109, 130, 157). It only draws: the page computes
+   * the series. Layers, back to front: grid · `ranges` (one bar per day or week: lo–hi with a `mid` tick) · the cursor.
+   * x is time (ms or a day number), never an index. The y axis follows the data
    * (`yDomain`, `yTicks`). Every value is in the tooltip.
    * Keyboard: one Tab stop; ← → step through the bars in time order, Home / End jump, Esc clears.
    */
@@ -374,9 +367,6 @@
           var x = fx(t.x);
           return h('text', { key: 'x' + i, className: 'nk-chart__axis mono-small', x: x, y: H - 4, textAnchor: x < padL + 24 ? 'start' : x > W - 24 ? 'end' : 'middle' }, t.label);
         }),
-        p.reference && h('g', { className: 'nk-chart__ref' },
-          h('line', { x1: padL, x2: W, y1: fy(p.reference.value), y2: fy(p.reference.value) }),
-          h('text', { className: 'nk-chart__axis mono-small', x: W - padR, y: fy(p.reference.value) - 6, textAnchor: 'end' }, p.reference.label)),
         rgs.map(function (d, i) {
           var x = fx(d.x), y1 = fy(d.hi), y2 = fy(d.lo);
           return h('g', { key: 'r' + i },
@@ -592,7 +582,7 @@
   var C = window;
   C.Nekotype = Object.assign(C.Nekotype || {}, {
     Notice: Notice, Kbd: Kbd, Dialog: Dialog,
-    Button: Button, Segmented: Segmented, Switch: Switch, Input: Input, Select: Select, Tooltip: Tooltip,
+    Button: Button, Segmented: Segmented, Switch: Switch, Input: Input, Tooltip: Tooltip,
     Stat: Stat, ResultChart: ResultChart, ActivityMap: ActivityMap, KanaChart: KanaChart,
     OptionCard: OptionCard, Nav: Nav, Footer: Footer,
     Cat: Cat, EmptyState: EmptyState, Icon: Icon, KanaTask: KanaTask, kanaStateLines: kanaStateLines, isDue: isDue, KC_LABELS: KC_LABELS,

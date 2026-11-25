@@ -130,9 +130,6 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-input__msg { color: var(--fur-dim); }
 .nk-input.is-error .nk-input__field { box-shadow: inset 0 calc(-1 * var(--stroke-mark)) 0 var(--miss); }
 .nk-input.is-error .nk-input__msg { color: var(--miss); }
-.nk-select { position: relative; display: block; }
-.nk-select__field { appearance: none; padding-right: var(--space-8); cursor: pointer; }
-.nk-select__arrow { position: absolute; right: var(--space-3); top: 50%; width: 6px; height: 6px; margin-top: -5px; border-right: var(--stroke-hair) solid var(--fur-dim); border-bottom: var(--stroke-hair) solid var(--fur-dim); transform: rotate(45deg); pointer-events: none; }
 
 /* ---------- Tooltip ---------- */
 .nk-tip { position: relative; display: inline-flex; }
@@ -174,7 +171,6 @@ body { margin: 0; background: var(--bg); color: var(--fur); font-family: var(--f
 .nk-chart__mid { fill: var(--chart-median); }                  /* one day: the median tick */
 .nk-chart__cursor { stroke: var(--chart-cursor); stroke-width: var(--stroke-hair); }
 .nk-chart__ring { fill: none; stroke: var(--chart-cursor); stroke-width: var(--stroke-mark); }
-.nk-chart__ref line { stroke: var(--line-strong); stroke-width: var(--stroke-hair); stroke-dasharray: 4 4; }   /* target answer time */
 .nk-chart__tip { position: absolute; z-index: 20; transform: translate(-50%, -100%); display: flex; flex-direction: column; padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); background: var(--fur); color: var(--on-fur); white-space: nowrap; pointer-events: none; }
 .nk-chart__tip.is-start { transform: translate(calc(-1 * var(--space-3)), -100%); }
 .nk-chart__tip.is-end { transform: translate(calc(-100% + var(--space-3)), -100%); }
