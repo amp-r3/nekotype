@@ -26,4 +26,4 @@
   - The export changes `README.md`, `decisions.md`, `tokens.json` (usage notes only, no value), twelve component guidelines, `bundle.js`, `bundle.css` and `index.d.ts`. No token, text style or glyph changes, so `tokens.css` and `tokens.test.ts` do not change.
   - The code already does what the export draws. The class `is-st-learned` and the `due: N` line were the code's names before this export.
   - [docs/design/README.md](../design/README.md) loses its note on the P7 code. [docs/design/workflow.md](../design/workflow.md) names the shared screens' script.
-  - [p8-plan.md](../../p8-plan.md): row o of the brief names decision 139, and the P8 session numbers its decisions from 140.
+  - [p8-plan.md](../archive/p8-plan.md): row o of the brief names decision 139, and the P8 session numbers its decisions from 140.

@@ -5,7 +5,7 @@
   - Design changes have been drawn straight into the design-system artifact since [ADR 062](062-design-review-of-the-p3-build.md). Variants, explorations and proposal notes went in with them and stayed after the choice. [ADR 080](080-design-system-clean-up.md) removed one such sheet, `StatsExplorations`.
   - On 2026-11-23 the artifact still draws the model before P7 (`confident`, Leitner boxes, `review (N)`, a review session), the phase numbers before [ADR 099](099-learning-home-methods-and-phases-after-p6.md), the typing trainer on its cover, and notes such as "proposal, open question". The export in `docs/design/source/` is the same, byte for byte.
   - How to change the design was written only in the phase plans (the P6 and P8 step M1) and in the agent's notes.
-  - The P8 session ([p8-plan.md](../../p8-plan.md), section 4) is the largest so far: five screens, every state, and the states of P9–P12 drawn switched off. One review cannot hold it.
+  - The P8 session ([p8-plan.md](../archive/p8-plan.md), section 4) is the largest so far: five screens, every state, and the states of P9–P12 drawn switched off. One review cannot hold it.
   - On 2026-11-23 the maintainer asked:
     - for the design-system artifact to be the project's source of truth, consistent and without leftover examples or changes;
     - for a separate artifact for development, which shows how a thing looks now and what is proposed, with several variants;
@@ -35,7 +35,7 @@
   - _A page template for the workbench in the repository._ Not before a second session shows the page is stable. Until then the agent builds it by [the description](../design/workflow.md#the-workbench-page).
 - **Consequences:**
   - New: `docs/design/workflow.md`, linked from `docs/design/README.md`, `docs/README.md` and `AGENTS.md`.
-  - [p8-plan.md](../../p8-plan.md):
+  - [p8-plan.md](../archive/p8-plan.md):
     - a step M0 and a pull request C for the clean-up;
     - M1 in five rounds;
     - item o of the brief moved to the clean-up;

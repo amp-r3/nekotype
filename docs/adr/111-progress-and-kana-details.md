@@ -2,7 +2,7 @@
 
 - **Status:** In force.
 - **Context:**
-  - The P8 design ([ADR 108](108-p8-design-export.md), decisions 146 and 147) moves the kana chart and the statistics to "Progress" and replaces the chart's inline panel with a dialog that three screens open: the chart, the home's "since the last session" and the session summary ([p8-plan.md](../../p8-plan.md), D11 and D12).
+  - The P8 design ([ADR 108](108-p8-design-export.md), decisions 146 and 147) moves the kana chart and the statistics to "Progress" and replaces the chart's inline panel with a dialog that three screens open: the chart, the home's "since the last session" and the session summary ([p8-plan.md](../archive/p8-plan.md), D11 and D12).
   - `/stats` has been a screen since P3; a bookmark or a stale copy of `index.html` at the edge (P6 saw one answer a removed path for up to 7 days) must not show a screen that no longer exists. The dev server and `vite preview` ignore `_redirects`.
   - `pages` do not import each other, so a dialog that `pages/learn` and `pages/progress` both open cannot live in either. `steiger` accepts a slice with two consumers (ADR 015).
 - **Decision:**

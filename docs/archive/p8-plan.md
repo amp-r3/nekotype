@@ -1,17 +1,19 @@
+> **Archived.** The working plan of phase P8 (the learning home and progress), moved here by its last pull request, PR 6, when the phase was closed. It is no longer maintained. What it decided now lives in the [specification](../spec/README.md), ADRs 106–114 in [docs/adr/](../adr/README.md), the [design export](../design/source/README.md) and the [architecture description](../architecture/README.md); the closing line of P8 is in [phases.md](../spec/phases.md) and the acceptance figures in the [acceptance note](../research/2026-11-25-p8-acceptance.md). Paths in the text are relative to the repository root, where the file lived.
+
 # P8 plan: the learning home and progress
 
-Working file of phase P8 ([phases.md](docs/spec/phases.md), item 9). It tells the executor of each pull request what to build, in which order, and which decisions are already made. It is not part of `docs/`: the last pull request of the phase moves it to `docs/archive/`.
+Working file of phase P8 ([phases.md](../spec/phases.md), item 9). It tells the executor of each pull request what to build, in which order, and which decisions are already made. It is not part of `docs/`: the last pull request of the phase moves it to `docs/archive/`.
 
 - Written on 2026-11-23 against `main` at aa045fb (PR 227 merged: P8 specified in `phases.md`).
-- Changed on 2026-11-25 by PR E ([ADR 114](docs/adr/114-p8-home-fix-design-export.md), design decisions 153–155): the card of PR 7 and section 3.7.
+- Changed on 2026-11-25 by PR E ([ADR 114](../adr/114-p8-home-fix-design-export.md), design decisions 153–155): the card of PR 7 and section 3.7.
 - Changed on 2026-11-25 after PR 5: the maintainer found too much empty space under the home on a desktop. A design session of its own (M5, [section 4.3](#43-the-home-fix-m5)), its export (PR E) and the home's code (PR 7) come before M4 and PR 6: the Status table, section 6, the cards and the acceptance table.
-- Changed on 2026-11-24 by PR L ([ADR 109](docs/adr/109-five-kana-learning-at-once.md)): `LEARN_MAX` 4 → 5 in a pull request of its own before PR 1, the Status table, section 7 and the expected ADR numbers of section 3.7 (one up).
-- Changed on 2026-11-24 by PR 4 ([ADR 113](docs/adr/113-lazy-home-panels-and-the-home-line.md)): the home's path, forecast and cells are a lazy chunk with the dictionary part `home` (D14), and the line of 300 ms is measured from a ready store (D8).
+- Changed on 2026-11-24 by PR L ([ADR 109](../adr/109-five-kana-learning-at-once.md)): `LEARN_MAX` 4 → 5 in a pull request of its own before PR 1, the Status table, section 7 and the expected ADR numbers of section 3.7 (one up).
+- Changed on 2026-11-24 by PR 4 ([ADR 113](../adr/113-lazy-home-panels-and-the-home-line.md)): the home's path, forecast and cells are a lazy chunk with the dictionary part `home` (D14), and the line of 300 ms is measured from a ready store (D8).
 - Changed on 2026-11-24 by the design export (PR D, decisions 140–152): the brief's decision column, Q2, D1, D7, D11, D13, D14 and the cards of PRs 1–6.
-- Changed on 2026-11-23 by [ADR 106](docs/adr/106-design-sessions-in-a-workbench-artifact.md): the design system is cleaned up before the session ([M0](#m0-the-clean-up-of-the-design-system--before-m1), [PR C](#pr-c--design-clean-up-export)), the session runs in rounds in a workbench artifact ([M1](#m1-the-design-session--after-pr-c-before-pr-d)), and the expected ADR numbers moved up by two.
+- Changed on 2026-11-23 by [ADR 106](../adr/106-design-sessions-in-a-workbench-artifact.md): the design system is cleaned up before the session ([M0](#m0-the-clean-up-of-the-design-system--before-m1), [PR C](#pr-c--design-clean-up-export)), the session runs in rounds in a workbench artifact ([M1](#m1-the-design-session--after-pr-c-before-pr-d)), and the expected ADR numbers moved up by two.
 - Where this plan and `docs/spec/` disagree, the spec wins until the pull request named here changes the spec. Every such change is listed in [section 3.8](#38-spec-changes) with its pull request.
 - **Two kinds of content.** Section 3 holds the data and the computations as final contracts: types, names, stores, keys and constants. An executor copies them and does not invent names. Everything that depends on how a screen looks is a brief for the design session ([section 4](#4-design-brief)): proposals, not decisions. The design export decides, and its decision numbers fill the brief's last column.
-- **The code pull requests follow the design export** (PR D, [ADR 108](docs/adr/108-p8-design-export.md)): PR D rewrote the cards of PRs 1–6 against it ([section 7](#7-pull-requests)).
+- **The code pull requests follow the design export** (PR D, [ADR 108](../adr/108-p8-design-export.md)): PR D rewrote the cards of PRs 1–6 against it ([section 7](#7-pull-requests)).
 - Sections: [status](#status), [goal and scope](#1-goal-and-scope), [what was checked](#2-what-was-checked), [decisions](#3-decisions), [design brief](#4-design-brief), [answered questions](#5-answered-questions), [manual steps](#6-maintainers-manual-steps), [pull requests](#7-pull-requests), [executor instructions](#8-instructions-for-executor-agents), [risks](#9-risks).
 
 ## Status
@@ -36,7 +38,7 @@ The executor of a pull request fills its row (see [section 8](#8-instructions-fo
 
 **What the user gets.** `/` answers "what now": one "Continue" with the reason for what the session will do first, or, when the model has nothing to offer, the time of the next review. Around it: the forecast of the next row in sessions as a range, the path through the track in blocks with the learner's place on it, the outline of the next session, the kana that got stronger since the last session started, the current streak, and the katakana suggestion once the basic hiragana are learned. The kana chart and the statistics move to "Progress" at `/progress`; `/stats` redirects there. A kana opens its details in a dialog from the chart, from "what got stronger" and from the session summary. The summary returns to `/` and shows how the forecast changed with the session. The session screen and the navigation are redrawn; the hot path stays as it is.
 
-**In scope** ([phases.md](docs/spec/phases.md), P8; [ADR 099](docs/adr/099-learning-home-methods-and-phases-after-p6.md), points 1–4):
+**In scope** ([phases.md](../spec/phases.md), P8; [ADR 099](../adr/099-learning-home-methods-and-phases-after-p6.md), points 1–4):
 
 - the clean-up of the design system, which catches up with the P7 code, and its export (M0, PR C);
 - the design session in a workbench artifact, its transfer into the design-system artifact and its export, which draws the states of P9–P12 switched off;
@@ -45,14 +47,14 @@ The executor of a pull request fills its row (see [section 8](#8-instructions-fo
 - the home, "Progress", the kana details dialog, the session summary, the session screen and the navigation, per the export;
 - the spec, `README.md` and `docs/architecture/` for all of the above.
 
-**What stays:** the model's rules and constants (ADR 100), but `LEARN_MAX`, which PR L raises from 4 to 5 before PR 1 ([ADR 109](docs/adr/109-five-kana-learning-at-once.md)); the planner and one kind of session; the log, sync format 3 and the server; settings as one document (`learn.track` already syncs); the input engine and the input source; the hot-path rule (0 renders per recall keystroke, at most 1 on the answer); every budget limit; one dark theme.
+**What stays:** the model's rules and constants (ADR 100), but `LEARN_MAX`, which PR L raises from 4 to 5 before PR 1 ([ADR 109](../adr/109-five-kana-learning-at-once.md)); the planner and one kind of session; the log, sync format 3 and the server; settings as one document (`learn.track` already syncs); the input engine and the input source; the hot-path rule (0 renders per recall keystroke, at most 1 on the answer); every budget limit; one dark theme.
 
 **Out of scope:**
 
 - The behaviour of P9–P12 (new task types, feedback that teaches, stroke order, sound, the first visit, the placement test, mnemonics, words): the design draws their states switched off; the code builds none of them.
 - A change to a constant or a rule of the planner, the fold or the grades: it needs a run of `packages/sim` and an ADR (P7 plan, rule 3b).
 - Server changes: P8 adds nothing to the API or D1.
-- IndexedDB migrations: a schema change still resets the local data ([ADR 061](docs/adr/061-schema-reset-before-release.md)).
+- IndexedDB migrations: a schema change still resets the local data ([ADR 061](../adr/061-schema-reset-before-release.md)).
 
 ## 2. What was checked
 
@@ -289,7 +291,7 @@ The outline, what got stronger and the forecast are computed on the **main threa
   };
   ```
 
-  Cases the design draws: the same row (`before.row === after.forecast.row`); the row opened during the session (`after` names another row, or is `complete`); no `before` (Continue was pressed before the forecast was ready, or it was `beyond`); `after` pending, `beyond` or `complete`. The export shows medians (decision 148, [Q2](#q2-the-forecast-change-in-the-summary)): `before.median → after.median`; [ADR 108](docs/adr/108-p8-design-export.md), point 8, records that point 6 of ADR 100 ("never one number") holds for the home and not for this comparison. The data still carry both.
+  Cases the design draws: the same row (`before.row === after.forecast.row`); the row opened during the session (`after` names another row, or is `complete`); no `before` (Continue was pressed before the forecast was ready, or it was `beyond`); `after` pending, `beyond` or `complete`. The export shows medians (decision 148, [Q2](#q2-the-forecast-change-in-the-summary)): `before.median → after.median`; [ADR 108](../adr/108-p8-design-export.md), point 8, records that point 6 of ADR 100 ("never one number") holds for the home and not for this comparison. The data still carry both.
 
 ### 3.3 Forecast history
 
@@ -324,7 +326,7 @@ Each forecast shown is kept on the device and settled once its row is introduced
 - **Kept:** the newest 10 settled and the newest 60 open records by `at` (`HISTORY_OPEN_KEPT`, about two months of daily forecasts); the write that adds or settles one deletes the rest.
 - **Reads and writes:** read once with `getAll` on the first step 2 after `initLearn`, then held in memory and written through, outside any key handler. Two tabs: the key makes a creation idempotent (an `update` transaction writes only when the key is absent), and settling gives the same `actual`; a tab does not hear about another tab's records until it loads again, which only delays a correction.
 - **Never synced.** Cleared with the log: "Reset progress" (`clearLog` clears `forecasts` too), sign-out, a discarded other account and account deletion (`USER_STORES` gains `forecasts`). Kept by the guest merge and by a sign-in of the same user after an expired session, which keep the log. Reason: the history measures how this learner's log moved against its forecasts; it means nothing for another log.
-- **Schema 7.** `STORES` gains `{ name: 'forecasts' }` and `SCHEMA_VERSION` becomes 7, so a database of schema 6 is reset ([ADR 061](docs/adr/061-schema-reset-before-release.md)): the device loses what it has not sent and starts as a guest. The maintainer syncs first (M2); signing in again pulls the log back.
+- **Schema 7.** `STORES` gains `{ name: 'forecasts' }` and `SCHEMA_VERSION` becomes 7, so a database of schema 6 is reset ([ADR 061](../adr/061-schema-reset-before-release.md)): the device loses what it has not sent and starts as a guest. The maintainer syncs first (M2); signing in again pulls the log back.
 
 ### 3.4 Routes and screens
 
@@ -356,7 +358,7 @@ Each forecast shown is kept on the device and settled once its row is introduced
 #### D13. The session screen and the summary
 
 - **Session screen:** per the export. `KanaTask` and `createTaskController` stay the task's DOM writer; the session line and "Leave session" stay; "Leave session" returns to the home. The render rule is unchanged and `session-screen.test.tsx` stays the gate.
-- **Ticks** (decision 149): under the session line a tick per task of the session, `total` of the session line (`SESSION_LENGTH`). The session keeps `misses: readonly number[]`, the 0-based numbers of its finished tasks answered with an error, an error as [Metrics](docs/spec/metrics.md) defines it (a rejected key or Esc in recall, a wrong choice in recognition); it appends to it when an answer is recorded, in the render the answer already has, never in a key handler. `KanaTask` takes it as `session.misses`. A session that ends early ends with ticks left.
+- **Ticks** (decision 149): under the session line a tick per task of the session, `total` of the session line (`SESSION_LENGTH`). The session keeps `misses: readonly number[]`, the 0-based numbers of its finished tasks answered with an error, an error as [Metrics](../spec/metrics.md) defines it (a rejected key or Esc in recall, a wrong choice in recognition); it appends to it when an answer is recorded, in the render the answer already has, never in a key handler. `KanaTask` takes it as `session.misses`. A session that ends early ends with ticks left.
 - **Summary:** returns to `/`, the home; its second action is `home` / `на главную` (decision 148; `to the table` goes). It keeps its lists (`SessionSummary`) and adds `ForecastChange` ([D9](#d9-the-forecast-on-the-home-and-in-the-summary)); each listed kana opens the details dialog; its Continue follows [D2](#d2-nothing-to-do).
 
 ### 3.5 Budgets
@@ -365,7 +367,7 @@ Each forecast shown is kept on the device and settled once its row is introduced
 
 - **Into the initial chunk** (PR 4, ADR 113: the path, the forecast line and "since the last session" with `path.ts` and their strings are a lazy chunk instead; `rows.ts` is initial): the home's action, `insights-state.ts`, `reasonAt`, `KanaDetailsHost` and `openKanaDetails`, the router's redirect, the English strings of the home. **Out of it:** the chart (to the Progress route chunk, measured at 2.57 KB), its strings (to the `progress` part) and its styles but the cell and its states, which the home's "since the last session" draws (decision 144); the details dialog and its part; `insights.ts`.
 - **Line:** after every pull request into `main`, initial JS ≤ 31.0 KB and initial CSS ≤ 8.5 KB gzip. Above either, the executor stops and asks. Reason: the chart pays for most of the home, and P9–P14 need what is left of the 35 KB (the first visit and the words on `/` come in P11 and P12).
-- Every pull request writes the initial JS and CSS before and after in its description. The limits of [Quality](docs/spec/quality.md#budgets) are not raised; the model, `insights.ts`, the Progress route and the dialog are lazy chunks under the 25 KB of a lazy chunk.
+- Every pull request writes the initial JS and CSS before and after in its description. The limits of [Quality](../spec/quality.md#budgets) are not raised; the model, `insights.ts`, the Progress route and the dialog are lazy chunks under the 25 KB of a lazy chunk.
 
 ### 3.6 How it reaches production
 
@@ -375,7 +377,7 @@ Every pull request goes to `main`. Reasons:
 
 - The only gap the maintainer named, a home without the chart before `/progress` exists, is closed by the order: PR 2 ships `/progress` with the chart while `/` keeps it, and PR 4 takes it off `/`.
 - P8 changes no synced format and nothing on the server. P7 needed `p7-switch` because the log, the planner and format 3 had to reach production in one deployment; here the only reset (schema 7, PR 3) is one pull request.
-- Between pull requests production mixes old and new screens. Before P14 only the maintainer uses it ([ADR 061](docs/adr/061-schema-reset-before-release.md)), and every pull request leaves each screen working.
+- Between pull requests production mixes old and new screens. Before P14 only the maintainer uses it ([ADR 061](../adr/061-schema-reset-before-release.md)), and every pull request leaves each screen working.
 
 ### 3.7 Documents and decision records
 
@@ -383,7 +385,7 @@ Every pull request goes to `main`. Reasons:
 - No A-item is added: A47–A52 hold the model, and phases.md holds P8's screens.
 - `docs/architecture/` changes with the code: `model.md` (PR 1; PR 3 removes "no caller before P8"), `layout.md` and `pages.md` (PR 2, PR 4, PR 5), `entities.md` (PR 3), `sync.md` (PR 3: the cleared stores), `quality-gates.md` (PR 2, PR 4).
 - `README.md`: the routes (PR 2), how learning looks on `/` (PR 4).
-- **114** in PR E: the home fix changes the code and the spec beyond the home's layout and styles (the `Tab` order by width, the path's blocks as a radiogroup, the cat on `/`), so it has an ADR ([Decision logs](docs/README.md#decision-logs)).
+- **114** in PR E: the home fix changes the code and the spec beyond the home's layout and styles (the `Tab` order by width, the path's blocks as a radiogroup, the cat on `/`), so it has an ADR ([Decision logs](../README.md#decision-logs)).
 - `docs/design/README.md` loses the note on the P7 code (PR C).
 - `docs/README.md` gets a row for this plan in this pull request; PR 6 removes it.
 - `AGENTS.md` does not change.
@@ -406,7 +408,7 @@ Every pull request goes to `main`. Reasons:
 
 ## 4. Design brief
 
-The design session (M1) is drawn in a workbench artifact and moved into the design-system artifact, and PR D exports it ([design workflow](docs/design/workflow.md)). This section is its brief: what each screen can show, every state it has, and proposals. **The proposals are not decisions:** the session may draw something else, and the export decides. PR D wrote the numbers of the design decisions (140–152) into the last column of 4.2; PR C wrote the number of row o.
+The design session (M1) is drawn in a workbench artifact and moved into the design-system artifact, and PR D exports it ([design workflow](../design/workflow.md)). This section is its brief: what each screen can show, every state it has, and proposals. **The proposals are not decisions:** the session may draw something else, and the export decides. PR D wrote the numbers of the design decisions (140–152) into the last column of 4.2; PR C wrote the number of row o.
 
 ### 4.1 Data and states by screen
 
@@ -449,7 +451,7 @@ Names are those of [section 3](#3-decisions) and of `@nekotype/model`.
 
 - Data: `TaskView` (introduction, recall, recognition), `Choice`, `Notice`, `Phase`, the task number of `total`.
 - States: as `KanaTask` draws them today (introduction with the ghost hint, recall with the buffer and the rejected key, Esc and the touch "show the romaji", the right and the wrong answer, recognition and its wrong choice waiting for Enter, the hidden tab, the window without focus); switched off: P9 contrast, transfer, build, the fluency run and the feedback that teaches with its re-check; P10 the sound in tasks.
-- Rule: a keystroke of a recall task renders nothing; the screen changes through classes, text and transforms ([Frontend](docs/spec/frontend.md), "Hot path").
+- Rule: a keystroke of a recall task renders nothing; the screen changes through classes, text and transforms ([Frontend](../spec/frontend.md), "Hot path").
 
 **Navigation and settings**
 
@@ -510,7 +512,7 @@ Added on 2026-11-25, after PR 5. The brief of [M5](#m5-the-home-fix-session--aft
 
 **Answer (2026-11-23):** the design session decides; the data carry both ([D9](#d9-the-forecast-on-the-home-and-in-the-summary)). If the export shows medians, its ADR records the amendment of ADR 100 point 6 for this comparison.
 
-**Chosen (2026-11-24):** medians, `3 → 2 sessions` under `the whole m row opens in about` (decision 148); ranges were drawn and set aside. [ADR 108](docs/adr/108-p8-design-export.md), point 8, amends ADR 100 point 6 for this comparison.
+**Chosen (2026-11-24):** medians, `3 → 2 sessions` under `the whole m row opens in about` (decision 148); ranges were drawn and set aside. [ADR 108](../adr/108-p8-design-export.md), point 8, amends ADR 100 point 6 for this comparison.
 
 ### Q3. What "done" means on the path
 
@@ -528,7 +530,7 @@ Added on 2026-11-25, after PR 5. The brief of [M5](#m5-the-home-fix-session--aft
 
 ### M0. The clean-up of the design system — before M1
 
-An agent cleans the design-system artifact by the [design workflow](docs/design/workflow.md) ([ADR 106](docs/adr/106-design-sessions-in-a-workbench-artifact.md), point 6), with a workbench artifact `Nekotype · design clean-up`:
+An agent cleans the design-system artifact by the [design workflow](../design/workflow.md) ([ADR 106](../adr/106-design-sessions-in-a-workbench-artifact.md), point 6), with a workbench artifact `Nekotype · design clean-up`:
 
 - the catch-up with the P7 code (row o of 4.2): `KanaChart` draws `learned`, and a kana's data are those of `cellInfos` (no Leitner box; `opensNext` for `nextUnlock`); no `review (N)` and no review session; `due: N` in the progress line; the summary sections `introduced` and `learned`; the settings' text of the target answer time; the session line of one kind of session;
 - the phase numbers of ADR 099 in the guidelines and previews: the sound P10, the report dialog P12, the data on the device P14;
@@ -540,7 +542,7 @@ The workbench shows "now" and "after" of each screen that changes, and two or th
 
 ### M1. The design session — after PR C, before PR D
 
-An agent runs the session by the [design workflow](docs/design/workflow.md) in a workbench artifact `Nekotype · P8 design`, by [section 4](#4-design-brief), in five rounds:
+An agent runs the session by the [design workflow](../design/workflow.md) in a workbench artifact `Nekotype · P8 design`, by [section 4](#4-design-brief), in five rounds:
 
 1. the home on desktop and phone through H1–H12 (4.2 a–h);
 2. "Progress" on desktop and phone, and the kana details dialog in its states (i, j);
@@ -569,13 +571,13 @@ On a desktop and a phone: the home shows the reason, the outline, the forecast (
 
 ### M5. The home fix session — after PR 5, before PR E
 
-An agent runs the session by the [design workflow](docs/design/workflow.md) in a workbench artifact `Nekotype · P8 home fix`, by [section 4.3](#43-the-home-fix-m5), in one round (two if a shared component or token changes). After approval the agent moves the chosen variant into the design-system artifact as decisions from 153. Check after approval: `decisions.md` has the new decisions after 152; the home's preview draws every state of H1–H12 in the new layout. The workbench is deleted after PR E is merged.
+An agent runs the session by the [design workflow](../design/workflow.md) in a workbench artifact `Nekotype · P8 home fix`, by [section 4.3](#43-the-home-fix-m5), in one round (two if a shared component or token changes). After approval the agent moves the chosen variant into the design-system artifact as decisions from 153. Check after approval: `decisions.md` has the new decisions after 152; the home's preview draws every state of H1–H12 in the new layout. The workbench is deleted after PR E is merged.
 
 ## 7. Pull requests
 
-**Cards 1–6 follow the export** of PR D (decisions 140–152 in [`docs/design/source/decisions.md`](docs/design/source/decisions.md), [ADR 108](docs/adr/108-p8-design-export.md)); the maintainer approves them with PR D. A screen is built as the export's `README.md` describes it, with its strings; the previews in the design artifact show every state. No code pull request starts before PR D is merged.
+**Cards 1–6 follow the export** of PR D (decisions 140–152 in [`docs/design/source/decisions.md`](../design/source/decisions.md), [ADR 108](../adr/108-p8-design-export.md)); the maintainer approves them with PR D. A screen is built as the export's `README.md` describes it, with its strings; the previews in the design artifact show every state. No code pull request starts before PR D is merged.
 
-Common to all: the branch is cut from fresh `main`; the acceptance items are those of [phases.md](docs/spec/phases.md), numbered in the [table at the end](#acceptance-items-and-pull-requests); sizes are changed lines with tests, a guide to what one executor session holds.
+Common to all: the branch is cut from fresh `main`; the acceptance items are those of [phases.md](../spec/phases.md), numbered in the [table at the end](#acceptance-items-and-pull-requests); sizes are changed lines with tests, a guide to what one executor session holds.
 
 | PR  | Depends on | Can run in parallel with |
 | --- | ---------- | ------------------------ |
@@ -639,7 +641,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 
 - **Branch:** `p8-02-progress-details`. **Depends on:** PR D.
 - **Goal.** `/progress` as decision 146 draws it, `/stats` redirected, the navigation of decision 150, and the kana details dialog of decision 147 opened from the chart, which stays on `/` until PR 4 ([D11](#d11-progress-and-the-redirect-from-stats), [D12](#d12-the-kana-details-dialog)).
-- **The export** ([README](docs/design/source/README.md), "Progress" and "Kana details"; `Nav`, `KanaChart`):
+- **The export** ([README](../design/source/README.md), "Progress" and "Kana details"; `Nav`, `KanaChart`):
   - Progress: the title `Progress` / `Прогресс` with one view-only `Segmented` on its right (`track shown` / `показать дорожку`); the chart of that track; then the blocks of decision 137. The answer-time chart loses its own track switch and follows the page's: its caption starts with the track's name; a track without answers reads `no katakana answers yet` / `ответов по катакане пока нет` (one key per track). Before the first answer: the chart, every kana locked, and the `EmptyState` of decision 130 under it. Loading and the load error take the place under the title.
   - The dialog: the shared `Dialog`; the title is the kana (`jp-test-sm`) and its romaji (`mono-romaji`, `fur-dim`); the rows of [D12](#d12-the-kana-details-dialog) as a `dl` of `ui-caption` captions and `ui-body` values (`kd__rows` of the export's screens), the memory stroke 2px, at most 240px, `line-strong` with a `fur-dim` fill, `fur` when mastered.
   - `KanaChart`: activation of an introduced cell calls `onOpen(key)`; the cell carries `aria-haspopup="dialog"`, no `aria-expanded`; no panel, no Esc of its own; the tooltip stays.
@@ -672,7 +674,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 
 - **Branch:** `p8-04-home`. **Depends on:** PRs 2 and 3, M3.
 - **Goal.** `/` as decisions 140–145 draw it, on D1–D9, without the chart.
-- **The export** ([README](docs/design/source/README.md), "Learning home"):
+- **The export** ([README](../design/source/README.md), "Learning home"):
   - Layout: on a desktop a grid of four columns, the action and "since the last session" in the left two, the path in the right two (the areas `act act path path` / `str str path path`), `space-12` apart; below 640px one column: action, path, since the last session. At the top the track switch and the streak (`streak: 6 days`, the number in `mono-romaji`).
   - The action: the reason in `ui-title` (D1's copy; the weak kana in a `lang="ja"` span); `continue` (`primary`, `lg`, with `Kbd enter` except on a phone) with the outline after it (D7's copy, `ui-label`, `fur-dim`, numbers `fur`); the reserved `Notice` line as today. `continue` takes focus when the screen is ready. Nothing to do (decision 141): the reason and `next review: {when}` (`ui-body`, `fur-dim`) under it, no `continue`; with the suggestion, `start katakana` (`primary`, `lg`) instead.
   - The katakana suggestion (145): over the reason, the line `The basic hiragana are learned. You can start katakana.` / `Основная хирагана выучена. Можно начинать катакану.` and `start katakana` / `начать катакану` (`secondary`, `sm`).
@@ -692,9 +694,9 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 
 - **Branch:** `p8-05-session-summary`. **Depends on:** PR 4.
 - **Goal.** The session screen of decision 149 and the summary of decision 148 ([D9](#d9-the-forecast-on-the-home-and-in-the-summary), [D13](#d13-the-session-screen-and-the-summary)).
-- **The export** ([README](docs/design/source/README.md), "Learning session" and "Session summary"; `KanaTask`):
+- **The export** ([README](../design/source/README.md), "Learning session" and "Session summary"; `KanaTask`):
   - Ticks: under the session line a row of 2px ticks, `stroke-mark` apart, one per task of `SESSION_TASKS`: before `n` `fur-dim`, `n` `eye`, after it `line-strong`, a number of `misses` `miss`; `aria-hidden`. `KanaTask` takes `session.misses`; the ticks render with the task, so a keystroke still renders nothing.
-  - The forecast change on top: `the whole {head} row opens in about` / `весь ряд {head} откроется примерно через` (`ui-caption`, `fur-dim`), under it `{before} → {after} sessions` (`mono-stat`; `{before}` and the arrow `fur-dim`, the unit in `mono-romaji` with plural keys); its `aria-label` `before the session: {before}, now: {after} sessions` / `до сессии: {before}, теперь: {after} …`. A row opened in the session first says `the {head} row is fully open` / `ряд {head} открыт целиком`; no `before`: `{after}` alone; `beyond` and `complete` as on the home; pending keeps a height. Medians: `ShownForecast.median` ([ADR 108](docs/adr/108-p8-design-export.md), point 8).
+  - The forecast change on top: `the whole {head} row opens in about` / `весь ряд {head} откроется примерно через` (`ui-caption`, `fur-dim`), under it `{before} → {after} sessions` (`mono-stat`; `{before}` and the arrow `fur-dim`, the unit in `mono-romaji` with plural keys); its `aria-label` `before the session: {before}, now: {after} sessions` / `до сессии: {before}, теперь: {after} …`. A row opened in the session first says `the {head} row is fully open` / `ряд {head} открыт целиком`; no `before`: `{after}` alone; `beyond` and `complete` as on the home; pending keeps a height. Medians: `ShownForecast.median` ([ADR 108](../adr/108-p8-design-export.md), point 8).
   - The sections: `new` and `learned` (`introduced` reads `new` in English too) as chart cells under captions, as on the home; `faster`, `slower`, `confused` as now; every kana a button to the dialog (`aria-haspopup="dialog"`, at least `touch-min` under `pointer: coarse`).
   - Actions: `continue` (`Kbd enter`) and `home` / `на главную` (`secondary`; `to the table` goes). With nothing left to do (D2): no `continue`; `nothing to review now · next review: {when}` and `home` as the primary action with `Kbd enter`.
 - **Changes:** `pages/learn/ui/session-screen.tsx`, `summary-screen.tsx`, `summary-panel.tsx`, `model/session.ts` (`before` of the forecast at `start()`; `misses` appended when an answer is recorded), `lib/summary.ts` (`ForecastChange`); `shared/ui/kana-task.tsx` (the ticks); `shared/i18n`; `e2e/learn-session.spec.ts`.
@@ -717,7 +719,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 ### PR 7 — The home fix
 
 - **Branch:** `p8-07-home-fix`. **Depends on:** PR E.
-- **Goal.** The home as design decisions 153–155 draw it ([ADR 114](docs/adr/114-p8-home-fix-design-export.md)); the design's README, "Learning home" and "Keyboard", is the reference, and the previews `ScreenLearn` and `ScreenLearnMobile` in the artifact show every state.
+- **Goal.** The home as design decisions 153–155 draw it ([ADR 114](../adr/114-p8-home-fix-design-export.md)); the design's README, "Learning home" and "Keyboard", is the reference, and the previews `ScreenLearn` and `ScreenLearnMobile` in the artifact show every state.
 - **Layout (153).**
   - From 640px the grid's areas are `act act str str` over `path path path path` (`.nk-home` in `app/styles/index.css`); below 640px one column, action, path, since the last session, as now.
   - The home takes the height between the navigation and the footer and stands at two fifths of the free height: `main` in `app/App.tsx` already grows as a flex column (`flex-1 flex-col`); the learn page and the home fill it, and two empty pseudo-elements of the home share the free space 2 : 3 above and below it. Below 640px they are not drawn. No other page changes.
@@ -735,6 +737,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 - **Preview URL:** at about 1440 × 900 the home in `review`, the first visit, nothing to do (the cat), a long "since the last session" and the katakana track (four blocks): no large empty space under the content; the blocks read as a choice (あ → が → きゃ) and the caret stands before the next kana; `Tab` from `continue` goes to the cells, then to the blocks. At 360 px the order is as before, the blocks two to a line, no arrows.
 - **Done when:** `verify:quick` passes; CI is green with the latency gate; initial JS ≤ 31.0 KB and CSS ≤ 8.5 KB; after the merge the maintainer does M4.
 - **Size:** about 400 lines with the tests.
+- **M4:** done 2026-11-25.
 
 ### PR 6 — Close the phase
 
@@ -750,7 +753,7 @@ Sign-in is hidden on previews: what needs a session is checked locally (`pnpm ru
 
 ### Acceptance items and pull requests
 
-The items of the P8 acceptance in [phases.md](docs/spec/phases.md), in its order.
+The items of the P8 acceptance in [phases.md](../spec/phases.md), in its order.
 
 | #   | Acceptance item                                                                                                                   | PR          | Proved by                                                                                  |
 | --- | --------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------ |
@@ -801,7 +804,7 @@ One executor takes one pull request of section 7.
 | The line of 300 ms is missed in CI                     | `home-cost.spec.ts` over 300 ms                                                                | Profile first (the fold, the split, step 2). Then split the forecast's ten plays into callbacks of their own (a model function that plays one at a time), and only then a Worker, by an ADR. The estimate is 100–235 ms ([section 2](#2-what-was-checked)) |
 | A long task when the forecast runs                     | A click or a key on the home waits up to about 25 ms at 4× (worst measured state about 146 ms) | Accepted: the home has no hot path and Continue's click runs right after. If the latency test or a manual check shows a delay, split the plays as above                                                                                                    |
 | The history is off for a learner with several devices  | A pull brings sessions older than a forecast: `introducedIn` counts them, `actual` grows       | Accepted: the correction takes the median of ten ratios. A result below 1 is dropped ([D10](#d10-forecast-history))                                                                                                                                        |
-| The schema reset loses unsent progress                 | After PR 3 the account misses the last session of a device                                     | M2. Before the release nobody else uses production ([ADR 061](docs/adr/061-schema-reset-before-release.md))                                                                                                                                                |
+| The schema reset loses unsent progress                 | After PR 3 the account misses the last session of a device                                     | M2. Before the release nobody else uses production ([ADR 061](../adr/061-schema-reset-before-release.md))                                                                                                                                                  |
 | A stale edge copy of `index.html` answers `/stats`     | `/stats` shows the application, not a redirect, for up to 7 days                               | The router's redirect ([D11](#d11-progress-and-the-redirect-from-stats)) sends it to `/progress` on the client                                                                                                                                             |
 | The reason changes while the learner reads it          | A learning step passes or a kana becomes due: `learning` turns into `new` or `review`          | The page model plans again every minute; the session follows the planner whatever the label said. The reason is a label (ADR 100)                                                                                                                          |
 | `steiger` rejects `features/kana-details`              | The slice has one consumer                                                                     | PR 2 already has two (`pages/learn` through the chart on `/`, `pages/progress`); after PR 4 the home's "what got stronger" and the summary keep `pages/learn` a consumer                                                                                   |

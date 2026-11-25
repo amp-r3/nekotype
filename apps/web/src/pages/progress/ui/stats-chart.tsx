@@ -34,7 +34,7 @@ const MID_HEIGHT = 2;
 const REF_LIFT = 6;
 
 /**
- * The chart of `/stats` (design ResultChart). It only draws: the series and the axes come from
+ * The answer-time chart of `/progress` (design ResultChart). It only draws: the series and the axes come from
  * `lib/trend` (S15). One Tab stop; ← → step through the bars in time order, `Home` / `End`
  * jump, `Esc` and blur clear the cursor. Drawn at the width it has, so the axis text never scales.
  */

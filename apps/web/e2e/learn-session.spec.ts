@@ -54,7 +54,7 @@ test.describe('learning session on /', () => {
     await expect(page.getByTestId('home-reason')).toBeVisible();
   });
 
-  test('leaving a session returns to the table and keeps the introduced kana', async ({ page }) => {
+  test('leaving a session returns home and keeps the introduced kana', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'continue' }).click();
     await expect(page.getByTestId('kana-task')).toHaveAttribute('data-kind', 'introduction');

@@ -537,7 +537,7 @@ const store = createLearnStore({
 
 let watching = false;
 
-/** Binds `settings.learn.targetMs` and loads the log and the model; `/` and `/stats` call it. */
+/** Binds `settings.learn.targetMs` and loads the log and the model; `/` and `/progress` call it. */
 export function initLearn(targetMs: () => number): Promise<void> {
   targetMsSource = targetMs;
   if (!watching) {

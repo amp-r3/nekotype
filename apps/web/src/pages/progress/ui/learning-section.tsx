@@ -23,7 +23,7 @@ const GRID = 'grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-x-12 sm:gap-y-8';
 /** The window of the active days count: fixed, so the number never depends on the map's width. */
 const ACTIVE_WINDOW = 30;
 
-// The learning section, the whole of `/stats` (design decision 137): the streak next to the
+// The learning section of `/progress`, under the chart (design decisions 137, 146): the streak next to the
 // activity map, the totals, the answer time; four equal columns, two below 640 px. It is drawn
 // once the log has loaded and holds data; it reads the view of the fold (`LogStats`, S8).
 export function LearningSection({

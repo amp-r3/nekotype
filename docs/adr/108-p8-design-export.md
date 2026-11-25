@@ -2,7 +2,7 @@
 
 - **Status:** In force.
 - **Context:**
-  - P8 ([phases.md](../spec/phases.md), item 9) turns `/` into a learning home that answers "what now", moves the kana table and the statistics to `/progress`, opens a kana's details in a dialog and shows in the session summary how the session moved the forecast. Its plan ([p8-plan.md](../../p8-plan.md)) fixed the data (section 3) and left how the screens look to a design brief (section 4), with one open question (Q2): the forecast change as medians or as ranges.
+  - P8 ([phases.md](../spec/phases.md), item 9) turns `/` into a learning home that answers "what now", moves the kana table and the statistics to `/progress`, opens a kana's details in a dialog and shows in the session summary how the session moved the forecast. Its plan ([p8-plan.md](../archive/p8-plan.md)) fixed the data (section 3) and left how the screens look to a design brief (section 4), with one open question (Q2): the forecast change as medians or as ranges.
   - The session ran as [ADR 106](106-design-sessions-in-a-workbench-artifact.md) describes: a workbench artifact, five rounds (the home; Progress and the kana details; the summary and the session screen; the navigation and the settings; the states of P9–P12), each with the maintainer's answers before it and a review after it, all on 2026-11-24. The approved variants were moved into the design artifact as decisions 140–152 and are exported here.
   - [ADR 100](100-knowledge-model-fsrs-planner-and-answer-log.md), point 6, says a forecast is shown "as a range, never as one number". phases.md gives the summary's example as medians ("about 3 sessions → about 2").
 - **Decision:** Design decisions 140–152 in [`decisions.md`](../design/source/decisions.md), exported from the design artifact.
@@ -36,5 +36,5 @@
   - The export changes `README.md` (the home, Progress with the kana details, the summary, the session line, the settings, a section on later phases), `decisions.md`, the guidelines of `KanaChart`, `KanaTask`, `Nav` and `Switch`, `bundle.js`, `bundle.css` and `index.d.ts`. No token, text style or glyph changes, so `tokens.css` and `tokens.test.ts` do not change. The previews `ScreenStats` and `ScreenStatsMobile` became `ScreenProgress` and `ScreenProgressMobile` in the artifact.
   - The data gain one item that p8-plan.md section 3 did not hold: the session keeps the numbers of its finished tasks answered with an error, for the ticks (D13). The table cells on the home keep the cell and state styles of the chart in the initial CSS (D11, D14).
   - [ADR 100](100-knowledge-model-fsrs-planner-and-answer-log.md) is amended by point 8; its Status line says so.
-  - [p8-plan.md](../../p8-plan.md): the decisions fill the last column of section 4.2, Q2 records the medians, and the cards of PRs 1–6 are rewritten against the export.
+  - [p8-plan.md](../archive/p8-plan.md): the decisions fill the last column of section 4.2, Q2 records the medians, and the cards of PRs 1–6 are rewritten against the export.
   - The P8 workbench artifact is deleted after this export is merged.

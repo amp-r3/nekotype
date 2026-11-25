@@ -19,7 +19,7 @@ export type SeededDay = {
 };
 
 /**
- * Tests only: writes a log of one device into the page's IndexedDB, as `/stats` reads it. Every
+ * Tests only: writes a log of one device into the page's IndexedDB, as `/progress` reads it. Every
  * entry's answers fall at noon of its local day; the session starts and ends come first.
  */
 export async function seedStatsLog(
