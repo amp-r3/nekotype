@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DAY_MS, HORIZON_DEFAULT_MS } from './constants';
+import { DAY_MS, HORIZON_DEFAULT_MS, REVIEW_WAIT_MS } from './constants';
 import { createFold } from './fold';
 import type { ModelState } from './fold';
 import { intervalFactor } from './fsrs';
@@ -77,5 +77,17 @@ describe('dueFrom', () => {
       1000 + 10 * intervalFactor(0.9) * DAY_MS - HORIZON_DEFAULT_MS,
       3,
     );
+  });
+  it('is never sooner than REVIEW_WAIT_MS after the last answer', () => {
+    const base = createFold({ targetMs: 1500, stats: false }).state;
+    const items = new Map(base.items).set('hiragana:か', {
+      phase: 'learned',
+      memory: { stability: 0.4, difficulty: 5 },
+      lastAt: 5000,
+      lastDay: 0,
+      streak: 5,
+      lastTask: 0,
+    });
+    expect(dueFrom({ ...base, items }, 'hiragana:か')).toBe(5000 + REVIEW_WAIT_MS);
   });
 });

@@ -10,6 +10,8 @@ export const DAY_MS = 86_400_000;
 export const LEARN_MAX = 5;
 /** First learning step; doubled per correct recall. */
 export const STEP_MS = 30_000;
+/** A learned kana is never due sooner than this after its last answer. */
+export const REVIEW_WAIT_MS = 60_000;
 /** Correct recalls in a row to be learned. */
 export const GRADUATE = 5;
 /** Requested retention (the first lever: 0.93, ADR 100). */
