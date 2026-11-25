@@ -86,17 +86,21 @@ test.describe('the learning home', () => {
     expect(since.x).toBeGreaterThan(act.x + act.width / 2);
     expect(Math.abs(since.y - act.y)).toBeLessThan(40);
     expect(path.y).toBeGreaterThan(Math.max(act.y + act.height, since.y + since.height) - 1);
-    // The page of the home fills the window between the navigation and the footer, and its top
-    // stands under the first fifth of that height (the free space is shared 2 : 3 above and below).
+    // The page of the home fills the window between the navigation and the footer, and the free
+    // space is shared 2 : 3 above and below the content.
     const free = await page.evaluate(() => {
       const main = document.querySelector('main');
       return main === null ? null : main.getBoundingClientRect();
     });
     const home = await page.locator('.nk-home-page').boundingBox();
-    const top = await page.getByRole('radiogroup', { name: 'track' }).boundingBox();
-    if (free === null || home === null || top === null) throw new Error('no layout');
+    const content = await page.locator('.nk-home-page > div').boundingBox();
+    if (free === null || home === null || content === null) throw new Error('no layout');
     expect(Math.abs(home.height - free.height)).toBeLessThan(2);
-    expect(top.y - free.top).toBeLessThan(0.2 * free.height);
+    const above = content.y - free.top;
+    const below = free.bottom - (content.y + content.height);
+    expect(above).toBeGreaterThan(0);
+    expect(above / (above + below)).toBeGreaterThan(0.35);
+    expect(above / (above + below)).toBeLessThan(0.45);
     expect(
       await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
     ).toBe(true);

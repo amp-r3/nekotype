@@ -510,6 +510,13 @@ html {
   }
 }
 
+/* The kana of a row stand apart from 640px (space-2); below it there is no gap. */
+@media (min-width: 640px) {
+  .nk-rows > li {
+    gap: var(--space-2);
+  }
+}
+
 /* The caret before the kana that opens next: the task's caret, standing still. */
 .nk-home__caret {
   left: calc(-1 * (var(--space-2) + var(--stroke-mark)));

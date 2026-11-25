@@ -72,7 +72,7 @@ function Column({ row, view }: { readonly row: PathRow; readonly view: LearnView
         );
       })}
       {current && (
-        <span aria-hidden="true" className="text-mono-small text-fur-dim mt-1 font-mono">
+        <span aria-hidden="true" className="text-mono-small text-fur-dim font-mono">
           {row.introduced}/{row.total}
         </span>
       )}

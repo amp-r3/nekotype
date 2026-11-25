@@ -420,6 +420,21 @@ describe('home: the path (H6, H9)', () => {
     expect(container.querySelector('#home-path-dakuten')).not.toBeNull();
   });
 
+  it('names the blocks in Russian without a noun that would need a plural', async () => {
+    await setLocale('ru');
+    mount(<HomePath view={viewOfEvents([])} track="katakana" />);
+    expect(
+      Array.from(container.querySelectorAll('[role="radio"]')).map((r) =>
+        r.getAttribute('aria-label'),
+      ),
+    ).toEqual([
+      'основные: открыто 0 из 46',
+      'звонкие: открыто 0 из 25',
+      'сочетания: открыто 0 из 33',
+      'расширенные: открыто 0 из 21',
+    ]);
+  });
+
   it('puts the caret before the first kana that is not introduced, in the current row only', () => {
     const view = viewOfEvents([
       ...vowels.map((kana, i) => intro(key(kana), { at: NOW0 + i })),
