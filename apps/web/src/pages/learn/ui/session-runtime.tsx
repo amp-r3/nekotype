@@ -11,34 +11,24 @@ import {
   requestInsights,
   startSession,
 } from '@/entities/learn';
-import type { ShownForecast } from '@/entities/learn';
 import { defaultClock, defaultRng, defaultScheduler } from '@/shared/lib';
 import { createLearnSession } from '../model/session';
 import { createSummaryModel } from '../model/summary';
 import type { SummaryModel } from '../model/summary';
 import type { LearnSession } from '../model/session';
-import type { Track } from '@nekotype/shared/types';
+import { forecastBeforeOf } from '../lib/summary';
 import { silentAudio } from '../lib/audio';
 
 export { SessionScreen } from './session-screen';
 // The end of a session is reached only through a session, so its screen travels with this chunk.
 export { SummaryScreen } from './summary-screen';
 
-/** The forecast the home shows for the track now; null unless it is ready and up to date (D9). */
-function shownForecast(track: Track): ShownForecast | null {
-  const current = insights.value;
-  if (current === null || current.track !== track || current.version !== learnVersion.value) {
-    return null;
-  }
-  return current.forecast.kind === 'ready' ? current.forecast.forecast : null;
-}
-
 /** Opens a learning session on the planner of the model (P7 plan, D18). */
 export function openSession(): LearnSession {
   const track = learnTrack.value;
   return createLearnSession({
     track,
-    forecastBefore: () => shownForecast(track),
+    forecastBefore: () => forecastBeforeOf(insights.value, learnVersion.value, track),
     store: { view: learnView, modelState, startSession, endSession, introduce, recordAnswer },
     clock: defaultClock,
     scheduler: defaultScheduler,

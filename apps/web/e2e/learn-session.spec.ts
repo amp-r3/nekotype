@@ -10,6 +10,8 @@ test.describe('learning session on /', () => {
   }) => {
     await page.goto('/');
     await expect(page.getByTestId('home-reason')).toBeVisible();
+    // The forecast is the summary's "before": it is kept only when it was ready at the click.
+    await expect(page.getByTestId('home-forecast')).toBeVisible();
     await page.getByRole('button', { name: 'continue' }).click();
 
     // The navigation is not drawn during a session.

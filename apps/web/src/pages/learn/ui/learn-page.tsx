@@ -26,19 +26,29 @@ export function LearnPage(): JSX.Element {
     void initLearn(() => learnTargetMs.value);
   }, []);
 
-  // The summary's model lives while the summary is shown: it asks for the insights, and it ends
-  // when another session starts, the home shows, or the page goes.
+  // The summary's model lives while the summary is shown: it asks for the insights at every
+  // publish of the learn view. It ends synchronously where the summary is left (an effect's
+  // cleanup runs after paint, too late: the `start` event of the next session publishes a view),
+  // and here when the page goes.
+  const summaryRef = useRef<SummaryModel | null>(null);
+  summaryRef.current = summaryModel;
+  const endSummary = useCallback((): void => {
+    summaryRef.current?.dispose();
+    summaryRef.current = null;
+    setSummaryModel(null);
+  }, []);
   useEffect(
     () => () => {
-      summaryModel?.dispose();
+      summaryRef.current?.dispose();
     },
-    [summaryModel],
+    [],
   );
 
   // The session code is a chunk of its own. The field is focused here, inside the click, before
   // the chunk is awaited, so a phone keeps its keyboard.
   const startSession = useCallback(async () => {
     inputRef.current?.focus();
+    endSummary();
     setLoadFailed(false);
     setView('loading');
     const loaded = await loadSessionRuntime();
@@ -48,18 +58,17 @@ export function LearnPage(): JSX.Element {
       return;
     }
     const next = loaded.openSession();
-    setSummaryModel(null);
     setRuntime(loaded);
     setSession(next);
     setView('session');
     next.start();
-  }, []);
+  }, [endSummary]);
 
   const toHome = useCallback((): void => {
     session?.leave();
-    setSummaryModel(null);
+    endSummary();
     setView('home');
-  }, [session]);
+  }, [session, endSummary]);
 
   const hiddenInput = (
     <input
@@ -98,7 +107,9 @@ export function LearnPage(): JSX.Element {
           inputRef={inputRef}
           onLeave={toHome}
           onEnd={() => {
-            setSummaryModel(runtime.openSummaryModel(session));
+            const model = runtime.openSummaryModel(session);
+            summaryRef.current = model;
+            setSummaryModel(model);
             setView('summary');
           }}
         />

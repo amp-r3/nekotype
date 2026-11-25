@@ -1,7 +1,9 @@
 import { RECENT_RECALLS } from '@nekotype/model';
 import { describe, it, expect } from 'vitest';
+import type { Track } from '@nekotype/shared/types';
+import type { Insights, ShownForecast } from '@/entities/learn';
 import { answer, intro, key, learnedEvents, viewOfEvents } from './test-util';
-import { RECALL_WINDOW, isEmptySummary, summarize } from './summary';
+import { RECALL_WINDOW, forecastBeforeOf, isEmptySummary, summarize } from './summary';
 
 const NOW = 1_700_000_000_000;
 const noConfusion = { mixups: [], errors: [] } as const;
@@ -80,5 +82,39 @@ describe('summarize', () => {
 describe('RECALL_WINDOW', () => {
   it('is the window of recent recalls of the model', () => {
     expect(RECALL_WINDOW).toBe(RECENT_RECALLS);
+  });
+});
+
+describe('forecastBeforeOf', () => {
+  const shown: ShownForecast = {
+    row: 'hiragana:k',
+    low: 1,
+    median: 2,
+    high: 3,
+    raw: 2,
+    basis: 'corrected',
+  };
+  const insights = (over: Partial<Insights> = {}): Insights => ({
+    version: 4,
+    track: 'hiragana',
+    outline: null,
+    stronger: { kind: 'pending' },
+    forecast: { kind: 'ready', forecast: shown },
+    ...over,
+  });
+
+  it('is the shown forecast when it is ready, of the session track and the current view', () => {
+    expect(forecastBeforeOf(insights(), 4, 'hiragana')).toBe(shown);
+  });
+
+  it.each<[string, Insights | null, number, Track]>([
+    ['no insights', null, 4, 'hiragana'],
+    ['another track', insights(), 4, 'katakana'],
+    ['a stale view', insights(), 5, 'hiragana'],
+    ['pending', insights({ forecast: { kind: 'pending' } }), 4, 'hiragana'],
+    ['beyond', insights({ forecast: { kind: 'beyond', row: 'hiragana:k' } }), 4, 'hiragana'],
+    ['complete', insights({ forecast: { kind: 'complete' } }), 4, 'hiragana'],
+  ])('is null for %s', (_name, value, version, track) => {
+    expect(forecastBeforeOf(value, version, track)).toBeNull();
   });
 });

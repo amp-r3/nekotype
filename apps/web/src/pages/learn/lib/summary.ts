@@ -1,6 +1,7 @@
 import type { KanaView, LearnView } from '@nekotype/model';
 import type { LearnKanaKey } from '@nekotype/shared/types';
-import type { ForecastState, ShownForecast } from '@/entities/learn';
+import type { ForecastState, Insights, ShownForecast } from '@/entities/learn';
+import type { Track } from '@nekotype/shared/types';
 
 /** Changes in the median answer time smaller than this are not listed. */
 export const CHANGE_MIN_MS = 100;
@@ -111,4 +112,17 @@ export function summarize(input: SummaryInput): SessionSummary {
     errors: input.errors,
     states,
   };
+}
+
+/**
+ * The forecast to compare a session with, read when it starts (D9): the one the home shows for
+ * the session's track, only when it is `ready` and computed for the current view.
+ */
+export function forecastBeforeOf(
+  insights: Insights | null,
+  version: number,
+  track: Track,
+): ShownForecast | null {
+  if (insights === null || insights.track !== track || insights.version !== version) return null;
+  return insights.forecast.kind === 'ready' ? insights.forecast.forecast : null;
 }
