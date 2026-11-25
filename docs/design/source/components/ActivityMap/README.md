@@ -1,8 +1,8 @@
 # ActivityMap
 
-Activity by day on `/stats` (decisions 108, 137): a calendar grid that shows the streak as a picture. One column per week (Monday first, in both languages), one cell per day, the last cell is today.
+Activity by day on `/progress` (decisions 108, 137): a calendar grid that shows the streak as a picture. One column per week (Monday first, in both languages), one cell per day, the last cell is today.
 
-**It fills the width it is given** (decision 137). As many weeks as fit at the smallest cell (`minCell`, 16px), at most 26; the cells then grow to the edge, at most 28px. The layout never depends on the length of the history: three weeks of answers sit in the same frame as half a year, and the weeks before the first answer are empty outlines. On `/stats` the map takes three of the four columns: 26 weeks with cells of about 24px on a desktop, about 15 weeks with 16px cells on a phone. Wider than 26 × 32 + 40 = 872px it stops growing.
+**It fills the width it is given** (decision 137). As many weeks as fit at the smallest cell (`minCell`, 16px), at most 26; the cells then grow to the edge, at most 28px. The layout never depends on the length of the history: three weeks of answers sit in the same frame as half a year, and the weeks before the first answer are empty outlines. On `/progress` the map takes three of the four columns: 26 weeks with cells of about 24px on a desktop, about 15 weeks with 16px cells on a phone. Wider than 26 × 32 + 40 = 872px it stops growing.
 
 | what | data | look |
 | --- | --- | --- |
@@ -17,4 +17,4 @@ Activity by day on `/stats` (decisions 108, 137): a calendar grid that shows the
 - Cells are `space-1` apart, `radius-xs`. Month names over the first week of a month, `Mon` `Wed` `Fri` / `пн` `ср` `пт` at the left, `mono-small` `fur-dim`. The legend under the grid is part of the component; its swatches keep the base size (`space-4`).
 - **Keyboard.** One Tab stop (roving `tabIndex`): ← → move by a week, ↑ ↓ by a day, `Home` / `End` to the first and the last day. Focus shows the tooltip; a tap does the same on a phone.
 - The cells may be smaller than `touch-min`: a cell is not an action, it only shows a tooltip, and the same numbers are not needed to use the page.
-- No animation. It is drawn only in the lazy `/stats` chunk, never on `/`.
+- No animation. It is drawn only in the lazy `/progress` chunk, never on `/`.
