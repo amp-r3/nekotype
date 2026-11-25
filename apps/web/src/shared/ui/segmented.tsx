@@ -1,9 +1,13 @@
-import type { JSX } from 'preact';
+import type { ComponentChildren, JSX } from 'preact';
 import { cx } from '../lib';
 
 export type SegmentedOption<T extends string | number> = {
   readonly value: T;
+  /** The option's accessible name; also its text when `content` is not given. */
   readonly label: string;
+  /** Replaces the text of the option (a kana over a name and a count); `label` stays its name. */
+  readonly content?: ComponentChildren;
+  readonly testId?: string;
 };
 
 export type SegmentedProps<T extends string | number> = {
@@ -15,6 +19,10 @@ export type SegmentedProps<T extends string | number> = {
   readonly size?: 'sm' | 'md' | 'lg';
   // Numbers and romaji are set in the mono face.
   readonly mono?: boolean;
+  /** Items may grow in height and keep their content to the left (options with `content`). */
+  readonly tall?: boolean;
+  /** An extra class of the group. */
+  readonly className?: string;
 };
 
 const SELECTED_CLASS =
@@ -28,8 +36,14 @@ export function Segmented<T extends string | number>({
   disabled = false,
   size = 'sm',
   mono = false,
+  tall = false,
+  className,
 }: SegmentedProps<T>): JSX.Element {
-  const sizeClass = size === 'sm' ? 'h-control-sm px-2' : 'h-control px-3';
+  const sizeClass = tall
+    ? 'min-h-control-sm flex flex-col items-start px-2 pb-2 text-left'
+    : size === 'sm'
+      ? 'h-control-sm px-2'
+      : 'h-control px-3';
   const textClass = mono
     ? 'text-mono-romaji font-mono'
     : size === 'lg'
@@ -54,7 +68,11 @@ export function Segmented<T extends string | number>({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      className={cx('inline-flex flex-wrap select-none', size === 'lg' ? 'gap-4' : 'gap-1')}
+      className={cx(
+        'inline-flex flex-wrap select-none',
+        size === 'lg' ? 'gap-4' : 'gap-1',
+        className,
+      )}
     >
       {options.map((opt, index) => {
         const isSelected = opt.value === value;
@@ -64,6 +82,8 @@ export function Segmented<T extends string | number>({
             type="button"
             role="radio"
             aria-checked={isSelected}
+            aria-label={opt.content === undefined ? undefined : opt.label}
+            data-testid={opt.testId}
             tabIndex={isSelected ? 0 : -1}
             disabled={disabled}
             onClick={() => {
@@ -81,7 +101,7 @@ export function Segmented<T extends string | number>({
               isSelected ? SELECTED_CLASS : 'text-fur-dim hover:text-fur',
             )}
           >
-            {opt.label}
+            {opt.content ?? opt.label}
           </button>
         );
       })}

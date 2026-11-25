@@ -3,9 +3,10 @@ import { useMemo, useState } from 'preact/hooks';
 import type { RowCategory } from '@nekotype/engine';
 import type { LearnView } from '@nekotype/model';
 import { t } from '@/shared/i18n';
+import { Segmented } from '@/shared/ui';
 import type { Track } from '@nekotype/shared/types';
 import { pathOf } from '@/entities/learn';
-import type { PathRow, RowState, TrackPath } from '@/entities/learn';
+import type { PathBlock, PathRow, RowState, TrackPath } from '@/entities/learn';
 import { kanaOfKey, rowLabel } from '../../../lib/home-copy';
 
 const BLOCK_NAMES = {
@@ -15,23 +16,30 @@ const BLOCK_NAMES = {
   extended: 'learn.chart.block.extended',
 } as const;
 
-const TICK: Readonly<Record<RowState, string>> = {
-  done: 'bg-fur-dim',
-  current: 'bg-eye',
-  locked: 'bg-line-strong',
-};
-
 /** The block shown open by default: the current one, the last when the track is complete. */
 function defaultBlock(path: TrackPath): RowCategory | null {
   const current = path.blocks.find((block) => block.state === 'current');
   return (current ?? path.blocks[path.blocks.length - 1])?.category ?? null;
 }
 
+const HEAD: Readonly<Record<RowState, string>> = {
+  done: 'text-fur-dim',
+  current: 'text-eye',
+  locked: 'text-fur-faint',
+};
+
+/** The kana of a block's name: `fur` open, `fur-dim` started, `fur-faint` locked. */
+function blockKanaClass(block: PathBlock, open: boolean): string {
+  return open ? 'text-fur' : block.state === 'locked' ? 'text-fur-faint' : 'text-fur-dim';
+}
+
 function Column({ row, view }: { readonly row: PathRow; readonly view: LearnView }): JSX.Element {
   const current = row.state === 'current';
+  // The caret stands before the kana that opens next: the first locked one of the current row.
+  const next = current ? row.keys.find((key) => view.kana.get(key)?.state === 'locked') : undefined;
   return (
     <li
-      className="flex flex-col items-center gap-1"
+      className="flex min-w-0 flex-col items-center sm:flex-1"
       aria-current={current ? 'step' : undefined}
       aria-label={
         current
@@ -45,9 +53,9 @@ function Column({ row, view }: { readonly row: PathRow; readonly view: LearnView
       data-row={row.id}
       data-state={row.state}
     >
-      <span aria-hidden="true" className={`h-0.5 w-full rounded-xs ${TICK[row.state]}`} />
-      <span aria-hidden="true" className="text-mono-small text-fur-dim font-mono">
-        {row.head === '' ? '·' : row.head}
+      <span aria-hidden="true" className={`text-mono-small font-mono ${HEAD[row.state]}`}>
+        {/* The vowels have no head: an empty line of the same height. */}
+        {row.head === '' ? '\u00a0' : row.head}
       </span>
       {row.keys.map((key) => {
         const open = view.kana.get(key)?.state !== 'locked';
@@ -56,14 +64,15 @@ function Column({ row, view }: { readonly row: PathRow; readonly view: LearnView
             key={key}
             aria-hidden={current ? 'true' : undefined}
             lang="ja"
-            className={`font-jp text-jp-body ${open ? (current ? 'text-fur' : 'text-fur-dim') : 'text-fur-faint'}`}
+            className={`font-jp text-jp-body sm:text-jp-cell relative ${open ? (current ? 'text-fur' : 'text-fur-dim') : 'text-fur-faint'}`}
           >
+            {key === next && <span aria-hidden="true" className="nk-caret nk-home__caret" />}
             {kanaOfKey(key)}
           </span>
         );
       })}
       {current && (
-        <span aria-hidden="true" className="text-mono-small text-fur-dim font-mono">
+        <span aria-hidden="true" className="text-mono-small text-fur-dim mt-1 font-mono">
           {row.introduced}/{row.total}
         </span>
       )}
@@ -71,9 +80,9 @@ function Column({ row, view }: { readonly row: PathRow; readonly view: LearnView
   );
 }
 
-// The path of a track (design decision 143): the blocks in a row, each a button with its name, its
-// count and a tick per row; the open block lists its rows as columns. The current block is open
-// until the learner opens another.
+// The path of a track (design decision 155): the blocks as a chain of the kinds of kana, a
+// `Segmented` in the order they open; the open block lists its rows as columns with a caret before
+// the kana that opens next. The current block is open until the learner chooses another.
 export function HomePath({
   view,
   track,
@@ -88,55 +97,66 @@ export function HomePath({
   } | null>(null);
   const open =
     choice !== null && choice.track === path.track ? choice.category : defaultBlock(path);
+  const shown = path.blocks.find((block) => block.category === open);
 
   return (
     <div className="flex flex-col gap-4" data-testid="home-path">
-      <div className="flex flex-wrap gap-x-3 gap-y-3">
-        {path.blocks.map((block) => {
-          const expanded = block.category === open;
-          return (
-            <button
-              key={block.category}
-              type="button"
-              aria-expanded={expanded}
-              aria-controls={`home-path-${block.category}`}
-              data-testid={`home-block-${block.category}`}
-              style={{ flexGrow: block.rows.length }}
-              className="flex min-w-0 cursor-pointer flex-col items-stretch gap-1 text-left"
-              onClick={() => {
-                setChoice({ track: path.track, category: block.category });
-              }}
-            >
-              <span className="flex items-baseline justify-between gap-2">
-                <span className={`text-ui-label ${expanded ? 'text-fur' : 'text-fur-dim'}`}>
-                  {t(BLOCK_NAMES[block.category])}
-                </span>
-                <span className="text-mono-small text-fur-dim font-mono">
-                  {block.introduced}/{block.total}
-                </span>
-              </span>
-              <span aria-hidden="true" className="flex gap-0.5">
-                {block.rows.map((row) => (
-                  <span key={row.id} className={`h-0.5 flex-1 rounded-xs ${TICK[row.state]}`} />
-                ))}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-      {path.blocks.map((block) => (
+      {open !== null && (
+        <Segmented<RowCategory>
+          className="nk-blocks"
+          tall
+          ariaLabel={t('home.path.blocks')}
+          value={open}
+          onChange={(category) => {
+            setChoice({ track: path.track, category });
+          }}
+          options={path.blocks.map((block) => {
+            const name = t(BLOCK_NAMES[block.category]);
+            const selected = block.category === open;
+            const first = block.rows[0]?.keys[0];
+            return {
+              value: block.category,
+              testId: `home-block-${block.category}`,
+              label: t('home.path.block', {
+                name,
+                n: block.introduced,
+                total: block.total,
+              }),
+              content: (
+                <>
+                  {first !== undefined && (
+                    <span
+                      lang="ja"
+                      aria-hidden="true"
+                      className={`font-jp text-jp-cell sm:text-jp-test-sm ${blockKanaClass(block, selected)}`}
+                    >
+                      {kanaOfKey(first)}
+                    </span>
+                  )}
+                  <span className="text-ui-label">{name}</span>
+                  <span
+                    className={`text-mono-small font-mono ${selected ? 'text-fur-dim' : 'text-fur-faint'}`}
+                  >
+                    {block.introduced}/{block.total}
+                  </span>
+                </>
+              ),
+            };
+          })}
+        />
+      )}
+      {shown !== undefined && (
         <ol
-          key={block.category}
-          id={`home-path-${block.category}`}
-          hidden={block.category !== open}
-          aria-label={t(BLOCK_NAMES[block.category])}
-          className={block.category === open ? 'flex flex-wrap gap-x-3 gap-y-4' : 'hidden'}
+          id={`home-path-${shown.category}`}
+          aria-label={t(BLOCK_NAMES[shown.category])}
+          data-testid={`home-rows-${shown.category}`}
+          className="nk-rows flex flex-wrap gap-x-3 gap-y-4 sm:flex-nowrap sm:gap-x-6"
         >
-          {block.rows.map((row) => (
+          {shown.rows.map((row) => (
             <Column key={row.id} row={row} view={view} />
           ))}
         </ol>
-      ))}
+      )}
     </div>
   );
 }

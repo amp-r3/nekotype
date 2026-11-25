@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { computed } from '@preact/signals';
 import { t, tPluralParts } from '@/shared/i18n';
 import { Button, Notice, Parts, Segmented } from '@/shared/ui';
-import { databaseMode, defaultClock, defaultScheduler } from '@/shared/lib';
+import { databaseMode, defaultClock, defaultScheduler, useMediaQuery } from '@/shared/lib';
 import { learnTrack, setTrack } from '@/entities/settings';
 import type { LearnTrack } from '@/entities/settings';
 import {
@@ -64,6 +64,8 @@ export function HomeScreen({ loadFailed, onStart }: HomeScreenProps): JSX.Elemen
   const [panels, setPanels] = useState<HomePanels | null>(null);
   const continueRef = useRef<HTMLButtonElement>(null);
   const suggestRef = useRef<HTMLButtonElement>(null);
+  // The DOM follows the screen at its width, so Tab goes the way the eye does (design decision 153).
+  const desktop = useMediaQuery('(min-width: 640px)');
 
   useEffect(() => {
     const created = newModel();
@@ -118,88 +120,105 @@ export function HomeScreen({ loadFailed, onStart }: HomeScreenProps): JSX.Elemen
                 ? { text: t('learn.authFailed'), miss: true, retry: false }
                 : null;
 
-  return (
-    <section className="max-w-layout-max mx-auto flex w-full flex-col gap-8">
-      <h1 className="sr-only">{t('page.learn')}</h1>
+  const pathBlock = (
+    <section
+      key="path"
+      className="nk-home__path flex flex-col gap-4"
+      aria-labelledby="home-path-title"
+    >
+      <h2 id="home-path-title" className="text-ui-heading text-fur">
+        {t('learn.path.title', { track: t(`learn.track.${track}`) })}
+      </h2>
+      {view !== null && panels !== null && (
+        <>
+          <panels.HomeForecast state={mine?.forecast ?? { kind: 'pending' }} track={track} />
+          <panels.HomePath view={view} track={track} />
+        </>
+      )}
+    </section>
+  );
 
-      <div className="flex w-full flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
-        <Segmented<LearnTrack>
-          options={[
-            { value: 'hiragana', label: t('learn.track.hiragana') },
-            { value: 'katakana', label: t('learn.track.katakana') },
-          ]}
-          value={track}
-          onChange={setTrack}
-          ariaLabel={t('learn.track.label')}
-        />
-        {streak !== null && (
-          <p className="text-fur-dim text-ui-body" data-testid="learn-streak">
-            <Parts
-              parts={tPluralParts('learn.streak', streak)}
-              valueClass="text-mono-romaji text-fur font-mono"
-            />
-          </p>
-        )}
+  const sinceBlock =
+    view !== null && panels !== null && model?.first.value === false ? (
+      <div key="since" className="nk-home__since">
+        <panels.HomeSince state={mine?.stronger ?? { kind: 'pending' }} onOpen={openKanaDetails} />
       </div>
+    ) : null;
 
-      <div className="nk-home">
-        <div className="nk-home__act flex flex-col gap-4">
-          <HomeAction
-            reason={reason}
-            outline={mine?.outline ?? null}
-            track={track}
-            canStart={canStart}
-            suggest={suggest}
-            now={defaultClock.now()}
-            onStart={start}
-            onSuggest={() => {
-              setTrack('katakana');
-            }}
-            continueRef={continueRef}
-            suggestRef={suggestRef}
+  return (
+    <section className="nk-home-page max-w-layout-max mx-auto w-full">
+      <h1 className="sr-only">{t('page.learn')}</h1>
+      <div className="flex w-full flex-col gap-8">
+        <div className="flex w-full flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+          <Segmented<LearnTrack>
+            options={[
+              { value: 'hiragana', label: t('learn.track.hiragana') },
+              { value: 'katakana', label: t('learn.track.katakana') },
+            ]}
+            value={track}
+            onChange={setTrack}
+            ariaLabel={t('learn.track.label')}
           />
-          <Notice
-            reserve
-            loading={status === 'loading'}
-            tone={notice?.miss === true ? 'miss' : undefined}
-            action={
-              notice?.retry === true ? (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    void retryLearn();
-                  }}
-                >
-                  {t('learn.retry')}
-                </Button>
-              ) : undefined
-            }
-          >
-            {notice?.text}
-          </Notice>
+          {streak !== null && (
+            <p className="text-fur-dim text-ui-body" data-testid="learn-streak">
+              <Parts
+                parts={tPluralParts('learn.streak', streak)}
+                valueClass="text-mono-romaji text-fur font-mono"
+              />
+            </p>
+          )}
         </div>
 
-        <section className="nk-home__path flex flex-col gap-4" aria-labelledby="home-path-title">
-          <h2 id="home-path-title" className="text-ui-heading text-fur">
-            {t('learn.path.title', { track: t(`learn.track.${track}`) })}
-          </h2>
-          {view !== null && panels !== null && (
+        <div className="nk-home">
+          <div className="nk-home__act flex flex-col gap-4">
+            <HomeAction
+              reason={reason}
+              outline={mine?.outline ?? null}
+              track={track}
+              canStart={canStart}
+              suggest={suggest}
+              now={defaultClock.now()}
+              onStart={start}
+              onSuggest={() => {
+                setTrack('katakana');
+              }}
+              continueRef={continueRef}
+              suggestRef={suggestRef}
+            />
+            <Notice
+              reserve
+              loading={status === 'loading'}
+              tone={notice?.miss === true ? 'miss' : undefined}
+              action={
+                notice?.retry === true ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      void retryLearn();
+                    }}
+                  >
+                    {t('learn.retry')}
+                  </Button>
+                ) : undefined
+              }
+            >
+              {notice?.text}
+            </Notice>
+          </div>
+
+          {desktop ? (
             <>
-              <panels.HomeForecast state={mine?.forecast ?? { kind: 'pending' }} track={track} />
-              <panels.HomePath view={view} track={track} />
+              {sinceBlock}
+              {pathBlock}
+            </>
+          ) : (
+            <>
+              {pathBlock}
+              {sinceBlock}
             </>
           )}
-        </section>
-
-        {view !== null && panels !== null && model?.first.value === false && (
-          <div className="nk-home__since">
-            <panels.HomeSince
-              state={mine?.stronger ?? { kind: 'pending' }}
-              onOpen={openKanaDetails}
-            />
-          </div>
-        )}
+        </div>
       </div>
     </section>
   );

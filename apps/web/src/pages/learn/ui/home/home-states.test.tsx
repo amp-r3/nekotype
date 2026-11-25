@@ -177,6 +177,15 @@ describe('home: nothing to do (H7)', () => {
     expect(container.querySelector('[data-testid="home-outline"]')).toBeNull();
   });
 
+  it('shows the sleeping cat over the reason, and only then', () => {
+    mount(action({ reason: none(NOW + 8 * 3600_000), canStart: false }));
+    const cat = container.querySelector('svg');
+    expect(cat?.getAttribute('aria-hidden')).toBe('true');
+    expect(cat?.nextElementSibling).toBe(container.querySelector('[data-testid="home-reason"]'));
+    render(action({ reason: { kind: 'review', due: 3 } }), container);
+    expect(container.querySelector('svg')).toBeNull();
+  });
+
   it('says "tomorrow at …" and a date later', () => {
     mount(action({ reason: none(NOW + DAY), canStart: false }));
     expect(text('[data-testid="home-next-review"]')).toMatch(/^next review: tomorrow at /);
@@ -322,7 +331,7 @@ describe('home: the path (H6, H9)', () => {
     mount(<HomePath view={view} track="hiragana" />);
     const basic = container.querySelector('[data-testid="home-block-basic"]');
     expect(basic?.textContent).toContain('6/46');
-    expect(basic?.getAttribute('aria-expanded')).toBe('true');
+    expect(basic?.getAttribute('aria-checked')).toBe('true');
     const rows = Array.from(container.querySelectorAll('#home-path-basic > li'));
     expect(rows[0]?.getAttribute('data-state')).toBe('done');
     expect(rows[1]?.getAttribute('data-state')).toBe('current');
@@ -361,7 +370,7 @@ describe('home: the path (H6, H9)', () => {
     mount(<HomePath view={view} track="hiragana" />);
     expect(container.querySelectorAll('[aria-current="step"]')).toHaveLength(0);
     expect(
-      container.querySelector('[data-testid="home-block-yoon"]')?.getAttribute('aria-expanded'),
+      container.querySelector('[data-testid="home-block-yoon"]')?.getAttribute('aria-checked'),
     ).toBe('true');
   });
 
@@ -369,12 +378,65 @@ describe('home: the path (H6, H9)', () => {
     mount(<HomePath view={viewOfEvents([])} track="hiragana" />);
     const dakuten = container.querySelector<HTMLElement>('[data-testid="home-block-dakuten"]');
     await act(() => dakuten?.click());
-    expect(dakuten?.getAttribute('aria-expanded')).toBe('true');
+    expect(dakuten?.getAttribute('aria-checked')).toBe('true');
     expect(
-      container.querySelector('[data-testid="home-block-basic"]')?.getAttribute('aria-expanded'),
+      container.querySelector('[data-testid="home-block-basic"]')?.getAttribute('aria-checked'),
     ).toBe('false');
-    expect(container.querySelector('#home-path-basic')?.hasAttribute('hidden')).toBe(true);
-    expect(container.querySelector('#home-path-dakuten')?.hasAttribute('hidden')).toBe(false);
+    // Only the open block lists its rows.
+    expect(container.querySelector('#home-path-basic')).toBeNull();
+    expect(container.querySelector('#home-path-dakuten')).not.toBeNull();
+  });
+
+  it('is a radiogroup of the blocks, each named by its count, with ← → between them', async () => {
+    const view = viewOfEvents([
+      ...vowels.map((kana, i) => intro(key(kana), { at: NOW0 + i })),
+      intro(key('か'), { at: NOW0 + 100 }),
+    ]);
+    mount(<HomePath view={view} track="hiragana" />);
+    const group = container.querySelector('[role="radiogroup"]');
+    expect(group?.getAttribute('aria-label')).toBe('blocks of the path');
+    const radios = Array.from(container.querySelectorAll<HTMLElement>('[role="radio"]'));
+    expect(radios.map((r) => r.getAttribute('aria-label'))).toEqual([
+      'basic: 6 of 46 kana open',
+      'voiced: 0 of 25 kana open',
+      'combinations: 0 of 33 kana open',
+    ]);
+    expect(radios.map((r) => r.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false']);
+    // The first kana of each block, then its name and count.
+    expect(radios.map((r) => r.querySelector('[lang="ja"]')?.textContent)).toEqual([
+      'あ',
+      'が',
+      'きゃ',
+    ]);
+    expect(radios[0]?.querySelector('[lang="ja"]')?.className).toContain('text-fur');
+    expect(radios[1]?.querySelector('[lang="ja"]')?.className).toContain('text-fur-faint');
+    await act(() => {
+      radios[0]?.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
+      );
+    });
+    const after = Array.from(container.querySelectorAll('[role="radio"]'));
+    expect(after.map((r) => r.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
+    expect(container.querySelector('#home-path-dakuten')).not.toBeNull();
+  });
+
+  it('puts the caret before the first kana that is not introduced, in the current row only', () => {
+    const view = viewOfEvents([
+      ...vowels.map((kana, i) => intro(key(kana), { at: NOW0 + i })),
+      intro(key('か'), { at: NOW0 + 100 }),
+    ]);
+    mount(<HomePath view={view} track="hiragana" />);
+    const carets = container.querySelectorAll('.nk-home__caret');
+    expect(carets).toHaveLength(1);
+    expect(carets[0]?.getAttribute('aria-hidden')).toBe('true');
+    expect(carets[0]?.parentElement?.textContent).toBe('き');
+    expect(carets[0]?.closest('li')?.getAttribute('data-state')).toBe('current');
+  });
+
+  it('draws no caret on a complete track', () => {
+    const view = viewOfEvents(keysOfTrack('hiragana').map((k, i) => intro(k, { at: NOW0 + i })));
+    mount(<HomePath view={view} track="hiragana" />);
+    expect(container.querySelectorAll('.nk-home__caret')).toHaveLength(0);
   });
 
   it('reads the here-label in Russian', async () => {

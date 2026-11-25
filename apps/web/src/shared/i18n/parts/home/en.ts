@@ -1,6 +1,8 @@
 // The strings of the home's path, forecast and "since the last session": a chunk of their own,
 // loaded with those panels (P8 plan, D14).
 export const homeEn = {
+  'home.path.blocks': 'blocks of the path',
+  'home.path.block': '{name}: {n} of {total} kana open',
   'home.path.here': '{row}: {n} of {total} open, you are here',
   'home.forecast.range.one': 'the whole {head} row opens in {low}–{high} sessions',
   'home.forecast.range.few': 'the whole {head} row opens in {low}–{high} sessions',

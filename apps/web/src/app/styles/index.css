@@ -416,8 +416,8 @@ html {
 }
 
 /* ---- The learning home ------------------------------------------------------------------
-   Below 640px one column: the action, the path, since the last session. From 640px four columns:
-   the action and "since the last session" on the left, the path on the right (design decision 140). */
+   Below 640px one column: the action, the path, since the last session. From 640px two bands: the
+   action and "since the last session" over the path (design decisions 140, 153). */
 
 .nk-home {
   display: grid;
@@ -426,13 +426,38 @@ html {
   gap: var(--space-8);
 }
 
+/* The page of the home: it takes the height between the navigation and the footer, and the free
+   space falls above and below its content, 2 : 3 (design decision 153). Below 640px it is a plain
+   column. */
+.nk-home-page {
+  display: flex;
+  flex-direction: column;
+}
+
 @media (min-width: 640px) {
+  .nk-home-page {
+    flex: 1 1 auto;
+  }
+
+  .nk-home-page::before,
+  .nk-home-page::after {
+    content: '';
+    min-height: 0;
+  }
+
+  .nk-home-page::before {
+    flex: 2 1 0;
+  }
+
+  .nk-home-page::after {
+    flex: 3 1 0;
+  }
+
   .nk-home {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    grid-template-rows: auto 1fr;
     grid-template-areas:
-      'act act path path'
-      'str str path path';
+      'act act str str'
+      'path path path path';
     column-gap: var(--space-12);
   }
 
@@ -440,13 +465,57 @@ html {
     grid-area: act;
   }
 
-  .nk-home__path {
-    grid-area: path;
-  }
-
   .nk-home__since {
     grid-area: str;
   }
+
+  .nk-home__path {
+    grid-area: path;
+  }
+}
+
+/* The blocks of the path (design decision 155): a Segmented whose items are the kinds of kana in
+   the order they open, an arrow in the middle of the gap between two of them. Unlayered, so the
+   gap beats the group's own utility. */
+.nk-blocks {
+  display: flex;
+  width: 100%;
+  gap: var(--space-6);
+}
+
+.nk-blocks > [role='radio'] {
+  flex: 0 1 calc(50% - var(--space-3));
+}
+
+@media (min-width: 640px) {
+  .nk-blocks {
+    flex-wrap: nowrap;
+    gap: var(--space-12);
+  }
+
+  .nk-blocks > [role='radio'] {
+    flex: 0 1 auto;
+  }
+
+  .nk-blocks > [role='radio'] + [role='radio']::before {
+    content: '\2192';
+    position: absolute;
+    left: calc(-0.5 * var(--space-12));
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--fur-faint);
+  }
+}
+
+/* The caret before the kana that opens next: the task's caret, standing still. */
+.nk-home__caret {
+  left: calc(-1 * (var(--space-2) + var(--stroke-mark)));
+  top: 50%;
+  transform: translateY(-50%);
+  transition: none;
 }
 
 /* ---- The kana cell -------------------------------------------------------------------------

@@ -56,12 +56,10 @@ describe('learn page: the learning home', () => {
       'home-block-dakuten',
       'home-block-yoon',
     ]);
-    // The current block is open, the others are closed, and each button names the panel it opens.
-    expect(blocks.map((b) => b.getAttribute('aria-expanded'))).toEqual(['true', 'false', 'false']);
-    for (const block of blocks) {
-      const panel = container.querySelector(`#${block.getAttribute('aria-controls') ?? ''}`);
-      expect(panel).not.toBeNull();
-    }
+    // The current block is open and the radiogroup selects it; only its rows are listed.
+    expect(blocks.map((b) => b.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false']);
+    expect(container.querySelector('#home-path-basic')).not.toBeNull();
+    expect(container.querySelector('#home-path-dakuten')).toBeNull();
     const current = container.querySelector('[aria-current="step"]');
     expect(current?.getAttribute('aria-label')).toBe('the vowels: 0 of 5 open, you are here');
     // No answers yet: the forecast is from the model's prediction, a rough estimate.
@@ -82,7 +80,7 @@ describe('learn page: the learning home', () => {
     });
     expect(
       Array.from(container.querySelectorAll('[data-testid^="home-block-"]')).map((b) =>
-        b.getAttribute('aria-expanded'),
+        b.getAttribute('aria-checked'),
       ),
     ).toEqual(['false', 'true', 'false']);
   });

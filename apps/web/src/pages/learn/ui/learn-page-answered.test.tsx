@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import { getDatabase } from '@/shared/lib';
@@ -18,6 +18,7 @@ describe('learn page: after the first answer', () => {
   afterEach(async () => {
     render(null, container);
     container.remove();
+    vi.unstubAllGlobals();
     await setLocale('en');
   });
 
@@ -62,5 +63,32 @@ describe('learn page: after the first answer', () => {
     expect(locale.value).toBe('ru');
     expect(streak()).toBe(tPlural('learn.streak', 6));
     expect(streak()).toBe('серия: 6 дней');
+  });
+
+  // The DOM follows the screen at its width (design decision 153): on a desktop the action, then
+  // "since the last session", then the path; below 640px the action, the path, then since.
+  async function mountAt(desktop: boolean): Promise<string[]> {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: desktop && query === '(min-width: 640px)',
+      media: query,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }));
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    render(<LearnPage />, container);
+    for (let i = 0; i < 100 && container.querySelector('#home-since-title') === null; i++) {
+      await act(settle);
+    }
+    return Array.from(container.querySelectorAll('.nk-home > *')).map(
+      (el) => el.className.split(' ').find((c) => c.startsWith('nk-home__')) ?? '',
+    );
+  }
+
+  it('orders the action, since the last session and the path by width', async () => {
+    expect(await mountAt(true)).toEqual(['nk-home__act', 'nk-home__since', 'nk-home__path']);
+    render(null, container);
+    container.remove();
+    expect(await mountAt(false)).toEqual(['nk-home__act', 'nk-home__path', 'nk-home__since']);
   });
 });
