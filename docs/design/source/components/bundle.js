@@ -328,7 +328,7 @@
   }
 
   /*
-   * ResultChart — the answer-time chart of /stats (lazy chunk; decisions 109, 130). It only draws: the page computes
+   * ResultChart — the answer-time chart of /progress (lazy chunk; decisions 109, 130). It only draws: the page computes
    * the series. Layers, back to front: grid · `ranges` (one bar per day or week: lo–hi with a `mid` tick) · `reference`
    * (one dashed hair line, the target). x is time (ms or a day number), never an index. The y axis follows the data
    * (`yDomain`, `yTicks`). Every value is in the tooltip.
@@ -390,7 +390,7 @@
   }
 
   /*
-   * ActivityMap — activity by day on /stats (decisions 108, 137): a calendar grid, one column per week (Monday first),
+   * ActivityMap — activity by day on /progress (decisions 108, 137): a calendar grid, one column per week (Monday first),
    * one cell per day, the last cell is today. It always fills the width it is given: as many weeks as fit at `minCell`
    * (at most `maxWeeks`), and the cells grow to the edge (at most `maxCell`). The layout never depends on the history. Fill = recall answers of the day on `heat-fur-1…5`; a day without answers is
    * an outlined empty cell; a day of the current streak (`run`) carries a dot in the cell's ink; today has an `eye` border. Nothing is colour alone: the numbers are in the tooltip and in every cell's `aria-label`.

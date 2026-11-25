@@ -44,7 +44,7 @@ export declare function Dialog(props: DialogProps): React.ReactElement;
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** In code: 'ghost' = 'text'. */
   variant?: 'primary' | 'secondary' | 'text' | 'danger';
-  /** lg = control-h with space-6 padding (continue, to the table). */
+  /** lg = control-h with space-6 padding (continue, home). */
   size?: 'sm' | 'md' | 'lg';
   /** The system's only icon (linear, 24 grid, stroke 2), always next to a label. */
   icon?: 'reset';
@@ -83,7 +83,7 @@ export declare function Stat(props: StatProps): React.ReactElement;
 
 /** One day (or one week) on the chart: lo–hi is the bar, mid the tick. */
 export interface ChartRange { x: number; lo: number; hi: number; mid: number; tip: string[] }
-/** The answer-time chart of /stats (decisions 109, 130). The page computes the series; the chart only draws. */
+/** The answer-time chart of /progress (decisions 109, 130). The page computes the series; the chart only draws. */
 export interface ResultChartProps {
   /** One bar per day or per week. */
   ranges: ChartRange[];

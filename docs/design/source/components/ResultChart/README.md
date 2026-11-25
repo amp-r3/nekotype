@@ -1,6 +1,6 @@
 # ResultChart
 
-The answer-time chart of `/stats` (a lazy route: charts are allowed there, never on `/`). It draws what the page computed and nothing else: hand-written SVG, no library.
+The answer-time chart of `/progress` (a lazy route: charts are allowed there, never on `/`). It draws what the page computed and nothing else: hand-written SVG, no library.
 
 | chart | marks | axis |
 | --- | --- | --- |
