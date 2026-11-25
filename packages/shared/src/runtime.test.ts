@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ESLint } from 'eslint';
-import { isObject, isSettings } from './runtime';
+import { isObject, isSettings, readSettings } from './runtime';
 
 describe('shared/runtime guards', () => {
   it('isObject accepts plain objects only', () => {
@@ -42,6 +42,37 @@ describe('shared/runtime guards', () => {
       expect(isSettings({ ...valid, updatedAt: '0' })).toBe(false);
       expect(isSettings({ updatedAt: 0 })).toBe(false);
       expect(isSettings({ learn: valid.learn })).toBe(false);
+    });
+  });
+
+  describe('readSettings', () => {
+    const current = {
+      learn: { strictness: 'ime', track: 'katakana', sound: false },
+      updatedAt: 42,
+    };
+    const legacy = (patch: Record<string, unknown> = {}): unknown => ({
+      ...current,
+      learn: { ...current.learn, targetMs: 2000, ...patch },
+    });
+
+    it('returns a current document as it is', () => {
+      expect(readSettings(current)).toBe(current);
+    });
+
+    it('drops the target answer time of earlier versions (ADR 115), whatever its value', () => {
+      expect(readSettings(legacy())).toEqual(current);
+      expect(readSettings(legacy({ targetMs: 'x' }))).toEqual(current);
+      expect(isSettings(legacy())).toBe(false);
+    });
+
+    it('rejects anything else that is not a current document', () => {
+      expect(readSettings(legacy({ extra: 1 }))).toBeNull();
+      expect(readSettings(legacy({ track: 'both' }))).toBeNull();
+      expect(readSettings({ ...current, learn: { ...current.learn, extra: 1 } })).toBeNull();
+      const learn = { ...current.learn, targetMs: 2000 };
+      expect(readSettings({ ...current, learn, typing: {} })).toBeNull();
+      expect(readSettings(null)).toBeNull();
+      expect(readSettings({ updatedAt: 0 })).toBeNull();
     });
   });
 });

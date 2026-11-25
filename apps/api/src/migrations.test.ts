@@ -1,5 +1,5 @@
 import { env } from 'cloudflare:workers';
-import { isSettings } from '@nekotype/shared/runtime';
+import { readSettings } from '@nekotype/shared/runtime';
 import { describe, expect, it } from 'vitest';
 
 // Migration 0002 rewrites the rows of P5 and 0003 drops the typing table and columns (p6-plan.md,
@@ -120,6 +120,8 @@ describe('migration 0002', () => {
       await text('SELECT json FROM user_settings WHERE user_id = ?', 'm-synced'),
     );
     expect(settings).toEqual({ learn: P5_SETTINGS.learn, updatedAt: 7 });
+    // The target answer time of the document is dropped when a client reads it (ADR 115).
+    expect(readSettings(settings)).not.toBeNull();
 
     for (const id of ['m-synced', 'm-new']) {
       expect(await text('SELECT kana_stats FROM user_stats WHERE user_id = ?', id)).toBe('{}');
@@ -129,29 +131,6 @@ describe('migration 0002', () => {
       "SELECT COUNT(*) AS n FROM results WHERE user_id LIKE 'm-%'",
     ).first();
     expect(left).toEqual({ n: 0 });
-  });
-});
-
-describe('migration 0006 (drop the target answer time)', () => {
-  it('removes learn.targetMs and leaves a valid document', async () => {
-    await env.DB.batch([
-      env.DB.prepare('INSERT INTO users (id, created_at) VALUES (?, 1)').bind('m-target'),
-      env.DB.prepare('INSERT INTO user_settings (user_id, json, updated_at) VALUES (?, ?, 7)').bind(
-        'm-target',
-        JSON.stringify({ learn: P5_SETTINGS.learn, updatedAt: 7 }),
-      ),
-    ]);
-
-    await migrate('0006_drop_target_answer_time.sql');
-
-    const settings: unknown = JSON.parse(
-      await text('SELECT json FROM user_settings WHERE user_id = ?', 'm-target'),
-    );
-    expect(settings).toEqual({
-      learn: { strictness: 'learner', track: 'hiragana', sound: true },
-      updatedAt: 7,
-    });
-    expect(isSettings(settings)).toBe(true);
   });
 });
 

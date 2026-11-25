@@ -49,7 +49,7 @@ export { SCHEMA_VERSION, PRE_RELEASE, DATABASE_NAME, STORES } from './idb/schema
 
 export type { ValidSettings } from '@nekotype/shared/types';
 
-export { isObject, isSettings } from '@nekotype/shared/runtime';
+export { isObject, isSettings, readSettings } from '@nekotype/shared/runtime';
 
 export type { KeyIntent } from './input/input-adapter';
 export type { InputSource, InputSourceDeps } from './input/input-source';

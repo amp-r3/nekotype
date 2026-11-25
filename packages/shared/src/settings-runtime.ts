@@ -23,3 +23,23 @@ export function isSettings(value: unknown): value is ValidSettings {
   if (typeof updatedAt !== 'number' || !Number.isFinite(updatedAt)) return false;
   return isLearnSettings(value['learn']);
 }
+
+/**
+ * A stored or received settings document in the current form, or null. Documents written before
+ * ADR 115 carry `learn.targetMs`: the reader drops it (whatever its value) and keeps the rest, so a
+ * device's settings, an outbox batch and a pulled page of an earlier version stay readable.
+ */
+export function readSettings(value: unknown): ValidSettings | null {
+  if (isSettings(value)) return value;
+  if (!isObject(value)) return null;
+  const learn = value['learn'];
+  if (!isObject(learn) || !('targetMs' in learn)) return null;
+  const current: Record<string, unknown> = { ...value, learn: withoutTargetMs(learn) };
+  return isSettings(current) ? current : null;
+}
+
+function withoutTargetMs(learn: Record<string, unknown>): Record<string, unknown> {
+  const copy = { ...learn };
+  delete copy['targetMs'];
+  return copy;
+}

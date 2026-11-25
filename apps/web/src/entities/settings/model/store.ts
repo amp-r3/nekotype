@@ -4,7 +4,7 @@ import type { Strictness } from '@nekotype/engine';
 import type { LearnTrack } from './types';
 import type { ValidSettings } from '@/shared/lib';
 import type { ChangeChannel, Clock, Db } from '@/shared/lib';
-import { changeChannel, defaultClock, isSettings, reportWriteFailure } from '@/shared/lib';
+import { changeChannel, defaultClock, readSettings, reportWriteFailure } from '@/shared/lib';
 
 const SETTINGS_STORE = 'settings';
 const SETTINGS_KEY = 'current';
@@ -74,7 +74,8 @@ async function reread(): Promise<void> {
   try {
     if (boundDb === null) return;
     const saved = await boundDb.get(SETTINGS_STORE, SETTINGS_KEY);
-    if (isSettings(saved)) apply(saved);
+    const read = readSettings(saved);
+    if (read !== null) apply(read);
     else if (saved === undefined) applyDefaults();
   } catch {
     // Unreadable: this tab's settings stand.
@@ -82,8 +83,9 @@ async function reread(): Promise<void> {
 }
 
 /**
- * Reads the settings from the `settings` store; a value that fails validation is replaced by the
- * defaults (ADR 061). Resolves once `settingsReady` is true. Never rejects.
+ * Reads the settings from the `settings` store; a document of an earlier version is read without
+ * its target answer time (ADR 115), any other invalid value is replaced by the defaults (ADR 061).
+ * Resolves once `settingsReady` is true. Never rejects.
  */
 export async function initSettings(
   db: Promise<Db>,
@@ -102,8 +104,8 @@ export async function initSettings(
   try {
     const opened = await db;
     boundDb = opened;
-    const saved = await opened.get(SETTINGS_STORE, SETTINGS_KEY);
-    if (isSettings(saved)) apply(saved);
+    const read = readSettings(await opened.get(SETTINGS_STORE, SETTINGS_KEY));
+    if (read !== null) apply(read);
   } catch {
     // Unreadable: the defaults stand.
   }

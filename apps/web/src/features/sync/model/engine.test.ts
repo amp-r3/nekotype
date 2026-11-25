@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PendingBatch } from '../lib/stored';
-import type { SyncRequest } from '@nekotype/shared/types';
+import type { SyncRequest, ValidSettings } from '@nekotype/shared/types';
 import { decodePage, encodePage, isObject, isLogPage } from '@nekotype/shared/runtime';
 import { createMemoryDb } from '@/shared/lib';
 import {
@@ -41,6 +41,12 @@ const body = (request: { body: string | null }): SyncRequest => {
 };
 
 const eventCount = (request: SyncRequest): number => request.log?.e.length ?? 0;
+
+/** A settings document of the versions before ADR 115, with the target answer time. */
+const withTargetMs = (settings: ValidSettings): unknown => ({
+  ...settings,
+  learn: { ...settings.learn, targetMs: 1500 },
+});
 
 describe('a batch', () => {
   it('carries the own events and the changed settings, and the acknowledgement records them', async () => {
@@ -235,6 +241,62 @@ describe('settings', () => {
     expect(await rig.db.get('settings', 'current')).toEqual(settingsAt(40));
     expect(await rig.db.get('meta', 'settingsSyncedAt')).toBe(40);
     expect(rig.channels.settings.posts).toEqual(['change']);
+  });
+
+  describe('of an earlier version, with the target answer time (ADR 115)', () => {
+    it('sends a local document without it', async () => {
+      const rig = await createRig();
+      await rig.db.put('settings', 'current', withTargetMs(settingsAt(500)));
+      await rig.db.put('meta', 'lastSeq', 1);
+      rig.server.setLastSeq('dev-a', 1);
+      await sync(rig);
+
+      expect(body(rig.server.posts()[0] ?? { body: null }).settings).toEqual(settingsAt(500));
+      expect(rig.server.settings()).toEqual(settingsAt(500));
+    });
+
+    it('sends an outbox batch without it and clears the outbox', async () => {
+      const rig = await createRig();
+      await rig.db.put('outbox', 'current', {
+        seq: 1,
+        request: {
+          v: 3,
+          deviceId: 'dev-a',
+          seq: 1,
+          after: 0,
+          log: encodePage(eventsOf(LOG_DEV, 1, 1)),
+          settings: withTargetMs(settingsAt(500)),
+        },
+      });
+      await sync(rig);
+
+      expect(rig.server.posts()).toHaveLength(1);
+      expect(body(rig.server.posts()[0] ?? { body: null }).settings).toEqual(settingsAt(500));
+      expect(await rig.db.get('outbox', 'current')).toBeUndefined();
+      expect(rig.server.events()).toHaveLength(1);
+    });
+
+    it('takes a pulled document without it and goes on syncing', async () => {
+      const { syncStatus } = await import('./status');
+      const rig = await createRig();
+      rig.server.force(
+        () =>
+          new Response(
+            JSON.stringify({
+              last: 0,
+              more: false,
+              settings: withTargetMs(settingsAt(40)),
+              rows: [],
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          ),
+      );
+      await sync(rig);
+
+      expect(await rig.db.get('meta', 'syncBlockedAtVersion')).toBeUndefined();
+      expect(await rig.db.get('settings', 'current')).toEqual(settingsAt(40));
+      expect(syncStatus.value).toBe('synced');
+    });
   });
 
   it('is synced when the settings carry a fractional updatedAt, as the clock gives them', async () => {

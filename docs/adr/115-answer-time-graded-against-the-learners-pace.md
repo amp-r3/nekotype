@@ -14,7 +14,7 @@
      - The fold keeps the same pace over every device of the task.
   2. **The line.**
      - A timed answer's line is the pace of its device before the answer, once that pace has `PACE_MIN` answers. Until then it is the pace of every device of the task, once that one has `PACE_MIN`. Before either, every correct answer is good.
-     - "Good within the target time" of ADR 100, point 4, now reads "good within its line" for every row. A hint still makes an answer hard.
+     - "Good within the target time" of ADR 100, point 4, now reads "good within its line" for every row. A hint still makes an answer hard. A correct fluency answer slower than its line has no effect, as it had when slower than the target.
      - About one correct recall in ten is hard, whatever the typing speed and the device.
   3. **Fold state.** The paces are part of the fold's state (`LearnerState.pace`, two numbers per key) and are rebuilt from the log. They depend on the log's order, which is the same on every device after a sync, so every device folds the same grades. `FoldOptions` loses `targetMs`, and `ModelState` loses it too.
   4. **The `line` option.** `FoldOptions.line` replaces the line of a timed answer. The pace still follows the answers.
@@ -23,9 +23,10 @@
      - `packages/sim` uses it for the research rules of the note.
   5. **Settings.**
      - `settings.learn.targetMs` and its row on `/settings` go.
-     - The settings document is strict, so a stored document with the key is not valid. D1 migration `0006` removes the key from every row.
-     - A device's local document with the key is replaced by the defaults once (ADR 061; before P14 only the maintainer uses production). A signed-in user takes the migrated document of the account on the next sync.
-     - Between the migration and the deploy, a tab of the earlier code fails its pulls until it reloads, as with migration `0002` ([backend.md](../spec/backend.md)).
+     - Documents written before this decision keep the key: a device's local document, a batch waiting in its `outbox` and the account's document in D1. The client reads each of them without it (`readSettings` of `@nekotype/shared/runtime`), so a learner keeps their track and strictness and a waiting batch is still sent.
+     - The API stays strict ([A28](../spec/decisions.md)): a batch of the earlier code that still carries the key is refused with a `400`, kept, and sent without the key once the app is updated.
+     - No D1 migration. A migration that removed the key would break the code deployed before it, on the preview database that every pull request shares and in production between the migration and the deploy. An account's document loses the key when a device sends newer settings.
+     - A tab of the earlier code cannot read a pulled page whose settings lack the key, and blocks its sync until it reloads (ADR 061: before P14 only the maintainer uses production).
   6. **The answer-time chart of `/progress`** loses its target line: the line between good and hard is now the learner's own. The y axis covers the bars only.
 - **Justification:**
   - **The note.** On every simulated learner the rule holds the share of hard at 90% good. It is within one day of "no time" on every outcome, and a slow typist reads the track 5–8 days earlier than with the fixed line, at 0.2–1.0 points more review retention than no time.
@@ -59,7 +60,7 @@
     - [learning.md](../spec/learning.md) (Constants) has no learning setting left but the strictness and the sound.
     - [metrics.md](../spec/metrics.md): the Grade row says "within the device's pace"; the answer-time chart has no target line.
     - [frontend.md](../spec/frontend.md): `/settings` loses the row.
-    - [storage-sync.md](../spec/storage-sync.md): the settings document and its defaults lose `targetMs`.
+    - [storage-sync.md](../spec/storage-sync.md): the settings document and its defaults lose `targetMs`; a document of an earlier version is read without it.
     - A48 in [decisions.md](../spec/decisions.md) and ADR 100 get Status lines.
   - **Architecture.** [model.md](../architecture/model.md), [entities.md](../architecture/entities.md) and [pages.md](../architecture/pages.md) describe the pace and `initLearn()` without a target.
   - **The design system** still shows the target answer time on `/settings` (decisions 79 and 151 of the design log), the target line on `ResultChart` (decisions 67 and 86) and the `Select` component for that row. A design session brings it in line ([ADR 106](106-design-sessions-in-a-workbench-artifact.md)). `Select` stays in `shared/ui`, out of the barrel, with no screen using it until then.

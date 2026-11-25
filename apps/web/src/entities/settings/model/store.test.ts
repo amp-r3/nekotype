@@ -7,7 +7,7 @@ import {
   setLearnStrictness,
   setTrack,
 } from './store';
-import { createMemoryDb, databaseMode } from '@/shared/lib';
+import { createMemoryDb, databaseMode, isSettings } from '@/shared/lib';
 import type { ChangeChannel, Db, Clock } from '@/shared/lib';
 
 const fixedClock = (now: number): Clock => ({ now: () => now });
@@ -90,13 +90,28 @@ describe('settings store: actions and persistence in IndexedDB', () => {
     });
   });
 
+  it('reads a document of an earlier version without its target answer time (ADR 115)', async () => {
+    await db.put('settings', 'current', {
+      ...savedDocument,
+      learn: { ...savedDocument.learn, targetMs: 2000 },
+    });
+    await initSettings(Promise.resolve(db));
+    expect(learnStrictness.value).toBe('ime');
+    expect(learnTrack.value).toBe('katakana');
+    setLearnStrictness('learner');
+    await flush();
+    expect(await db.get('settings', 'current')).toMatchObject({
+      learn: { strictness: 'learner', track: 'katakana', sound: false },
+    });
+    const saved: unknown = await db.get('settings', 'current');
+    expect(isSettings(saved)).toBe(true);
+  });
+
   it('a saved value that fails validation is replaced by the defaults (ADR 061)', async () => {
     for (const bad of [
       'x',
       // The document of P5, with its `typing` block.
       { ...savedDocument, typing: { script: 'katakana', content: 'words' } },
-      // The target answer time of earlier versions (ADR 115).
-      { ...savedDocument, learn: { ...savedDocument.learn, targetMs: 1500 } },
       { v: 1, script: 'katakana', content: 'words', strictness: 'ime', weakFocus: true },
     ]) {
       await db.put('settings', 'current', bad);
