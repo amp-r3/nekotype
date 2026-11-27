@@ -7,11 +7,13 @@ Reads the pinned JMdict and JLPT lists of packages/content/.cache (`pnpm --filte
   (kana-only, usually kana, kana in some senses, kanji), the most kana-like of them;
 - katakana-pool.json: kana-only JMdict entries with a katakana reading that has a priority tag
   (news1, ichi1, spec1, spec2, gai1), onomatopoeia and names left out, in the chunk format;
-- katakana-core.json: the same pool restricted to ichi1, spec1 or spec2.
+- katakana-core.json: the same pool restricted to ichi1, spec1 or spec2;
+- katakana-kana.json and hiragana-kana.json: the selection the note proposes for both scripts
+  (words written in kana, see `proposed`), in the chunk format.
 
 Run: python3 -I packages/sim/scripts/p9-jmdict.py OUT_DIR
 Then: PART=jmdict HIRA_KIND=OUT_DIR/hira-kind.json \
-      POOL=core=OUT_DIR/katakana-core.json,all=OUT_DIR/katakana-pool.json \
+      POOL=core=OUT_DIR/katakana-core.json,all=OUT_DIR/katakana-pool.json,kana=OUT_DIR/katakana-kana.json,kana=OUT_DIR/hiragana-kana.json \
       pnpm --filter @nekotype/sim run p9-words
 """
 
@@ -31,6 +33,19 @@ XML_LANG = '{http://www.w3.org/XML/1998/namespace}lang'
 PRIORITY = {'news1', 'ichi1', 'spec1', 'spec2', 'gai1'}
 CORE = {'ichi1', 'spec1', 'spec2'}
 KATAKANA = re.compile(r'^[ァ-ヺー]+$')
+HIRAGANA = re.compile(r'^[\u3041-\u3096ー]+$')
+# The proposed rule: priority tags of general frequency (gai1 is loanwords only, kept for katakana).
+PROPOSED_PRIORITY = {'hiragana': {'news1', 'ichi1', 'spec1', 'spec2'},
+                     'katakana': {'ichi1', 'spec1', 'spec2'}}
+# A sense with one of these `misc` tags is left out; an entry with one on any sense is left out
+# when the tag is in UNFIT_ANYWHERE. ElementTree expands the entities to their text.
+UNFIT_ANYWHERE = ('vulgar', 'rude or X-rated', 'derogatory', 'sensitive')
+UNFIT_FIRST = ('archaic', 'obsolete', 'rare term', 'dated term', 'historical term')
+# Parts of speech that make an entry grammar rather than a word to read.
+GRAMMAR = ('particle', 'auxiliary', 'conjunction', 'copula', 'prefix', 'suffix', 'counter',
+           'expressions')
+MEANING_SENSES = 3
+MEANING_LIMIT = 60
 KINDS = ['kana-only', 'usually kana', 'kana in some senses', 'kanji']
 # ElementTree expands JMdict's entities to their text, so `&uk;` arrives as this phrase.
 USUALLY_KANA = 'usually written using kana'
@@ -64,6 +79,50 @@ def kind(entry):
     if any(USUALLY_KANA in m for s in senses for m in s['misc']):
         return 'kana in some senses'
     return 'kanji'
+
+
+def meaning(entry):
+    """The pipeline's rule (content.md, Words, step 4), without `stagr`."""
+    glosses = [s['gloss'][0] for s in entry['senses'] if s['gloss']][:MEANING_SENSES]
+    while len(glosses) > 1 and len('; '.join(glosses)) > MEANING_LIMIT:
+        glosses.pop()
+    return '; '.join(glosses)
+
+
+def proposed(entries, script):
+    """Common words written in kana (the note's proposal): kana-only or `uk` on the first sense,
+    a reading of the script with a priority tag, no unfit tag, no name, not grammar."""
+    pattern = HIRAGANA if script == 'hiragana' else KATAKANA
+    words, dropped = {}, Counter()
+    for entry in entries.values():
+        k = kind(entry)
+        if k not in ('kana-only', 'usually kana') or not entry['senses']:
+            continue
+        reading = next((reb for reb, pri in entry['reads']
+                        if pattern.match(reb) and set(pri) & PROPOSED_PRIORITY[script]), None)
+        if reading is None or reading in words:
+            continue
+        misc = [m for s in entry['senses'] for m in s['misc']]
+        first = entry['senses'][0]
+        if any(tag in m for m in misc for tag in UNFIT_ANYWHERE):
+            dropped['unfit'] += 1
+            continue
+        if any(tag in m for m in first['misc'] for tag in UNFIT_FIRST):
+            dropped['archaic or rare'] += 1
+            continue
+        if any('name' in p for p in first['pos']):
+            dropped['name'] += 1
+            continue
+        if first['pos'] and all(any(g in p for g in GRAMMAR) for p in first['pos']):
+            dropped['grammar'] += 1
+            continue
+        if not first['gloss']:
+            dropped['no English'] += 1
+            continue
+        onomatopoeia = any('onomatopoeic' in m for m in first['misc'])
+        words[reading] = {'id': f'w:{script}:{reading}', 'text': reading, 'script': script,
+                          'meaning': {'en': meaning(entry)}, 'onomatopoeia': onomatopoeia}
+    return [words[r] for r in sorted(words)], dropped
 
 
 def main(out):
@@ -105,6 +164,14 @@ def main(out):
     dump('hira-kind.json', kinds)
     dump('katakana-pool.json', every)
     dump('katakana-core.json', core)
+    for script in ('hiragana', 'katakana'):
+        words, dropped = proposed(entries, script)
+        n5n4 = sum(1 for w in words if w['text'] in jlpt)
+        sound = sum(1 for w in words if w['onomatopoeia'])
+        print(f'{script} proposed: {len(words)} (in N5-N4: {n5n4}, onomatopoeia: {sound}); '
+              f'left out: {dict(dropped)}')
+        dump(f'{script}-kana.json', [{k: w[k] for k in ('id', 'text', 'script', 'meaning')}
+                                      for w in words])
 
 
 if __name__ == '__main__':

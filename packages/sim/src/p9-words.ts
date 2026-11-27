@@ -102,14 +102,15 @@ function readable(p: Parsed, known: (id: number) => boolean, variant: Variant): 
   return p.kana.every(known);
 }
 
+/** `HIRAGANA_POOL` and `KATAKANA_POOL` (paths) replace a word chunk with a pool of `p9-jmdict.py`. */
+function words(track: Track): readonly Parsed[] {
+  const pool = process.env[track === 'hiragana' ? 'HIRAGANA_POOL' : 'KATAKANA_POOL'];
+  return load(pool === undefined ? `words-${track}` : new URL(`file://${pool}`)).map(parse);
+}
+
 const WORDS: Readonly<Record<Track, readonly Parsed[]>> = {
-  hiragana: load('words-hiragana').map(parse),
-  // `KATAKANA_POOL` (a path) replaces the katakana chunk, for `sessions` on a pool of `PART=jmdict`.
-  katakana: load(
-    process.env['KATAKANA_POOL'] === undefined
-      ? 'words-katakana'
-      : new URL(`file://${process.env['KATAKANA_POOL']}`),
-  ).map(parse),
+  hiragana: words('hiragana'),
+  katakana: words('katakana'),
 };
 const PHRASES: Readonly<Record<Track, readonly Parsed[]>> = {
   hiragana: load('phrases-hiragana').map(parse),
@@ -260,8 +261,8 @@ if (want('first')) {
 /**
  * `PART=jmdict` reads two files of the JMdict analysis the note describes (not in the repository):
  * `HIRA_KIND`, a JSON object from each hiragana word to how JMdict spells it (`kana-only`, `usually
- * kana`, `kana in some senses`, `kanji`), and `POOL`, `name=path` pairs of katakana word lists in the
- * chunk format, compared row by row with `words-katakana`.
+ * kana`, `kana in some senses`, `kanji`), and `POOL`, `name=path` pairs of word lists in the chunk
+ * format, each compared row by row with the chunk of its script.
  */
 if (PART === 'jmdict') {
   const kindsFile = process.env['HIRA_KIND'];
@@ -298,15 +299,18 @@ if (PART === 'jmdict') {
     if (!Array.isArray(list)) return [];
     const texts = list.flatMap((entry: unknown): Text[] => {
       if (!isObject(entry) || typeof entry['text'] !== 'string') return [];
-      return [{ id: entry['text'], text: entry['text'], script: 'katakana', meaning: '' }];
+      const script = entry['script'] === 'hiragana' ? 'hiragana' : 'katakana';
+      return [{ id: entry['text'], text: entry['text'], script, meaning: '' }];
     });
-    return [{ name, parsed: texts.map(parse) }];
+    return [{ name, parsed: texts.map(parse), track: texts[0]?.script ?? 'katakana' }];
   });
-  if (pools.length > 0) {
-    const all = [{ name: 'words-katakana', parsed: WORDS.katakana }, ...pools];
+  for (const track of TRACKS) {
+    const mine = pools.filter((pool) => pool.track === track);
+    if (mine.length === 0) continue;
+    const all = [{ name: `words-${track}`, parsed: WORDS[track] }, ...mine];
     const known = new Set<number>();
     const rows: string[][] = [];
-    for (const { row, ids } of rowsOf('katakana')) {
+    for (const { row, ids } of rowsOf(track)) {
       for (const id of ids) known.add(id);
       const has = (id: number): boolean => known.has(id);
       rows.push([
@@ -317,7 +321,7 @@ if (PART === 'jmdict') {
         ]),
       ]);
     }
-    console.log('\nReadable katakana words once each row is introduced: the chunk and the pools\n');
+    console.log(`\nReadable ${track} words once each row is introduced: the chunk and the pools\n`);
     console.log(
       lines(
         [
@@ -330,7 +334,7 @@ if (PART === 'jmdict') {
         rows,
       ),
     );
-    for (const { name, parsed } of pools) {
+    for (const { name, parsed } of mine) {
       const unreadable = parsed.filter((p) => p.other.length > 0).length;
       const rules = parsed.filter((p) => p.rules).length;
       console.log(

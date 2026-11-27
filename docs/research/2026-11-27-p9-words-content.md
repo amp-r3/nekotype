@@ -2,7 +2,7 @@
 
 Before P9 is specified, the maintainer asked how to make learning less monotonous than typing the romaji of one kana after another, and chose seven ideas to look into (2026-11-27). Two of them depend on content: **words of known kana with their meanings, katakana loanwords first** (idea 1), and **"read the sign"**, short public signs and menus (idea 2). The maintainer's rule for both: if the content does not support them, they are dropped. This part answers one question for each: how many texts of the generated content a learner can read at each point of a track, and on which day of learning. Words are planned for P12 ([ADR 099](../adr/099-learning-home-methods-and-phases-after-p6.md), point 9), so the answer also says whether they could come earlier.
 
-This note decides nothing and changes neither the model nor the app. Parts 2 (the task types and their weight in the model) and 3 (the planner: the mix of a session) follow.
+This note decides nothing and changes neither the model nor the app. The maintainer answered its questions on 2026-11-27, and a second pass measured the selection they chose ([The selection chosen](#the-selection-chosen)); [ADR 116](../adr/116-words-written-in-kana-and-varied-tasks-in-p9.md) records the decisions. Parts 2 (the task types and their weight in the model) and 3 (the planner: the mix of a session) follow.
 
 ## In short
 
@@ -123,12 +123,65 @@ When the learner can first read N words (session and day):
 - **Idea 10, a word at the end of a session: possible from day 1.** After the vowels there are 13 hiragana words. One of them can close the first session.
 - **Kanji words in kana:** the maintainer decides whether all 1,167 hiragana words are used or only the 211 written in kana. All of them give meaning from the first session (あお, いえ, あか), as textbooks do. The 211 keep the text authentic but leave the first rows almost without words: 6 words after the vowels, mostly interjections, and 10 after the k row. A middle way is to use all of them and, in the kana details or the summary, show the kanji spelling of those that have one. That needs the kanji in the chunk; today it holds only the kana.
 
-## Open questions for the maintainer
+## The maintainer's answers
 
-1. **Words in P9.** The content allows words from the first session. Should the word tasks of P12 (words of known kana, credit to each kana) move into P9, with "words you can read now" left in P12 or moved as well? It changes the phases of ADR 099 and needs an ADR.
-2. **Kanji words in kana:** all 1,167, only the 211 written in kana, or all with the kanji shown beside them?
-3. **The katakana pool:** keep the 108 N5–N4 words, or widen it to the core pool of about 660 common loanwords (a new selection rule)?
-4. **Meanings in Russian:** the meanings are English only (O3, ADR 093). A loanword needs no translation, but a hiragana word does (あか "red"). Is English enough for a learner who uses the Russian UI?
+The maintainer answered on 2026-11-27:
+
+1. **Words in P9:** yes. The word tasks move into P9, and "words you can read now" on `/` and in the summary stay in P12.
+2. **Kanji words in kana:** no. A word is shown only if it is written in kana in real text.
+3. **The katakana pool:** widen it. The same rule as for hiragana selects it (below).
+4. **Meanings:** English only in the MVP. Russian translations are not needed.
+
+Signs (idea 2) are dropped.
+
+## The selection chosen
+
+The second pass selects, from the pinned JMdict, the common words written in kana (`proposed` in `scripts/p9-jmdict.py`), with one rule for both scripts:
+
+- **Written in kana:** the entry has no kanji, or its first sense is "usually written using kana alone" (`uk`).
+- **Common:** the reading has `news1`, `ichi1`, `spec1` or `spec2`. `gai1` marks loanwords only and is not taken. In katakana `news1` gives no entries.
+- **A word to read:**
+  - an entry with a vulgar, rude, derogatory or sensitive sense is left out (19 in hiragana, 7 in katakana), and so is one whose first sense is archaic, obsolete or rare;
+  - names are left out, and so is grammar: a first sense that is only particles, auxiliaries, conjunctions, the copula, prefixes, suffixes, counters or expressions (277 in hiragana, 7 in katakana).
+- **The meaning** follows the rule the pipeline has today (the first gloss of the first 3 senses, up to 60 characters).
+
+That gives **1,077 hiragana words**: 162 of them are N5–N4, 161 are onomatopoeia (きらきら, わくわく, ふわふわ). It also gives **828 katakana words**: 91 are N5–N4 and 45 onomatopoeia (ニコニコ, カチカチ). In the chunk format they take about 24 KB and 17 KB gzip, under the 40 KB of a content chunk.
+
+| row     | hiragana words, chunk (1167) | hiragana, written in kana (1077) | katakana words, chunk (108) | katakana, written in kana (828) |
+| ------- | ---------------------------- | -------------------------------- | --------------------------- | ------------------------------- |
+| vowels  | 13                           | 12                               | 0                           | 1                               |
+| k       | 40                           | 25                               | 1                           | 11                              |
+| s       | 86                           | 50                               | 1                           | 25                              |
+| t       | 174                          | 110                              | 10                          | 53                              |
+| n       | 225                          | 152                              | 13                          | 66                              |
+| h       | 262                          | 170                              | 16                          | 79                              |
+| m       | 352                          | 257                              | 17                          | 118                             |
+| r       | 590                          | 526                              | 31                          | 219                             |
+| w_n     | 703                          | 593                              | 37                          | 296                             |
+| p       | 1040                         | 1032                             | 96                          | 691                             |
+| py      | 1167                         | 1077                             | 103                         | 765                             |
+| ext_che | —                            | —                                | 108                         | 827                             |
+
+With っ and ー counted as taught. Without them hiragana loses little (117 of its 1,077 words have one), and katakana loses nearly half (380 of 828).
+
+In the simulator (30 beginners, as in table 4) the selection gives the following.
+
+| words | hiragana, session | day | katakana, session | day |
+| ----- | ----------------- | --- | ----------------- | --- |
+| 1     | 1 (1–2)           | 1   | 44 (40–48)        | 7   |
+| 10    | 2 (2–3)           | 1   | 53 (49–56)        | 8   |
+| 50    | 8 (8–12)          | 1–2 | 63 (59–66)        | 9   |
+| 100   | 13 (12–16)        | 2   | 77 (72–80)        | 11  |
+
+- **Hiragana reaches 50 words about one day later than the chunk did**, and still within the first two days. The katakana learner reads 50 words on day 9 instead of 14.
+- **The first rows are thin and odd.** The vowels give mostly interjections (ああ, いいえ, え) and one rare word (あい, the dyer's knotweed). The first common nouns and adjectives come with the k and s rows: かき, かっこいい, あそこ, おいしい.
+- **What the rule still lets through.** A sample of 35 words per script, read by hand, found the following:
+  - a crude word without a JMdict tag (クソ "damn");
+  - sensitive words (ナチス);
+  - grammar-like expressions (ということは);
+  - animal and plant names that JMdict writes in katakana (タヌキ, ネズミ). These are fine, because they are written so.
+
+  The pipeline pull request settles the filter on a larger sample that the maintainer reads.
 
 ## Reproduce
 
@@ -141,4 +194,8 @@ PART=jmdict HIRA_KIND=/tmp/p9/hira-kind.json \
   pnpm --filter @nekotype/sim run p9-words                # table 3 and the "in kana" column
 PART=sessions KATAKANA_POOL=/tmp/p9/katakana-core.json \
   pnpm --filter @nekotype/sim run p9-words                # table 4, core pool
+PART=jmdict POOL=kana=/tmp/p9/hiragana-kana.json,kana=/tmp/p9/katakana-kana.json \
+  pnpm --filter @nekotype/sim run p9-words                # the selection chosen, by row
+PART=sessions HIRAGANA_POOL=/tmp/p9/hiragana-kana.json KATAKANA_POOL=/tmp/p9/katakana-kana.json \
+  pnpm --filter @nekotype/sim run p9-words                # the selection chosen, by session
 ```
