@@ -20,6 +20,8 @@ export interface KanaRead {
   readonly ms: number;
   /** The kana read instead, when the error was a confusion with a similar kana. */
   readonly confusedWith: number | undefined;
+  /** Read right with one slip on the way (part 3). */
+  readonly slip?: boolean;
 }
 
 export interface Answer {
@@ -33,6 +35,8 @@ export interface Answer {
   readonly p?: number;
   /** A word task: each kana as it was read; `ok` is true when all of them were. */
   readonly reads?: readonly KanaRead[];
+  /** A right recall with one slip on the way (part 3): the app sees a rejected key. */
+  readonly slip?: boolean;
 }
 
 export type SessionKind = 'learning' | 'review';

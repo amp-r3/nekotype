@@ -239,7 +239,8 @@ export function perform(learner: Learner, items: readonly Item[], task: Task, no
     }
     case 'recall': {
       const r = learner.recall(task.item, now);
-      return { task, ok: r.ok, ms: r.ms, at: now, wrong: r.confusedWith, p: r.p };
+      const answer = { task, ok: r.ok, ms: r.ms, at: now, wrong: r.confusedWith, p: r.p };
+      return r.slip === true ? { ...answer, slip: true } : answer;
     }
     case 'recognition': {
       const r = learner.recognize(task.item, task.options, now);

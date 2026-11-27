@@ -8,8 +8,8 @@ import { load, wordKana } from './words';
 
 /**
  * Part 3 of the P9 research (docs/research/2026-11-27-p9-planner.md): where words go in a
- * session, when they start, the re-check after an error, the closing word. `PART=place|start|
- * recheck|closing` picks one table; without it all are printed. `SEEDS` (50). `WORDS`: a pool of
+ * session, when they start, the re-check after an error, the closing word, slips and the round
+ * after a session. `PART=place|start|recheck|closing|round` picks one table; without it all are printed. `SEEDS` (50). `WORDS`: a pool of
  * `scripts/p9-jmdict.py` (hiragana-kana.json); the committed `words-hiragana` chunk without it.
  * Every case grades a word as one recall per kana and takes words of introduced kana (ADR 117).
  */
@@ -35,6 +35,9 @@ interface Case {
   readonly words?: Words;
   readonly recheck?: number;
   readonly wordShare?: number;
+  readonly slip?: number;
+  readonly slips?: 'error' | 'hard';
+  readonly endRound?: number;
 }
 
 function play(c: Case): RunResult[] {
@@ -42,8 +45,17 @@ function play(c: Case): RunResult[] {
     c.words === undefined
       ? undefined
       : { ...c.words, words: WORDS, mode: 'recalls', of: 'introduced' };
-  const factory = createProductionPolicy('hiragana', { words, recheck: c.recheck });
-  const reference = { ...REFERENCE, wordShare: c.wordShare ?? REFERENCE.wordShare };
+  const factory = createProductionPolicy('hiragana', {
+    words,
+    recheck: c.recheck,
+    slips: c.slips,
+    endRound: c.endRound,
+  });
+  const reference = {
+    ...REFERENCE,
+    wordShare: c.wordShare ?? REFERENCE.wordShare,
+    slip: c.slip ?? REFERENCE.slip,
+  };
   return Array.from({ length: SEEDS }, (_, seed) =>
     simulate(factory, 'beginner', seed + 1, DAYS, reference),
   );
@@ -88,6 +100,7 @@ const HEADER = [
   'reviews',
   'next-day recall',
   'min/day',
+  'tasks a session',
   'words, share of tasks',
   'read right',
   'same-day repeats',
@@ -109,6 +122,7 @@ function row(c: Case, runs: readonly RunResult[]): string[] {
     median(runs.map((r) => r.reviews)).toFixed(0),
     pct(median(runs.map((r) => r.nextDay))),
     median(runs.map((r) => r.minutesPerDay)).toFixed(1),
+    median(runs.map((r) => (r.sessions === 0 ? 0 : r.tasks / r.sessions))).toFixed(1),
     c.words === undefined
       ? '—'
       : `${median(runs.map((r) => r.words)).toFixed(0)}, ${pct(median(share))}`,
@@ -186,4 +200,27 @@ if (want('closing')) {
       wordShare: 0.3,
     },
   ]);
+}
+
+if (want('round')) {
+  const base = { every: 5, minPool: 25, recent: 30 };
+  const cases: Case[] = [
+    { name: 'no slips, no round', words: base },
+    { name: 'no slips, round of 5', words: base, endRound: 5 },
+    { name: 'no slips, round of all', words: base, endRound: 99 },
+  ];
+  for (const slip of [0.03, 0.06])
+    for (const slips of ['error', 'hard'] as const)
+      for (const endRound of [undefined, 5])
+        cases.push({
+          name: `slips ${slip}, slip = ${slips === 'error' ? 'error' : 'hard'}, ${endRound === undefined ? 'no round' : 'round of 5'}`,
+          words: base,
+          slip,
+          slips,
+          ...(endRound === undefined ? {} : { endRound }),
+        });
+  table(
+    'Slips and the round after a session: a slip read as an error (today) or as hard, and each kana answered wrong once more after the last task',
+    cases,
+  );
 }

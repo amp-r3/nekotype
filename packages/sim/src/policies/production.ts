@@ -51,6 +51,16 @@ export interface ProductionOptions {
    * same session, beside the model's own learning step; none without it.
    */
   readonly recheck?: number | undefined;
+  /**
+   * Part 3: how the fold hears of a recall with one slip that the learner then typed right:
+   * `error` (today: a wrong recall, "again") or `hard` (a right recall with a hint, "hard").
+   */
+  readonly slips?: 'error' | 'hard' | undefined;
+  /**
+   * Part 3: after the session's last task, each kana answered wrong in it comes back once as a
+   * recall, at most this many, in the order of their first error; none without it.
+   */
+  readonly endRound?: number | undefined;
 }
 
 /**
@@ -134,6 +144,7 @@ export function createProductionPolicy(
       ok: boolean,
       time: number,
       wrong: number | undefined,
+      hint = false,
     ): void => {
       emit({
         t: 'answer',
@@ -144,17 +155,22 @@ export function createProductionPolicy(
         k: keyOfId(id),
         ok,
         ms: ms(time),
-        hint: false,
+        hint,
         wrong: keyOrNull(wrong),
         alt: null,
       });
     };
+    const slipsHard = options.slips === 'hard';
+    /** What the app sees of a right answer with a slip: an error, unless slips are forgiven. */
+    const seenOk = (ok: boolean, slip: boolean | undefined): boolean =>
+      ok && (slip !== true || slipsHard);
     function recordWord(answer: Answer): void {
       const reads = answer.reads ?? [];
       const mode = words?.mode ?? 'none';
       if (mode === 'none') return;
       if (mode === 'recalls') {
-        for (const r of reads) recall(answer.at, r.item, r.ok, r.ms, r.confusedWith);
+        for (const r of reads)
+          recall(answer.at, r.item, seenOk(r.ok, r.slip), r.ms, r.confusedWith, r.slip === true);
         return;
       }
       const text = reads.map((r) => ITEMS.get(keyOfId(r.item))?.kana ?? '').join('');
@@ -184,6 +200,9 @@ export function createProductionPolicy(
         let sinceWord = 0;
         let previous: LearnKanaKey | null = null;
         let closed = false;
+        // The kana answered wrong in the session, for the round after its last task (`endRound`).
+        const erred: number[] = [];
+        let round: number[] | undefined;
         const seen = new Set<number>();
         const rechecks: { readonly id: number; readonly at: number }[] = [];
         // Whether words may come in this session: enough of them readable at its start.
@@ -219,7 +238,20 @@ export function createProductionPolicy(
               emit({ t: 'start', at: now, dev: deviceOf(now), n: (n += 1), tz: 0 });
               started = true;
             }
-            if (count >= SESSION_TASKS) {
+            const roundTask = (): Task | undefined => {
+              if (options.endRound === undefined) return undefined;
+              round ??= erred.slice(0, options.endRound);
+              const id = round.shift();
+              return id === undefined
+                ? undefined
+                : { item: id, kind: 'recall', options: [], review: false };
+            };
+            if (round !== undefined || count >= SESSION_TASKS) {
+              const task = roundTask();
+              if (task !== undefined) {
+                previous = keyOfId(task.item);
+                return give(task);
+              }
               finish(now);
               return undefined;
             }
@@ -251,6 +283,11 @@ export function createProductionPolicy(
             if (planned === null) {
               const last = closingWord();
               if (last !== undefined) return give(last);
+              const task = roundTask();
+              if (task !== undefined) {
+                previous = keyOfId(task.item);
+                return give(task);
+              }
               finish(now);
               return undefined;
             }
@@ -279,6 +316,15 @@ export function createProductionPolicy(
             return give(task);
           },
           record(answer: Answer) {
+            if (options.endRound !== undefined && round === undefined) {
+              const wrong =
+                answer.task.kind === 'word'
+                  ? (answer.reads ?? []).filter((r) => !seenOk(r.ok, r.slip)).map((r) => r.item)
+                  : answer.task.kind !== 'introduction' && !seenOk(answer.ok, answer.slip)
+                    ? [answer.task.item]
+                    : [];
+              for (const id of wrong) if (!erred.includes(id)) erred.push(id);
+            }
             const gap = options.recheck;
             if (gap !== undefined) {
               const wrong =
@@ -304,9 +350,9 @@ export function createProductionPolicy(
               t: 'answer',
               task: answer.task.kind,
               k: key,
-              ok: answer.ok,
+              ok: seenOk(answer.ok, answer.slip),
               ms: Math.min(MS_CAP, Math.max(0, Math.round(answer.ms))),
-              hint: false,
+              hint: answer.slip === true,
               wrong: answer.wrong === undefined ? null : keyOfId(answer.wrong),
               alt: null,
             });
