@@ -183,6 +183,9 @@ export interface RunResult {
   /** Word tasks (P9 research, part 2) and those read without an error; they are in `tasks` too. */
   readonly words: number;
   readonly wordsOk: number;
+  /** Part 3: words given again on a day they were already read, and the session of the first word. */
+  readonly wordRepeats: number;
+  readonly firstWordSession: number | undefined;
 }
 
 export interface Milestone {
@@ -236,7 +239,8 @@ export function perform(learner: Learner, items: readonly Item[], task: Task, no
     }
     case 'recall': {
       const r = learner.recall(task.item, now);
-      return { task, ok: r.ok, ms: r.ms, at: now, wrong: r.confusedWith, p: r.p };
+      const answer = { task, ok: r.ok, ms: r.ms, at: now, wrong: r.confusedWith, p: r.p };
+      return r.slip === true ? { ...answer, slip: true } : answer;
     }
     case 'recognition': {
       const r = learner.recognize(task.item, task.options, now);
@@ -319,6 +323,9 @@ export function simulate(
   let tasks = 0;
   let words = 0;
   let wordsOk = 0;
+  let wordRepeats = 0;
+  let firstWordSession: number | undefined;
+  const wordDay = new Map<string, number>();
   const introduced = new Set<number>();
   const milestones = new Map<number, Milestone>();
   const intros: number[] = [];
@@ -503,6 +510,10 @@ export function simulate(
           if (task.kind === 'word') {
             words += 1;
             if (answer.ok) wordsOk += 1;
+            firstWordSession ??= sessions + 1;
+            const wordKey = (task.word ?? []).join(',');
+            if (wordDay.get(wordKey) === day) wordRepeats += 1;
+            wordDay.set(wordKey, day);
             for (const id of task.word ?? []) lastSeen.set(id, now);
             const ms = durationOf(answer);
             now += ms;
@@ -600,5 +611,7 @@ export function simulate(
     milestones,
     words,
     wordsOk,
+    wordRepeats,
+    firstWordSession,
   };
 }

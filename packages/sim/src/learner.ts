@@ -43,6 +43,11 @@ export interface ReferenceParams {
    * of the kana alone. Only word tasks read it, so every earlier table reproduces.
    */
   readonly wordShare: number;
+  /**
+   * P9 research, part 3: the chance that a recall the learner knows has one slip, a rejected key
+   * that matches no kana before the right input (0: none, and no draw, so earlier tables reproduce).
+   */
+  readonly slip: number;
 }
 
 export const REFERENCE: ReferenceParams = {
@@ -56,6 +61,7 @@ export const REFERENCE: ReferenceParams = {
   transfer: 0,
   partsShare: 0,
   wordShare: 0.6,
+  slip: 0,
 };
 
 interface Trace {
@@ -74,6 +80,8 @@ export interface RecallResult {
   readonly p: number;
   /** The kana answered instead, when the error was a confusion with a similar kana. */
   readonly confusedWith: number | undefined;
+  /** A right recall with one slip on the way (`slip`). */
+  readonly slip?: boolean;
 }
 
 export interface RecognitionResult {
@@ -161,6 +169,10 @@ export function createLearner(
     t.last = now;
   }
 
+  /** One draw only when slips are on; a slip costs a rejected key and its retyping. */
+  const slipped = (): boolean => params.slip > 0 && rng.next() < params.slip;
+  const SLIP_MS = 400;
+
   function answerMs(id: number, p: number, now: number): number {
     const keys = items[id]?.keys ?? 2;
     if (timing === undefined) return (500 + 1800 * (1 - p) + 120 * keys) * logNormal(rng, 0.2);
@@ -182,6 +194,8 @@ export function createLearner(
             if (trace(part).seen) strengthen(part, probability(part, now), params.partsShare, now);
           }
         }
+        if (slipped())
+          return { ok: true, ms: ms + SLIP_MS, confusedWith: undefined, p, slip: true };
         return { ok: true, ms, confusedWith: undefined, p };
       }
       const similar = items[id]?.similar ?? [];
@@ -218,6 +232,8 @@ export function createLearner(
         if (rng.next() < p) {
           const ms = answerMs(id, p, now);
           strengthen(id, p, params.wordShare, now);
+          if (slipped())
+            return { item: id, ok: true, ms: ms + SLIP_MS, confusedWith: undefined, slip: true };
           return { item: id, ok: true, ms, confusedWith: undefined };
         }
         const similar = items[id]?.similar ?? [];

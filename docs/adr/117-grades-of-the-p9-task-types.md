@@ -1,6 +1,6 @@
 # ADR 117: The Grades of the P9 Task Types: a Word as One Recall per Kana, Rules of っ and ー Without Memory, a Forgiven Slip in a Fluency Run
 
-- **Status:** In force.
+- **Status:** In force. Amended by [ADR 118](118-the-p9-planner.md), point 5: one quick slip in a recall, or on a kana of a word, is "hard" (point 1). The threshold of 2 rule errors is confirmed.
 - **Context:**
   - [ADR 100](100-knowledge-model-fsrs-planner-and-answer-log.md), point 4, grades an answer by task type when the log is folded. [ADR 115](115-answer-time-graded-against-the-learners-pace.md) amended it to grade time against the learner's pace. The row of a word was left to a later ADR, and "a later phase whose research finds a better grade for its task changes the row in its own ADR".
   - [ADR 116](116-words-written-in-kana-and-varied-tasks-in-p9.md) moved the word tasks into P9 and added three task types: "find the error", "hiragana or katakana?" and the rules of っ and ー.
