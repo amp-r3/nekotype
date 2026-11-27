@@ -23,11 +23,22 @@ export type WordMode = 'none' | 'credit' | 'again' | 'recalls';
 export interface WordOptions {
   /** The words the planner may give: the sim item ids of each word's kana, in reading order. */
   readonly words: readonly (readonly number[])[];
-  /** A word task after every this many kana tasks of a session. */
-  readonly every: number;
+  /** A word task after every this many kana tasks of a session (part 2); none without it. */
+  readonly every?: number | undefined;
   readonly mode: WordMode;
   /** Words of learned kana only (the default), or of every introduced kana, learning ones too. */
   readonly of?: 'learned' | 'introduced';
+  /**
+   * Part 3: the share of the planner's recalls given as a word that holds the kana asked, when
+   * one is readable (the word carries the recall); none without it.
+   */
+  readonly carrier?: number | undefined;
+  /** Part 3: no word before this many words are readable at the start of a session. */
+  readonly minPool?: number | undefined;
+  /** Part 3: a word among the last this many words given is not given again. */
+  readonly recent?: number | undefined;
+  /** Part 3: the last task of a session is a word whose kana were all in the session. */
+  readonly closing?: boolean | undefined;
 }
 
 export interface ProductionOptions {
@@ -35,6 +46,11 @@ export interface ProductionOptions {
   readonly deviceOf?: ((at: number) => string) | undefined;
   /** Word tasks between the kana tasks (P9 research, part 2); none without it. */
   readonly words?: WordOptions | undefined;
+  /**
+   * Part 3: after a wrong answer, the kana comes back as a recall this many tasks later in the
+   * same session, beside the model's own learning step; none without it.
+   */
+  readonly recheck?: number | undefined;
 }
 
 /**
@@ -73,6 +89,33 @@ export function createProductionPolicy(
     // Words draw from their own stream too, so the planner's choices stay those of a run without.
     const wordRng = createRng(0x51ed270b);
     const words = options.words;
+    const pool = words?.words ?? [];
+    // The words that hold each kana, for a carried recall.
+    const byKana = new Map<number, number[]>();
+    pool.forEach((ids, index) => {
+      for (const id of new Set(ids)) {
+        const list = byKana.get(id) ?? [];
+        list.push(index);
+        byKana.set(id, list);
+      }
+    });
+    const recentWords: number[] = [];
+    const known = (id: number): boolean => {
+      const state = fold.state.items.get(keyOfId(id));
+      return words?.of === 'introduced' ? state !== undefined : state?.phase === 'learned';
+    };
+    const readable = (index: number): boolean =>
+      !recentWords.includes(index) && (pool[index] ?? []).every(known);
+    /** A readable word among `indexes` (all words without), drawn on the word stream. */
+    const drawWord = (indexes?: readonly number[]): Task | undefined => {
+      const candidates = (indexes ?? pool.map((_, i) => i)).filter(readable);
+      const index = candidates[Math.floor(wordRng.next() * candidates.length)];
+      const word = index === undefined ? undefined : pool[index];
+      if (index === undefined || word === undefined || word[0] === undefined) return undefined;
+      recentWords.push(index);
+      if (recentWords.length > (words?.recent ?? 0)) recentWords.shift();
+      return { item: word[0], kind: 'word', options: [], review: false, word };
+    };
     const fold: Fold = createFold(line === undefined ? { stats: false } : { stats: false, line });
     let n = 0;
     const emit = (event: LogEvent): void => {
@@ -140,6 +183,28 @@ export function createProductionPolicy(
         let count = 0;
         let sinceWord = 0;
         let previous: LearnKanaKey | null = null;
+        let closed = false;
+        const seen = new Set<number>();
+        const rechecks: { readonly id: number; readonly at: number }[] = [];
+        // Whether words may come in this session: enough of them readable at its start.
+        let wordsOpen: boolean | undefined;
+        const open = (): boolean => {
+          if (words === undefined) return false;
+          if (words.minPool === undefined) return true;
+          wordsOpen ??= pool.filter((_, i) => readable(i)).length >= words.minPool;
+          return wordsOpen;
+        };
+        const closingWord = (): Task | undefined => {
+          if (words?.closing !== true || closed || !open()) return undefined;
+          closed = true;
+          const inSession = pool.flatMap((ids, i) => (ids.every((id) => seen.has(id)) ? [i] : []));
+          return drawWord(inSession);
+        };
+        const give = (task: Task): Task => {
+          count += 1;
+          for (const id of task.word ?? [task.item]) seen.add(id);
+          return task;
+        };
         let started = false;
         let ended = false;
         const finish = (now: number): void => {
@@ -158,17 +223,23 @@ export function createProductionPolicy(
               finish(now);
               return undefined;
             }
-            if (words !== undefined && sinceWord >= words.every) {
-              const known = (id: number): boolean => {
-                const state = fold.state.items.get(keyOfId(id));
-                return words.of === 'introduced' ? state !== undefined : state?.phase === 'learned';
-              };
-              const readable = words.words.filter((ids) => ids.every(known));
-              const word = readable[Math.floor(wordRng.next() * readable.length)];
-              if (word !== undefined && word[0] !== undefined) {
+            if (count === SESSION_TASKS - 1) {
+              const last = closingWord();
+              if (last !== undefined) return give(last);
+            }
+            const recheckAt = rechecks.findIndex((r) => r.at <= count);
+            const recheck = rechecks[recheckAt];
+            if (recheck !== undefined) {
+              rechecks.splice(recheckAt, 1);
+              previous = keyOfId(recheck.id);
+              return give({ item: recheck.id, kind: 'recall', options: [], review: false });
+            }
+            const every = words?.every;
+            if (every !== undefined && sinceWord >= every && open()) {
+              const word = drawWord();
+              if (word !== undefined) {
                 sinceWord = 0;
-                count += 1;
-                return { item: word[0], kind: 'word', options: [], review: false, word };
+                return give(word);
               }
             }
             const planned = nextTask(fold.state, {
@@ -178,13 +249,24 @@ export function createProductionPolicy(
               rng,
             });
             if (planned === null) {
+              const last = closingWord();
+              if (last !== undefined) return give(last);
               finish(now);
               return undefined;
             }
-            count += 1;
             sinceWord += 1;
             previous = planned.key;
             const id = idOf(planned.key);
+            const carrier = words?.carrier;
+            if (
+              planned.kind === 'recall' &&
+              carrier !== undefined &&
+              open() &&
+              wordRng.next() < carrier
+            ) {
+              const word = drawWord(byKana.get(id) ?? []);
+              if (word !== undefined) return give(word);
+            }
             const task: Task = {
               item: id,
               kind: planned.kind,
@@ -194,9 +276,19 @@ export function createProductionPolicy(
                   : [],
               review: planned.kind === 'recall' && planned.review,
             };
-            return task;
+            return give(task);
           },
           record(answer: Answer) {
+            const gap = options.recheck;
+            if (gap !== undefined) {
+              const wrong =
+                answer.task.kind === 'word'
+                  ? (answer.reads ?? []).filter((r) => !r.ok).map((r) => r.item)
+                  : answer.task.kind !== 'introduction' && !answer.ok
+                    ? [answer.task.item]
+                    : [];
+              for (const id of wrong) rechecks.push({ id, at: count + gap });
+            }
             const key = keyOfId(answer.task.item);
             const base = { at: answer.at, dev: deviceOf(answer.at), n: (n += 1) };
             if (answer.task.kind === 'introduction') {
