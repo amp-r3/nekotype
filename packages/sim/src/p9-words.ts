@@ -9,6 +9,8 @@ import { REFERENCE } from './learner';
 import { createProductionPolicy } from './policies/production';
 import { simulate } from './run';
 import type { PolicyFactory, RunResult } from './run';
+import { load } from './words';
+import type { Text } from './words';
 
 /**
  * Part 1 of the P9 research (docs/research/2026-11-27-p9-words-content.md): how many words and
@@ -22,28 +24,6 @@ const want = (part: string): boolean => PART === undefined || PART === part;
 
 const SEEDS = Number(process.env['SEEDS'] ?? 30);
 const DAYS = 60;
-
-interface Text {
-  readonly id: string;
-  readonly text: string;
-  readonly meaning: string;
-  readonly script: string;
-}
-
-const CONTENT = new URL('../../../apps/web/src/entities/prompt/content/', import.meta.url);
-
-function load(chunk: string | URL): readonly Text[] {
-  const file = typeof chunk === 'string' ? new URL(`${chunk}.json`, CONTENT) : chunk;
-  const data: unknown = JSON.parse(readFileSync(file, 'utf8'));
-  if (!Array.isArray(data)) throw new Error(`${String(chunk)} is not an array`);
-  return data.flatMap((entry: unknown): Text[] => {
-    if (!isObject(entry)) return [];
-    const { id, text, script, meaning } = entry;
-    const en = isObject(meaning) ? meaning['en'] : undefined;
-    if (typeof id !== 'string' || typeof text !== 'string' || typeof script !== 'string') return [];
-    return [{ id, text, script, meaning: typeof en === 'string' ? en : '' }];
-  });
-}
 
 const ITEMS: readonly Item[] = bothTracks();
 const ID_OF = new Map(ITEMS.map((item) => [item.kana, item.id]));

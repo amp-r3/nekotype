@@ -1,6 +1,6 @@
 /** What a candidate model shows and asks; the harness plays the learner's side. */
 
-export type TaskKind = 'introduction' | 'recall' | 'recognition';
+export type TaskKind = 'introduction' | 'recall' | 'recognition' | 'word';
 
 export interface Task {
   readonly item: number;
@@ -9,6 +9,17 @@ export interface Task {
   readonly options: readonly number[];
   /** A scheduled review of a kana the policy holds as learned: what the retention goal counts. */
   readonly review: boolean;
+  /** The kana of a word task in reading order (P9 research, part 2); `item` is the first of them. */
+  readonly word?: readonly number[];
+}
+
+/** One kana of a word as the learner read it. */
+export interface KanaRead {
+  readonly item: number;
+  readonly ok: boolean;
+  readonly ms: number;
+  /** The kana read instead, when the error was a confusion with a similar kana. */
+  readonly confusedWith: number | undefined;
 }
 
 export interface Answer {
@@ -20,6 +31,8 @@ export interface Answer {
   readonly wrong: number | undefined;
   /** A recall's true probability before the answer: only an oracle grade reads it. */
   readonly p?: number;
+  /** A word task: each kana as it was read; `ok` is true when all of them were. */
+  readonly reads?: readonly KanaRead[];
 }
 
 export type SessionKind = 'learning' | 'review';

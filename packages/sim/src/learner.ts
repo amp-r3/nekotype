@@ -1,4 +1,5 @@
 import type { Item } from './items';
+import type { KanaRead } from './policy';
 import { logNormal } from './rng';
 import type { Rng } from './rng';
 import { answerTime } from './timing';
@@ -37,6 +38,11 @@ export interface ReferenceParams {
   readonly transfer: number;
   /** Part 4: a correct recall of a composite strengthens each part with this share of a recall. */
   readonly partsShare: number;
+  /**
+   * P9 research, part 2: reading a kana inside a word strengthens it with this share of a recall
+   * of the kana alone. Only word tasks read it, so every earlier table reproduces.
+   */
+  readonly wordShare: number;
 }
 
 export const REFERENCE: ReferenceParams = {
@@ -49,6 +55,7 @@ export const REFERENCE: ReferenceParams = {
   savings: 4,
   transfer: 0,
   partsShare: 0,
+  wordShare: 0.6,
 };
 
 interface Trace {
@@ -81,6 +88,11 @@ export interface Learner {
   study(id: number, now: number): void;
   recall(id: number, now: number): RecallResult;
   recognize(id: number, options: readonly number[], now: number): RecognitionResult;
+  /**
+   * Reads a word kana by kana (P9 research, part 2): each kana is a recall at `wordShare` of its
+   * gain; a kana not recalled is shown, as after a recall error, and the reading goes on.
+   */
+  read(ids: readonly number[], now: number): readonly KanaRead[];
 }
 
 function difficultyOf(item: Item, rng: Rng): number {
@@ -199,6 +211,24 @@ export function createLearner(
       if (chosen === id) study(id, now);
       else lapse(id, now);
       return { ok: chosen === id, ms: answerMs(id, 0, now), chosen };
+    },
+    read(ids, now) {
+      return ids.map((id): KanaRead => {
+        const p = probability(id, now);
+        if (rng.next() < p) {
+          const ms = answerMs(id, p, now);
+          strengthen(id, p, params.wordShare, now);
+          return { item: id, ok: true, ms, confusedWith: undefined };
+        }
+        const similar = items[id]?.similar ?? [];
+        const known = similar.filter((other) => probability(other, now) > 0.5);
+        const confusedWith =
+          known.length > 0 && rng.next() < 0.5
+            ? known[Math.floor(rng.next() * known.length)]
+            : undefined;
+        lapse(id, now);
+        return { item: id, ok: false, ms: answerMs(id, 0, now), confusedWith };
+      });
     },
   };
 }

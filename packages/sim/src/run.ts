@@ -180,6 +180,9 @@ export interface RunResult {
    * policy held it as learned at the end of a session (P9 research); learned only with `learned`.
    */
   readonly milestones: ReadonlyMap<number, Milestone>;
+  /** Word tasks (P9 research, part 2) and those read without an error; they are in `tasks` too. */
+  readonly words: number;
+  readonly wordsOk: number;
 }
 
 export interface Milestone {
@@ -238,6 +241,12 @@ export function perform(learner: Learner, items: readonly Item[], task: Task, no
     case 'recognition': {
       const r = learner.recognize(task.item, task.options, now);
       return { task, ok: r.ok, ms: r.ms, at: now, wrong: r.ok ? undefined : r.chosen };
+    }
+    case 'word': {
+      const reads = learner.read(task.word ?? [task.item], now);
+      const miss = reads.find((r) => !r.ok);
+      const ms = reads.reduce((sum, r) => sum + r.ms, 0);
+      return { task, ok: miss === undefined, ms, at: now, wrong: miss?.confusedWith, reads };
     }
   }
 }
@@ -308,6 +317,8 @@ export function simulate(
   let practisedDays = 0;
   let sessions = 0;
   let tasks = 0;
+  let words = 0;
+  let wordsOk = 0;
   const introduced = new Set<number>();
   const milestones = new Map<number, Milestone>();
   const intros: number[] = [];
@@ -489,6 +500,17 @@ export function simulate(
               });
           }
           const answer = perform(learner, items, task, now);
+          if (task.kind === 'word') {
+            words += 1;
+            if (answer.ok) wordsOk += 1;
+            for (const id of task.word ?? []) lastSeen.set(id, now);
+            const ms = durationOf(answer);
+            now += ms;
+            dayMs += ms;
+            count += 1;
+            session.record(answer);
+            continue;
+          }
           const seenAt = lastSeen.get(task.item);
           if (
             task.kind !== 'introduction' &&
@@ -576,5 +598,7 @@ export function simulate(
     known,
     afterBreak: [recalledAt(end + 7 * DAY_MS), recalledAt(end + 30 * DAY_MS)],
     milestones,
+    words,
+    wordsOk,
   };
 }
