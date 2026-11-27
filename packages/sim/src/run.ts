@@ -175,6 +175,18 @@ export interface RunResult {
   readonly known: readonly number[];
   /** Expected kana of the track recalled 7 and 30 days after the last day, with no practice. */
   readonly afterBreak: readonly [number, number];
+  /**
+   * Per item id, the 1-based session and day (from 1) of its introduction and of the first time the
+   * policy held it as learned at the end of a session (P9 research); learned only with `learned`.
+   */
+  readonly milestones: ReadonlyMap<number, Milestone>;
+}
+
+export interface Milestone {
+  readonly introducedSession: number;
+  readonly introducedDay: number;
+  readonly learnedSession: number | undefined;
+  readonly learnedDay: number | undefined;
 }
 
 interface Pending {
@@ -297,6 +309,7 @@ export function simulate(
   let sessions = 0;
   let tasks = 0;
   const introduced = new Set<number>();
+  const milestones = new Map<number, Milestone>();
   const intros: number[] = [];
   const sessionDays: number[] = [];
   const pending: Pending[] = [];
@@ -467,6 +480,13 @@ export function simulate(
           if (task.kind === 'introduction') {
             introduced.add(task.item);
             sessionIntros += 1;
+            if (!milestones.has(task.item))
+              milestones.set(task.item, {
+                introducedSession: sessions + 1,
+                introducedDay: day + 1,
+                learnedSession: undefined,
+                learnedDay: undefined,
+              });
           }
           const answer = perform(learner, items, task, now);
           const seenAt = lastSeen.get(task.item);
@@ -504,6 +524,12 @@ export function simulate(
           intros.push(sessionIntros);
           sessionDays.push(day);
           settle();
+          if (policy.learned !== undefined) {
+            for (const [id, m] of milestones) {
+              if (m.learnedSession === undefined && policy.learned(id))
+                milestones.set(id, { ...m, learnedSession: sessions, learnedDay: day + 1 });
+            }
+          }
         } else if (session.kind === 'learning') break;
       }
     }
@@ -549,5 +575,6 @@ export function simulate(
     fits: policy.fits ?? [],
     known,
     afterBreak: [recalledAt(end + 7 * DAY_MS), recalledAt(end + 30 * DAY_MS)],
+    milestones,
   };
 }

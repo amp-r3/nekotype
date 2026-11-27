@@ -62,4 +62,6 @@ export interface Policy {
    * policy that has it uses them for the answer-time threshold only.
    */
   calibrate?(answers: readonly Answer[]): void;
+  /** Whether the policy holds the kana as learned now; only the production policy has it (P9 research). */
+  learned?(id: number): boolean;
 }
