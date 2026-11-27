@@ -3,6 +3,7 @@
 Working file of phase P9 ([phases.md](docs/spec/phases.md), item 10). It tells the executor of each pull request what to build, in which order, and which decisions are already made. It is not part of `docs/`: the last pull request of the phase moves it to `docs/archive/`.
 
 - Written on 2026-11-27 against `main` at 8acf510 (PR 249 merged: part 3 of the P9 research and [ADR 118](docs/adr/118-the-p9-planner.md)). The research decided the scope, the grades and the planner in [ADR 116](docs/adr/116-words-written-in-kana-and-varied-tasks-in-p9.md), [ADR 117](docs/adr/117-grades-of-the-p9-task-types.md) and ADR 118; the maintainer answered this plan's four questions on the same day ([section 5](#5-answered-questions)).
+- Changed on 2026-11-27, before the merge: the pull requests after PR 9 numbered in the order they run (10 the stroke order, 11 the choice tasks, 12 the fluency run).
 - Where this plan and `docs/spec/` disagree, the spec wins until the pull request named here changes the spec. Every such change is listed in [section 3.10](#310-spec-changes) with its pull request.
 - **Two kinds of content.** Section 3 holds the data, the rules and the computations as final contracts: types, names, files, keys and constants. An executor copies them and does not invent names. Everything that depends on how a screen looks is a brief for the design session ([section 4](#4-design-brief)): proposals, not decisions. The design export decides, and its decision numbers fill the brief's last column.
 - **The screens follow the design export.** No code pull request starts before PR D is merged (ADR 116, point 7). PR D rewrites the cards of the pull requests that build screens (6, 7, 8, 10, 11, 12) against the export.
@@ -25,9 +26,9 @@ The executor of a pull request fills its row ([section 8](#8-instructions-for-ex
 | 7   | `p9-07-words`              | —      | —            |
 | 8   | `p9-08-report`             | —      | —            |
 | 9   | `p9-09-kanjivg`            | —      | —            |
-| 12  | `p9-12-stroke-order`       | —      | —            |
-| 10  | `p9-10-choice-tasks`       | —      | —            |
-| 11  | `p9-11-fluency`            | —      | —            |
+| 10  | `p9-10-stroke-order`       | —      | —            |
+| 11  | `p9-11-choice-tasks`       | —      | —            |
+| 12  | `p9-12-fluency`            | —      | —            |
 | 13  | `p9-13-close`              | —      | —            |
 
 ## 1. Goal and scope
@@ -134,7 +135,7 @@ KanjiVG is the source of the stroke order that ADR 099 left to P9. It holds each
   ```
 
 - **The origins table** `packages/engine/src/data/origins.ts`: `kanaOrigins: Readonly<Record<string, string>>`, hiragana → kanji, for the basic kana whose hiragana and katakana come from the same kanji (か and カ from 加), and `originOf(kana: string): string | null` for either script. It is compiled from the tables of origins (字源) of the Japanese Wikipedia articles 平仮名 and 片仮名, cited with the date in the file. A pair whose two scripts come from different kanji is left out. The maintainer reads the table before PR 9 is merged (M7).
-- **Credit:** CC BY-SA 3.0 applies to the converted data, shipped as these separate files. `/about` credits KanjiVG from the pull request that first shows its data (PR 12, [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen)); `NOTICE.md` lists it under "Third-party data" and "Mirrored content sources" in PR 9.
+- **Credit:** CC BY-SA 3.0 applies to the converted data, shipped as these separate files. `/about` credits KanjiVG from the pull request that first shows its data (PR 10, [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen)); `NOTICE.md` lists it under "Third-party data" and "Mirrored content sources" in PR 9.
 
 ### 3.2 The log
 
@@ -561,7 +562,7 @@ New constants of `packages/model/src/constants.ts`. Each chooses tasks, so a cha
 
 #### D21. The session
 
-- **`createLearnSession`** plans with `createSessionPlan`. Its deps gain `words: readonly WordEntry[]` and `items: ReadonlyMap<string, WordItem>` (by text) of the selected track, and `features: ReadonlySet<PlanFeature>`. The features come from `SESSION_FEATURES` in `pages/learn/lib/constants.ts`, which each pull request extends with what it builds: PR 6 `round`; PR 7 `word`, `closing`, `rule`; PR 10 `contrast`, `transfer`, `build`, `script`, `mismatch`; PR 11 `fluency`.
+- **`createLearnSession`** plans with `createSessionPlan`. Its deps gain `words: readonly WordEntry[]` and `items: ReadonlyMap<string, WordItem>` (by text) of the selected track, and `features: ReadonlySet<PlanFeature>`. The features come from `SESSION_FEATURES` in `pages/learn/lib/constants.ts`, which each pull request extends with what it builds: PR 6 `round`; PR 7 `word`, `closing`, `rule`; PR 11 `contrast`, `transfer`, `build`, `script`, `mismatch`; PR 12 `fluency`.
 - **`TaskView`** mirrors `SessionTask` with what the screen shows: the kana, the romaji, the options, and a word's meaning once it is answered. The export names the views.
 - The session hands the plan `{ state: store.modelState(), stats: store.stats() }` when a task is shown.
 - **The learn store** (`entities/learn`):
@@ -678,7 +679,7 @@ After a task with a `wrong` verdict, the notice says (Q2; the wording and the la
 
 - **The kana details** (`features/kana-details`) load the stroke chunk of the kana's track (`loadStrokes`) when the dialog opens and draw each glyph of the kana (a yōon, two) as SVG paths in writing order with their numbers, as the export draws them. Motion, if the export has any, respects `prefers-reduced-motion`. While the chunk loads, and after a failure, the place keeps its size.
 - **The origin kanji.** The session loads `origins.json` with its runtime when `learn.track` is katakana. A transfer introduction draws the kanji from it under the same rules; without the chunk it shows the pair alone.
-- PR 12 adds the KanjiVG credit to `/about`, so the data is credited from the first pull request that shows it; PR 10, which shows the origins, comes after PR 12.
+- PR 10 adds the KanjiVG credit to `/about`, so the data is credited from the first pull request that shows it; PR 11, which shows the origins, comes after it.
 
 #### D28. Strings and styles
 
@@ -724,7 +725,7 @@ Every pull request goes to `main`. Reasons:
 - PRs 3, 7, 8, 10, 11, 12 and 13 need no ADR: the engine's change is ADR 117's, and the screens follow the export and this plan. One that decides something new takes the next number.
 - **A-items** in [decisions.md](docs/spec/decisions.md): PR 4 adds A53 (a word is one recall per kana; a slip is "hard"; a rule error grades no kana; ADRs 117, 118, 122); PR 5 adds A54 (the session: a word after every 5 kana tasks of the selected track, the closing word, the round, the mix; ADRs 118, 123). A47 gets "Amended by A53, A54".
 - `docs/architecture/` changes with the code: `model.md` (PRs 4, 5), `sync.md` and `entities.md` (PR 2), `entities.md` (PR 7: `entities/prompt`), `pages.md` (PRs 6, 7, 8, 10, 11, 12), `quality-gates.md` (PR 7: content chunks and the latency gate).
-- `README.md`: how a session looks (PRs 6, 7), the shipped content and its credits (PRs 7, 12).
+- `README.md`: how a session looks (PRs 6, 7), the shipped content and its credits (PRs 7, 10).
 - `docs/README.md` gets a row for this plan in this pull request; PR 13 removes it.
 - `AGENTS.md` does not change.
 
@@ -743,9 +744,9 @@ Every pull request goes to `main`. Reasons:
 | S9  | Word tasks (the meaning after the answer, the closing word, the rule introductions); the content shipped and its budget row; JMdict on `/about`          | `learning.md`, `content.md`, `quality.md`   | 7        |
 | S10 | The report action and dialog on word tasks                                                                                                               | `content.md`, `frontend.md`                 | 8        |
 | S11 | KanjiVG: the source, the chunks, the credit                                                                                                              | `content.md`                                | 9        |
-| S12 | The stroke order in the kana details; KanjiVG on `/about`                                                                                                | `metrics.md`, `content.md`                  | 12       |
-| S13 | Contrast, transfer, build, hiragana or katakana? and find the error on the screen                                                                        | `learning.md`                               | 10       |
-| S14 | The fluency run on the screen; its keys on the hot path                                                                                                  | `learning.md`, `frontend.md`                | 11       |
+| S12 | The stroke order in the kana details; KanjiVG on `/about`                                                                                                | `metrics.md`, `content.md`                  | 10       |
+| S13 | Contrast, transfer, build, hiragana or katakana? and find the error on the screen                                                                        | `learning.md`                               | 11       |
+| S14 | The fluency run on the screen; its keys on the hot path                                                                                                  | `learning.md`, `frontend.md`                | 12       |
 | S15 | The "Closed" line of P9; the "End of P9" budget column                                                                                                   | `phases.md`, `quality.md`                   | 13       |
 
 ## 4. Design brief
@@ -896,7 +897,7 @@ The maintainer reads the 47 lines of [D23](#d23-feedback-that-teaches) in Englis
 
 The maintainer reads the table of [D2](#d2-stroke-data-and-the-origin-kanji-from-kanjivg) (each hiragana, its katakana and their kanji, with the source), which the PR lists, and approves or corrects it. Write "done" under PR 9.
 
-### M8. Production check of the session — after PRs 11 and 12, before PR 13
+### M8. Production check of the session — after PR 12, before PR 13
 
 On a desktop and a phone:
 
@@ -920,17 +921,17 @@ Common to all: the branch is cut from fresh `main`; the acceptance items are tho
 | 2   | D; M4 before the merge     | 1, 3, 9                  |
 | 3   | D                          | 1, 2, 4, 9               |
 | 4   | 2                          | 1, 3, 9                  |
-| 5   | 1, 4                       | 3, 9, 12                 |
-| 6   | 5; M6 before the merge     | 3, 9, 12                 |
-| 7   | 3, 6                       | 9, 12                    |
-| 8   | 7                          | 9, 12                    |
+| 5   | 1, 4                       | 3, 9, 10                 |
+| 6   | 5; M6 before the merge     | 3, 9, 10                 |
+| 7   | 3, 6                       | 9, 10                    |
+| 8   | 7                          | 9, 10                    |
 | 9   | D, M3; M7 before the merge | 1–8                      |
-| 12  | 9                          | 5–8                      |
-| 10  | 8, 12                      | —                        |
-| 11  | 10                         | —                        |
+| 10  | 9                          | 5–8                      |
+| 11  | 8, 10                      | —                        |
+| 12  | 11                         | —                        |
 | 13  | all, M8                    | —                        |
 
-PRs 6, 7, 8, 10 and 11 all change the session (`pages/learn/model/session.ts`, `KanaTask`), so they go one after another. Sign-in is hidden on previews: what needs a session is checked locally (`pnpm run dev` with `pnpm run dev:api`) and, after the merge, by the maintainer on production.
+PRs 6, 7, 8, 11 and 12 all change the session (`pages/learn/model/session.ts`, `KanaTask`), so they go one after another. Sign-in is hidden on previews: what needs a session is checked locally (`pnpm run dev` with `pnpm run dev:api`) and, after the merge, by the maintainer on production.
 
 ### PR D — Design export
 
@@ -1084,11 +1085,11 @@ The export decides the screen; PR D rewrites this card.
 - **Done when:** `verify:quick` passes; the build is reproducible; M7 is done.
 - **Size:** about 800 lines, plus the generated files.
 
-### PR 12 — Stroke order in the kana details
+### PR 10 — Stroke order in the kana details
 
 The export decides the screen; PR D rewrites this card.
 
-- **Branch:** `p9-12-stroke-order`. **Depends on:** PR 9.
+- **Branch:** `p9-10-stroke-order`. **Depends on:** PR 9.
 - **Goal.** The details of [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen) and the KanjiVG credit on `/about`.
 - **Changes:** `features/kana-details` (the stroke order, its loading); `entities/prompt` (`loadStrokes`); `shared/i18n/parts/details` and `about`; `pages/about`; `e2e/progress.spec.ts` (the details show the strokes).
 - **Tests:** a kana, a yōon and a kana with a dakuten draw their strokes in order with numbers; loading and failure keep the place; reduced motion draws every stroke at once; the chunk is not loaded until a dialog opens.
@@ -1098,11 +1099,11 @@ The export decides the screen; PR D rewrites this card.
 - **Done when:** `verify:quick` passes; CI is green with the e2e; the stroke chunks are lazy and ≤ 40 KB gzip.
 - **Size:** about 500 lines.
 
-### PR 10 — Choice and build tasks
+### PR 11 — Choice and build tasks
 
 The export decides the screen; PR D rewrites this card.
 
-- **Branch:** `p9-10-choice-tasks`. **Depends on:** PRs 8 and 12.
+- **Branch:** `p9-11-choice-tasks`. **Depends on:** PRs 8 and 10.
 - **Goal.** [D24](#d24-choice-and-build-tasks); the features `contrast`, `transfer`, `build`, `script` and `mismatch`; the origin kanji of [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen).
 - **Changes:** `pages/learn/model/session.ts`, `lib/constants.ts`, `lib/distractors.ts` if transfer needs it, `session-loader.ts` (`origins.json` when the track is katakana), the screen and `KanaTask` (as the export draws them); `shared/i18n`.
 - **Tests:** each kind's view, keys and log (D4): contrast's options shuffled and its `alt`; transfer's options of katakana; build typed and timed; hiragana or katakana by 1 and 2; find the error by number and by click, `ok` only at `index`; a build and a transfer introduction (the origin drawn when the table has one, the pair alone without the chunk); one render per choice.
@@ -1112,18 +1113,18 @@ The export decides the screen; PR D rewrites this card.
 - **Done when:** `verify:quick` passes; CI is green with the latency gate; budgets within D29.
 - **Size:** about 1,300 lines.
 
-### PR 11 — The fluency run
+### PR 12 — The fluency run
 
 The export decides the screen; PR D rewrites this card.
 
-- **Branch:** `p9-11-fluency`. **Depends on:** PR 10.
+- **Branch:** `p9-12-fluency`. **Depends on:** PR 11.
 - **Goal.** [D25](#d25-the-fluency-run-on-the-screen); the feature `fluency`.
 - **Changes:** `pages/learn/model/session.ts`, `lib/constants.ts`, the screen and `KanaTask` (the run, as the export draws it); `shared/i18n`; `e2e/fluency.spec.ts`.
 - **Tests:** the run's kana are the plan's; a keystroke renders nothing and the end at most once; one `fluency` event per kana at one moment, with `misses`, `hint` and `wrong`; a wrong kana goes to the round; no timer or number on screen; e2e: a seeded log with 8 accurate learned kana gives a run at the 15th task, typed to its end.
 - **Acceptance:** 7, 8.
 - **Docs:** S14; `docs/architecture/pages.md`.
 - **Preview URL:** with 8 accurate learned kana, the 15th task of a session is a run of the slowest of them, with no timer or count; a wrong kana in it comes back in the round.
-- **Done when:** `verify:quick` passes; CI is green with the latency gate; budgets within D29; after the merge, with PR 12 merged, the maintainer does M8.
+- **Done when:** `verify:quick` passes; CI is green with the latency gate; budgets within D29; after the merge the maintainer does M8.
 - **Size:** about 800 lines.
 
 ### PR 13 — Close the phase
@@ -1151,10 +1152,10 @@ The items of the P9 acceptance in [phases.md](docs/spec/phases.md), in its order
 | 4   | Every grade of ADR 117 and ADR 118, point 5, has a test; the rule errors are golden tests; two devices converge with words, rules and runs                                       | 3, 4                      | `grade.test.ts`, `verdict.test.ts`, the engine's golden tests, `fold.properties.test.ts`      |
 | 5   | The session plan has a test for each rule of ADR 118                                                                                                                             | 5                         | `session.test.ts` of the model                                                                |
 | 6   | The simulator runs the production plan and meets the lines of D19                                                                                                                | 5, 13                     | `pnpm --filter @nekotype/sim run p9` in PR 5 and in the acceptance note                       |
-| 7   | A keystroke of a typed task renders nothing and its answer at most once; the latency test holds with word keystrokes; the fold, the forecast and the home's line hold with words | 4, 6, 7, 10, 11, every PR | `session-screen.test.tsx`; `latency.spec.ts`, `model-cost.spec.ts`, `home-cost.spec.ts` in CI |
-| 8   | An e2e plays a session with a word, its meaning and the round, and one with a fluency run                                                                                        | 6, 7, 11                  | `learn-session.spec.ts`, `learn-words.spec.ts`, `fluency.spec.ts`                             |
+| 7   | A keystroke of a typed task renders nothing and its answer at most once; the latency test holds with word keystrokes; the fold, the forecast and the home's line hold with words | 4, 6, 7, 11, 12, every PR | `session-screen.test.tsx`; `latency.spec.ts`, `model-cost.spec.ts`, `home-cost.spec.ts` in CI |
+| 8   | An e2e plays a session with a word, its meaning and the round, and one with a fluency run                                                                                        | 6, 7, 12                  | `learn-session.spec.ts`, `learn-words.spec.ts`, `fluency.spec.ts`                             |
 | 9   | The report dialog on a word task sends with Turnstile, loads its script only when opened, and is disabled offline                                                                | 8                         | the dialog's DOM tests; `e2e/sync/report.spec.ts`                                             |
-| 10  | Every learnable kana's details show its stroke order; KanjiVG, JMdict and EDRDG are credited on `/about`, KanjiVG in `NOTICE.md`                                                 | 7, 9, 12                  | the stroke tests; the details' DOM test; the `/about` test                                    |
+| 10  | Every learnable kana's details show its stroke order; KanjiVG, JMdict and EDRDG are credited on `/about`, KanjiVG in `NOTICE.md`                                                 | 7, 9, 10                  | the stroke tests; the details' DOM test; the `/about` test                                    |
 | 11  | Every budget holds, with the lines of this plan                                                                                                                                  | every PR                  | `check-budget.mjs`; the figures of each pull request                                          |
 | 12  | The spec describes P9                                                                                                                                                            | 1–12, 13                  | S1–S15; the audit of PR 13                                                                    |
 
@@ -1205,7 +1206,7 @@ One executor takes one pull request of section 7.
 | The forecast drifts with words                    | Its median error over 1 session in PR 5                                             | Stop and ask. The fix is to play the session plan with a word list in the forecast (D18), which needs the words on the home                                                     |
 | A rule error is charged wrongly                   | A golden row fails, or a learner sees a kana sent back for っ                       | The rows of D5 are the contract; a spelling the rows miss (`ltu` forms, `cch`) gets a row first, then the fix                                                                   |
 | Timing by token is off                            | A word's first kana always slow                                                     | Expected: it carries the time to start reading, which is why `word` has a pace of its own (ADR 117). `committedTimings` at the end of a word gives every token                  |
-| The session runtime passes 20 KB                  | The figures of PRs 7, 10 or 11                                                      | Stop and ask; the run and the report dialog are the first to become chunks of their own                                                                                         |
+| The session runtime passes 20 KB                  | The figures of PRs 7, 11 or 12                                                      | Stop and ask; the run and the report dialog are the first to become chunks of their own                                                                                         |
 | The schema reset loses unsent progress            | After PR 2 the account misses a device's last session                               | M4. Before the release nobody else uses production (ADR 061)                                                                                                                    |
 | A stale tab of format 3                           | It gets `400` and stops syncing                                                     | A28 as designed: a reload loads the new client, whose schema reset clears its outbox                                                                                            |
 | Turnstile in tests                                | The widget cannot run in CI                                                         | A fake loader in DOM tests and a stub script in the e2e; the real widget is checked by the maintainer in M8                                                                     |
