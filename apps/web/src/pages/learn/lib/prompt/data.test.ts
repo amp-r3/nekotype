@@ -22,7 +22,7 @@ describe('data integrity: font glyphs sync', () => {
       }
     }
 
-    // C12: the glyphs of the generated chunks (no screen loads them before P12) are in the font subset.
+    // C12: the glyphs of the generated chunks (no screen loads them before P9) are in the font subset.
     const contentDir = join(process.cwd(), 'src/entities/prompt/content');
     const chunkFiles = readdirSync(contentDir).filter((f) => /^(words|phrases)-.*\.json$/.test(f));
     expect(chunkFiles).toHaveLength(5);

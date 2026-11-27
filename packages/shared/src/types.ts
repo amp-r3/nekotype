@@ -51,7 +51,7 @@ export type TaskKind =
   | 'listening' // sound → shape (P10)
   | 'dictation' // sound → romaji (P10)
   | 'pair' // minimal pair か or が (P10)
-  | 'word'; // a word (P12)
+  | 'word'; // a word (P9, ADR 116)
 
 /** A word item of P12: `word:` and its reading in kana. */
 export type WordKey = `word:${string}`;

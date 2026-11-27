@@ -8,7 +8,7 @@
 
 **Status.** The code implements phases P0–P8 of the MVP specified in [docs/spec/](docs/spec/README.md), which is learning-first ([ADR 058](docs/adr/058-learning-first.md), [ADR 093](docs/adr/093-learning-only-words-in-learning.md), [ADR 099](docs/adr/099-learning-home-methods-and-phases-after-p6.md)): `/` teaches hiragana and katakana with introductions, recall, recognition and reviews that a knowledge model plans (FSRS-6, ADR 100), with the answers kept as a log in IndexedDB. Phase P6 removed the typing trainer: its screen, `/type`, answers 404. Phase P7 replaced confidence, unlocking and the Leitner boxes with the model, whose state is a fold of the log: what syncs is the learning log and settings only (sync format 3: the own events go to the server as batches, one D1 row each, and the events of other devices are pulled; [ADR 100](docs/adr/100-knowledge-model-fsrs-planner-and-answer-log.md), [ADR 102](docs/adr/102-sync-format-3-server.md)). Phase P8 made `/` a learning home: Continue with the reason for what the session does first, the outline of the session, the forecast of the next row, the path through the track and what got stronger since the last session; the kana table and the statistics moved to `/progress` (`/stats` redirects there), a kana opens its details in a dialog, and the forecasts shown are kept on the device to correct the next ones (IndexedDB schema 7). Since P5 a user can sign in with Google or GitHub on production: progress and settings sync through Pages Functions and D1, the account can be deleted, and `POST /api/reports` takes reports of a wrong reading or translation (Turnstile; the client's report dialog returns with words in P12).
 
-Next come more learning methods (P9), kana audio (P10), a placement test and mnemonics (P11), then words in learning (P12) and vocabulary (P13).
+Next come more learning methods and words written in kana (P9), kana audio (P10), a placement test and mnemonics (P11), then the words the learner can read on the home (P12) and vocabulary (P13).
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Max%20Strict-blue.svg)](https://www.typescriptlang.org/)
@@ -165,7 +165,7 @@ Nekotype adheres to strict first-load asset caps, checked by `pnpm run budget` (
 | **JetBrains Mono 400/500** | $\le 45$ KB  | **10.79 / 10.61 KB**   | ✅ Passed                 |
 | **Golos Text 400/500**     | $\le 45$ KB  | **9.42 / 9.56 KB**     | ✅ Passed                 |
 | **Total First Load**       | $\le 160$ KB | **99.79 KB**           | ✅ Passed (62% of budget) |
-| **Lazy content chunk**     | $\le 40$ KB  | none shipped (P12)     | —                         |
+| **Lazy content chunk**     | $\le 40$ KB  | none shipped (P9)      | —                         |
 | **Lazy route chunk**       | $\le 25$ KB  | **10.41 KB** (largest) | ✅ Passed                 |
 
 ---

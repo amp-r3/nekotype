@@ -59,6 +59,7 @@ export function createProductionPolicy(
 
     const policy: Policy = {
       name: 'production model',
+      learned: (id) => fold.state.items.get(keyOfId(id))?.phase === 'learned',
       session(): Session {
         let count = 0;
         let previous: LearnKanaKey | null = null;
