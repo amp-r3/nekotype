@@ -1,4 +1,4 @@
-Nekotype teaches hiragana and katakana from scratch, one kana at a time, and shows how fast and how reliably you recall each one. It is a learning app; words join learning in P12. There is no kanji in any form.
+Nekotype teaches hiragana and katakana from scratch, one kana at a time, and shows how fast and how reliably you recall each one. It is a learning app; words written in kana join learning in P9. There is no kanji in the interface; the one exception is the origin kanji of a katakana, drawn from its strokes in a transfer (decision 169).
 
 The product's symbol is a white fluffy cat with blue eyes, and the palette comes from her: the fur is the text, the eyes are the only accent, the night around her is the background.
 
@@ -6,7 +6,7 @@ The product's symbol is a white fluffy cat with blue eyes, and the palette comes
 
 1. **The kana is the hero.** On any screen with kana, the largest and highest-contrast element is the kana of the task. During a learning task, the screen holds only what the task needs: navigation and the footer are not rendered (see "Learning session").
 2. **One accent.** `eye` marks "where you are now": the caret, the romaji buffer, the counter, the selected item (segments, the track switch, the open page in the navigation), the current row of the path and the current task's tick, focus, the revealed romaji and the mastered-kana mark. It never fills an area larger than a switch knob. The due mark is not `eye`.
-3. **Structure through spacing.** Blocks are separated by `space-12` or more, not by cards, borders or fills. A line appears only where groups would otherwise run together (table rows). Exceptions with a surface: fields and dialogs (`bg-raised`); the kana details are a dialog (decision 147).
+3. **Structure through spacing.** Blocks are separated by `space-12` or more, not by cards, borders or fills. A line appears only where groups would otherwise run together (table rows). Exceptions with a surface: fields and dialogs (`bg-raised`); the kana details are a dialog (decision 147); the task of a learning session lies on a card (decision 159).
 4. **Nothing without a function.** Every element either shows a state or performs an action. There is no confetti, no colour-coded judgement of results, no praise for a correct answer, and a new kana is not celebrated: progress shows as state, not as words.
 
 ## Tone and copy
@@ -72,7 +72,7 @@ Three families, set up as tokens — a font changes in one place (`type.families
 **Other glyphs outside the subsets** — `↑ ↓ ✓ ≤ ≥ ± Δ`, `！ ？`, curly quotes `“ ” ‘ ’`: avoid them in interface strings. Any new glyph is named in decisions.md (which glyph, which font, why).
 
 Styles:
-- Learning task: `jp-solo` 72/96; below 640px `jp-solo-sm` 48/72.
+- Learning task: `jp-solo` 72/96; below 640px `jp-solo-sm` 48/72 (a kana prompt of a choice on a 56px line, decision 161). A word: up to 4 kana `jp-solo`, up to 7 `jp-solo-sm`, longer `jp-test-sm`; the run `jp-test-sm`, below 640px 22px (decisions 163, 173).
 - Kana in the interface: `jp-test-sm` 32/48 (a recognition option, the title of the kana details), `jp-cell` 22/28 (one kana in a table cell), `jp-cell-sm` 18/24 (two-character kana in a 44px cell: きゃ, ティ), `jp-body` 16/28 (lists, mixups, the path's kana, words).
 - Numbers and prompts: `mono-hero` 72 (the romaji prompt of recognition, the current streak on `/progress`; `mono-hero-sm` 56 on a narrow screen) — one per screen; `mono-stat` 32 — the `Stat` numbers of `/progress` and the forecast change of the summary; `mono-counter` 24 — the ghost hint.
 - Romaji: `mono-romaji` 16 (buffer, revealed romaji, numbers inside labels), `mono-small` 12 (keys, axes, the session line `7 of 30`, the path's counts `31/46`).
@@ -91,7 +91,7 @@ Styles:
 
 ## Motion
 
-Micro-animations only, no springs or bounces. Only `transform` and `opacity` animate; a colour on the hot path changes instantly.
+Micro-animations only, no springs or bounces. Only `transform` and `opacity` animate; a colour on the hot path changes instantly. The one exception is the drawing of strokes (`stroke-dashoffset` and the stroke's colour), outside the hot path: in the kana details and an introduction (decision 177).
 
 | what | duration | curve |
 | --- | --- | --- |
@@ -101,6 +101,8 @@ Micro-animations only, no springs or bounces. Only `transform` and `opacity` ani
 | hover, focus, tooltip, `click to focus` | `dur-hover` 120ms | `ease-out` (leaving — `ease-in`) |
 | a task dims when the window loses focus | `dur-fade` 200ms | `ease-out` |
 | dialog | `dur-reveal` 240ms | `ease-out`, 4px rise |
+| the next task's card slides in (decision 159) | `dur-reveal` 240ms | `ease-out`, from 24px right |
+| strokes draw (decisions 169, 174) | the stroke's length / 0.16 units per ms, at least 260ms; 140ms between strokes | linear |
 
 The 400ms hold after an answer in a learning task is not motion: colours switch instantly and stay. Loading text does not pulse. Under `prefers-reduced-motion: reduce` there is no animation: durations are 0, the reject flash holds for 120ms without a transition. The caret does not blink. `/` has no animations, charts or new illustrations: it is in the initial JS chunk.
 
@@ -132,7 +134,7 @@ A `Dialog` (decision 147), a lazy chunk, opened from a table cell on `/progress`
 | `mixed up with` / `путали с` | `め ×4, ね ×2`, most first; or `none yet` / `пока нет` |
 | `recognition` / `узнавание` | `78% (14 of 18)`; or `no answers yet` / `ответов пока нет` |
 
-From later phases the top of the dialog, over the rows, holds what is about the kana itself: the stroke order (P9), the mnemonic (P11) and `listen` / `послушать` (P10) — see "Later phases".
+Over the rows, what is about the kana itself: on the left the stroke order (`StrokeOrder`, decision 174) — each glyph in a 112px box (88px below 640px), the strokes numbered at their start, drawn one after another when the dialog opens at one pen speed, the current stroke `eye`; `replay` / `ещё раз` (`secondary`, `sm`, the `reset` icon) draws them again; while the stroke chunk loads or after a failure the place keeps its size. On the right, from later phases, the mnemonic (P11) and `listen` / `послушать` (P10) — see "Later phases".
 
 ## Settings (`/settings`)
 
@@ -146,11 +148,13 @@ Account details (decisions 121–123). The profile is the cat mark, one name lin
 
 ## About (`/about`, lazy route)
 
-Reached only from the `Footer` link `about` / `о проекте`. Title `About` / `О проекте`, then one section (decision 132):
+Reached only from the `Footer` link `about` / `о проекте`. Title `About` / `О проекте`, then two sections (decisions 132, 175):
+
+**Sources** / **Источники**: `JMdict` — CC BY-SA 4.0, under it `Electronic Dictionary Research and Development Group (EDRDG) · words and their meanings` / `· слова и их значения`; `KanjiVG` — CC BY-SA 3.0, under it `Ulrich Apel · stroke order and origin kanji` / `· порядок черт и иероглифы-предки`. Each row comes with the first screen that shows its data.
 
 **Nekotype**, rows separated by `line`: `code` / `код` — AGPL-3.0-only, under it `Copyright (C) 2026 amp-r3 · source code: github.com/amp-r3/nekotype` (the link is the offer of the source, AGPL section 13); `name, logos and cat` / `название, логотипы и кошка` — `all rights reserved` / `все права защищены` (plain text, `fur-dim`); `fonts` / `шрифты` — OFL-1.1, under it Golos Text, JetBrains Mono, Noto Sans JP. A row: the name (`ui-label`) on the left, the licence as a link to its text on the right, the holder under both (`ui-caption`, `fur-dim`).
 
-Reserved, not rendered: *Kana audio* / *Звук каны* — P10 (the recordings, their author and licence); *Data on this device* / *Данные на устройстве* — P14 (what is stored in the browser and, after sign-in, on the server; how to erase it). Sources and licences of words and phrases, and the phrase authors, come back with the phase that ships content (P12). They use the same rows.
+Reserved, not rendered: *Kana audio* / *Звук каны* — P10 (the recordings, their author and licence); *Data on this device* / *Данные на устройстве* — P14 (what is stored in the browser and, after sign-in, on the server; how to erase it). Phrases and their authors come back with the phase that ships them; they use the same rows.
 
 No lazy content chunk, no cat, no primary button, no global keys. Keyboard: `Tab` goes through the licence links, the source code link and the footer.
 
@@ -177,15 +181,35 @@ Keyboard: no global keys on `/`. When the screen is ready, `continue` takes focu
 
 `continue` starts a learning session; there is one kind of session. It hands focus to the hidden input in its click handler; the input keeps focus for the whole session, so a phone keeps its on-screen keyboard open.
 
-- **Learning session** — up to 30 tasks. The knowledge model chooses each task when it is shown: a review of a due kana, a learning kana whose step has passed, an introduction of the next kana, or a learning kana whose step has not passed. A task on a learning kana is recognition one time in four and recall otherwise; a review is always recall. The session ends early, with its summary, when the model has nothing to offer.
-- No session timer: no clock, no countdown, no answer time during a task.
-- A session cannot be resumed. Leaving keeps every recorded answer (state is written after each answer) but loses the summary.
+- **Learning session** — up to 30 tasks, then the round. The session plan chooses each task when it is shown: the knowledge model's review, learning step or introduction, turned at times into another kind of task — contrast, transfer, build, hiragana or katakana? — and, once 25 words of the selected track are readable, a word after every 5 kana tasks, a rule introduction before the first word that needs っ or ー, find the error now and then, a fluency run as the 15th task and a word of the session's kana as the 30th. Then the round brings back up to 5 kana answered wrong, each once. The session ends early, with its summary, when the plan has nothing to offer.
+- No session timer: no clock, no countdown, no answer time, no score or speed during a task.
+- A session cannot be resumed. Leaving keeps every recorded answer (state is written after each answer) but loses the summary and the round.
 - From P10 the kana sounds after each task. There is no sound UI on the task screen — no button, no indicator — only the setting in `/settings`. A task never waits for the sound.
-- The task types of later phases (P9, P10, P12) take the place of the prompt under the session line and its ticks (decision 152).
 
-Layout (`KanaTask`), top to bottom: the session line `learning · 7 of 30` / `обучение · 7 из 30` (`mono-small`; numbers `fur`) with `leave session` / `выйти` on the right (back to `/`, no confirmation); under it a 2px tick per task of the session — done `fur-dim`, current `eye`, the rest `line-strong`, a task answered with an error `miss` (decision 149); the prompt; four options (recognition); one reserved notice line; the hint line. Navigation and footer are not rendered during a session; they return on the summary. The tasks, their feedback and the phone layout over the on-screen keyboard are described in the `KanaTask` and `OptionCard` READMEs.
+**Layout** (`KanaTask`, decision 159), top to bottom: the session line `learning · 7 of 30` / `обучение · 7 из 30` (`mono-small`; numbers `fur`; in the round `round · 1 of 3` / `повтор · 1 из 3`) with `leave session` / `выйти` on the right (back to `/`, no confirmation); a 2px tick per task — done `fur-dim`, current `eye`, the rest `line-strong`, a task answered wrong `miss` (decision 149), the round's ticks after a gap; the task on a card (`bg-raised`, `line` border, `radius-md`): a caption naming the kind (`ui-caption`, `fur-dim`; recall has none, its line is reserved), the prompt, the options; under the card the feedback lines, one reserved notice line and the key line. Every new card slides in from the right. Navigation and footer are not rendered during a session; they return on the summary.
 
-Feedback: recall without an error — the kana in `fur` for 400ms; with an error — `miss` + `miss-dim` underline for 400ms; recognition correct — `is-correct` for 400ms; wrong — `is-wrong`, the right one `is-reveal`, then wait for `Enter`, `Space` or a click. 400ms is a hold (the engine's constant), not an animation. Keys pressed before the next task appears are ignored.
+| kind | caption (en / ru) | prompt | answer |
+| --- | --- | --- | --- |
+| introduction | `new kana · the m row` / `новая кана · ряд m` | the kana, its row under the ghost hint | the shown romaji, once |
+| recall | — | the kana | romaji, the buffer under the caret |
+| recognition | `which kana is it?` / `какая это кана?` | the romaji | 4 options, `1`–`4` |
+| word (163) | `word` / `слово` | the word, 2–10 kana | romaji per kana; then the reading and the meaning, `Enter` |
+| closing word (165) | `a word of today's kana` / `слово из сегодняшних кан` | after a screen of its own | as a word |
+| rule (166) | `rule` / `правило`, `rule · once more` / `правило · ещё раз` | the example word, the mark in `eye` | the shown romaji, once |
+| contrast (168) | `which of the similar kana is it?` / `какая из похожих кан?` | the romaji | 2–4 similar kana, 48px |
+| transfer (169) | `new katakana` / `новая катакана`; `the same kana in katakana` / `та же кана катаканой` | the origin kanji drawn → hiragana, katakana; the task: the hiragana | the shown romaji; 4 katakana |
+| build (170) | `new kana`; `type the kana they make` / `наберите кану из частей` | `か + ゛ → が`; the parts | the shown romaji; romaji |
+| find the error (171) | `find the error` / `найдите ошибку` | the word's kana as cards, each with the romaji it wears | the odd one, `1`–`9` |
+| hiragana or katakana? (172) | `hiragana or katakana?` / `хирагана или катакана?` | the kana | `1` hiragana, `2` katakana |
+| run (173) | `run: type them in a row` / `прогон: наберите подряд` | 12 kana in a line | romaji in one stream; `done` / `готово`, `Enter` |
+
+**Feedback** (decision 160). Right: recall holds 400ms in `fur`, a choice marks its card; no words, no praise. A slip — one wrong key, answered quickly — looks right: the caret flashed, nothing else. Wrong: the card's border turns `miss-dim` and the task waits for `Enter`, `Space` or a click (`Kbd enter` + `next` / `дальше` in the key line; a `next` button under `pointer: coarse`). Recall compares in the stage: the right kana in its place with its romaji, the learner's kana smaller on its left in `miss` with `you typed` / `вы ввели`. Under the card the difference of a similar pair and `ぬ comes back at the end of the session` / `ぬ вернётся в конце сессии` while the round has room; a screen reader hears the pair as a sentence too. A word shows its first wrong kana this way, then the word (164); a rule error shows the rule. 400ms is a hold (the engine's constant), not an animation. Keys pressed before the next task appears are ignored.
+
+**The round and the closing word** open with screens of their own: the cat, a title, the kana, one line and `start` (`Enter`) — decisions 162, 165.
+
+**Report a problem** (decision 167): after a word's answer, `report a problem` / `сообщить об ошибке` at the end of the key line opens the report dialog; the session waits.
+
+**A phone** with the on-screen keyboard open has 280px for the task; every state fits (decision 161, `ScreenLessonKeyboard`).
 
 Strictness is set in `/settings`: `relaxed` (default) accepts `si` for し and `tu` for つ; `strict IME` accepts only what a Japanese IME accepts.
 
@@ -202,7 +226,7 @@ Title `session summary` / `итог сессии` (`ui-heading`). Then, decision
 | --- | --- | --- |
 | `new` / `новые`, `learned` / `выучены` | table cells under the two captions, filled with the kana's state now (as "since the last session" on `/`) | み · ま ぬ |
 | `faster` / `быстрее`, `slower` / `медленнее` | only kana with 10 recall answers at the start; the median of the last 10 answers at the start → at the end; changes from 100ms, at most 5 each way, largest first. Kana `jp-body`, times `mono-romaji`, the difference apart in `fur-dim` with `−` (U+2212) or `+` | `ぬ 1720 → 1380 ms  −340` |
-| `confused` / `путаницы` | kana picked instead of the right one in recognition, and kana typed with errors in recall | `ぬ → め` picked instead / выбрана вместо; `ね ち` typed with errors / с ошибками |
+| `confused` / `путаницы` | kana picked instead of the right one in a choice (recognition, contrast, transfer, find the error), and kana with the verdict `wrong` — a recall or a word's kana; a slip is not listed (decision 176) | `ぬ → め` picked instead / выбрана вместо; `ね ち み` typed with errors / с ошибками |
 
 Faster and slower carry no colour: no green, and `miss` is for errors only. If every section is empty — one line: `no changes in this session. your answers are saved.` / `изменений нет. ответы сохранены.`
 
@@ -213,9 +237,9 @@ Actions: `continue` / `продолжить` — `primary`, `lg`, `Kbd enter`; s
 Every screen can be completed with the keyboard alone.
 
 - `Tab` is never intercepted.
-- `Esc` in recall — shows the romaji; counts as an error.
-- `1`–`4` — the option in recognition, from the number row and from the numeric keypad (`Digit1`–`4`, `Numpad1`–`4`).
-- `Enter` or `Space` after a wrong choice — on to the next task.
+- `Esc` in recall, a word, a build and a run — shows the romaji of the current kana; counts as an error.
+- `1`–`4` — the option in recognition, contrast and transfer, from the number row and from the numeric keypad (`Digit1`–`4`, `Numpad1`–`4`); `1`–`2` in hiragana or katakana?; `1`–`9` in find the error.
+- `Enter` or `Space` after a wrong answer of any kind, after a word's meaning and at the end of a run — on to the next task; `Enter` on the screens of the round and of the closing word — `start`.
 - `Enter` on the session summary — its primary action (`continue`, or `home` when nothing is left to do), wherever focus is, except a link, a control or a dialog.
 - `Enter` or `Space` on a kana of the table, of "since the last session" or of the summary opens its details; `Esc` closes them and the focus returns to the kana.
 - Keys pressed during the 400ms hold after an answer are ignored.
@@ -226,33 +250,31 @@ The interface labels every key in this list with `Kbd` or `hint`.
 
 ## Later phases
 
-A state of a later phase is drawn only when a brief asks for it, switched off and named with its phase (decision 152). Every screen preview of P8 has a `later` select in its preview strip: `P8 · as shipped` (the default: what the app shows), one of P9–P12, or all of them. The phase then turns its element on without redrawing the screen. Small elements of existing screens are sketched in their place and size; a new task type is only a place — a dashed box (`line-strong`, `radius-sm`) with its phase, its name and one line. Texts of mnemonics and words in the previews are samples.
+A state of a later phase is drawn only when a brief asks for it, switched off and named with its phase (decision 152). Every screen preview has a `later` select in its preview strip: `P9 · this phase` (the default: what P9 builds), one of P10–P12, or all of them. The phase then turns its element on without redrawing the screen. Small elements of existing screens are sketched in their place and size; a new task type is only a place — a dashed box (`line-strong`, `radius-sm`) with its phase, its name and one line. Texts of mnemonics and words in the previews are samples.
 
 | phase | where | what |
 | --- | --- | --- |
-| P9 | kana details | the place of the stroke order (112px; 88px below 640px), left of the mnemonic |
-| P9 | session | after an error the notice line says what tells the kana apart: `ぬ, not め: ぬ ends with a loop · it comes back later in this session` / `ぬ, а не め: у ぬ петля на конце · ещё раз — позже в этой сессии`; places of contrast, hiragana → katakana, build, the fluency run |
 | P10 | kana details | `listen` / `послушать` (`secondary`, `sm`) |
 | P10 | session, `/settings` | places of listening, dictation and minimal pairs; the `kana sound` setting (decision 151) |
 | P11 | `/` | on the first visit, in the place of the action: `Do you already know some kana?` / `Вы уже знаете какие-нибудь каны?`, `start from zero` / `начать с нуля` (`primary`, `Kbd enter`) and `take the test` / `пройти тест`, then `The test goes row by row and stops at the rows you do not know yet.` / `Тест идёт по рядам и останавливается на рядах, которых вы ещё не знаете.` (`ui-caption`) |
 | P11 | `/progress` | under the table: `Know more than the chart shows? A row-by-row test marks the kana you know.` / `Знаете больше, чем показывает таблица? Тест по рядам отметит знакомые каны.` with `take the test` |
 | P11 | kana details, session | the mnemonic, one or two lines of `ui-body`: in the details over the rows, on an introduction in the notice line |
 | P12 | `/` | `words you can read now` / `слова, которые уже можно прочитать` with their count, under "since the last session": the words in `jp-body`, the first 12, then `and 22 more` / `и ещё 22` |
-| P12 | summary, session | `new words you can read` / `новые слова, которые можно прочитать` after `new · learned`; the place of a word task, from which the report dialog opens |
+| P12 | summary | `new words you can read` / `новые слова, которые можно прочитать` after `new · learned` |
 
 ## Cat
 
-One style — `geometry`. She appears in four places: the logo and favicon; empty states (`sleep`); `/` with nothing to do (`sleep`, over the reason; decision 154); 404 (`neutral`; drawn twice: the app's screen and the static `404.html` that Pages serves for unknown paths, ADR 077). She is not on a learning task, not on `/` in any other state and not on `/about`. Two moods are drawn and wait for a place: `content` (closed, smiling eyes; decision 136) and `grumpy` (half-closed eyes) — an error or a failure (decision 98).
+One style — `geometry`. She appears in six places: the logo and favicon; empty states (`sleep`); `/` with nothing to do (`sleep`, over the reason; decision 154); 404 (`neutral`; drawn twice: the app's screen and the static `404.html` that Pages serves for unknown paths, ADR 077); the screen of the round (`neutral`, decision 162); the screen of the closing word (`content`, closed smiling eyes, decision 165). She is not on a learning task, not on `/` in any other state and not on `/about`. `grumpy` (half-closed eyes) is drawn and waits for a place — an error or a failure (decision 98).
 
 ## Prohibitions
 
-- Japanese decoration: sakura, torii, Fuji, waves, the red circle, maneki-neko, kanji as ornament, paper textures. No kanji at all.
+- Japanese decoration: sakura, torii, Fuji, waves, the red circle, maneki-neko, kanji as ornament, paper textures. No kanji, except the origin kanji of a katakana drawn from its strokes in a transfer (decision 169).
 - Gradients, glassmorphism, glow, shadows under blocks, radii of 8px and more, sparkle icons, emoji, hero blocks, confetti, shimmering skeletons, pulsing loaders.
-- Cards for the sake of cards: borders and fills instead of spacing.
+- Cards for the sake of cards: borders and fills instead of spacing. The task of a session lies on one card (decision 159); nothing else on that screen does.
 - A second accent colour, green for "correct", colour-coded judgement of results, praise for a correct answer, celebrating a new kana.
-- Animating anything other than `transform` and `opacity`; colour transitions on the hot path.
+- Animating anything other than `transform` and `opacity` (except the drawing of strokes, decision 177); colour transitions on the hot path.
 - Decorative elements without a function.
 
 ## Iconography
 
-One icon, from the code (ADR 055): `reset` (reset progress). Linear SVG on a 24 grid, stroke 2, round caps, colour inherited from the text, drawn at `space-4` next to a label — never alone. Everything else is text: navigation and actions are words, keys are `Kbd`, pagination arrows are the characters `←` `→`. A new icon follows the same rules and is recorded in decisions.md.
+One icon, from the code (ADR 055): `reset` — reset progress, and `replay` of the stroke order (decision 174). Linear SVG on a 24 grid, stroke 2, round caps, colour inherited from the text, drawn at `space-4` next to a label — never alone. Everything else is text: navigation and actions are words, keys are `Kbd`, pagination arrows are the characters `←` `→`. A new icon follows the same rules and is recorded in decisions.md.

@@ -4,6 +4,7 @@ Working file of phase P9 ([phases.md](docs/spec/phases.md), item 10). It tells t
 
 - Written on 2026-11-27 against `main` at 8acf510 (PR 249 merged: part 3 of the P9 research and [ADR 118](docs/adr/118-the-p9-planner.md)). The research decided the scope, the grades and the planner in [ADR 116](docs/adr/116-words-written-in-kana-and-varied-tasks-in-p9.md), [ADR 117](docs/adr/117-grades-of-the-p9-task-types.md) and ADR 118; the maintainer answered this plan's four questions on the same day ([section 5](#5-answered-questions)).
 - Changed on 2026-11-27, before the merge: the pull requests after PR 9 numbered in the order they run (10 the stroke order, 11 the choice tasks, 12 the fluency run).
+- Changed on 2026-11-28 by PR D, against the design export (decisions 159–177, [ADR 119](docs/adr/119-the-p9-design.md)): the decisions in the last column of 4.2; D21, D23–D27 as the export draws them; with the maintainer's consent the data gain the part of the origin kanji a katakana kept (D2) and `roundKana` and `seen` of the session plan (D12); the cards of PRs 5, 6, 7, 8, 9, 10, 11 and 12.
 - Where this plan and `docs/spec/` disagree, the spec wins until the pull request named here changes the spec. Every such change is listed in [section 3.10](#310-spec-changes) with its pull request.
 - **Two kinds of content.** Section 3 holds the data, the rules and the computations as final contracts: types, names, files, keys and constants. An executor copies them and does not invent names. Everything that depends on how a screen looks is a brief for the design session ([section 4](#4-design-brief)): proposals, not decisions. The design export decides, and its decision numbers fill the brief's last column.
 - **The screens follow the design export.** No code pull request starts before PR D is merged (ADR 116, point 7). PR D rewrites the cards of the pull requests that build screens (6, 7, 8, 10, 11, 12) against the export.
@@ -16,7 +17,7 @@ The executor of a pull request fills its row ([section 8](#8-instructions-for-ex
 
 | PR  | Branch                     | Status | Pull request |
 | --- | -------------------------- | ------ | ------------ |
-| D   | `docs/p9-design`           | —      | —            |
+| D   | `docs/p9-design`           | open   | #251         |
 | 1   | `p9-01-words-content`      | —      | —            |
 | 2   | `p9-02-log-format-4`       | —      | —            |
 | 3   | `p9-03-engine-rule-errors` | —      | —            |
@@ -130,11 +131,17 @@ KanjiVG is the source of the stroke order that ADR 099 left to P9. It holds each
     readonly d: readonly string[];
     /** Where each stroke's number stands (KanjiVG's stroke numbers), one decimal. */
     readonly n: readonly (readonly [x: number, y: number])[];
+    /** The stroke chunks only: true for a small kana (ぁ ぃ ぅ ぇ ぉ ゃ ゅ ょ っ ゎ and their katakana), which the details draw at 70% from the bottom left (decision 174). */
+    readonly small?: true;
+    /** `origins.json` only: the indexes of the strokes of the part the katakana kept (decision 169 draws them in eye). */
+    readonly kept?: readonly number[];
   };
   type StrokeChunk = Readonly<Record<string, StrokeGlyph>>;
   ```
 
-- **The origins table** `packages/engine/src/data/origins.ts`: `kanaOrigins: Readonly<Record<string, string>>`, hiragana → kanji, for the basic kana whose hiragana and katakana come from the same kanji (か and カ from 加), and `originOf(kana: string): string | null` for either script. It is compiled from the tables of origins (字源) of the Japanese Wikipedia articles 平仮名 and 片仮名, cited with the date in the file. A pair whose two scripts come from different kanji is left out. The maintainer reads the table before PR 9 is merged (M7).
+  The design reference (`index.d.ts`, `StrokeGlyph`) calls `d` `s` and has `n` optional; these names are the contract, and an origin kanji's `n` is written but not drawn.
+
+- **The origins table** `packages/engine/src/data/origins.ts`: `kanaOrigins: Readonly<Record<string, { readonly kanji: string; readonly part: string | readonly number[] }>>`, hiragana → its kanji and the part of it the katakana kept, for the basic kana whose hiragana and katakana come from the same kanji, and `originOf(kana: string): string | null` (the kanji) for either script. `part` is either a component that KanjiVG names (`kvg:element` of a group of the kanji's file: 力 of 加 for か / カ; the kanji itself when the katakana kept all of it), or, when the strokes the katakana kept are no group of the file (ク of 久, ノ of 乃, ナ of 奈), their 0-based indexes in writing order (ク: `[0, 1]`). A name that is no group of the file, or an index outside its strokes, fails the build. The kanji come from the tables of origins (字源) of the Japanese Wikipedia articles 平仮名 and 片仮名, cited with the date in the file; the parts are written by the executor of PR 9 from the shapes, since the tables do not name them, and the maintainer reads both (M7). A pair whose two scripts come from different kanji is left out.
 - **Credit:** CC BY-SA 3.0 applies to the converted data, shipped as these separate files. `/about` credits KanjiVG from the pull request that first shows its data (PR 10, [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen)); `NOTICE.md` lists it under "Third-party data" and "Mirrored content sources" in PR 9.
 
 ### 3.2 The log
@@ -430,8 +437,12 @@ export interface SessionPlan {
   readonly count: number;
   /** The round's length once it has started; null before. */
   readonly roundSize: number | null;
+  /** The round's kana in their order once it has started; null before (the screen of the round, decision 162). */
+  readonly roundKana: readonly LearnKanaKey[] | null;
   /** Tasks of the round given so far. */
   readonly roundCount: number;
+  /** The kana of this session's tasks so far, each once, in the order first met (rule 5 of D13; the screen of the closing word, decision 165). */
+  readonly seen: readonly LearnKanaKey[];
 }
 export function createSessionPlan(deps: SessionPlanDeps): SessionPlan;
 ```
@@ -594,8 +605,10 @@ New constants of `packages/model/src/constants.ts`. Each chooses tasks, so a cha
 - **Recording stays deferred.** In the deferred callback the session:
   - calls `plan.record` with the kana judged `wrong`;
   - adds the task's number to `misses` (its tick turns `miss`) when a verdict is `wrong`, or when the choice of a hiragana-or-katakana task is wrong;
-  - sets the notice of [D23](#d23-feedback-that-teaches).
-- **Ticks:** one per task of the session (`total` = `SESSION_TASKS`); the round adds `roundSize` ticks when it starts, as the export draws them.
+  - sets the feedback of [D23](#d23-feedback-that-teaches).
+- **Ticks:** one per task of the session (`total` = `SESSION_TASKS`); the round adds `roundSize` ticks after a gap when it starts (decision 162).
+- **Two screens that are not tasks** (decisions 162, 165): before the round's first task, the screen of the round with `plan.roundKana`; before the closing word, its screen with `plan.seen`. Each waits for `Enter` or `start`, logs nothing and adds no tick.
+- **A held answer** (decision 160): a task with a `wrong` verdict, a wrong choice, a word once answered (its meaning) and the end of a run wait for `Enter`, `Space`, a click or `next`; keys before that do nothing. A right answer and a slip hold `ANSWER_PAUSE_MS` as today.
 - **The summary:** `errors` lists the kana with a `wrong` verdict (a slip is not listed); `mixups` lists the option chosen in a wrong recognition, contrast or transfer and the kana picked in a missed find-the-error; the rest as now.
 - **The session's `end`** is written after the round, when `next` returns null. A session left early has no round and no `end`.
 
@@ -636,49 +649,52 @@ export function tokenAnswers(input: {
 
 #### D23. Feedback that teaches
 
-After a task with a `wrong` verdict, the notice says (Q2; the wording and the layout are the export's):
+After a task with a `wrong` verdict the task waits for `Enter` (D21) and shows (Q2; decisions 160, 164, 171, 172; `KanaTask` `compare`, `feedback`, `promise`):
 
 - **The learner's answer next to the right one.**
-  - A typed kana whose `wrong` names a kana: that kana with its romaji, next to the right kana and its romaji (`tsu` is ツ; this is シ, `shi`).
+  - A typed kana whose `wrong` names a kana: in the stage, the right kana in its place with its romaji under it, the learner's kana on its left, smaller, in `miss`, with `you typed` / `вы ввели` over it and its romaji under it.
   - A typed kana with no `wrong` (a reveal, several keys, a slow recovery): the right kana and its romaji.
-  - A choice: the option chosen next to the right one.
-  - A word: its first wrong kana, as a typed kana.
-  - A missed find-the-error: the odd kana with the romaji it wore and its own.
-- **The difference of a pair:** when the two kana are a pair of `similarPairs`, one line on how they differ. The keys are `session.pair.<h|k>.<a>.<b>`, with `a` and `b` the romaji of the pair in the table's order (`session.pair.h.nu.me`, `session.pair.k.shi.tsu`). The executor of PR 6 drafts the 47 lines in English and Russian; the maintainer reads them before its merge (M6). Other pairs get no line.
-- **The promise:** `it comes back at the end of the session` while the kana is among the first `ROUND_MAX` wrong kana of the session; once the round is full, no promise.
-- **A slip:** no notice, and the tick stays right.
+  - A choice: the options keep their marks (`wrong`, `reveal`).
+  - A word: first its first wrong kana, as a typed kana, with the caption `word · <the word>`; `Enter`; then the word with that kana in `miss` and its meaning. A rule error: the word with the rule's mark in `miss` and the rule's line, no pair and no promise.
+  - A missed find-the-error: the odd card shows the romaji it wore struck and its own; the line `し was shown as chi; it is shi` / `у し было chi, а это shi`.
+  - A wrong hiragana-or-katakana: `リ is katakana; its hiragana is り` / `リ — катакана; в хирагане это り`.
+  - A wrong transfer: the options keep their marks, and the line `タ is ta · か ka → カ` / `タ — это ta · か ka → カ` (the chosen katakana, then the prompt and the right one).
+  - For a screen reader the pair is also a sentence in the status line (`me is め · this is ぬ nu` / `me — это め · а здесь ぬ nu`; after a reveal `this is ぬ nu` / `здесь ぬ nu`).
+- **The difference of a pair:** when the two kana are a pair of `similarPairs`, one line under the card on how they differ. The keys are `session.pair.<h|k>.<a>.<b>`, with `a` and `b` the romaji of the pair in the table's order (`session.pair.h.nu.me`, `session.pair.k.shi.tsu`). The executor of PR 6 drafts the 47 lines in English and Russian; the maintainer reads them before its merge (M6). Other pairs get no line.
+- **The promise:** `ぬ comes back at the end of the session` / `ぬ вернётся в конце сессии` while the kana is among the first `ROUND_MAX` wrong kana of the session; once the round is full, and in the round, no promise. Below 640px it stands in the key line, left of `next`.
+- **A slip:** nothing — the caret flashed, the kana stays `fur`, the tick stays right.
 
 #### D24. Choice and build tasks
 
-- **Contrast:** the prompt is `displayRomaji(K)`; the options are the plan's, shuffled with the session's `rng`; keys 1–4.
-- **Transfer:** the prompt is the hiragana `from`; the options are `recognitionOptions` for the katakana K, as for a recognition; keys 1–4.
-- **Build:** the prompt is the parts (が: か and ゛, from the kana's canonical decomposition; きゃ: き and ゃ, its two characters); the romaji is typed as in a recall, against the matcher of K.
-- **Hiragana or katakana?:** the kana K; two options, `hiragana` and `katakana`, keys 1 and 2; `ok` when the chosen script is K's.
-- **Find the error:** the word's kana, each with `displayRomaji` under it, the one at `index` under `displayRomaji(alt)`; the learner picks a kana by its number (1–9) or a click; `ok` when the pick is `index`.
+- **Contrast:** the prompt is `displayRomaji(K)`; the options are the plan's, shuffled with the session's `rng`; keys 1–4; as many columns as options, larger kana (decision 168).
+- **Transfer:** the prompt is the hiragana `from` (`promptKana`); the options are `recognitionOptions` for the katakana K, as for a recognition; keys 1–4.
+- **Build:** the prompt is the parts (が: か and ゛, from the kana's canonical decomposition; きゃ: き and ゃ, its two characters) with `+` between them; the romaji is typed as in a recall, against the matcher of K; once answered `→` and K and its reading appear (decision 170). A right build holds `ANSWER_PAUSE_MS` and moves on, as a recall: the learner has just typed the reading and saw the kana in its introduction. A wrong one waits for `Enter` (D21) with `→` K, its reading and the comparison of D23 on screen.
+- **Hiragana or katakana?:** the kana K (`promptKana`); two word options (`OptionCard text`), `hiragana` and `katakana`, keys 1 and 2; `ok` when the chosen script is K's.
+- **Find the error:** the word's kana as `OptionCard`s, each with `displayRomaji` under it (`sub`), the one at `index` under `displayRomaji(alt)`; the learner picks a kana by its number (1–9) or a click; `ok` when the pick is `index`.
 - **Introductions:**
-  - build: the parts, then the kana;
-  - transfer: the katakana next to its hiragana, and the origin kanji drawn from `origins.json` when `originOf` has one ([D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen)).
+  - build: `か + ゛ → が` (`KanaParts`), the caption `new kana`;
+  - transfer: the origin kanji drawn from `origins.json` when `originOf` has one, `from 加` / `из 加` under it, `→`, the hiragana, the katakana (`KanaParts`, `Strokes`); the caption `new katakana` / `новая катакана` ([D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen)).
 
   Both are typed once with the shown romaji, as an introduction is today, and log an `intro`.
 
 #### D25. The fluency run on the screen
 
 - The run's kana are the prompts of one stream (`compile` of the kana, one prompt each); a reveal shows the current kana's romaji.
-- No timer, count, speed or score is shown (ADR 093); the run ends when its last kana is typed.
+- No timer, count, speed or score is shown (ADR 093); the run ends when its last kana is typed, then shows `done` / `готово` under the card and waits for `Enter`; with a wrong kana, the pair of the first one as a line (`you typed ぬ nu · here め me` / `вы ввели ぬ nu · здесь め me`), its difference and the promise (decision 173).
 - It is recorded at the end with `recordTokens({ task: 'fluency', w: null, … })`: one `fluency` event per kana, each kana being in the run once.
 - A keystroke renders nothing; the end of the run renders at most once.
 
 #### D26. The report dialog
 
-- Restored from commit 753df9f (`git show 753df9f:apps/web/src/pages/trainer/…`): the dialog into `pages/learn/ui/report/`, a lazy chunk of its own, and `lib/turnstile.ts` into `pages/learn/lib/turnstile.ts`. It is laid out as the export draws it.
-- It opens from a word task after the answer, never while the word is typed. The session waits while it is open; closing it gives the focus back to the session's input.
+- Restored from commit 753df9f (`git show 753df9f:apps/web/src/pages/trainer/…`): the dialog into `pages/learn/ui/report/`, a lazy chunk of its own, and `lib/turnstile.ts` into `pages/learn/lib/turnstile.ts`. It is laid out as decision 167 draws it: the word and its meaning under the title, the reasons as a `RadioGroup` with **none chosen in advance** (the restored `Select` with its default goes), a `Textarea`, the Turnstile slot, the reserved notice in the actions row. `send` is enabled once a reason is chosen and the check has passed.
+- It opens from `report a problem` / `сообщить об ошибке` at the end of a word task's key line after the answer, never while the word is typed. The session waits while it is open; closing it gives the focus back to the session's input.
 - The request of [backend.md](docs/spec/backend.md): `itemId` the word's `id`, `contentVersion` from the manifest ([D20](#d20-words-in-the-app)), `reason` (`wrong_reading`, `wrong_translation`, `other`), an optional `comment`, and the Turnstile token. Turnstile's script loads only when the dialog opens; the site key is chosen by host (ADR 092); the action is disabled offline (`useOnline`).
 - Its strings are in the `session` part ([D28](#d28-strings-and-styles)).
 
 #### D27. Stroke order and the origin kanji on the screen
 
-- **The kana details** (`features/kana-details`) load the stroke chunk of the kana's track (`loadStrokes`) when the dialog opens and draw each glyph of the kana (a yōon, two) as SVG paths in writing order with their numbers, as the export draws them. Motion, if the export has any, respects `prefers-reduced-motion`. While the chunk loads, and after a failure, the place keeps its size.
-- **The origin kanji.** The session loads `origins.json` with its runtime when `learn.track` is katakana. A transfer introduction draws the kanji from it under the same rules; without the chunk it shows the pair alone.
+- **The kana details** (`features/kana-details`) load the stroke chunk of the kana's track (`loadStrokes`) when the dialog opens and draw each glyph of the kana (a yōon, two) as SVG paths in writing order with their numbers (`StrokeOrder`, decision 174): a 112px box (88px below 640px), a glyph with `small` (D2) at 70% from the bottom left. The strokes draw one after another when the dialog opens at one pen speed — a stroke takes its length (`getTotalLength`) / `PEN_SPEED` 0.16 units per ms, at least `PEN_MIN` 260ms, `PEN_LIFT` 140ms between strokes (the reference's names, exported by `shared/ui/strokes.tsx`), the current one in `eye` — and `replay` / `ещё раз` (`secondary`, `sm`, the `reset` icon) draws them again. Under `prefers-reduced-motion` every stroke is there at once. While the chunk loads, and after a failure, the place keeps its size and `replay` is disabled.
+- **The origin kanji.** The session loads `origins.json` with its runtime when `learn.track` is katakana. A transfer introduction draws the kanji from it once when it appears, with the same pen, its `kept` strokes in `eye` and the rest `fur-dim`, 88px (56px below 640px) (`Strokes`, decision 169); without the chunk it shows the pair alone.
 - PR 10 adds the KanjiVG credit to `/about`, so the data is credited from the first pull request that shows it; PR 11, which shows the origins, comes after it.
 
 #### D28. Strings and styles
@@ -751,7 +767,7 @@ Every pull request goes to `main`. Reasons:
 
 ## 4. Design brief
 
-The design session (M1) is drawn in a workbench artifact `Nekotype · P9 design`, moved into the design-system artifact and exported by PR D ([design workflow](docs/design/workflow.md), [ADR 106](docs/adr/106-design-sessions-in-a-workbench-artifact.md)). This section is its brief: what each screen shows, every state it has, and proposals. **The proposals are not decisions:** the session may draw something else, and the export decides. PR D writes the numbers of the design decisions (from 159) into the last column of 4.2.
+The design session (M1) is drawn in a workbench artifact `Nekotype · P9 design`, moved into the design-system artifact and exported by PR D ([design workflow](docs/design/workflow.md), [ADR 106](docs/adr/106-design-sessions-in-a-workbench-artifact.md)). This section is its brief: what each screen shows, every state it has, and proposals. **The proposals are not decisions:** the session may draw something else, and the export decides. The export's decisions (159–177, [ADR 119](docs/adr/119-the-p9-design.md)) fill the last column of 4.2; the phone with its keyboard is 161, the totals 177.
 
 The maintainer expects a lot of this session (ADR 116, point 7): the session screen as a whole is to become better and more interesting, not only to gain places for the new tasks. Decision 152 drew those places; this session replaces them.
 
@@ -794,26 +810,26 @@ Names are those of [section 3](#3-decisions).
 
 | #   | Item                    | Proposal                                                                                                                                                                                                                                                                                                                          | Decision |
 | --- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| a   | The session as a whole  | One frame for every kind: the session line and ticks on top, a caption naming the kind over the prompt (`new kana`, `word`, `which one?`, `find the error`, `hiragana or katakana?`, `run`, `rule`), the prompt, the answer area, the notice line, the hint line. The kind is felt through the caption and the form of the prompt |          |
-| b   | Between tasks           | The answer is held (`ANSWER_PAUSE_MS`) and the next task replaces it in place, with a short fade of a motion token and none under reduced motion. A result to read (a meaning, a wrong choice) waits for Enter, Space or a click                                                                                                  |          |
-| c   | Session line and ticks  | Decision 149 kept: a word or a run is one tick. The round's ticks follow after a gap under `round`, and the line reads `round · 1 of 3`                                                                                                                                                                                           |          |
-| d   | Feedback after an error | In the notice line, two kana side by side with their romaji, the learner's answer and the right one (`ツ tsu · シ shi`); under it the pair's difference; then `it comes back at the end of the session`. A choice keeps its marks as today                                                                                        |          |
-| e   | A slip                  | No notice; the tick stays right; the rejected key flashes as today                                                                                                                                                                                                                                                                |          |
-| f   | The round               | Its first task's notice says `3 kana you missed, once more`; its tasks are recalls in the frame of a                                                                                                                                                                                                                              |          |
-| g   | A word                  | The word large in the place of the kana, sized for up to about 10 kana; the caret under the current kana; the romaji under each kana as it is typed; each kana takes its state when done; a merged っX reads as one; Esc shows the current kana's romaji                                                                          |          |
-| h   | The meaning             | Once the word is done, its English meaning under it, `report a problem` / `сообщить об ошибке` as a text button, and `Kbd enter` to go on                                                                                                                                                                                         |          |
-| i   | The closing word        | A word task with the caption `a word of today's kana` / `слово из сегодняшних кан`                                                                                                                                                                                                                                                |          |
-| j   | Rule introductions      | As a kana introduction: the mark large (`っ`, `ー`), one line (`っ doubles the next consonant: きって → kitte`), the example with its ghost romaji; shown again with `once more`                                                                                                                                                  |          |
-| k   | Contrast                | As a recognition, with 2–4 options of similar shapes; after an error the pair large side by side with the difference                                                                                                                                                                                                              |          |
-| l   | Transfer and its origin | The introduction: the origin kanji in strokes, then the hiragana and the katakana (`加 → か · カ`), or the pair alone; the task: the hiragana as the prompt and 4 katakana options                                                                                                                                                |          |
-| m   | Build                   | The introduction: the parts and the result (`か + ゛ → が`); the task: the parts as the prompt, the romaji typed as in a recall                                                                                                                                                                                                   |          |
-| n   | Find the error          | The word with the romaji under each kana, the kana numbered; a number key or a click picks; after the answer the odd kana is marked with both romaji                                                                                                                                                                              |          |
-| o   | Hiragana or katakana?   | The kana large; two options numbered 1 and 2                                                                                                                                                                                                                                                                                      |          |
-| p   | The fluency run         | The kana in one line (wrapping on a phone), the caret moving through them, each kana taking its state as typed; no timer, count or speed; at the end `done` and Enter                                                                                                                                                             |          |
-| q   | The report dialog       | The shared `Dialog`: the word and its meaning, the reason (a `Segmented` of three, or what the export chooses), an optional comment, the Turnstile widget, `send`; the states of decisions 114–117 and 127                                                                                                                        |          |
-| r   | Stroke order            | In the place of decision 152 in the details: each glyph with its strokes numbered in order; `play` draws them one by one, and under reduced motion every stroke is shown with its number; a yōon shows both glyphs                                                                                                                |          |
-| s   | `/about`                | "Sources and licences" before the terms: JMdict and EDRDG for the words, KanjiVG for the stroke order and the origin kanji                                                                                                                                                                                                        |          |
-| t   | The summary             | Decision 148 kept; `confused` without slips; optionally the kana the round brought back right                                                                                                                                                                                                                                     |          |
+| a   | The session as a whole  | One frame for every kind: the session line and ticks on top, a caption naming the kind over the prompt (`new kana`, `word`, `which one?`, `find the error`, `hiragana or katakana?`, `run`, `rule`), the prompt, the answer area, the notice line, the hint line. The kind is felt through the caption and the form of the prompt | 159      |
+| b   | Between tasks           | The answer is held (`ANSWER_PAUSE_MS`) and the next task replaces it in place, with a short fade of a motion token and none under reduced motion. A result to read (a meaning, a wrong choice) waits for Enter, Space or a click                                                                                                  | 159, 160 |
+| c   | Session line and ticks  | Decision 149 kept: a word or a run is one tick. The round's ticks follow after a gap under `round`, and the line reads `round · 1 of 3`                                                                                                                                                                                           | 149, 162 |
+| d   | Feedback after an error | In the notice line, two kana side by side with their romaji, the learner's answer and the right one (`ツ tsu · シ shi`); under it the pair's difference; then `it comes back at the end of the session`. A choice keeps its marks as today                                                                                        | 160      |
+| e   | A slip                  | No notice; the tick stays right; the rejected key flashes as today                                                                                                                                                                                                                                                                | 160      |
+| f   | The round               | Its first task's notice says `3 kana you missed, once more`; its tasks are recalls in the frame of a                                                                                                                                                                                                                              | 162      |
+| g   | A word                  | The word large in the place of the kana, sized for up to about 10 kana; the caret under the current kana; the romaji under each kana as it is typed; each kana takes its state when done; a merged っX reads as one; Esc shows the current kana's romaji                                                                          | 163      |
+| h   | The meaning             | Once the word is done, its English meaning under it, `report a problem` / `сообщить об ошибке` as a text button, and `Kbd enter` to go on                                                                                                                                                                                         | 163, 167 |
+| i   | The closing word        | A word task with the caption `a word of today's kana` / `слово из сегодняшних кан`                                                                                                                                                                                                                                                | 165      |
+| j   | Rule introductions      | As a kana introduction: the mark large (`っ`, `ー`), one line (`っ doubles the next consonant: きって → kitte`), the example with its ghost romaji; shown again with `once more`                                                                                                                                                  | 166      |
+| k   | Contrast                | As a recognition, with 2–4 options of similar shapes; after an error the pair large side by side with the difference                                                                                                                                                                                                              | 168      |
+| l   | Transfer and its origin | The introduction: the origin kanji in strokes, then the hiragana and the katakana (`加 → か · カ`), or the pair alone; the task: the hiragana as the prompt and 4 katakana options                                                                                                                                                | 169      |
+| m   | Build                   | The introduction: the parts and the result (`か + ゛ → が`); the task: the parts as the prompt, the romaji typed as in a recall                                                                                                                                                                                                   | 170      |
+| n   | Find the error          | The word with the romaji under each kana, the kana numbered; a number key or a click picks; after the answer the odd kana is marked with both romaji                                                                                                                                                                              | 171      |
+| o   | Hiragana or katakana?   | The kana large; two options numbered 1 and 2                                                                                                                                                                                                                                                                                      | 172      |
+| p   | The fluency run         | The kana in one line (wrapping on a phone), the caret moving through them, each kana taking its state as typed; no timer, count or speed; at the end `done` and Enter                                                                                                                                                             | 173      |
+| q   | The report dialog       | The shared `Dialog`: the word and its meaning, the reason (a `Segmented` of three, or what the export chooses), an optional comment, the Turnstile widget, `send`; the states of decisions 114–117 and 127                                                                                                                        | 167      |
+| r   | Stroke order            | In the place of decision 152 in the details: each glyph with its strokes numbered in order; `play` draws them one by one, and under reduced motion every stroke is shown with its number; a yōon shows both glyphs                                                                                                                | 174      |
+| s   | `/about`                | "Sources and licences" before the terms: JMdict and EDRDG for the words, KanjiVG for the stroke order and the origin kanji                                                                                                                                                                                                        | 175      |
+| t   | The summary             | Decision 148 kept; `confused` without slips; optionally the kana the round brought back right                                                                                                                                                                                                                                     | 176      |
 
 **Constraints for the session:**
 
@@ -895,7 +911,7 @@ The maintainer reads the 47 lines of [D23](#d23-feedback-that-teaches) in Englis
 
 ### M7. The origins table — before PR 9 is merged
 
-The maintainer reads the table of [D2](#d2-stroke-data-and-the-origin-kanji-from-kanjivg) (each hiragana, its katakana and their kanji, with the source), which the PR lists, and approves or corrects it. Write "done" under PR 9.
+The maintainer reads the table of [D2](#d2-stroke-data-and-the-origin-kanji-from-kanjivg) (each hiragana, its katakana, their kanji with the source, and the part the katakana kept, as a name or as stroke indexes), which the PR lists, and approves or corrects it. Write "done" under PR 9.
 
 ### M8. Production check of the session — after PR 12, before PR 13
 
@@ -910,7 +926,7 @@ Write "done" with the date under PR 13.
 
 ## 7. Pull requests
 
-**The screens follow the export.** Cards 6, 7, 8, 10, 11 and 12 are rewritten by PR D against the design export (decisions from 159, ADR 119); until then their screens are what section 4 proposes. Cards 1–5, 9 and 13 do not depend on the export, but they start after PR D too (ADR 116, point 7). The maintainer approves the rewritten cards with PR D.
+**The screens follow the export.** Cards 6, 7, 8, 10, 11 and 12 were rewritten by PR D against the design export (decisions 159–177, ADR 119): each names the export's components, its layout and its strings in en and ru. The reference is `docs/design/source/` (`components/KanaTask`, `KanaWord`, `StrokeOrder`, `RadioGroup`, `OptionCard`, `README.md` "Learning session"); its `bundle.js` and `bundle.css` are a React reference, rewritten in Preact in `shared/ui`. Cards 1–5, 9 and 13 do not depend on the export, but they start after PR D too (ADR 116, point 7); cards 5 and 9 gained the data of D12 and D2. The maintainer approves the rewritten cards with PR D.
 
 Common to all: the branch is cut from fresh `main`; the acceptance items are those of [phases.md](docs/spec/phases.md), numbered in the [table at the end](#acceptance-items-and-pull-requests); sizes are changed lines with tests, a guide to what one executor session holds.
 
@@ -1009,7 +1025,8 @@ PRs 6, 7, 8, 11 and 12 all change the session (`pages/learn/model/session.ts`, `
 - **Tests:**
   - words: the start at 25 readable words of the selected track, never the other track's; a word after every 5 planner tasks; a slot that waits when no word is readable; no word of `learner.words` or of the session;
   - the closing word at the 30th task and when the planner ends early, only of the session's kana; none when the session's kana make no word;
-  - the round: first-error order, at most 5, each once, `record` ignored once it started, null after it, empty when nothing was wrong;
+  - the round: first-error order, at most 5, each once, `record` ignored once it started, null after it, empty when nothing was wrong; `roundKana` null before the round and its kana in order once it starts;
+  - `seen`: the kana of every kind of task, each once, in the order first met; the closing word is made of them;
   - the rules: due when not introduced and a word would be readable, or after 2 errors in a row; one a session, っ first; the 2 rule words after it;
   - the mix: each row of D14 with its precedence and its limit; the contrast set without shared spellings; find the error only on words of at most 9 kana;
   - the run: eligibility, the 12 slowest, the shuffle, none under 8 or without statistics;
@@ -1024,61 +1041,64 @@ PRs 6, 7, 8, 11 and 12 all change the session (`pages/learn/model/session.ts`, `
 
 ### PR 6 — The session screen
 
-The export decides the screen; PR D rewrites this card.
-
 - **Branch:** `p9-06-session-screen`. **Depends on:** PR 5; M6 before the merge.
-- **Goal.** The session screen of the export on the session plan, with the kinds that exist (introduction, recall, recognition), the feedback of [D23](#d23-feedback-that-teaches) and the round (feature `round`); [D21](#d21-the-session), [D28](#d28-strings-and-styles).
+- **Goal.** The frame of decisions 159–162 on the session plan, with the kinds that exist (introduction, recall, recognition), the feedback of [D23](#d23-feedback-that-teaches) (decision 160), the round with its screen (feature `round`) and the phone over its keyboard (161); [D21](#d21-the-session), [D28](#d28-strings-and-styles).
+- **The design.** `docs/design/source/` after PR D (ADR 119): the guidelines of the components named below and `README.md` "Learning session"; the live previews are `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard` of the design artifact. `bundle.js` and `bundle.css` are a React reference, rewritten in Preact; strings come from the `session` part.
+- **Layout** (`KanaTask`): the session line and the ticks (the round's after a `space-3` gap); the task on a card (`bg-raised`, `line`, `radius-md`, padding `space-8` `space-6`; no frame below 640px) that slides in (`dur-reveal`), its border `miss-dim` once answered wrong; in the card a reserved caption line, the prompt, the options; under it the feedback lines (`role="status"`), the notice line (hidden while an answer is held) and the key line. An introduction shows the kana's row (`jp-cell`, the new kana underlined `eye`, the known ones `fur-dim`). A recall answered wrong compares in the stage (`compare`). The round's screen is `KanaTask kind="break"`: the cat `neutral`, title, the round's kana (`jp-test-sm`), one line, `start` (`primary`, `lg`, `Kbd enter`).
+- **Strings (en / ru):** `new kana · the m row` / `новая кана · ряд m` (`the vowels` / `гласные`); `which kana is it?` / `какая это кана?`; `you typed` / `вы ввели`; `me is め · this is ぬ nu` / `me — это め · а здесь ぬ nu` and `this is ぬ nu` / `здесь ぬ nu` (screen reader); `め is me · nu is ぬ` / `め — это me · nu — это ぬ` (a choice, screen reader); `ぬ comes back at the end of the session` / `ぬ вернётся в конце сессии`; `next` / `дальше`; `round · 1 of 3` / `повтор · 1 из 3`; `round · 3 kana` / `повтор · 3 каны` (a plural key with `tPlural`: `1 кана`, `3 каны`, `5 кан`); `once more: the kana you missed` / `ещё раз: каны с ошибками`; `each comes back once, then the summary` / `каждая — один раз, потом итог`; `start` / `начать`; the 47 pair differences (`ぬ ends in a loop, め does not` / `у ぬ на конце петля, у め её нет` is a sample; M6).
 - **Creates:** `shared/i18n/parts/session` (en, ru, with the pair differences); `pages/learn/lib/feedback.ts`; the session's stylesheet.
-- **Changes:** `pages/learn/model/session.ts` (the plan, verdicts, the round, the ticks, the summary's errors), `lib/constants.ts` (`SESSION_FEATURES`), `lib/summary.ts`, `ui/session-screen.tsx`, `ui/session-runtime.tsx`, `session-loader.ts` (the part), `shared/ui/kana-task.tsx` and `task-controller.ts` (as the export draws them), `app/styles/index.css` (the session's styles out), `shared/i18n` (`DictionaryPart` gains `session`), `e2e/learn-session.spec.ts`.
-- **Tests:** `session-screen.test.tsx` shows 0 renders per keystroke and at most 1 on the answer; a wrong recall shows the answer next to the right kana, the pair's difference for a pair of the table, the promise while the round has room and none when it is full; a slip shows no notice and keeps its tick; the round's ticks, line and order, `end` after it, and no `end` when the learner leaves during it; the summary lists wrong kana, not slips; the `session` part loads with the runtime; e2e: a session with an error ends with its round.
+- **Changes:** `pages/learn/model/session.ts` (the plan, verdicts, the held answer, the round and its screen, the ticks, the summary's errors), `lib/constants.ts` (`SESSION_FEATURES`), `lib/summary.ts`, `ui/session-screen.tsx`, `ui/session-runtime.tsx`, `session-loader.ts` (the part), `shared/ui/kana-task.tsx` and `task-controller.ts` (the card, the caption, the row, `compare`, `feedback`, `promise`, `held`, the round's ticks, the kind `break`), `app/styles/index.css` (the session's styles out), `shared/i18n` (`DictionaryPart` gains `session`), `e2e/learn-session.spec.ts`.
+- **Tests:** `session-screen.test.tsx` shows 0 renders per keystroke and at most 1 on the answer; a wrong recall compares in the stage, shows the pair's difference for a pair of the table, the promise while the round has room and none when it is full or in the round, and waits for `Enter` (keys before it do nothing); a wrong choice waits too; a slip shows nothing and keeps its tick; the caption line keeps the prompt's place in recall; the round's screen lists `roundKana` before its first task, then the round's line, ticks and order, `end` after it, and no `end` when the learner leaves during it; the summary lists wrong kana, not slips; the `session` part loads with the runtime; e2e: a session with an error ends with its round; at 360 × 280 the key line of a held wrong answer is visible.
 - **Acceptance:** 1 (the screen), 7 (the hot path), 8 (the round).
 - **Docs:** ADR 124; S8; `docs/architecture/pages.md`; `README.md` (the session).
-- **Preview URL:** a wrong answer shows your answer next to the right kana, their difference for a pair such as ぬ and め, and that the kana comes back; after the last task the round brings back the kana answered wrong; one wrong letter that is no kana's spelling, then the right romaji, leaves the tick as a right one.
+- **Preview URL:** each task lies on a card that slides in; a wrong answer shows your kana next to the right one, their difference for a pair such as ぬ and め, and that the kana comes back, and waits for Enter; after the last task a screen lists the kana to repeat, then the round brings them back; one wrong letter that is no kana's spelling, then the right romaji, leaves the tick as a right one.
 - **Done when:** `verify:quick` passes; CI is green with the latency gate; the budgets of D29 (the initial CSS goes down); M6 is done.
-- **Size:** about 1,500 lines.
+- **Size:** about 1,700 lines.
 
 ### PR 7 — Word tasks
 
-The export decides the screen; PR D rewrites this card.
-
 - **Branch:** `p9-07-words`. **Depends on:** PRs 3 and 6.
-- **Goal.** [D20](#d20-words-in-the-app) and [D22](#d22-typed-answers-by-token); the features `word`, `closing` and `rule`; the meaning after the answer; JMdict and EDRDG on `/about`.
-- **Creates:** `entities/prompt/index.ts`, `entities/prompt/model/content.ts` and their tests; `pages/learn/lib/typed-answer.ts` and its test; `e2e/learn-words.spec.ts`.
-- **Changes:** `pages/learn/model/session.ts` (word, closing word and rule tasks), `lib/constants.ts`, `session-loader.ts` (the word chunk), the screen and `KanaTask` (the word, as the export draws it); `app/prefetch.ts`; `scripts/check-budget.mjs` and its test; `pages/about` (the sources section); `shared/i18n`; `e2e/latency.spec.ts` (a log in which words open, so word keystrokes are samples).
+- **Goal.** [D20](#d20-words-in-the-app) and [D22](#d22-typed-answers-by-token); the features `word`, `closing` and `rule` as decisions 163–166 draw them; the meaning after the answer; JMdict and EDRDG on `/about` (175).
+- **The design.** `docs/design/source/` after PR D (ADR 119): the guidelines of the components named below and `README.md` "Learning session"; the live previews are `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard` of the design artifact. `bundle.js` and `bundle.css` are a React reference, rewritten in Preact; strings come from the `session` part.
+- **Layout:** a word is `KanaTask kind="word"` with `KanaWord`: the word in the place of the kana (up to 4 kana `jp-solo`, up to 7 `jp-solo-sm`, longer `jp-test-sm`; below 640px up to 5 `jp-solo-sm`), one buffer under the current kana, typed kana `fur-dim`; once answered the reading in the reserved line, the English meaning under it, held for `Enter`. An error in a word: first its first wrong kana as a recall's error (caption `word · <the word>`), `Enter`, then the word with that kana in `miss`; a rule error: the word with the mark in `miss` and the rule's line. The closing word: first its screen (`kind="break"`, the cat `content`, `plan.seen`), then the word with its caption. A rule introduction: the example word, the mark and the letters it gives in `eye` (`marks`, `ghost.marks`), the ghost hint typed once, the rule's line (`note`). The word chunk's `WordItem` gives the meaning; the reading is the kana's `displayRomaji` joined.
+- **Strings (en / ru):** `word` / `слово`; `a word of today's kana` / `слово из сегодняшних кан`; `one last word` / `слово напоследок`; `all its kana were in this session` / `все его каны были в этой сессии`; `rule` / `правило`; `rule · once more` / `правило · ещё раз`; `っ doubles the next consonant` / `っ удваивает следующую согласную` (ッ on katakana); `ー makes the vowel long: type -` / `ー удлиняет гласную: набирайте -`; `っ doubles the next consonant: もっと is motto` / `っ удваивает следующую согласную: もっと — это motto`; `ー makes the vowel before it long: コーヒー is ko-hi-` / `ー удлиняет предыдущую гласную: コーヒー — это ko-hi-` (`-` is the spelling both strictness modes accept, engine.md); on `/about` `Sources` / `Источники` and `words and their meanings` / `слова и их значения`.
+- **Creates:** `entities/prompt/index.ts`, `entities/prompt/model/content.ts` and their tests; `pages/learn/lib/typed-answer.ts` and its test; `shared/ui/kana-word.tsx` (`KanaWord`); `e2e/learn-words.spec.ts`.
+- **Changes:** `pages/learn/model/session.ts` (word, closing word and rule tasks, the closing screen), `lib/constants.ts`, `session-loader.ts` (the word chunk), the screen and `task-controller.ts` (the caret and the buffer from token to token, the typed tokens' class); `app/prefetch.ts`; `scripts/check-budget.mjs` and its test; `pages/about` (the sources section with JMdict); `shared/i18n`; `e2e/latency.spec.ts` (a log in which words open, so word keystrokes are samples).
 - **Tests:**
   - `tokenAnswers`: a plain word; `te` for って (a rule error, て right); `ta` for って (て wrong as た); a standalone っ; ー; a reveal on a kana and on a merged token (the rule and X); `misses` saturating at 9; the time of each token by A37 from the token before it;
   - only the selected track's words; a chunk that fails to load gives a session without words;
-  - 0 renders per keystroke of a word; the meaning absent before the answer and shown after it; the closing word is the last task; a rule introduction logs an `intro` of the rule;
+  - 0 renders per keystroke of a word; the meaning absent before the answer and shown after it; an error in a word shows the pair first and the word on `Enter`; a rule error shows the rule and no promise; the closing word is the last task and its screen lists `plan.seen`; a rule introduction logs an `intro` of the rule;
   - the budget test fails a content chunk that a route imports statically;
   - e2e: a word task, its meaning after the answer, and a rule introduction.
 - **Acceptance:** 1, 2 (shipped lazily), 7, 8, 10 (JMdict).
 - **Docs:** S9; `README.md`; `docs/architecture/` (`entities.md`, `pages.md`, `quality-gates.md`).
-- **Preview URL:** from a fresh start, after the k row (25 readable words) a word comes after every 5 tasks; its meaning appears only after it is typed; the last task of a session is a word of its kana; before the first word with っ the rule is introduced; `/about` names JMdict and EDRDG.
+- **Preview URL:** from a fresh start, after the k row (25 readable words) a word comes after every 5 tasks; its meaning appears only after it is typed; a word with a wrong kana shows that kana's error first; before the first word with っ the rule is introduced on an example; the last task of a session is a word of its kana, after a screen with the cat; `/about` names JMdict and EDRDG.
 - **Done when:** `verify:quick` passes; CI is green with the latency gate and word keystrokes among its samples; the word chunks are lazy and ≤ 40 KB gzip.
-- **Size:** about 1,500 lines.
+- **Size:** about 1,700 lines.
 
 ### PR 8 — The report dialog
 
-The export decides the screen; PR D rewrites this card.
-
 - **Branch:** `p9-08-report`. **Depends on:** PR 7.
-- **Goal.** [D26](#d26-the-report-dialog).
-- **Creates:** `pages/learn/ui/report/` (restored from 753df9f), `pages/learn/lib/turnstile.ts`, their tests; `e2e/sync/report.spec.ts`.
-- **Changes:** the word task (the action after the answer); `shared/ui` if the export brings back `Select` or a `Textarea`; `shared/i18n`; the e2e server's Turnstile verifier only if the test needs it.
-- **Tests:** the dialog in each state with a fake Turnstile loader and a fake request (sending, sent, check failed, send failed, check not loaded, offline); the request's body; the Turnstile script requested only when the dialog opens; the focus back to the session after closing; e2e on the sync configuration: from a word task, open the dialog, send, and see the server's answer.
+- **Goal.** [D26](#d26-the-report-dialog) as decision 167 draws it.
+- **The design.** `docs/design/source/` after PR D (ADR 119): the guidelines of the components named below and `README.md` "Learning session"; the live previews are `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard` of the design artifact. `bundle.js` and `bundle.css` are a React reference, rewritten in Preact; strings come from the `session` part.
+- **Layout:** `report a problem` (`Button text`) at the end of a word task's key line once answered (left of `next` below 640px). The shared `Dialog`: the title; the word (`jp-body`) and its meaning (`ui-body`, `fur-dim`); `RadioGroup` of the three reasons, none chosen; `Textarea` (three lines); the Turnstile slot, 65px, full width; the reserved `Notice` in the actions row; `cancel`, `send` (enabled once a reason is chosen and the check passed). The states of decisions 115–116.
+- **Strings (en / ru):** `report a problem` / `сообщить об ошибке`; `Report a problem with this word` / `Ошибка в слове`; `What is wrong` / `Что не так`; `wrong reading` / `неверное чтение`; `wrong translation` / `неверный перевод`; `other` / `другое`; `Comment (optional)` / `Комментарий (необязательно)`; `cancel` / `отмена`; `send` / `отправить`; `sending…` / `отправка…`; `Report sent.` / `Сообщение отправлено.`; `close` / `закрыть`; `offline. reporting is available online only.` / `нет сети. отправка только онлайн.`; `verification failed. try again.` / `проверка не пройдена. попробуйте ещё раз.`; `failed to send. check the connection and try again.` / `не удалось отправить. проверьте соединение.`; `verification did not load.` / `проверка не загрузилась.`; `retry` / `ещё раз`.
+- **Creates:** `pages/learn/ui/report/` (restored from 753df9f, the `Select` replaced), `pages/learn/lib/turnstile.ts`, their tests; `shared/ui/radio-group.tsx` and `shared/ui/textarea.tsx` with their tests; `e2e/sync/report.spec.ts`.
+- **Changes:** the word task (`footEnd`); `shared/ui` (the barrel); `shared/i18n`; the e2e server's Turnstile verifier only if the test needs it.
+- **Tests:** the dialog in each state with a fake Turnstile loader and a fake request (sending, sent, check failed, send failed, check not loaded, offline); no reason chosen when it opens and `send` disabled until one is; the request's body; the Turnstile script requested only when the dialog opens; the focus back to the session after closing; `RadioGroup` by arrows and `Textarea`'s label; e2e on the sync configuration: from a word task, open the dialog, choose a reason, send, and see the server's answer.
 - **Acceptance:** 9.
 - **Docs:** S10; `docs/architecture/pages.md`.
-- **Preview URL:** after a word is typed, `report a problem` opens the dialog; the check passes and the report is sent; offline the action is disabled.
+- **Preview URL:** after a word is typed, `report a problem` opens the dialog with the word and its meaning; `send` waits for a reason; the check passes and the report is sent; offline the action is disabled.
 - **Done when:** `verify:quick` passes; CI is green with the e2e; the dialog is a lazy chunk.
-- **Size:** about 700 lines, much of it restored.
+- **Size:** about 800 lines, much of it restored.
 
 ### PR 9 — KanjiVG data
 
 - **Branch:** `p9-09-kanjivg`. **Depends on:** PR D, M3; M7 before the merge.
 - **Goal.** [D2](#d2-stroke-data-and-the-origin-kanji-from-kanjivg): the stroke chunks, the origins chunk and the origins table.
-- **Creates:** `packages/content/src/kanjivg/` (reading a KanjiVG SVG: the strokes in order and their numbers) and the stroke build; `packages/engine/src/data/origins.ts` and its test; `strokes-hiragana.json`, `strokes-katakana.json`, `origins.json`.
+- **Creates:** `packages/content/src/kanjivg/` (reading a KanjiVG SVG: the strokes in order, their numbers and the strokes of a named group) and the stroke build; `packages/engine/src/data/origins.ts` and its test; `strokes-hiragana.json`, `strokes-katakana.json`, `origins.json`.
 - **Changes:** `packages/content/sources.json`, `src/fetch.ts`, `src/build.ts`, the manifest; `packages/engine/src/index.ts` (`kanaOrigins`, `originOf`); `NOTICE.md` ("Third-party data", "Mirrored content sources"); `packages/content/README.md`.
-- **Tests:** the reader on fixture SVGs (order, the numbers, one decimal); every character of every learnable kana has a glyph; every entry of the origins table is a basic hiragana with a katakana pair; each chunk ≤ 40 KB gzip.
+- **Tests:** the reader on fixture SVGs (order, the numbers, one decimal, the strokes of a named group); every character of every learnable kana has a glyph; every entry of the origins table is a basic hiragana with a katakana pair and a `part` that is a group of its kanji's file or indexes within its strokes; a name that is no group and an index out of range fail the build; `origins.json` holds `kept` (加: strokes 0 and 1, the 力; 久: 0 and 1 as given); `small` on ゃ and ャ, not on や; each chunk ≤ 40 KB gzip.
 - **Acceptance:** 10 (the data).
 - **Docs:** ADR 125; S11.
 - **Preview URL:** nothing changes: no chunk is imported yet.
@@ -1087,43 +1107,47 @@ The export decides the screen; PR D rewrites this card.
 
 ### PR 10 — Stroke order in the kana details
 
-The export decides the screen; PR D rewrites this card.
-
 - **Branch:** `p9-10-stroke-order`. **Depends on:** PR 9.
-- **Goal.** The details of [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen) and the KanjiVG credit on `/about`.
+- **Goal.** The details of [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen) as decision 174 draws them, and the KanjiVG credit on `/about` (175).
+- **The design.** `docs/design/source/components/StrokeOrder/README.md`; the kana details in `README.md` "Progress"; the live preview `ScreenProgress` (the `details` select) and the card `StrokeOrder` of the design artifact.
+- **Layout:** at the top of the details, left of the places of the mnemonic (P11) and `listen` (P10): each glyph in a box (112px, 88px below 640px; `line`, `bg`, `radius-sm`), strokes `fur` 3.5 units, numbers Mono 11 units `fur-dim` at KanjiVG's places; a small kana at 70% from the bottom left; under the boxes `replay` (`Button secondary sm`, icon `reset`). Opening the dialog draws the strokes at one pen speed (D27), the current one `eye`; nothing moves under reduced motion. The drawing animates `stroke-dashoffset` (decision 177).
+- **Strings (en / ru):** `replay` / `ещё раз`; `stroke order: ぬ` / `порядок черт: ぬ` (the image's name); on `/about` `Ulrich Apel · stroke order and origin kanji` / `Ulrich Apel · порядок черт и иероглифы-предки`.
+- **Creates:** `shared/ui/strokes.tsx` (`Strokes`, `StrokeOrder`, `PEN_SPEED`, `PEN_MIN`, `PEN_LIFT`) and its test; the glyphs come as D2 names them (`d`, `n`, `small`), not as the reference's `s`.
 - **Changes:** `features/kana-details` (the stroke order, its loading); `entities/prompt` (`loadStrokes`); `shared/i18n/parts/details` and `about`; `pages/about`; `e2e/progress.spec.ts` (the details show the strokes).
-- **Tests:** a kana, a yōon and a kana with a dakuten draw their strokes in order with numbers; loading and failure keep the place; reduced motion draws every stroke at once; the chunk is not loaded until a dialog opens.
+- **Tests:** a kana, a yōon (two boxes, the small kana scaled) and a kana with a dakuten draw their strokes in order with numbers; each stroke's duration follows its length, with the minimum and the lift; `replay` draws again; loading and failure keep the place and disable `replay`; reduced motion draws every stroke at once; the chunk is not loaded until a dialog opens.
 - **Acceptance:** 10.
 - **Docs:** S12; `docs/architecture/pages.md`.
-- **Preview URL:** a kana's details on `/progress` show its stroke order; `/about` names KanjiVG.
+- **Preview URL:** a kana's details on `/progress` draw its stroke order, long strokes taking longer, and `replay` draws it again; `/about` names KanjiVG.
 - **Done when:** `verify:quick` passes; CI is green with the e2e; the stroke chunks are lazy and ≤ 40 KB gzip.
-- **Size:** about 500 lines.
+- **Size:** about 600 lines.
 
 ### PR 11 — Choice and build tasks
 
-The export decides the screen; PR D rewrites this card.
-
 - **Branch:** `p9-11-choice-tasks`. **Depends on:** PRs 8 and 10.
-- **Goal.** [D24](#d24-choice-and-build-tasks); the features `contrast`, `transfer`, `build`, `script` and `mismatch`; the origin kanji of [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen).
-- **Changes:** `pages/learn/model/session.ts`, `lib/constants.ts`, `lib/distractors.ts` if transfer needs it, `session-loader.ts` (`origins.json` when the track is katakana), the screen and `KanaTask` (as the export draws them); `shared/i18n`.
-- **Tests:** each kind's view, keys and log (D4): contrast's options shuffled and its `alt`; transfer's options of katakana; build typed and timed; hiragana or katakana by 1 and 2; find the error by number and by click, `ok` only at `index`; a build and a transfer introduction (the origin drawn when the table has one, the pair alone without the chunk); one render per choice.
+- **Goal.** [D24](#d24-choice-and-build-tasks) as decisions 168–172 draw it; the features `contrast`, `transfer`, `build`, `script` and `mismatch`; the origin kanji of [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen).
+- **The design.** `docs/design/source/` after PR D (ADR 119): the guidelines of the components named below and `README.md` "Learning session"; the live previews are `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard` of the design artifact. `bundle.js` and `bundle.css` are a React reference, rewritten in Preact; strings come from the `session` part.
+- **Layout:** contrast — `options: { count, large }`: as many columns as options, cards 136px with 48px kana (56px and 32px below 640px). Transfer — the introduction `KanaParts` with `Strokes` (the origin, `kept` in `eye`), `→`, the hiragana `fur-dim`, the katakana `fur`; the task `promptKana` (48px on a 56px line below 640px) and four katakana. Build — the introduction `か + ゛ → が`; the task the parts with the caret, once answered `→ きゃ` and its reading. Find the error — `OptionCard` with `sub`, `options.find` (five a row below 640px); the odd card shows the wrong romaji struck after the answer. Hiragana or katakana? — `promptKana`, two `OptionCard text`, `options.count` 2.
+- **Strings (en / ru):** `which of the similar kana is it?` / `какая из похожих кан?`; `new katakana` / `новая катакана`; `from 加` / `из 加`; `the same kana in katakana` / `та же кана катаканой`; `type the kana they make` / `наберите кану из частей`; `find the error` / `найдите ошибку`; `し was shown as chi; it is shi` / `у し было chi, а это shi`; `hiragana or katakana?` / `хирагана или катакана?`; `hiragana` / `хирагана`; `katakana` / `катакана`; `リ is katakana; its hiragana is り` / `リ — катакана; в хирагане это り`; a wrong transfer `タ is ta · か ka → カ` / `タ — это ta · か ka → カ`.
+- **Changes:** `pages/learn/model/session.ts`, `lib/constants.ts`, `lib/distractors.ts` if transfer needs it, `session-loader.ts` (`origins.json` when the track is katakana), the screen, `shared/ui/kana-task.tsx` (`promptKana`, `options`), `shared/ui/option-card.tsx` (`sub`, `text`), `shared/ui/kana-parts.tsx` (`KanaParts`); `shared/i18n`; `apps/web/glyphs.txt` and the Noto subset (`゛` U+309B, `゜` U+309C, decision 170).
+- **Tests:** each kind's view, keys and log (D4): contrast's options shuffled, its columns and its `alt`; transfer's options of katakana; build typed and timed, its result after the answer; hiragana or katakana by 1 and 2; find the error by number and by click, `ok` only at `index`, the struck romaji after a miss; a wrong transfer keeps the marks and shows its line; a build and a transfer introduction (the origin drawn with its `kept` strokes when the table has one, the pair alone without the chunk); one render per choice.
 - **Acceptance:** 1, 7.
 - **Docs:** S13; `docs/architecture/pages.md`.
-- **Preview URL:** on a log with a confused pair, a recognition of its kana becomes a contrast; on katakana with the hiragana learned, an introduction shows the pair and its kanji; が is introduced and practised from か and ゛; one find-the-error and one hiragana-or-katakana come in a session when their conditions hold.
-- **Done when:** `verify:quick` passes; CI is green with the latency gate; budgets within D29.
-- **Size:** about 1,300 lines.
+- **Preview URL:** on a log with a confused pair, a recognition of its kana becomes a contrast with larger kana; on katakana with the hiragana learned, an introduction draws the kanji with the kept part in blue, then the pair; が is introduced and practised from か and ゛; one find-the-error and one hiragana-or-katakana come in a session when their conditions hold.
+- **Done when:** `verify:quick` passes; CI is green with the latency gate; budgets within D29; the subset stays within its budget.
+- **Size:** about 1,400 lines.
 
 ### PR 12 — The fluency run
 
-The export decides the screen; PR D rewrites this card.
-
 - **Branch:** `p9-12-fluency`. **Depends on:** PR 11.
-- **Goal.** [D25](#d25-the-fluency-run-on-the-screen); the feature `fluency`.
-- **Changes:** `pages/learn/model/session.ts`, `lib/constants.ts`, the screen and `KanaTask` (the run, as the export draws it); `shared/i18n`; `e2e/fluency.spec.ts`.
-- **Tests:** the run's kana are the plan's; a keystroke renders nothing and the end at most once; one `fluency` event per kana at one moment, with `misses`, `hint` and `wrong`; a wrong kana goes to the round; no timer or number on screen; e2e: a seeded log with 8 accurate learned kana gives a run at the 15th task, typed to its end.
+- **Goal.** [D25](#d25-the-fluency-run-on-the-screen) as decision 173 draws it; the feature `fluency`.
+- **The design.** `docs/design/source/` after PR D (ADR 119): the guidelines of the components named below and `README.md` "Learning session"; the live previews are `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard` of the design artifact. `bundle.js` and `bundle.css` are a React reference, rewritten in Preact; strings come from the `session` part.
+- **Layout:** `KanaTask kind="word"` with `KanaWord run`: the caption, the 12 kana in one line (`jp-test-sm`; 22px in two lines below 640px), the caret and the buffer as in a word, typed kana `fur-dim`, a wrong one `miss`. The end: `done` under the card and `Enter`; with a wrong kana the pair of the first one as a line, its difference and the promise.
+- **Strings (en / ru):** `run: type them in a row` / `прогон: наберите подряд`; `done` / `готово`; `you typed ぬ nu · here め me` / `вы ввели ぬ nu · здесь め me`.
+- **Changes:** `pages/learn/model/session.ts`, `lib/constants.ts`, the screen and `task-controller.ts` (the run); `shared/i18n`; `e2e/fluency.spec.ts`.
+- **Tests:** the run's kana are the plan's; a keystroke renders nothing and the end at most once; one `fluency` event per kana at one moment, with `misses`, `hint` and `wrong`; the end waits for `Enter`; a wrong kana goes to the round; no timer or number on screen; e2e: a seeded log with 8 accurate learned kana gives a run at the 15th task, typed to its end.
 - **Acceptance:** 7, 8.
 - **Docs:** S14; `docs/architecture/pages.md`.
-- **Preview URL:** with 8 accurate learned kana, the 15th task of a session is a run of the slowest of them, with no timer or count; a wrong kana in it comes back in the round.
+- **Preview URL:** with 8 accurate learned kana, the 15th task of a session is a run of the slowest of them in one line, with no timer or count, ending with `done`; a wrong kana in it comes back in the round.
 - **Done when:** `verify:quick` passes; CI is green with the latency gate; budgets within D29; after the merge the maintainer does M8.
 - **Size:** about 800 lines.
 
