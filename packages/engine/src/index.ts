@@ -30,11 +30,12 @@ export {
   kanaRows,
   similarKana,
   similarPairs,
+  readingTokens,
   SKIP_CHARACTERS,
   SOKUON_PREFIXES,
 } from './data';
 
-export type { TrackRow } from './data';
+export type { TrackRow, ReadingToken } from './data';
 
 export { createEngine } from './matcher/engine';
 export type { Engine } from './matcher/engine';

@@ -38,6 +38,7 @@ export {
   settledPrompts,
   view,
   errorTarget,
+  ruleError,
   compact,
   canonical,
   spellingsFor,

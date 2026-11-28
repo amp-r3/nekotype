@@ -261,7 +261,7 @@ Every event of one task is written in one append with the same `at`: a word's ev
   The longest match is two characters, then one, over the kana of `allKanaRows`; then っ or ッ; then ー. Small kana outside a yōon or an extended kana, ゐ, ゑ and ヶ make it null.
 
 - **`Token.sokuon: boolean`** of the matcher: true for a merged っX `kana` token, false for every other token.
-- **`Engine.ruleError(m, s, ch): boolean`** for a key `ch` that `step` rejected in `s`, about the token `errorTarget(m, s)`. It is true when that token is a standalone `sokuon` or a `choonpu`, or a merged っX token for which, in an active position on it, the letters of the token typed so far plus `ch` form a non-empty prefix of a spelling of X in the strictness: the learner typed X without the doubling (ADR 117, point 3, with a prefix in place of a whole spelling, because the key is rejected before the spelling ends).
+- **`Engine.ruleError(m, s, ch): boolean`** for a key `ch` that `step` rejected in `s`, about the token `errorTarget(m, s)`. It is true when that token is a standalone `sokuon` or a `choonpu`, or a merged っX token for which, in an active position on it or waiting for its first key (changed in PR 1: a kana that cannot be doubled, as ナ in ッナ, has its first letter rejected before any position stands on the token; row `ッナ`), the letters of the token typed so far plus `ch` form a non-empty prefix of a spelling of X in the strictness: the learner typed X without the doubling (ADR 117, point 3, with a prefix in place of a whole spelling, because the key is rejected before the spelling ends).
 - The web wrapper (`pages/learn/lib/prompt/engine.ts`) exports `ruleError` beside `errorTarget`.
 - **Golden rows** in [engine.md](docs/spec/engine.md), "Rule errors", in both strictness modes:
 
@@ -274,6 +274,7 @@ Every event of one task is written in one append with the same `at`: a word's ev
   | まっちゃ | `mach`    | `h` after `mac`  | the rule (っ) |
   | あっ     | `at`      | `t` after `a`    | the rule (っ) |
   | コーヒー | `koh`     | `h` after `ko`   | the rule (ー) |
+  | ッナ     | `n`       | `n` at the start | the rule (ッ) |
   | きって   | `kiltute` | none             | —             |
 
 ### 3.4 The fold

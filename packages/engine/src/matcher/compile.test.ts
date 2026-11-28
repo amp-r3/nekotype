@@ -14,6 +14,15 @@ describe('tokens', () => {
     expect(m.tokens[1]?.kind).toBe('kana');
   });
 
+  it('flags the merged っX token as sokuon, and no other token', () => {
+    const flags = (...texts: string[]): boolean[] =>
+      engine.compile(prompts(...texts), 'learner').tokens.map((t) => t.sokuon);
+    expect(flags('きって')).toEqual([false, true]);
+    expect(flags('っっあ')).toEqual([false, true]);
+    expect(flags('あっ')).toEqual([false, false]);
+    expect(flags('ッーん、')).toEqual([false, false, false, false]);
+  });
+
   it('keeps a standalone っ and ー without a kana key', () => {
     const m = engine.compile(prompts('あっ', 'ー'), 'ime');
     expect(m.tokens.map((t) => [t.glyph, t.kind, t.kanaKey])).toEqual([

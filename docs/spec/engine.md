@@ -20,6 +20,7 @@ interface Engine {
   extensions(m: Matcher, s: MatchState): ReadonlySet<string>;
   view(m: Matcher, s: MatchState): EngineView; // live conversion
   errorTarget(m: Matcher, s: MatchState): number; // token index for error attribution (D10, A34)
+  ruleError(m: Matcher, s: MatchState, ch: string): boolean; // is the rejected key an error of the rule of っ or ー ("Rule errors")
   canonical(m: Matcher, promptIndex: number): string; // hint text (Esc)
   spellingsFor(key: KanaKey, strictness: Strictness): readonly string[]; // learning mode
   canonicalFor(key: KanaKey): string;
@@ -29,6 +30,11 @@ interface Matcher {
   readonly tokens: readonly Token[]; // all tokens of the window, skip tokens included
   readonly promptStarts: readonly number[]; // index of each prompt's first token in `tokens`
   readonly strictness: Strictness; // fixed by compile(); extend() keeps it
+}
+
+interface Token {
+  // …glyph, kanaKey, kind, promptIndex, spellings
+  readonly sokuon: boolean; // true for a merged っX token of kind 'kana', false for every other token
 }
 
 interface EngineView {
@@ -43,6 +49,18 @@ interface TokenTiming {
   lastKey: number; // index of the last accepted keystroke consumed by the token
 }
 ```
+
+**Reading tokens.** The package also exports the tokens of a word's reading as it is read, not as it is typed; the content pipeline and the learning model read them:
+
+```ts
+export type ReadingToken =
+  | { readonly kind: 'kana'; readonly kana: string; readonly script: Script }
+  | { readonly kind: 'sokuon' } // っ or ッ
+  | { readonly kind: 'choon' }; // ー
+export function readingTokens(text: string): readonly ReadingToken[] | null;
+```
+
+The longest match is two characters, then one, over the kana of the selectable rows; then っ or ッ; then ー. っ never merges here. Any other character makes the result null: a small kana outside a yōon or an extended kana, ゐ, ゑ, ヶ, punctuation. An empty text gives no tokens.
 
 **Error log.** `step()` is pure and records nothing. The package also exports a pure helper that holds the per-token error data of D10, D11 and the confusion pairs:
 
@@ -146,6 +164,27 @@ Each of these MUST be rejected at the key that makes it invalid.
 | Strict only | コーヒー    | koohii                         |
 | Strict only | こんにちは  | konnnichiwa                    |
 | Strict only | ファ        | fua                            |
+
+## Rule errors
+
+A rejected key may be an error of a rule, っ doubles the next consonant or ー lengthens the vowel, and not of a kana (ADR 117, point 3). `ruleError(m, s, ch)` answers it for a key `ch` that `step()` rejected in `s`, about the token `errorTarget(m, s)`. It is true when:
+
+- that token is a standalone っ or a ー; or
+- it is a merged っX, and in an active position on it, or waiting for its first key, the letters of the token typed so far plus `ch` form a non-empty prefix of a spelling of X in the strictness: the learner typed X without the doubling. A prefix is enough, because the key is rejected before the spelling ends.
+
+Every other rejected key is an error of the kana. The rows below are golden tests in both strictness modes.
+
+| Prompt   | Typed     | The rejected key | Error of      |
+| -------- | --------- | ---------------- | ------------- |
+| きって   | `kite`    | `e` after `kit`  | the rule (っ) |
+| きって   | `kita`    | `a` after `kit`  | て (as た)    |
+| きって   | `kie`     | `e` after `ki`   | て            |
+| がっこう | `gako`    | `o` after `gak`  | the rule (っ) |
+| まっちゃ | `mach`    | `h` after `mac`  | the rule (っ) |
+| あっ     | `at`      | `t` after `a`    | the rule (っ) |
+| コーヒー | `koh`     | `h` after `ko`   | the rule (ー) |
+| ッナ     | `n`       | `n` at the start | the rule (ッ) |
+| きって   | `kiltute` | none             | —             |
 
 ## Extended katakana
 

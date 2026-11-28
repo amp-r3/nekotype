@@ -45,6 +45,24 @@ describe('properties over random streams', () => {
   const rng = new Rng(20261102);
   const cases = Array.from({ length: 300 }, () => randomPrompts(rng));
 
+  it('without っ or ー no rejected key is a rule error', () => {
+    for (const texts of cases.map((c) => c.map((t) => t.replace(/[っッー]/g, '') || 'あ'))) {
+      for (const mode of ['learner', 'ime'] as const) {
+        const m = engine.compile(prompts(...texts), mode);
+        let state = engine.start(m);
+        for (const key of [...Array.from(walk(m, rng).keys), '']) {
+          for (const rejected of ALPHABET) {
+            if (engine.step(m, state, rejected) !== null) continue;
+            expect(engine.ruleError(m, state, rejected), `${texts.join('|')} ${rejected}`).toBe(
+              false,
+            );
+          }
+          if (key !== '') state = engine.step(m, state, key) ?? state;
+        }
+      }
+    }
+  });
+
   it('every stream compiles in both modes', () => {
     for (const texts of cases) {
       for (const mode of ['learner', 'ime'] as const) {

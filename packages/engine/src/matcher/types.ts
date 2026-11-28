@@ -14,6 +14,8 @@ export type Token = {
   readonly glyph: string;
   readonly kanaKey: KanaKey | null;
   readonly kind: TokenKind;
+  // A 'kana' token that is a merged っX; false for every other token.
+  readonly sokuon: boolean;
   readonly promptIndex: number;
   readonly spellings: readonly Spelling[];
 };

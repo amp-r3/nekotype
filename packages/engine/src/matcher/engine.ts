@@ -2,6 +2,7 @@ import type { EngineTable, KanaKey, PromptItem, Strictness } from '../types';
 import { appendPrompts, buildGlyphIndex, compileStream, kanaTexts } from './compile';
 import { compact } from './compact';
 import { canonical, committedTimings, errorTarget, settledPrompts, view } from './observe';
+import { ruleError } from './rule-error';
 import { committedPrompts, extensions, isComplete, start, step } from './step';
 import type { EngineView, Matcher, MatchState, TokenTiming } from './types';
 
@@ -24,6 +25,8 @@ export type Engine = {
   readonly view: (m: Matcher, s: MatchState) => EngineView;
   // Token a rejected key is charged to (D10).
   readonly errorTarget: (m: Matcher, s: MatchState) => number;
+  // Whether a key rejected in `s` is an error of the rule of っ or ー about the errorTarget() token.
+  readonly ruleError: (m: Matcher, s: MatchState, ch: string) => boolean;
   // Drops committed prompts and rebases token indices; keystroke indices stay.
   readonly compact: (
     m: Matcher,
@@ -50,6 +53,7 @@ export function createEngine(table: EngineTable): Engine {
     settledPrompts,
     view,
     errorTarget,
+    ruleError: (m, s, ch) => ruleError(index, m, s, ch),
     compact,
     canonical,
     spellingsFor: (key, strictness) => {
