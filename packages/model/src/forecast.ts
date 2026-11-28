@@ -137,6 +137,8 @@ function playSession(play: Play, onTask?: (task: PlannedTask) => void): number {
         hint: false,
         wrong: null,
         alt: null,
+        misses: 0,
+        w: null,
       });
     }
     previous = task.key;

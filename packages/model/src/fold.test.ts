@@ -36,7 +36,7 @@ function session(startAt = 0, options: FoldOptions = { stats: false }) {
     ) {
       return fold.apply(answer(k, { ...over, ...next(step) }));
     },
-    item: (k: Parameters<typeof intro>[0]) => fold.state.items.get(k),
+    item: (k: LearnKanaKey) => fold.state.items.get(k),
   };
 }
 
@@ -331,6 +331,16 @@ describe('ignored events', () => {
     expect(fold.state.items.size).toBe(0);
     expect(fold.state.learner.tasks).toBe(0);
     expect(fold.last).toEqual({ at: 1, dev: 'd1', n: 2 });
+  });
+
+  it('skips the introduction and the answers of a rule: it is not an item', () => {
+    const fold = createFold({ stats: true });
+    expect(fold.apply(intro('rule:sokuon', { n: 1 }))).toBe('applied');
+    const rule = answer('rule:sokuon', { at: 1, n: 2, task: 'word', ms: 0, w: 'きって' });
+    expect(fold.apply(rule)).toBe('applied');
+    expect(fold.ignored).toBe(2);
+    expect(fold.state.items.size).toBe(0);
+    expect(fold.state.learner.tasks).toBe(0);
   });
 });
 

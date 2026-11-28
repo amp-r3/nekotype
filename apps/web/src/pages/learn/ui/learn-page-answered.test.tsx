@@ -36,6 +36,7 @@ describe('learn page: after the first answer', () => {
           hint: false,
           wrong: null,
           alt: null,
+          misses: 0,
         });
         clock.time += 86_400_000;
       }

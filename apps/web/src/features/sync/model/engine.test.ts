@@ -26,7 +26,7 @@ import {
 import type { Rig } from './test-util';
 
 const isSyncRequest = (value: unknown): value is SyncRequest =>
-  isObject(value) && value['v'] === 3 && typeof value['seq'] === 'number';
+  isObject(value) && value['v'] === 4 && typeof value['seq'] === 'number';
 
 async function sync(rig: Rig): Promise<void> {
   rig.engine.start();
@@ -260,7 +260,7 @@ describe('settings', () => {
       await rig.db.put('outbox', 'current', {
         seq: 1,
         request: {
-          v: 3,
+          v: 4,
           deviceId: 'dev-a',
           seq: 1,
           after: 0,
@@ -622,7 +622,7 @@ describe('the hidden page', () => {
     const outbox: PendingBatch = {
       seq: 1,
       request: {
-        v: 3,
+        v: 4,
         deviceId: 'dev-a',
         seq: 1,
         after: 0,

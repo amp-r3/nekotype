@@ -344,6 +344,59 @@ describe('learning session: recall', () => {
     expect(view?.confusions).toEqual([]);
   });
 
+  it('records the rejected keys of a recall, 9 at most, and no reveal', async () => {
+    for (const [rejected, misses] of [
+      [0, 0],
+      [2, 2],
+      [12, 9],
+    ] as const) {
+      const env = await setup({ seed: 11 });
+      const recordAnswer = vi.spyOn(env.store, 'recordAnswer');
+      env.session.start();
+      until(env, 'recall');
+      const task = env.session.task.value;
+      if (task?.kind !== 'recall') throw new Error('not recall');
+      recordAnswer.mockClear();
+      show(env.session);
+      typeRomaji(env.session, 'x'.repeat(rejected));
+      typeRomaji(env.session, canonicalFor(task.key));
+      env.scheduler.flush();
+      expect(recordAnswer.mock.calls.at(-1)?.[0]).toMatchObject({
+        ok: rejected === 0,
+        misses,
+        hint: false,
+      });
+    }
+  });
+
+  it('records a reveal as a hint, not as a rejected key, and the next recall starts clean', async () => {
+    const env = await setup({ seed: 11 });
+    const recordAnswer = vi.spyOn(env.store, 'recordAnswer');
+    env.session.start();
+    until(env, 'recall');
+    const task = env.session.task.value;
+    if (task?.kind !== 'recall') throw new Error('not recall');
+    show(env.session);
+    typeRomaji(env.session, 'x');
+    env.session.handleIntent({ kind: 'reveal' });
+    // Hiding the tab starts the task over; what was already seen and missed stays.
+    env.session.restart();
+    typeRomaji(env.session, canonicalFor(task.key));
+    env.scheduler.flush();
+    expect(recordAnswer.mock.calls.at(-1)?.[0]).toMatchObject({
+      ok: false,
+      hint: true,
+      misses: 1,
+    });
+    until(env, 'recall');
+    answerRight(env);
+    expect(recordAnswer.mock.calls.at(-1)?.[0]).toMatchObject({
+      ok: true,
+      hint: false,
+      misses: 0,
+    });
+  });
+
   it('starts the task over when the tab was hidden, keeping an earlier error', async () => {
     const env = await setup({ seed: 11 });
     env.session.start();
@@ -489,6 +542,7 @@ describe('learning session: recognition', () => {
             hint: false,
             wrong: hira('め'),
             alt: null,
+            misses: 0,
           });
         }
         clock.time += 600_000;

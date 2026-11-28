@@ -27,6 +27,8 @@ export function answer(
     hint: false,
     wrong: null,
     alt: null,
+    misses: 0,
+    w: null,
     ...over,
     t: 'answer',
     k,

@@ -158,6 +158,8 @@ export function createProductionPolicy(
         hint,
         wrong: keyOrNull(wrong),
         alt: null,
+        misses: 0,
+        w: null,
       });
     };
     const slipsHard = options.slips === 'hard';
@@ -186,6 +188,8 @@ export function createProductionPolicy(
         hint: false,
         wrong: keyOrNull(answer.wrong),
         alt: null,
+        misses: 0,
+        w: null,
       });
       const miss = reads.find((r) => !r.ok);
       if (mode === 'again' && miss !== undefined)
@@ -355,6 +359,8 @@ export function createProductionPolicy(
               hint: answer.slip === true,
               wrong: answer.wrong === undefined ? null : keyOfId(answer.wrong),
               alt: null,
+              misses: 0,
+              w: null,
             });
           },
         };

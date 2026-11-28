@@ -1,6 +1,6 @@
 import { kanaRows } from '@nekotype/engine';
 import type { RowCategory } from '@nekotype/engine';
-import type { LearnKanaKey, Track, WordKey } from '@nekotype/shared/types';
+import type { LearnKanaKey, Track, WordKey, RuleKey } from '@nekotype/shared/types';
 
 export type RowId = `${Track}:${string}`; // `${track}:${row id of the kana table}`, e.g. 'hiragana:k'
 
@@ -129,8 +129,13 @@ export function trackRows(
 }
 
 /** Whether an event's `k` names a word rather than a kana. */
-export function isWordKey(key: LearnKanaKey | WordKey): key is WordKey {
+export function isWordKey(key: LearnKanaKey | WordKey | RuleKey): key is WordKey {
   return key.startsWith('word:');
+}
+
+/** Whether an event's `k` names a rule of っ or ー: not an item (P9 plan, D3). */
+export function isRuleKey(key: LearnKanaKey | WordKey | RuleKey): key is RuleKey {
+  return key.startsWith('rule:');
 }
 
 /** The learnable kana of a reading, longest match first (two characters, then one); others are skipped. */

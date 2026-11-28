@@ -323,6 +323,8 @@ export function eventsOf(dev: string, from: number, count: number, at0 = 1_000):
     hint: false,
     wrong: null,
     alt: null,
+    misses: 0,
+    w: null,
   }));
 }
 

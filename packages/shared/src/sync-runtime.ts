@@ -9,7 +9,7 @@ import type { PullResponse, PulledRow, SyncResponse, ValidSettings } from './typ
 /** The body of a sync request, bytes (backend.md, "Sync request limits"). */
 export const MAX_SYNC_BODY_BYTES = 256 * 1024;
 
-/** The answer of `POST /api/sync` in format 3 (P7 plan, D12). */
+/** The answer of `POST /api/sync` in format 4 (P7 plan, D12). */
 export function isSyncResponse(value: unknown): value is SyncResponse {
   return isObject(value) && isCount(value['lastSeq']) && typeof value['more'] === 'boolean';
 }

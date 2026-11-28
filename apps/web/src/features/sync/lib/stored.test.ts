@@ -6,7 +6,7 @@ import { lastNOf, readOutbox } from './stored';
 const outbox = () => ({
   seq: 1,
   request: {
-    v: 3,
+    v: 4,
     deviceId: 'dev',
     seq: 1,
     after: 0,

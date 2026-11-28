@@ -16,7 +16,7 @@ describe('constants', () => {
 });
 
 describe('guards', () => {
-  it('isSyncResponse (format 3)', () => {
+  it('isSyncResponse (format 4)', () => {
     expect(isSyncResponse({ lastSeq: 0, more: false })).toBe(true);
     expect(isSyncResponse({ lastSeq: 2, more: 1 })).toBe(false);
     expect(isSyncResponse({ lastSeq: -1, more: true })).toBe(false);

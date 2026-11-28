@@ -109,11 +109,10 @@ describe('openDatabase', () => {
 
     const db = await openDatabase(factory);
 
-    expect(SCHEMA_VERSION).toBe(7);
     expect(db.hasStores(['forecasts'])).toBe(true);
     expect(await db.getAll('forecasts')).toEqual([]);
     expect(await db.getAll('log')).toEqual([]);
-    expect(await db.get('meta', 'schemaVersion')).toBe(7);
+    expect(await db.get('meta', 'schemaVersion')).toBe(SCHEMA_VERSION);
     expect(info).toHaveBeenCalledTimes(1);
   });
 
@@ -184,6 +183,22 @@ describe('openDatabase', () => {
     expect(db.hasStores(['results'])).toBe(false);
     expect(db.hasStores(['records'])).toBe(false);
     expect(db.hasStores(STORE_NAMES)).toBe(true);
+    expect(info).toHaveBeenCalledTimes(1);
+  });
+
+  it('resets a database of schema 7: its log and outbox are of format 3 (schema 8, P9)', async () => {
+    const old = await openRaw(factory, DATABASE_NAME, STORES);
+    await old.db.put('meta', 'schemaVersion', 7);
+    await old.db.put('log', 'own:open', { kept: false });
+    await old.db.put('outbox', 'current', { seq: 1 });
+    old.db.close();
+
+    const db = await openDatabase(factory);
+
+    expect(SCHEMA_VERSION).toBe(8);
+    expect(await db.getAll('log')).toEqual([]);
+    expect(await db.get('outbox', 'current')).toBeUndefined();
+    expect(await db.get('meta', 'schemaVersion')).toBe(8);
     expect(info).toHaveBeenCalledTimes(1);
   });
 

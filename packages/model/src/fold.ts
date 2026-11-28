@@ -12,7 +12,7 @@ import { firstMemory, nextMemory } from './fsrs';
 import type { Grade, Memory } from './fsrs';
 import { eachEffect } from './grade';
 import type { EffectSink } from './grade';
-import { ITEMS, isWordKey } from './items';
+import { ITEMS, isRuleKey, isWordKey } from './items';
 import type { KanaItem } from './items';
 import { recallsToLearn } from './learner';
 import { compareEvents, eventKey, localDay } from './order';
@@ -420,7 +420,7 @@ class LiveFold implements Fold, EffectSink {
     } else if (event.t === 'end') {
       if (data.stats !== null) noteSession(data.stats, 'end');
     } else if (event.t === 'intro') {
-      const kana = ITEMS.get(event.k);
+      const kana = isRuleKey(event.k) ? undefined : ITEMS.get(event.k);
       if (kana === undefined) {
         data.ignored += 1;
       } else {
@@ -430,7 +430,7 @@ class LiveFold implements Fold, EffectSink {
         learner.lastTaskAt = event.at;
       }
     } else {
-      const kana = isWordKey(event.k) ? undefined : ITEMS.get(event.k);
+      const kana = isWordKey(event.k) || isRuleKey(event.k) ? undefined : ITEMS.get(event.k);
       if (kana === undefined && !isWordKey(event.k)) {
         data.ignored += 1;
       } else {

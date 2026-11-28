@@ -35,6 +35,8 @@ export function learnedLog(kana: readonly string[], ago: number): EventDraft[] {
         hint: false,
         wrong: null,
         alt: null,
+        misses: 0,
+        w: null,
       });
     }
   }

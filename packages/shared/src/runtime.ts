@@ -6,6 +6,7 @@ export { isObject } from './object';
 export {
   LOG_PAGE_EVENTS,
   MAX_PAGE_EVENTS,
+  MISSES_MAX,
   isLearnKanaKey,
   isLogPage,
   encodePage,

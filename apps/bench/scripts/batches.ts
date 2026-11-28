@@ -1,5 +1,5 @@
 // The bodies `measure.ts` sends to `/api/sync` (p7-plan.md, D24): a session batch, a 256 KB batch
-// and a settings-only batch of format 3.
+// and a settings-only batch of format 4.
 import { MAX_BODY_BYTES } from '../../api/src/lib/body';
 import { MAX_PAGE_EVENTS, encodePage } from '@nekotype/shared/runtime';
 import type { LearnKanaKey, LogEvent, SyncRequest, TaskKind } from '@nekotype/shared/types';
@@ -30,6 +30,8 @@ function answer(n: number, at: number, index: number): LogEvent {
     hint: false,
     wrong: index % 5 === 0 ? key(index + 1) : null,
     alt: null,
+    misses: 0,
+    w: null,
   };
 }
 
@@ -47,7 +49,7 @@ function sessionEvents(at: number): LogEvent[] {
 
 function request(seq: number, events: readonly LogEvent[] | null, settings: boolean): SyncRequest {
   return {
-    v: 3,
+    v: 4,
     deviceId: BENCH_DEVICE,
     seq,
     after: SEED_PAGES,

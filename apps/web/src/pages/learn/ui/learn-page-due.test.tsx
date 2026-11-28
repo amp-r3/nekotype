@@ -36,6 +36,7 @@ describe('learn page: the reason when kana are due', () => {
             hint: false,
             wrong: null,
             alt: null,
+            misses: 0,
           });
         }
       }
@@ -51,6 +52,7 @@ describe('learn page: the reason when kana are due', () => {
           hint: false,
           wrong: null,
           alt: null,
+          misses: 0,
         });
       }
       // Introduced and not learned: it carries no due mark and is not counted.

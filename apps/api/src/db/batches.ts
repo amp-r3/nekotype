@@ -2,7 +2,7 @@ import type { ValidSettings } from '@nekotype/shared/types';
 import { corrupt, isRow, numberOf, textOf } from './rows';
 import type { Row } from './rows';
 
-// The statements of sync format 3: the only place with its SQL (P7 plan, D12, D13). The server
+// The statements of sync format 4: the only place with its SQL (P7 plan, D12, D13). The server
 // stores a batch as one row of `sync_batches` and never parses its events (ADR 100, point 7).
 
 /** Rows one page of a pull walks, own rows included. */

@@ -32,6 +32,8 @@ function recallLog(counts: Readonly<Record<number, number>>, started = 1): Event
         hint: false,
         wrong: null,
         alt: null,
+        misses: 0,
+        w: null,
       });
     }
   }

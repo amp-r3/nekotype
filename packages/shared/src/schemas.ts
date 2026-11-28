@@ -32,7 +32,7 @@ export const settingsSchema = v.strictObject({
 
 const seq = v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER));
 
-/** Sync format 3 (P7 plan, D12, D14): the events are checked by the codec's guard, not by valibot. */
+/** Sync format 4 (P7 plan, D12, D14; P9 plan, D3): the events are checked by the codec's guard, not by valibot. */
 export const syncRequestSchema = v.strictObject({
   v: v.literal(SYNC_FORMAT_VERSION),
   deviceId: deviceIdSchema,
@@ -50,7 +50,7 @@ export const reportRequestSchema = v.strictObject({
   turnstileToken: v.pipe(v.string(), v.minLength(1), v.maxLength(2048)),
 }) satisfies v.GenericSchema<unknown, ReportRequest>;
 
-/** The validated batch of format 3, or `null`. */
+/** The validated batch of format 4, or `null`. */
 export function parseSyncRequest(input: unknown): SyncRequest | null {
   const parsed = v.safeParse(syncRequestSchema, input);
   return parsed.success ? parsed.output : null;

@@ -6,7 +6,7 @@ import { signedInUser } from '../test-support';
 import { testDeps } from '../test-deps';
 
 // The checks every request of `/api/sync` passes before its format matters, and the end of format
-// 2 (P7 plan, D15, PR 13). The behaviour of format 3 is in `sync-log.test.ts`.
+// 2 (P7 plan, D15, PR 13). The behaviour of format 4 is in `sync-log.test.ts`.
 
 const START = 1_700_000_000_000;
 const A = '11111111-1111-4111-8111-111111111111';
@@ -40,7 +40,7 @@ const get = (s: Setup, cookie: string, query: string) =>
   s.call(`/api/sync?${query}`, { headers: { Cookie: cookie } });
 
 const batch = (): SyncRequest => ({
-  v: 3,
+  v: 4,
   deviceId: A,
   seq: 1,
   after: 0,
@@ -99,6 +99,7 @@ describe('POST /api/sync: checks', () => {
     ['no version', { ...batch(), v: undefined }],
     ['the version of P5', { ...batch(), v: 1 }],
     ['format 2, a well-formed batch of deltas', deltaOfFormat2],
+    ['a batch of format 3', { ...batch(), v: 3 }],
   ])('answers 400 for %s', async (_name, body) => {
     const s = setup();
     const { cookie } = await newUser();
@@ -107,7 +108,7 @@ describe('POST /api/sync: checks', () => {
     expect(await response.json()).toEqual(invalid);
   });
 
-  it('applies a batch of format 3', async () => {
+  it('applies a batch of format 4', async () => {
     const s = setup();
     const { cookie } = await newUser();
     const response = await post(s, cookie, batch());

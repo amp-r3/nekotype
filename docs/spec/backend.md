@@ -12,7 +12,7 @@ The backend is a Hono application running as Cloudflare Pages Functions on the `
 | D1 database size                                                                                                       | 500 MB                                    | Sufficient for the MVP                                                                                                                                      |
 | [D1 over-limit behaviour](https://developers.cloudflare.com/changelog/post/2026-09-01-d1-free-tier-limit-enforcement/) | Queries fail until midnight UTC           | The client keeps data in `log` and `outbox` and retries later; the application keeps working locally                                                        |
 
-**Row budget per sync of format 3:** `user_stats` 1 + `sync_batches` 1 + `user_settings` 0–1 = at most 3 rows. A learner-year of about 40,000 answers is about 2 MB of `sync_batches`, so the 500 MB of a free database hold about 250 learner-years; compaction is not planned unless a limit breaks (ADR 100, point 7).
+**Row budget per sync of format 4:** `user_stats` 1 + `sync_batches` 1 + `user_settings` 0–1 = at most 3 rows. A learner-year of about 40,000 answers is about 2 MB of `sync_batches`, so the 500 MB of a free database hold about 250 learner-years; compaction is not planned unless a limit breaks (ADR 100, point 7).
 
 ## D1 schema
 
@@ -74,8 +74,8 @@ The columns `counters`, `learn`, `learn_recent`, `learn_buckets` and `bucket_new
 | `POST /api/auth/logout`            | Delete session and cookie                                                                                                                                                                                                          |
 | `GET /api/me`                      | Profile or 401                                                                                                                                                                                                                     |
 | `DELETE /api/me`                   | Delete the account and all its data; one `batch()`: `content_reports.user_id` is set to NULL for its reports, then the `users` row is deleted and the foreign keys cascade; the session cookie is cleared                          |
-| `POST /api/sync`                   | Body: `v` (3), `deviceId`, `seq`, `after`, `log`, `settings` (see [Sync format 3](#sync-format-3)). Response: the last applied seq for this deviceId and whether other devices wrote rows after `after`. `v` other than 3 is `400` |
-| `GET /api/sync?deviceId=&after=`   | The rows of other devices after `after`, at most 100 rows and 256 KB per page, with the account's settings; see [Sync format 3](#sync-format-3)                                                                                    |
+| `POST /api/sync`                   | Body: `v` (4), `deviceId`, `seq`, `after`, `log`, `settings` (see [Sync format 4](#sync-format-4)). Response: the last applied seq for this deviceId and whether other devices wrote rows after `after`. `v` other than 4 is `400` |
+| `GET /api/sync?deviceId=&after=`   | The rows of other devices after `after`, at most 100 rows and 256 KB per page, with the account's settings; see [Sync format 4](#sync-format-4)                                                                                    |
 | `POST /api/reports`                | Content reports from guests and signed-in users; requires a valid Cloudflare Turnstile token; one report and at most 8 KB per request                                                                                              |
 
 ### Request and response bodies
@@ -84,7 +84,7 @@ The columns `counters`, `learn`, `learn_recent`, `learn_buckets` and `bucket_new
 
 ```ts
 type SyncRequest = {
-  v: 3; // batch format version: 1 (P5, typing data) and 2 (deltas) are gone
+  v: 4; // batch format version: 1 (P5, typing data), 2 (deltas) and 3 are gone
   deviceId: string;
   seq: number;
   after: number; // the highest row id the device has pulled
@@ -137,20 +137,20 @@ Every error body is `{ "error": { "code": string, "lastSeq"?: number } }`.
 
 **Order of checks.** `Origin` (`403`), body size (`413`), session (`401`), schema (`400`), then the stored row is read and the `seq` rule applies: a batch with `seq` ≤ last is answered like an applied one with the stored `lastSeq`, writes nothing and is not rate-limited; `seq` > last + 1 is `409`; only a batch that would be applied is checked against `last_sync_at` and `SYNC_MIN_INTERVAL_MS` (`429` with `Retry-After` in whole seconds). The schema rejects a `v` other than 3 (so `v: 2`, the deltas of P6, is `400 invalid_body`), any unknown key, and the results, kana statistics, typing block of the settings and counters per mode of P5. `GET /api/sync` without `after`, and any `GET` with `part`, are `400 invalid_body` as well. The path `/api/results` is not a route and answers `404 not_found`.
 
-Two devices of one user can sync at the same moment, and the update of `user_stats` is a read-modify-write of one row; the steps of [Sync format 3](#sync-format-3) guard it with optimistic concurrency on `user_stats.version`. A batch that lost still writes its settings, because `batch()` runs every statement. This is harmless: the upsert is idempotent. A lost attempt spends extra rows, so the row budget above applies to the uncontended case.
+Two devices of one user can sync at the same moment, and the update of `user_stats` is a read-modify-write of one row; the steps of [Sync format 4](#sync-format-4) guard it with optimistic concurrency on `user_stats.version`. A batch that lost still writes its settings, because `batch()` runs every statement. This is harmless: the upsert is idempotent. A lost attempt spends extra rows, so the row budget above applies to the uncontended case.
 
-### Sync format 3
+### Sync format 4
 
-Format 3 is the only format of the server since P7 PR 13 (formats 1 and 2 are `400 invalid_body`). It is the log of the learner's answers ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md), [ADR 102](../adr/102-sync-format-3-server.md)); the server stores batches and never computes a state from them.
+Format 4 is the only format of the server since P9 (any other `v`, 3 included, is `400 invalid_body`: a tab of older code stops syncing until it is reloaded, A28). It is the log of the learner's answers ([ADR 100](../adr/100-knowledge-model-fsrs-planner-and-answer-log.md), [ADR 102](../adr/102-sync-format-3-server.md), [ADR 120](../adr/120-log-and-sync-format-4.md)); the server stores batches and never computes a state from them.
 
-**`POST /api/sync`**, body `{ v: 3, deviceId, seq, after, log, settings }`: `after` is the highest row id the device has pulled, `log` a `LogPage` (the own events not acknowledged yet) or `null`, `settings` the account's settings document. A `LogPage` is `{ dev, n0, at0, e }`: one device's consecutive events, 1 to 8,192, each a tuple with its time relative to the previous one; its bounds are one guard shared by the client and the server. Response `{ lastSeq, more }`: the last applied `seq`, and whether other devices wrote rows after `after`. The body is at most 256 KB.
+**`POST /api/sync`**, body `{ v: 4, deviceId, seq, after, log, settings }`: `after` is the highest row id the device has pulled, `log` a `LogPage` (the own events not acknowledged yet) or `null`, `settings` the account's settings document. A `LogPage` is `{ dev, n0, at0, e }`: one device's consecutive events, 1 to 8,192, each a tuple with its time relative to the previous one; its bounds are one guard shared by the client and the server. An answer is a tuple of 9, 10 or 11 fields: the rejected keys and the word follow only when they are not 0 and null, so a page of format 3 is a valid page and a stored row of format 3 is pulled as it is. Response `{ lastSeq, more }`: the last applied `seq`, and whether other devices wrote rows after `after`. The body is at most 256 KB.
 
 1. One statement reads `device_seq`, `last_sync_at` and `version` of `user_stats`, and `more` (a row of another device with an id above `after`).
 2. The `seq` rule of [Batches](storage-sync.md#batches): `seq` ≤ last is answered with the stored `lastSeq` and writes nothing; `seq` > last + 1 is `409 seq_gap`; only a batch to apply is rate-limited (`429`).
 3. One `batch()`: the `UPDATE user_stats` (`device_seq` with this device's `{ seq, at }`, without entries older than 90 days; `last_sync_at`; `version + 1`) guarded by `version`; when `log` is not null, the insert into `sync_batches`; when `settings` is not null, the upsert with `keepStored` on `seq` = 1. The insert takes `MAX(id) + 1` of the user and runs only when the `UPDATE` applied: the stored `version` is the one it writes and the stored `seq` of this device is the batch's, so a request that lost the race adds no row.
 4. If the `UPDATE` reports `meta.changes` = 0, repeat from step 1 once; a second loss is `503 conflict`.
 
-A sync of format 3 writes at most 3 rows (`user_stats`, `sync_batches`, and `user_settings` when its row exists) and runs at most 5 statements (the session lookup, the read and at most 3 writes), at most 9 with the retry.
+A sync of format 4 writes at most 3 rows (`user_stats`, `sync_batches`, and `user_settings` when its row exists) and runs at most 5 statements (the session lookup, the read and at most 3 writes), at most 9 with the retry.
 
 **`GET /api/sync?deviceId=&after=`** answers `{ last, more, settings, rows: [{ id, log }] }`. One `batch()` reads the next 101 rows of the user after `after` and the settings. The page walks the rows in order, at most 100: a row of `deviceId` is skipped, other rows are added while their `log` texts total at most 256 KB, and at least one is always added. `last` is the id of the last row walked (`after` when none), the next `after`; `more` says that a row was left. The body is put together from the stored texts without parsing them.
 

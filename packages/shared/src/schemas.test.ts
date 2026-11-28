@@ -34,9 +34,9 @@ describe('the schemas agree with the guards of shared/runtime', () => {
   );
 });
 
-describe('syncRequestSchema (format 3)', () => {
+describe('syncRequestSchema (format 4)', () => {
   const page = { dev: ID, n0: 1, at0: 5, e: [[0, 'e']] };
-  const batch = { v: 3, deviceId: ID, seq: 1, after: 0, log: page, settings: null };
+  const batch = { v: 4, deviceId: ID, seq: 1, after: 0, log: page, settings: null };
 
   it('accepts a batch with a log, with settings and with neither', () => {
     expect(ok(syncRequestSchema, batch)).toBe(true);
@@ -45,7 +45,7 @@ describe('syncRequestSchema (format 3)', () => {
   });
 
   it('rejects the delta format and any other version', () => {
-    for (const version of [1, 2, 4])
+    for (const version of [1, 2, 3, 5])
       expect(ok(syncRequestSchema, { ...batch, v: version })).toBe(false);
     expect(ok(syncRequestSchema, { v: 2, deviceId: ID, seq: 1, delta: {} })).toBe(false);
   });
