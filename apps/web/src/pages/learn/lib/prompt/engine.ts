@@ -28,6 +28,7 @@ export const committedTimings: Engine['committedTimings'] = (...args) =>
 export const settledPrompts: Engine['settledPrompts'] = (...args) => engine.settledPrompts(...args);
 export const view: Engine['view'] = (...args) => engine.view(...args);
 export const errorTarget: Engine['errorTarget'] = (...args) => engine.errorTarget(...args);
+export const ruleError: Engine['ruleError'] = (...args) => engine.ruleError(...args);
 export const compact: Engine['compact'] = (...args) => engine.compact(...args);
 export const canonical: Engine['canonical'] = (...args) => engine.canonical(...args);
 export const spellingsFor: Engine['spellingsFor'] = (...args) => engine.spellingsFor(...args);

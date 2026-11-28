@@ -9,4 +9,6 @@ export { allKanaRows, engineTable } from './tables';
 export { kanaOf, kanaRows } from './tracks';
 export type { TrackRow } from './tracks';
 export { similarKana, similarPairs } from './similar';
+export { readingTokens } from './reading';
+export type { ReadingToken } from './reading';
 export { SKIP_CHARACTERS, SOKUON_PREFIXES } from './tokens';

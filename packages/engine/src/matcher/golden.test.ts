@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Strictness } from '../types';
-import { accepts, acceptsItems, rejectedAt } from './test-util';
+import { accepts, acceptsItems, engine, feed, prompts, rejectedAt } from './test-util';
 
 type Row = {
   readonly name: string;
@@ -285,5 +285,56 @@ describe('rejected input (docs/spec/engine.md)', () => {
     expect(accepts(['を'], 'learner', 'o')).toBe(true);
     expect(accepts(['ちゃ'], 'learner', 'cya')).toBe(true);
     expect(accepts(['コーヒー'], 'learner', 'koohii')).toBe(true);
+  });
+});
+
+// One row per row of "Rule errors" in docs/spec/engine.md. `of` is the token errorTarget() names:
+// its kind when the key is an error of the rule, its kana when it is an error of the kana.
+type RuleRow = {
+  readonly text: string;
+  readonly typed: string;
+  readonly key: string;
+  readonly rule: boolean;
+  readonly of: string;
+};
+
+const RULE_ERRORS: readonly RuleRow[] = [
+  { text: 'きって', typed: 'kit', key: 'e', rule: true, of: 'kana:hiragana:て' },
+  { text: 'きって', typed: 'kit', key: 'a', rule: false, of: 'kana:hiragana:て' },
+  { text: 'きって', typed: 'ki', key: 'e', rule: false, of: 'kana:hiragana:て' },
+  { text: 'がっこう', typed: 'gak', key: 'o', rule: true, of: 'kana:hiragana:こ' },
+  { text: 'まっちゃ', typed: 'mac', key: 'h', rule: true, of: 'kana:hiragana:ちゃ' },
+  { text: 'あっ', typed: 'a', key: 't', rule: true, of: 'sokuon:' },
+  { text: 'コーヒー', typed: 'ko', key: 'h', rule: true, of: 'choonpu:' },
+  { text: 'ッナ', typed: '', key: 'n', rule: true, of: 'kana:katakana:ナ' },
+];
+
+describe('rule errors (docs/spec/engine.md)', () => {
+  for (const row of RULE_ERRORS) {
+    for (const mode of ['learner', 'ime'] as const satisfies readonly Strictness[]) {
+      const owner = row.rule ? 'the rule' : 'the kana';
+      it(`${row.text} ← ${row.typed}+${row.key} (${mode}) is an error of ${owner}`, () => {
+        const m = engine.compile(prompts(row.text), mode);
+        const { state } = feed(m, row.typed);
+        if (state === null) throw new Error(`${row.typed} was rejected`);
+        expect(engine.step(m, state, row.key)).toBeNull();
+        expect(engine.ruleError(m, state, row.key)).toBe(row.rule);
+        // Caps Lock changes nothing, as in step().
+        expect(engine.ruleError(m, state, row.key.toUpperCase())).toBe(row.rule);
+        const token = m.tokens[engine.errorTarget(m, state)];
+        expect(`${token?.kind}:${token?.kanaKey ?? ''}`).toBe(row.of);
+      });
+    }
+  }
+
+  it('きって ← kiltute has no rejected key', () => {
+    for (const mode of ['learner', 'ime'] as const) {
+      expect(accepts(['きって'], mode, 'kiltute')).toBe(true);
+    }
+  });
+
+  it('is false in a stream with no token that needs input', () => {
+    const m = engine.compile([], 'learner');
+    expect(engine.ruleError(m, engine.start(m), 'a')).toBe(false);
   });
 });

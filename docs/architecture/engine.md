@@ -23,6 +23,7 @@ type Engine = {
   extensions(matcher: Matcher, state: MatchState): ReadonlySet<string>;
   view(matcher: Matcher, state: MatchState): EngineView; // live conversion
   errorTarget(matcher: Matcher, state: MatchState): number;
+  ruleError(matcher: Matcher, state: MatchState, char: string): boolean; // rejected key: っ or ー
   compact(matcher, state): { m: Matcher; s: MatchState; droppedTokens: number };
   canonical(matcher: Matcher, promptIndex: number): string;
   spellingsFor(key: KanaKey, strictness: Strictness): readonly string[];
@@ -35,5 +36,7 @@ type Engine = {
 - **`step(matcher, state, char)`**: Returns a new `MatchState` if `char` advances at least one position. If rejected, returns `null` without modifying the existing state. The state counts accepted keystrokes only.
 - **`committedPrompts`**: Prompts finished in every active position. A prompt ending in ん is not committed until the next key settles whether the ん was a bare `n` or `nn`.
 - **`view` and `errorTarget`**: `view` gives the display position for the input field; `errorTarget` charges a rejected key or a hint to the earliest token any position is typing, but never before the prompt on display (D10, A34).
+- **`ruleError`** (`matcher/rule-error.ts`): whether a rejected key breaks the rule of っ or ー rather than a kana (spec "Rule errors"). A merged っX token is marked `Token.sokuon`. No screen calls it yet.
+- **`readingTokens`** (`data/reading.ts`), outside the `Engine`: a reading split into kana, っ and ー as it is read, for the content pipeline and the model. No code calls it yet.
 - **`compact`**: Drops the prompts counted by `settledPrompts` and rebases indices; the session calls it after every 20 committed prompts.
 - `shouldAbsorb` and the 250 ms absorption window are gone (spec D3): a surplus `n` is resolved by matching the stream.

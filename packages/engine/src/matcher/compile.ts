@@ -18,6 +18,7 @@ type Draft = {
   readonly glyph: string;
   readonly kanaKey: KanaKey | null;
   readonly kind: TokenKind;
+  readonly sokuon: boolean;
   readonly promptIndex: number;
   texts: string[];
 };
@@ -265,6 +266,7 @@ export function appendPrompts(
       glyph: d.glyph,
       kanaKey: d.kanaKey,
       kind: d.kind,
+      sokuon: d.sokuon,
       promptIndex: d.promptIndex,
       spellings,
     });
@@ -302,7 +304,7 @@ function draftOf(
   promptStart: number,
   strictness: Strictness,
 ): Draft {
-  const base = { glyph: raw.glyph, promptIndex };
+  const base = { glyph: raw.glyph, promptIndex, sokuon: raw.kind === 'kana' && raw.sokuon };
   switch (raw.kind) {
     case 'kana': {
       const texts = kanaTexts(raw.info, strictness);
