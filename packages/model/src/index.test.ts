@@ -60,6 +60,8 @@ describe('event builders', () => {
       hint: false,
       wrong: null,
       alt: null,
+      misses: 0,
+      w: null,
     });
     expect(start(540, { dev: 'd2' })).toEqual({ t: 'start', tz: 540, at: 0, dev: 'd2', n: 1 });
     expect(end({ at: 9 })).toEqual({ t: 'end', at: 9, dev: 'd1', n: 1 });

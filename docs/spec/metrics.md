@@ -6,7 +6,7 @@ Learning measures how fast and how reliably the learner recalls each kana. Every
 
 | Metric                   | Definition                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Shown in                            |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| Answer                   | A finished task of any type: recall or recognition in P7, more types in later phases ([Learning](learning.md)). An introduction is not an answer. Each answer is an event with the task type, the kana, its outcome, its time, whether a hint was used and the wrong answer given                                                                                                                                                                                                                                                                                                                                                                                                                    | —                                   |
+| Answer                   | A finished task of any type: recall or recognition in P7, more types in later phases ([Learning](learning.md)). An introduction is not an answer. Each answer is an event with the task type, the kana, its outcome, its time, whether the answer was revealed (a hint), the number of rejected keys, the wrong answer given and, in a word task, the word                                                                                                                                                                                                                                                                                                                                           | —                                   |
 | Error                    | In recall, a rejected keystroke or Esc; in recognition, a wrong choice. An answer with an error is wrong                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Summary                             |
 | Typing interval          | The time between two consecutive accepted keystrokes of one recall answer with no rejected key and no Esc between them                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | —                                   |
 | K                        | The median of the last 50 typing intervals of the device; 200 ms while fewer than 20 are recorded                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | —                                   |
@@ -47,17 +47,21 @@ type Track = 'hiragana' | 'katakana';
 // `dev` the log device id, `n` 1, 2, 3, … per `dev`.
 type EventId = { at: number; dev: string; n: number };
 
+type RuleKey = 'rule:sokuon' | 'rule:choon'; // っ and ー: no memory
+
 type LogEvent =
-  | (EventId & { t: 'intro'; k: KanaKey })
+  | (EventId & { t: 'intro'; k: KanaKey | RuleKey })
   | (EventId & {
       t: 'answer';
       task: TaskKind; // 'recall' | 'recognition' now; more in later phases
-      k: KanaKey;
-      ok: boolean;
+      k: KanaKey | RuleKey; // a rule only for a rule token of a word
+      ok: boolean; // typed: no rejected key and no reveal; a choice: the right one
       ms: number; // answer time, integer, 0–10,000
-      hint: boolean;
+      hint: boolean; // the answer was revealed (Esc, "show the romaji"); never with `ok`
       wrong: KanaKey | null; // the option chosen, or the kana the typed romaji matched
-      alt: KanaKey | null; // the other option of a two-option task
+      alt: KanaKey | null; // the other option of a two-option task, or the romaji `mismatch` showed
+      misses: number; // rejected keys, 0–9; 0 for a choice; a rule's: its rule errors
+      w: string | null; // the reading of the word, at most 32 characters; null outside a word task
     })
   | (EventId & { t: 'start'; tz: number }) // the device's UTC offset in minutes
   | (EventId & { t: 'end' });

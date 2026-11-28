@@ -20,7 +20,7 @@ The executor of a pull request fills its row ([section 8](#8-instructions-for-ex
 | --- | ---------------------- | ------ | ------------ |
 | D   | `docs/p9-design`       | done   | #251         |
 | 1   | `p9-01-engine`         | done   | #253         |
-| 2   | `p9-02-log-format-4`   | —      | —            |
+| 2   | `p9-02-log-format-4`   | done   | #254         |
 | 3   | `p9-03-session-lazy`   | —      | —            |
 | 4   | `p9-04-kanjivg`        | —      | —            |
 | 5   | `p9-05-words-content`  | —      | —            |

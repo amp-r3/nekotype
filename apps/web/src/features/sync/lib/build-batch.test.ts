@@ -23,7 +23,7 @@ describe('buildBatch', () => {
     const unsent = eventsOf(LOG_DEV, 3, 4);
     const batch = buildBatch(input({ unsent, firstN: 3 }), 1_000_000);
     expect(batch?.request).toMatchObject({
-      v: 3,
+      v: 4,
       deviceId: 'dev',
       seq: 4,
       after: 9,

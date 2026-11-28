@@ -57,6 +57,8 @@ export type AnswerInput = {
   readonly hint: boolean;
   readonly wrong: LearnKanaKey | null;
   readonly alt: LearnKanaKey | null;
+  /** Keys rejected on it, 0–9. */
+  readonly misses: number;
 };
 
 export type LearnStoreDeps = {
@@ -471,6 +473,9 @@ export function createLearnStore(deps: LearnStoreDeps): LearnStore {
         hint: input.hint,
         wrong: input.wrong,
         alt: input.alt,
+        misses: input.misses,
+        // Outside a word task (P9 plan, D3).
+        w: null,
       });
     },
 

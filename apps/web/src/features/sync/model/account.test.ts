@@ -33,7 +33,7 @@ const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 const isSyncRequest = (value: unknown): value is SyncRequest =>
-  isObject(value) && value['v'] === 3 && typeof value['seq'] === 'number';
+  isObject(value) && value['v'] === 4 && typeof value['seq'] === 'number';
 
 const bodyOf = (request: { body: string | null }): SyncRequest => {
   const parsed: unknown = JSON.parse(request.body ?? 'null');

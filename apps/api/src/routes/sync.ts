@@ -21,7 +21,7 @@ function intervalOf(value: string | undefined): number {
 const jsonHeaders = { 'content-type': 'application/json; charset=UTF-8' } as const;
 
 /**
- * `POST` and `GET /api/sync` (docs/spec/backend.md, p7-plan.md D12): format 3 only. The order of checks: `Origin`
+ * `POST` and `GET /api/sync` (docs/spec/backend.md, p7-plan.md D12): format 4 only. The order of checks: `Origin`
  * and the body size (middleware of the application), the session, the schema, then the `seq` rule
  * and the rate limit inside `applyLog`.
  */
@@ -35,7 +35,7 @@ export function syncRoutes(deps: AppDeps) {
     } catch {
       throw new ApiError('invalid_body');
     }
-    // Format 3 is the only one: `v: 2` and anything else are `400`.
+    // Format 4 is the only one: `v: 3` and anything else are `400`.
     const format = isObject(body) ? body['v'] : undefined;
     if (format !== SYNC_FORMAT_VERSION) throw new ApiError('invalid_body');
     const request = parseSyncRequest(body);
@@ -62,7 +62,7 @@ export function syncRoutes(deps: AppDeps) {
     const query = c.req.query();
     const deviceId = parseDeviceId(query['deviceId']);
     if (deviceId === null) throw new ApiError('invalid_body');
-    // Only the pull of format 3 is left: `after` is required and `part` is gone.
+    // Only the pull by rows is left (since format 3): `after` is required and `part` is gone.
     if (query['part'] !== undefined) throw new ApiError('invalid_body');
     const after = parseAfter(query['after']);
     if (after === null) throw new ApiError('invalid_body');

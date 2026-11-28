@@ -19,6 +19,8 @@ const events: readonly LogEvent[] = [
     hint: false,
     wrong: null,
     alt: null,
+    misses: 0,
+    w: null,
   },
   {
     at: 9_000,
@@ -32,6 +34,8 @@ const events: readonly LogEvent[] = [
     hint: true,
     wrong: 'katakana:ツ',
     alt: 'katakana:ツ',
+    misses: 0,
+    w: null,
   },
   {
     at: 9_001,
@@ -45,6 +49,8 @@ const events: readonly LogEvent[] = [
     hint: false,
     wrong: null,
     alt: null,
+    misses: 0,
+    w: null,
   },
   { at: 12_000, dev: DEV, n: 10, t: 'end' },
 ];
@@ -104,10 +110,64 @@ describe('log codec', () => {
       ['wrong not a kana', { ...ok, e: [[0, 'a', 'recall', 'hiragana:あ', 0, 5, 0, 'x', '']] }],
       ['alt null', { ...ok, e: [[0, 'a', 'recall', 'hiragana:あ', 0, 5, 0, '', null]] }],
       ['answer one field short', { ...ok, e: [[0, 'a', 'recall', 'hiragana:あ', 1, 5, 0, '']] }],
+      ['answer one field long', { ...ok, e: [[0, ...answer, 1, 'ねこ', 1]] }],
+      ['misses 10', { ...ok, e: [[0, ...answer, 10]] }],
+      ['misses negative', { ...ok, e: [[0, ...answer, -1]] }],
+      ['misses fraction', { ...ok, e: [[0, ...answer, 1.5]] }],
+      ['w empty', { ...ok, e: [[0, ...answer, 0, '']] }],
+      ['w null', { ...ok, e: [[0, ...answer, 0, null]] }],
+      ['w of 33 characters', { ...ok, e: [[0, ...answer, 0, 'あ'.repeat(33)]] }],
+      ['rule with recall', { ...ok, e: [[0, 'a', 'recall', 'rule:sokuon', 1, 0, 0, '', '']] }],
+      ['unknown rule', { ...ok, e: [[0, 'a', 'word', 'rule:x', 1, 0, 0, '', '']] }],
+      ['intro of an unknown rule', { ...ok, e: [[0, 'i', 'rule:x']] }],
+      ['rule as wrong', { ...ok, e: [[0, 'a', 'word', 'hiragana:あ', 0, 5, 0, 'rule:choon', '']] }],
+      ['mismatch of a word', { ...ok, e: [[0, 'a', 'mismatch', 'word:ねこ', 1, 5, 0, '', '']] }],
+      ['script of a rule', { ...ok, e: [[0, 'a', 'script', 'rule:choon', 1, 5, 0, '', '']] }],
       ['at overflows', { ...ok, at0: Number.MAX_SAFE_INTEGER, e: [[1, 'e']] }],
     ];
     for (const [name, value] of bad) expect([name, isLogPage(value)]).toEqual([name, false]);
     expect(decodePage(bad[1]?.[1])).toBeNull();
+  });
+
+  it('writes an answer in the shortest of its three forms and reads each back', () => {
+    const base = ev(2);
+    if (base.t !== 'answer') throw new Error('not an answer');
+    const forms: readonly LogEvent[] = [
+      base,
+      { ...base, n: 8, misses: 9 },
+      { ...base, n: 9, task: 'word', w: 'あ'.repeat(32) },
+      { ...base, n: 10, task: 'word', k: 'rule:sokuon', misses: 2, w: 'きって' },
+      { ...base, n: 11, task: 'mismatch', alt: 'hiragana:い' },
+      { ...base, n: 12, task: 'script' },
+    ];
+    const encoded = encodePage(forms);
+    expect(encoded.e.map((event) => event.length)).toEqual([9, 10, 11, 11, 9, 9]);
+    expect(encoded.e[2]?.slice(9)).toEqual([0, 'あ'.repeat(32)]);
+    expect(decodePage(JSON.parse(JSON.stringify(encoded)))).toEqual(forms);
+  });
+
+  it('takes an introduction of a rule', () => {
+    const rule: LogEvent = { at: 1_000, dev: DEV, n: 1, t: 'intro', k: 'rule:choon' };
+    expect(decodePage(encodePage([rule]))).toEqual([rule]);
+  });
+
+  it('reads a page of format 3 with no misses and no word, and writes its bytes again', () => {
+    const stored = JSON.stringify({
+      dev: DEV,
+      n0: 1,
+      at0: 1_000,
+      e: [
+        [0, 'i', 'hiragana:あ'],
+        [5, ...answer],
+        [7, 'a', 'word', 'word:ねこ', 0, 0, 0, '', ''],
+      ],
+    });
+    const events = decodePage(JSON.parse(stored));
+    expect(events?.slice(1)).toMatchObject([
+      { misses: 0, w: null },
+      { misses: 0, w: null },
+    ]);
+    expect(JSON.stringify(encodePage(events ?? []))).toBe(stored);
   });
 
   it('holds at most MAX_PAGE_EVENTS events', () => {

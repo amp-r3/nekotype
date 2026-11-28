@@ -76,6 +76,7 @@ const recall = (store: LearnStore, key: LearnKanaKey, ms = 800, ok = true): void
     hint: false,
     wrong: null,
     alt: null,
+    misses: 0,
   });
 };
 
@@ -197,11 +198,29 @@ describe('actions', () => {
       hint: false,
       wrong: I,
       alt: null,
+      misses: 0,
     });
     await settle(env);
     const answers = (await readLog(env.db)).flatMap((e) => (e.t === 'answer' ? [e] : []));
     expect(answers.map((e) => e.ms)).toEqual([1234, 10_000]);
     expect(answers[1]).toMatchObject({ task: 'recognition', ok: false, wrong: I });
+  });
+
+  it('write the misses of an answer and no word', async () => {
+    const env = await ready();
+    env.store.introduce(A);
+    env.store.recordAnswer({
+      task: 'recall',
+      key: A,
+      ok: false,
+      keystrokes: [{ t: 800, accepted: true }],
+      hint: true,
+      wrong: null,
+      alt: null,
+      misses: 3,
+    });
+    await settle(env);
+    expect((await readLog(env.db)).at(-1)).toMatchObject({ misses: 3, hint: true, w: null });
   });
 
   it('never write a keystroke', async () => {

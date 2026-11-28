@@ -1,6 +1,7 @@
 import { signal } from '@preact/signals';
 import type { ReadonlySignal } from '@preact/signals';
 import { nextTask } from '@nekotype/model';
+import { MISSES_MAX } from '@nekotype/shared/runtime';
 import type { LearnView, ModelState } from '@nekotype/model';
 import type {
   AudioProvider,
@@ -176,6 +177,10 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
   let typed = '';
   let keystrokes: Keystroke[] = [];
   let ok = true;
+  /** Keys of a recall rejected so far, at most `MISSES_MAX`. */
+  let rejected = 0;
+  /** The romaji of the recall was shown (Esc or the button): a `hint` in the log. */
+  let revealed = false;
   /** The romaji typed up to and including the first rejected key of a recall; null for none. */
   let firstError: string | null = null;
   let shownAt = 0;
@@ -234,6 +239,8 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
     matcher = null;
     matchState = null;
     ok = true;
+    rejected = 0;
+    revealed = false;
     firstError = null;
     const n = count;
     const { key } = next;
@@ -289,7 +296,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
         store.introduce(key);
       });
     } else if (current.kind === 'recall') {
-      const answered = { keystrokes: [...keystrokes], ok, firstError };
+      const answered = { keystrokes: [...keystrokes], ok, rejected, revealed, firstError };
       const strictness = deps.strictness();
       if (!ok) errors.add(key);
       const index = count - 1;
@@ -301,7 +308,8 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
           key,
           ok: answered.ok,
           keystrokes: answered.keystrokes,
-          hint: false,
+          hint: answered.revealed,
+          misses: answered.rejected,
           // The kana the typed romaji matched is worked out here, not in the key handler (D18).
           wrong:
             answered.firstError === null
@@ -342,6 +350,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
         // Only the first error names a kana: the prefix typed so far plus this key.
         if (ok) firstError = typed + char;
         ok = false;
+        rejected = Math.min(MISSES_MAX, rejected + 1);
       }
       port.reject();
       return;
@@ -359,6 +368,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
     if (phase.value !== 'task' || port === null || matcher === null) return;
     keystrokes.push({ t: clock.now() - shownAt, accepted: false });
     ok = false;
+    revealed = true;
     notice.value = { kind: 'revealed', answer: displayRomaji(current.key) };
   };
 
@@ -420,6 +430,7 @@ export function createLearnSession(deps: LearnSessionDeps): LearnSession {
           hint: false,
           wrong: correct ? null : chosen,
           alt: null,
+          misses: 0,
         });
       });
       audio.play(current.key);

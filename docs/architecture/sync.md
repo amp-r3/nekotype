@@ -18,7 +18,7 @@ The client side of [Storage and sync](../spec/storage-sync.md) and [backend.md](
 
 ## The engine (`model/engine.ts`)
 
-`createSyncEngine(deps)` takes the database, the clock and scheduler, `fetch`, the locks, the page events, the channels (`learn`: the typed channel of `nekotype:learn`; `settings`: a `ChangeChannel`), `reloadLearning` and the callbacks to the user signals and to `requestSync`; the tests give it a fake server of format 3 that keeps one row per accepted batch (`model/test-util.ts`).
+`createSyncEngine(deps)` takes the database, the clock and scheduler, `fetch`, the locks, the page events, the channels (`learn`: the typed channel of `nekotype:learn`; `settings`: a `ChangeChannel`), `reloadLearning` and the callbacks to the user signals and to `requestSync`; the tests give it a fake server of format 4 that keeps one row per accepted batch (`model/test-util.ts`).
 
 - **A cycle** runs under the lock `nekotype-sync`. It reads `meta`: no user, an expired session or a block at this `appVersion` end it (a block of another version is lifted). Then: an outbox in the database is resent unchanged; otherwise `buildNext` reads the own events after `meta.sentN` (`readUnsent`) and moves the next batch into the outbox in one `Db.update` (`lib/build-batch.ts`: the longest prefix of the unsent events whose request fits 256 KB, or 60 KB for the hidden page, found by halving; `after` = `meta.pulledId`; the settings when they changed). With nothing to send, `start` and `online` pull.
 - **An acknowledgement** is one transaction: the outbox deleted, `meta.lastSeq` and `meta.sentN` (the batch's last `n`) written, and the settings rule applied (`lib/settings-after.ts`; the answer carries no settings, so a local document stays). A pull follows when the answer says `more`, or when the batch was the first of a sign-in and carried settings (the account's settings win on `seq` 1 and arrive with the pull). When own events are still unsent (the caps, or a session that ended while the batch waited) a catch-up batch follows 5 s later.
@@ -39,11 +39,11 @@ The client side of [Storage and sync](../spec/storage-sync.md) and [backend.md](
 
 The tests drive the account and the engine together on one fake server (`model/account.test.ts`): the guest merge, an expired session resumed under the same `deviceId` and `seq`, and sign-out followed by sign-in to the same account.
 
-## The server, format 3 (`apps/api`)
+## The server, format 4 (`apps/api`)
 
-The client sends format 3 only, and since PR 13 of P7 the server accepts nothing else ([ADR 102](../adr/102-sync-format-3-server.md), [Backend](../spec/backend.md#sync-format-3)). The pieces:
+The client sends format 4 only and the server accepts nothing else ([ADR 102](../adr/102-sync-format-3-server.md), [ADR 120](../adr/120-log-and-sync-format-4.md), [Backend](../spec/backend.md#sync-format-4)). The pieces:
 
-- **`packages/shared/src/log-codec.ts`** is the one definition of a log page: `encodePage`, `decodePage` and `isLogPage` (the bounds of every event). The client checks every page it reads with it and the server every batch.
-- **`routes/sync.ts`** accepts `POST` with `v: 3` and `GET` with `after`; `v: 2`, a `GET` without `after` and `part` are `400 invalid_body`.
-- **`sync/apply-log.ts`** is the `seq` rule, the rate limit and the `device_seq` bookkeeping of a batch of format 3; **`db/batches.ts`** holds its SQL: the read of step 1, the guarded `batch()` of step 3 and the page of a pull, whose body is assembled from the stored texts.
+- **`packages/shared/src/log-codec.ts`** is the one definition of a log page: `encodePage`, `decodePage` and `isLogPage` (the bounds of every event). An answer has 9, 10 or 11 fields, written in the shortest form, so a page of format 3 reads with `misses` 0 and no word. The client checks every page it reads with it and the server every batch.
+- **`routes/sync.ts`** accepts `POST` with `v: 4` and `GET` with `after`; any other `v`, a `GET` without `after` and `part` are `400 invalid_body`.
+- **`sync/apply-log.ts`** is the `seq` rule, the rate limit and the `device_seq` bookkeeping of a batch; **`db/batches.ts`** holds its SQL: the read of step 1, the guarded `batch()` of step 3 and the page of a pull, whose body is assembled from the stored texts.
 - The table `sync_batches` (migration `0004`) has one `WITHOUT ROWID` row per batch; nothing in the API parses an event.

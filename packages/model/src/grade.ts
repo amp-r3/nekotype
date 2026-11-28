@@ -1,6 +1,6 @@
 import type { AnswerEvent, LearnKanaKey } from '@nekotype/shared/types';
 import type { Grade } from './fsrs';
-import { ITEMS, isWordKey, kanaOfReading } from './items';
+import { ITEMS, isRuleKey, isWordKey, kanaOfReading } from './items';
 import type { KanaItem } from './items';
 
 export type { Grade } from './fsrs';
@@ -52,6 +52,8 @@ export function eachEffect(
     }
     return;
   }
+  // A rule has no memory.
+  if (isRuleKey(k)) return;
 
   if (!ok) {
     switch (task) {
@@ -67,6 +69,8 @@ export function eachEffect(
         if (answer.alt !== null) sink.confusion(k, answer.alt, 1);
         return;
       case 'word':
+      case 'mismatch':
+      case 'script':
         return;
       case 'transfer':
       case 'build':
@@ -113,6 +117,8 @@ export function eachEffect(
       sink.grade(k, byTime, true);
       return;
     case 'word':
+    case 'mismatch':
+    case 'script':
       return;
   }
 }
@@ -132,7 +138,8 @@ export function effectsOf(
   learned: (key: LearnKanaKey) => boolean,
 ): readonly Effect[] {
   const effects: Effect[] = [];
-  const item = isWordKey(answer.k) ? undefined : ITEMS.get(answer.k);
+  const { k } = answer;
+  const item = isWordKey(k) || isRuleKey(k) ? undefined : ITEMS.get(k);
   eachEffect(
     answer,
     line,

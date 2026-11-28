@@ -21,7 +21,7 @@ describe('seededRng', () => {
     const events = syntheticLog({ answers: 1000, seed: 1 });
     expect(events).toHaveLength(1099);
     expect(createHash('sha256').update(JSON.stringify(events)).digest('hex')).toBe(
-      'cf08902433cfa59e3188fe69936c4ae692e73a35b80488564b49b2e0f0e2c9ff',
+      '31d79c82a5cd05f6878b4babc93c84e02b0ce2beb1c5cf52687f480878e884df',
     );
   });
 });

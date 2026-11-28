@@ -81,6 +81,8 @@ export function syntheticLog(options: {
               hint: false,
               wrong: null,
               alt: null,
+              misses: 0,
+              w: null,
             });
             answers += 1;
           }

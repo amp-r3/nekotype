@@ -115,6 +115,7 @@ export function learnKana(store: LearnStore, clock: Clock0, kana: string): void 
       hint: false,
       wrong: null,
       alt: null,
+      misses: 0,
     });
   }
 }

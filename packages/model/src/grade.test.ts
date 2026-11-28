@@ -184,6 +184,17 @@ describe('grades by task type (ADR 100, point 4)', () => {
     });
   });
 
+  describe('a task of format 4 without a grade yet, and a rule', () => {
+    it('has no effect, wrong or right', () => {
+      for (const ok of [true, false]) {
+        for (const task of ['mismatch', 'script'] as const) {
+          expect(effectsOf(answer(KA, { task, ok, wrong: SA, alt: GA }), LINE, all)).toEqual([]);
+        }
+        expect(effectsOf(answer('rule:sokuon', { task: 'word', ok }), LINE, all)).toEqual([]);
+      }
+    });
+  });
+
   it('never gives easy', () => {
     const tasks: TaskKind[] = [
       'recall',

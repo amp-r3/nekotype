@@ -51,7 +51,9 @@ export type TaskKind =
   | 'listening' // sound → shape (P10)
   | 'dictation' // sound → romaji (P10)
   | 'pair' // minimal pair か or が (P10)
-  | 'word'; // a word (P9, ADR 116)
+  | 'word' // a word (P9, ADR 116)
+  | 'mismatch' // find the error: the kana shown under another kana's romaji (P9)
+  | 'script'; // hiragana or katakana? (P9)
 
 /** A word item of P12: `word:` and its reading in kana. */
 export type WordKey = `word:${string}`;
@@ -66,21 +68,39 @@ export type EventId = {
   readonly n: number;
 };
 
-export type IntroductionEvent = EventId & { readonly t: 'intro'; readonly k: LearnKanaKey };
+/** A rule of P9 (ADR 117, point 3): っ doubles the next consonant, ー lengthens the vowel. */
+export type RuleKey = 'rule:sokuon' | 'rule:choon';
+
+export type IntroductionEvent = EventId & {
+  readonly t: 'intro';
+  readonly k: LearnKanaKey | RuleKey;
+};
 
 export type AnswerEvent = EventId & {
   readonly t: 'answer';
   readonly task: TaskKind;
-  /** The kana asked: the composite of `build`, the katakana of `transfer`; a `WordKey` only for `word`. */
-  readonly k: LearnKanaKey | WordKey;
+  /**
+   * The kana asked: the composite of `build`, the katakana of `transfer`, the odd kana of
+   * `mismatch`. A `RuleKey` only for a rule token of a word; a `WordKey` only for a word item (P13).
+   */
+  readonly k: LearnKanaKey | WordKey | RuleKey;
+  /** Typed: no rejected key and no reveal on it. A choice: the right one. */
   readonly ok: boolean;
   /** Answer time, integer ms, 0–10,000 (recall: A37; other tasks: showing the task → the answer). */
   readonly ms: number;
+  /** The answer was revealed before it was typed (Esc, "show the romaji"). */
   readonly hint: boolean;
   /** The wrong answer given: the option chosen, or the kana the typed romaji matched (D18). */
   readonly wrong: LearnKanaKey | null;
-  /** The other option of a two-option task (`contrast`, `pair`); null otherwise. */
+  /**
+   * The other option of a two-option task (`contrast`, `pair`) or the kana whose romaji
+   * `mismatch` showed; null otherwise.
+   */
   readonly alt: LearnKanaKey | null;
+  /** Keys rejected on it, 0–9 (more count as 9); 0 for a choice. A rule's: its rule errors. */
+  readonly misses: number;
+  /** The reading of the word the event belongs to; null outside a word task. */
+  readonly w: string | null;
 };
 
 /** `tz`: the device's UTC offset at the start, in minutes east of UTC (−720…840). */
@@ -99,20 +119,31 @@ export type EventDraft =
 // The log as it travels and is stored (P7 plan, D11): one page is a sync batch, a D1 row and an
 // IndexedDB record.
 
+/**
+ * An answer in 9, 10 or 11 fields: `misses` and `w` are left out at their end when they are 0 and
+ * null, so a page of format 3 is a page of format 4.
+ */
+export type EncodedAnswer =
+  | readonly [...AnswerFields]
+  | readonly [...AnswerFields, misses: number]
+  | readonly [...AnswerFields, misses: number, w: string];
+
+type AnswerFields = [
+  dt: number,
+  t: 'a',
+  task: TaskKind,
+  k: LearnKanaKey | WordKey | RuleKey,
+  ok: 0 | 1,
+  ms: number,
+  hint: 0 | 1,
+  wrong: LearnKanaKey | '',
+  alt: LearnKanaKey | '',
+];
+
 /** `dt`: `at` minus the previous event's `at` in the page (0 for the first); '' stands for null. */
 export type EncodedEvent =
-  | readonly [dt: number, t: 'i', k: LearnKanaKey]
-  | readonly [
-      dt: number,
-      t: 'a',
-      task: TaskKind,
-      k: LearnKanaKey | WordKey,
-      ok: 0 | 1,
-      ms: number,
-      hint: 0 | 1,
-      wrong: LearnKanaKey | '',
-      alt: LearnKanaKey | '',
-    ]
+  | readonly [dt: number, t: 'i', k: LearnKanaKey | RuleKey]
+  | EncodedAnswer
   | readonly [dt: number, t: 's', tz: number]
   | readonly [dt: number, t: 'e'];
 
@@ -127,9 +158,9 @@ export type LogPage = {
 
 // Sync batches (spec backend.md, "Request and response bodies")
 
-/** Sync format 3 (P7 plan, D12): the log as batches. */
+/** Sync format 4 (P9 plan, D3): the log as batches. */
 export type SyncRequest = {
-  readonly v: 3;
+  readonly v: 4;
   readonly deviceId: string;
   readonly seq: number;
   /** The highest row id the device has pulled (`meta.pulledId`). */

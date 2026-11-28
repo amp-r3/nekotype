@@ -3,7 +3,7 @@ import type { SyncRequest, SyncResponse } from '@nekotype/shared/types';
 import { readForBatch, settingsWrite, writeBatch } from '../db/batches';
 import { corrupt } from '../db/rows';
 
-// The server side of a sync of format 3 (P7 plan, D12): the `seq` rule, the rate limit, the
+// The server side of a sync of format 4 (P7 plan, D12): the `seq` rule, the rate limit, the
 // `device_seq` bookkeeping and one row per batch. The log is stored as received and never parsed
 // beyond the guard of the schema; the server never computes a state.
 

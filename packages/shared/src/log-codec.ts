@@ -1,5 +1,13 @@
 import { isObject } from './object';
-import type { EncodedEvent, LearnKanaKey, LogEvent, LogPage, TaskKind, WordKey } from './types';
+import type {
+  EncodedEvent,
+  LearnKanaKey,
+  LogEvent,
+  LogPage,
+  RuleKey,
+  TaskKind,
+  WordKey,
+} from './types';
 
 // The log page: the unit of a sync batch, of a D1 row and of an IndexedDB record (P7 plan, D11).
 // The bounds of an event live here only: the client checks every page it reads with `isLogPage`
@@ -13,6 +21,10 @@ export const MAX_PAGE_EVENTS = 8_192;
 const KANA_KEY_MAX = 24;
 const WORD_KEY_MAX = 64;
 const MAX_MS = 10_000;
+/** The most rejected keys an answer counts. */
+export const MISSES_MAX = 9;
+const WORD_TEXT_MAX = 32;
+const ANSWER_FIELDS = 9;
 const MIN_TZ = -720;
 const MAX_TZ = 840;
 
@@ -27,6 +39,8 @@ const TASKS: ReadonlySet<string> = new Set<TaskKind>([
   'dictation',
   'pair',
   'word',
+  'mismatch',
+  'script',
 ]);
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -57,6 +71,10 @@ function isWordKey(value: unknown): value is WordKey {
   );
 }
 
+function isRuleKey(value: unknown): value is RuleKey {
+  return value === 'rule:sokuon' || value === 'rule:choon';
+}
+
 function isFlag(value: unknown): value is 0 | 1 {
   return value === 0 || value === 1;
 }
@@ -65,18 +83,33 @@ function isInt(value: unknown, min: number, max: number): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max;
 }
 
+/** The `k` of an answer: a kana; for `word` also a word item or a rule. */
+function isAnswerKey(task: TaskKind, value: unknown): boolean {
+  return isKanaKey(value) || (task === 'word' && (isWordKey(value) || isRuleKey(value)));
+}
+
+/** The fields after `alt`, each of them optional: `misses`, then `w`. */
+function isAnswerTail(event: readonly unknown[]): boolean {
+  const { length } = event;
+  if (length < ANSWER_FIELDS || length > ANSWER_FIELDS + 2) return false;
+  if (length > ANSWER_FIELDS && !isInt(event[9], 0, MISSES_MAX)) return false;
+  if (length < ANSWER_FIELDS + 2) return true;
+  const w = event[10];
+  return typeof w === 'string' && w.length > 0 && w.length <= WORD_TEXT_MAX;
+}
+
 function isEncodedEvent(value: unknown): value is EncodedEvent {
   if (!Array.isArray(value)) return false;
   const event: readonly unknown[] = value;
   if (!isInt(event[0], 0, Number.MAX_SAFE_INTEGER)) return false;
   switch (event[1]) {
     case 'i':
-      return event.length === 3 && isKanaKey(event[2]);
+      return event.length === 3 && (isKanaKey(event[2]) || isRuleKey(event[2]));
     case 'a':
       return (
-        event.length === 9 &&
+        isAnswerTail(event) &&
         isTask(event[2]) &&
-        (isKanaKey(event[3]) || (event[2] === 'word' && isWordKey(event[3]))) &&
+        isAnswerKey(event[2], event[3]) &&
         isFlag(event[4]) &&
         isInt(event[5], 0, MAX_MS) &&
         isFlag(event[6]) &&
@@ -137,6 +170,8 @@ export function decodePage(value: unknown): readonly LogEvent[] | null {
           hint: event[6] === 1,
           wrong: event[7] === '' ? null : event[7],
           alt: event[8] === '' ? null : event[8],
+          misses: event[9] ?? 0,
+          w: event[10] ?? null,
         });
         break;
       case 's':
@@ -154,8 +189,8 @@ function encodeEvent(event: LogEvent, dt: number): EncodedEvent {
   switch (event.t) {
     case 'intro':
       return [dt, 'i', event.k];
-    case 'answer':
-      return [
+    case 'answer': {
+      const fields = [
         dt,
         'a',
         event.task,
@@ -165,7 +200,11 @@ function encodeEvent(event: LogEvent, dt: number): EncodedEvent {
         event.hint ? 1 : 0,
         event.wrong ?? '',
         event.alt ?? '',
-      ];
+      ] as const;
+      // The shortest form, so an event of format 3 keeps its bytes.
+      if (event.w !== null) return [...fields, event.misses, event.w];
+      return event.misses === 0 ? fields : [...fields, event.misses];
+    }
     case 'start':
       return [dt, 's', event.tz];
     case 'end':

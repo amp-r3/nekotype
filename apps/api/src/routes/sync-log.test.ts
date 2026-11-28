@@ -7,7 +7,7 @@ import { PULL_PAGE_BYTES, PULL_PAGE_ROWS } from '../db/batches';
 import { countingDb, signedInUser } from '../test-support';
 import { testDeps } from '../test-deps';
 
-// Sync format 3 (P7 plan, D11–D15): the log as batches, one D1 row per batch, pulls of the rows of
+// Sync format 4 (P7 plan, D11–D15; P9 plan, D3): the log as batches, one D1 row per batch, pulls of the rows of
 // other devices. The checks common to every request are in `sync.test.ts`.
 
 const START = 1_700_000_000_000;
@@ -62,13 +62,15 @@ function page(dev: string, n0: number, count: number, at0 = START): LogPage {
     hint: false,
     wrong: null,
     alt: null,
+    misses: 0,
+    w: null,
   }));
   return encodePage(events);
 }
 
 function batch(seq: number, over: Partial<SyncRequest> = {}): SyncRequest {
   return {
-    v: 3,
+    v: 4,
     deviceId: A,
     seq,
     after: 0,
@@ -107,7 +109,7 @@ async function seedRow(userId: string, id: number, dev: string, log: string): Pr
     .run();
 }
 
-describe('POST /api/sync, format 3', () => {
+describe('POST /api/sync, format 4', () => {
   it('stores a batch as one row, answers the last seq and no more', async () => {
     const { id, cookie } = await newUser();
     const body = batch(1);
@@ -262,11 +264,11 @@ describe('POST /api/sync, format 3', () => {
     expect(await batchRows(id)).toHaveLength(0);
   });
 
-  it('rejects v 4, an invalid page, an unknown key and a missing after with 400', async () => {
+  it('rejects v 3, an invalid page, an unknown key and a missing after with 400', async () => {
     const { cookie } = await newUser();
     const s = setup();
     const bad = [
-      { ...batch(1), v: 4 },
+      { ...batch(1), v: 3 },
       { ...batch(1), log: { ...page(A, 1, 1), at0: -1 } },
       { ...batch(1), extra: 1 },
       { ...batch(1), after: undefined },
@@ -347,6 +349,19 @@ describe('GET /api/sync?deviceId=&after=', () => {
       settings: settings(3),
       rows: [],
     });
+  });
+
+  it('serves a row of format 3 as it was stored', async () => {
+    const { id, cookie } = await newUser();
+    const stored = JSON.stringify({
+      dev: B,
+      n0: 1,
+      at0: START,
+      e: [[0, 'a', 'recall', 'hiragana:あ', 1, 800, 0, '', '']],
+    });
+    await seedRow(id, 1, B, stored);
+    const response = await get(setup(), cookie, `deviceId=${A}&after=0`);
+    expect(await response.text()).toContain(`"log":${stored}`);
   });
 
   it('answers null settings and an empty page for a new account', async () => {
