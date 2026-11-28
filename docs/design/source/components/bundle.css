@@ -289,6 +289,155 @@ button.nk-am__cell.is-today:hover { border-color: var(--eye-bright); }
   *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
 }
 
+/* ---------- Learning task of P9 (decisions 159–172) ---------- */
+/* a kana or a romaji inside a line of text (feedback, rules): the Japanese face and the romaji face without their sizes */
+.jp-inline { font-family: var(--font-jp); font-weight: 400; }
+.mono-inline { font-family: var(--font-mono); font-weight: 500; letter-spacing: 0.02em; }
+/* the task on a card (159): bg-raised, a line border; every new task slides in; an answered error turns the border miss-dim */
+.nk-task__card { display: flex; flex-direction: column; gap: var(--space-6); padding: var(--space-8) var(--space-6); border: var(--stroke-hair) solid var(--line); border-radius: var(--radius-md); background: var(--bg-raised); animation: nk-task-in var(--dur-reveal) var(--ease-out); }
+@keyframes nk-task-in { from { opacity: 0; transform: translate3d(var(--space-6), 0, 0); } to { opacity: 1; transform: none; } }
+.nk-task.is-wrong .nk-task__card { border-color: var(--miss-dim); }
+.nk-task__card .nk-task__stage { justify-content: flex-start; min-height: 184px; }
+.nk-task--recognition .nk-task__card .nk-task__stage { min-height: 0; }   /* a choice: the options follow the prompt */
+.nk-task__card .nk-opt { background: var(--bg); }
+/* the caption of the kind: a reserved line, so the prompt stands in one place for every kind */
+.nk-task__caption { display: block; min-height: 16px; color: var(--fur-dim); }
+.nk-task__prompt-kana { color: var(--fur); }
+.nk-task__row { display: inline-flex; gap: var(--space-3); margin-top: var(--space-3); color: var(--fur-faint); }
+.nk-task__row-k.is-known { color: var(--fur-dim); }
+.nk-task__row-k.is-new { color: var(--fur); box-shadow: inset 0 calc(-1 * var(--stroke-mark)) 0 var(--eye); }
+/* the round's ticks follow the session's after a gap (162) */
+.nk-task__ticks { gap: var(--space-3); }
+.nk-task__ticks-main, .nk-task__ticks-round { display: flex; gap: var(--stroke-mark); }
+.nk-task__ticks-main { flex: 30 1 0; }
+.nk-task__ticks-round { flex-basis: 0; }
+/* after an error (160): the learner's kana left of the right one, which keeps its place */
+.nk-task__compare { position: relative; display: inline-flex; }
+.nk-task__compare .nk-caret { opacity: 0; }
+.nk-task__right { display: inline-flex; flex-direction: column; align-items: center; }
+.nk-task__right .nk-task__line { padding-bottom: 0; }
+.nk-task__right .nk-task__kana.is-miss { color: var(--fur); text-decoration: none; }
+.nk-task__right-r { color: var(--fur); }
+.nk-task__yours { position: absolute; right: 100%; bottom: 0; margin-right: var(--space-12); display: inline-flex; flex-direction: column; align-items: center; white-space: nowrap; color: var(--miss); }
+.nk-task__yours-t { color: var(--fur-dim); }
+/* the feedback lines under the card: the difference of the pair and the promise; the pair sentence stays for a screen reader */
+.nk-task__feedback { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); margin-top: calc(-1 * var(--space-2)); text-align: center; }
+.nk-task__feedback p { margin: 0; max-width: 52ch; text-wrap: balance; }
+.nk-task__fb-line { color: var(--fur); }
+.nk-task__promise, .nk-task__foot-promise { color: var(--fur-dim); }
+.nk-task__foot-promise { display: none; }
+.nk-task__yours-k, .nk-fb-yours { color: var(--miss); }
+.nk-fb-mark { color: var(--eye); }
+.nk-task.is-wrong .nk-task__notice, .nk-task.is-held .nk-task__notice { display: none; }   /* a held answer has nothing for the notice line */
+.nk-task__foot .nk-task__report { margin-left: auto; margin-right: calc(-1 * var(--space-2)); }
+/* choices of P9 (168–172): 2 or 3 options in their own columns; contrast with larger kana; find the error with the romaji */
+.nk-task__options--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 320px; }
+.nk-task__options--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 400px; }
+.nk-task__options.is-large .nk-opt { min-height: 136px; }
+.nk-task__options.is-large .nk-opt__label { font-size: 48px; line-height: 72px; }
+.nk-opt__sub { color: var(--fur-dim); }
+.nk-opt.is-correct .nk-opt__sub, .nk-opt.is-reveal .nk-opt__sub { color: var(--fur); }
+.nk-opt__was { color: var(--miss); text-decoration: line-through var(--stroke-hair); }
+.nk-task__options--find .nk-opt { padding-bottom: var(--space-4); }
+.nk-opt--text { min-height: 72px; justify-content: center; }
+.nk-opt--text .nk-opt__label { margin-top: 0; }
+/* a word, a run, a rule's example (163, 166, 173) */
+.nk-word { display: inline-flex; flex-direction: column; align-items: center; max-width: 100%; }
+.nk-word__kana { display: inline-flex; white-space: nowrap; color: var(--fur); }
+.nk-word__kana.is-run { flex-wrap: wrap; justify-content: center; gap: var(--space-6) var(--space-3); white-space: normal; }
+.nk-word__t { position: relative; }
+.nk-word__t.is-typed { color: var(--fur-dim); }
+.nk-word__t.is-wrong, .nk-word__rule { color: var(--miss); text-decoration: underline var(--stroke-mark) var(--miss-dim); text-underline-offset: 0.18em; }
+.nk-word__mark, .nk-word__ghost-mark { color: var(--eye); }
+.nk-word__ghost-mark.is-typed { color: var(--eye-bright); }
+.nk-word__caret { top: 50%; margin-top: -0.55em; transform: translate3d(-1px, 0, 0); }
+.nk-word__buf { position: absolute; left: 0; top: 100%; color: var(--eye); white-space: nowrap; pointer-events: none; }
+.nk-word__reading { display: block; min-height: 20px; color: var(--fur-dim); }
+.nk-word__meaning { display: block; max-width: 40ch; margin-top: var(--space-2); color: var(--fur); text-align: center; text-wrap: balance; }
+.nk-word__note { display: block; margin-top: var(--space-3); color: var(--fur-dim); text-align: center; text-wrap: balance; }
+/* a build and a transfer: kana and signs in a row */
+.nk-parts { display: inline-flex; align-items: center; gap: var(--space-4); }
+.nk-parts__k { position: relative; }
+.nk-parts__k.is-dim { color: var(--fur-dim); }
+.nk-parts__k.is-q, .nk-parts__k.is-new { color: var(--fur); }
+.nk-parts__op { color: var(--fur-dim); }
+.nk-parts__node { display: inline-flex; flex-direction: column; align-items: center; gap: var(--space-1); color: var(--fur-dim); }
+/* a screen of its own in the session: the round, the closing word (162, 165) */
+.nk-task--break .nk-task__card { align-items: center; text-align: center; gap: var(--space-4); padding: var(--space-12) var(--space-6); }
+.nk-break__t, .nk-break__k, .nk-break__d { margin: 0; }
+.nk-break__k { color: var(--fur); letter-spacing: 0.3em; }
+.nk-break__d { color: var(--fur-dim); }
+/* strokes (169, 174) */
+.nk-strokes { display: inline-flex; gap: var(--space-2); }
+.nk-strokes svg { display: block; width: 88px; height: 88px; }
+.nk-strokes.is-md svg { width: 112px; height: 112px; }
+.nk-strokes.is-sm svg { width: 88px; height: 88px; }
+.nk-strokes.is-origin svg { width: 88px; height: 88px; }
+.nk-strokes.is-boxed svg { border: var(--stroke-hair) solid var(--line); border-radius: var(--radius-sm); background: var(--bg); }
+.nk-strokes__s { fill: none; stroke: var(--fur); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; animation: nk-stroke 380ms linear forwards; }
+.nk-strokes.is-origin .nk-strokes__s { stroke: var(--fur-dim); }
+.nk-strokes__s.is-kept { stroke: var(--eye); }
+@keyframes nk-stroke { 0% { opacity: 1; stroke-dashoffset: 1; stroke: var(--eye); } 92% { opacity: 1; stroke-dashoffset: 0; stroke: var(--eye); } 100% { opacity: 1; stroke-dashoffset: 0; } }
+.nk-strokes.is-origin .nk-strokes__s { animation-name: nk-stroke-origin; }
+@keyframes nk-stroke-origin { from { opacity: 1; } to { opacity: 1; stroke-dashoffset: 0; } }
+.nk-strokes__n { font-family: var(--font-mono); font-size: 11px; fill: var(--fur-dim); opacity: 0; animation: nk-show 1ms linear forwards; }
+@keyframes nk-show { to { opacity: 1; } }
+.nk-strokes.is-still .nk-strokes__s { animation: none; stroke-dashoffset: 0; opacity: 1; }
+.nk-strokes.is-still .nk-strokes__n { animation: none; opacity: 1; }
+.nk-stroke-order { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); }
+/* radio group and textarea (167) */
+.nk-radios { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: 0; border: 0; min-width: 0; }
+.nk-radios__l { padding: 0; margin-bottom: var(--space-2); color: var(--fur-dim); }
+.nk-radio { display: flex; align-items: center; gap: var(--space-3); min-height: var(--control-h-sm); color: var(--fur); cursor: pointer; }
+.nk-radio__i { appearance: none; flex: none; display: grid; place-content: center; width: 16px; height: 16px; margin: 0; border: var(--stroke-hair) solid var(--line-strong); border-radius: 50%; background: var(--bg); cursor: pointer; }
+.nk-radio__i::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--eye); transform: scale(0); }
+.nk-radio__i:checked { border-color: var(--fur); }
+.nk-radio__i:checked::before { transform: scale(1); }
+.nk-radio__i:focus-visible { outline: var(--stroke-mark) solid var(--focus); outline-offset: 2px; }
+.nk-radio:hover .nk-radio__i:not(:disabled) { border-color: var(--fur-dim); }
+.nk-radios:disabled .nk-radio { color: var(--fur-faint); cursor: default; }
+.nk-radios:disabled .nk-radio__i { background: transparent; border-color: var(--line); }
+.nk-textarea { height: auto; min-height: 88px; padding: var(--space-2) var(--space-3); resize: vertical; font: inherit; }
+.nk-turnstile { box-sizing: border-box; height: 65px; display: flex; align-items: center; justify-content: center; border: var(--stroke-hair) dashed var(--line-strong); border-radius: var(--radius-sm); color: var(--fur-dim); }
+@media (pointer: coarse) { .nk-radio { min-height: var(--touch-min); } }
+@media (prefers-reduced-motion: reduce) {
+  .nk-task__card { animation: none; }
+  .nk-strokes__s { animation: none; stroke-dashoffset: 0; opacity: 1; }
+  .nk-strokes__n { animation: none; opacity: 1; }
+}
+/* a phone with the on-screen keyboard open has 280px (161): recall drops the empty caption line, the promise moves into the key line
+   next to next, a choice leaves the pair sentence to the marked options, the card loses its frame; a kana prompt of a choice is
+   48px on a 56px line (as the romaji prompt); the run's kana are 22px */
+@media (max-width: 639px) {
+  .nk-task__card { padding: 0; gap: var(--space-1); border-color: transparent; background: none; }
+  .nk-task.is-wrong .nk-task__card { border-color: transparent; }
+  .nk-task__card .nk-task__stage { min-height: 0; }
+  .nk-task__caption.is-empty { display: none; }
+  .nk-task__row { margin-top: 0; font-size: 18px; line-height: 24px; }
+  .nk-task__compare { gap: var(--space-8); align-items: flex-end; }
+  .nk-task__yours { position: static; margin-right: 0; }
+  .nk-task__feedback { margin-top: 0; gap: 0; }
+  .nk-task__feedback .nk-task__promise { display: none; }
+  .nk-task__foot-promise { display: block; align-self: center; }
+  .nk-task .nk-task__next { margin-left: auto; }
+  .nk-task.is-held .nk-task__focus { display: none; }
+  .nk-task__fb-line { font-size: 12px; line-height: 16px; }
+  .nk-task__foot .nk-task__report { order: -1; margin-left: calc(-1 * var(--space-2)); margin-right: 0; }
+  .nk-task__prompt-kana.jp-solo-sm { line-height: 56px; }
+  .nk-task__options.is-large .nk-opt { min-height: 56px; }
+  .nk-task__options.is-large .nk-opt__label { font-size: 32px; line-height: 48px; }
+  .nk-task__options--find { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .nk-task__options--find .nk-opt { min-height: 64px; gap: 0; padding-bottom: var(--space-2); }
+  .nk-opt__sub { font-size: 12px; line-height: 16px; white-space: nowrap; }
+  .nk-opt--text { min-height: 56px; }
+  .nk-word__meaning { margin-top: 0; }
+  .nk-word__note { margin-top: var(--space-1); font-size: 14px; line-height: 20px; }
+  .nk-word__kana.is-run { gap: var(--space-4) var(--space-3); }
+  .nk-parts { gap: var(--space-2); }
+  .nk-strokes.is-origin svg { width: 56px; height: 56px; }
+  .nk-task--break .nk-task__card { padding: 0; }
+}
+
 /* Learning task below 640px: everything fits above the on-screen keyboard (design height 280px, see README) */
 @media (max-width: 639px) {
   .nk-task { gap: var(--space-2); }

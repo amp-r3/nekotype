@@ -124,15 +124,21 @@
     return api;
   }
 
-  var TASK_LABELS = { learning: 'learning', of: 'of', newKana: 'new kana', show: 'show the romaji',
-    blur: 'return to the window to continue', focus: 'click to focus', leave: 'leave session', task: 'task' };
+  var TASK_LABELS = { learning: 'learning', round: 'round', of: 'of', newKana: 'new kana', which: 'which kana is it?', show: 'show the romaji',
+    blur: 'return to the window to continue', focus: 'click to focus', leave: 'leave session', task: 'task', next: 'next', typed: 'you typed' };
+  /* One task of a learning session (ADR 058; the frame of P9, decisions 159–162). The session line and its ticks, the task on a card
+     (a caption naming the kind over the prompt, the prompt, the options), the feedback lines, one reserved notice line, the key line.
+     kind: 'introduction' | 'recall' | 'recognition' | 'word' (a typed task whose stage the consumer draws: a word, a run, a build)
+     | 'break' (a screen of its own in the session: the round, the closing word). The component renders once per task and once per
+     answer; every keystroke goes through createTaskController. */
   var KanaTask = forwardRef(function KanaTask(p, ref) {
     var narrow = useNarrow(), touch = useCoarse();
     var coarse = p.coarse != null ? p.coarse : touch;
     var root = useRef(null), ctl = useRef(null);
-    var kind = p.kind || 'recall', s = p.session || {};
+    var kind = p.kind || 'recall', s = p.session || {}, rd = s.round;
     var L = Object.assign({}, TASK_LABELS, p.labels);
     var solo = narrow ? 'jp-solo-sm' : 'jp-solo';
+    var wrong = p.answered === 'wrong', held = !!p.held, brk = kind === 'break';
     if (p.onRender) p.onRender();
     useLayoutEffect(function () {
       ctl.current = createTaskController(root.current);
@@ -141,35 +147,169 @@
     }, [kind, p.kana, p.romaji, narrow]);
     useImperativeHandle(ref, function () { return { get current() { return ctl.current; } }; }, []);
     var caretEl = h('span', { className: 'nk-caret', 'aria-hidden': true }, h('span', { className: 'nk-caret__reject' }));
-    var stage = kind === 'introduction'
-      ? [h('span', { key: 'l', className: 'nk-task__label ui-caption' }, L.newKana),
-         h('span', { key: 'k', className: cx('nk-task__kana', solo), lang: 'ja' }, p.kana),
-         h('span', { key: 'g', className: 'nk-task__ghost mono-counter', 'aria-label': p.romaji },
-           Array.from(p.romaji || '').map(function (c, i) { return h('span', { key: i, className: 'nk-task__letter', 'aria-hidden': true }, c); }), caretEl)]
-      : kind === 'recall'
-        ? h('span', { className: cx('nk-task__line', solo) },
-            h('span', { className: 'nk-task__kana', lang: 'ja' }, p.kana), caretEl,
-            h('span', { className: cx('nk-task__buffer', narrow ? 'mono-small' : 'mono-romaji'), 'aria-hidden': true }))
+    var caption = p.caption !== undefined ? p.caption : kind === 'introduction' ? L.newKana : kind === 'recognition' ? L.which : null;
+    var stage;
+    if (p.stage) stage = p.stage;
+    else if (kind === 'introduction') {
+      var row = p.row;
+      stage = [h('span', { key: 'k', className: cx('nk-task__kana', solo), lang: 'ja' }, p.kana),
+        h('span', { key: 'g', className: 'nk-task__ghost mono-counter', 'aria-label': p.romaji },
+          Array.from(p.romaji || '').map(function (c, i) { return h('span', { key: i, className: 'nk-task__letter', 'aria-hidden': true }, c); }), caretEl),
+        row && h('span', { key: 'r', className: 'nk-task__row jp-cell', 'aria-hidden': true }, row.kana.map(function (k) {
+          return h('span', { key: k, lang: 'ja', className: cx('nk-task__row-k', k === p.kana && 'is-new', (row.known || []).indexOf(k) >= 0 && 'is-known') }, k);
+        }))];
+    } else if (kind === 'recall') {
+      var line = h('span', { key: 'l', className: cx('nk-task__line', solo) },
+        h('span', { className: 'nk-task__kana', lang: 'ja' }, p.kana), caretEl,
+        h('span', { className: cx('nk-task__buffer', narrow ? 'mono-small' : 'mono-romaji'), 'aria-hidden': true }));
+      /* after an error the stage compares: the learner's kana, smaller, left of the right one, which keeps its place (decision 160) */
+      var c = wrong && p.compare;
+      stage = c ? h('span', { className: 'nk-task__compare' },
+        c.yours && h('span', { className: 'nk-task__yours', 'aria-hidden': true },
+          h('span', { className: 'ui-caption nk-task__yours-t' }, c.label || L.typed),
+          h('span', { className: narrow ? 'jp-test-sm' : 'jp-solo-sm', lang: 'ja' }, c.yours),
+          h('span', { className: 'mono-romaji' }, c.yoursRomaji)),
+        h('span', { className: 'nk-task__right' }, line, h('span', { className: 'mono-romaji nk-task__right-r' }, c.romaji))) : line;
+    } else if (kind === 'recognition') {
+      stage = p.promptKana ? h('span', { className: cx(solo, 'nk-task__prompt-kana'), lang: 'ja' }, p.promptKana)
         : h('span', { className: cx('nk-task__romaji', narrow ? 'mono-hero-sm' : 'mono-hero') }, p.romaji);
-    return h('section', { className: cx('nk-task', 'nk-task--' + kind, coarse && 'is-coarse', p.className), ref: root, 'data-kind': kind, 'aria-label': p.label },
+    }
+    function ticks(cur, misses, total) {
+      return Array.apply(null, Array(total)).map(function (_, i) {
+        return h('span', { key: i, className: cx('nk-task__tick', i < cur - 1 && 'is-done', i === cur - 1 && 'is-current', (misses || []).indexOf(i) >= 0 && 'is-miss') });
+      });
+    }
+    var progress = p.progress || (rd
+      ? [h('span', { key: 'k', className: 'nk-task__kind' }, L.round, ' · '), h('span', { key: 'n', className: 'nk-task__n', 'data-slot': 'n' }, rd.n), ' ' + L.of + ' ', h('span', { key: 't', className: 'nk-task__n' }, rd.size)]
+      : [s.kind && h('span', { key: 'k', className: 'nk-task__kind' }, L[s.kind], ' · '), h('span', { key: 'n', className: 'nk-task__n', 'data-slot': 'n' }, s.n), ' ' + L.of + ' ', h('span', { key: 't', className: 'nk-task__n' }, s.total)]);
+    var opts = p.options || {};
+    return h('section', { className: cx('nk-task', 'nk-task--' + kind, coarse && 'is-coarse', wrong && 'is-wrong', held && 'is-held', p.className), ref: root, 'data-kind': kind, 'aria-label': p.label },
       h('div', { className: 'nk-task__bar mono-small' },
-        h('span', { className: 'nk-task__progress' },
-          s.kind && h('span', { className: 'nk-task__kind' }, L[s.kind], ' · '),
-          h('span', { className: 'nk-task__n', 'data-slot': 'n' }, s.n), ' ' + L.of + ' ', h('span', { className: 'nk-task__n' }, s.total)),
+        h('span', { className: 'nk-task__progress' }, progress),
         p.onLeave && h(Button, { variant: 'text', size: 'sm', className: 'nk-task__leave', onClick: p.onLeave }, L.leave)),
-      s.total > 0 && h('div', { className: 'nk-task__ticks', 'aria-hidden': true }, Array.apply(null, Array(s.total)).map(function (_, i) {
-        return h('span', { key: i, className: cx('nk-task__tick', i < s.n - 1 && 'is-done', i === s.n - 1 && 'is-current', (s.misses || []).indexOf(i) >= 0 && 'is-miss') });
-      })),
-      h('div', { className: 'nk-task__stage' }, p.later || stage),
-      kind === 'recognition' && !p.later && h('div', { className: 'nk-task__options', role: 'group', 'aria-label': p.optionsLabel }, p.children),
-      h('div', { className: 'nk-task__blur ui-label', 'aria-hidden': true }, L.blur),
-      h('div', { className: 'nk-task__notice' }, p.notice || h(Notice, { reserve: true })),
-      h('div', { className: 'nk-task__foot ui-caption' },
-        kind === 'recall' && (coarse
-          ? h(Button, { variant: 'text', size: 'sm', className: 'nk-task__show', onClick: p.onShow }, L.show)
-          : h('span', { className: 'nk-task__hint' }, h(Kbd, null, 'esc'), ' ', L.show)),
-        h('span', { className: 'nk-task__focus', 'aria-live': 'polite' }, L.focus)));
+      s.total > 0 && h('div', { className: 'nk-task__ticks', 'aria-hidden': true },
+        h('span', { className: 'nk-task__ticks-main' }, ticks(rd ? s.total + 1 : s.n, s.misses, s.total)),
+        rd && h('span', { className: 'nk-task__ticks-round', style: { flexGrow: rd.size } }, ticks(rd.n, rd.misses, rd.size))),
+      h('div', { className: 'nk-task__card' },
+        h('div', { className: 'nk-task__stage' },
+          !brk && h('span', { className: cx('nk-task__caption ui-caption', !caption && 'is-empty'), 'aria-hidden': !caption }, caption || ' '),
+          p.later || stage),
+        kind === 'recognition' && !p.later && h('div', { className: cx('nk-task__options', opts.count && 'nk-task__options--' + opts.count, opts.large && 'is-large', opts.find && 'nk-task__options--find'), role: 'group', 'aria-label': p.optionsLabel }, p.children)),
+      !brk && h('div', { className: 'nk-task__blur ui-label', 'aria-hidden': true }, L.blur),
+      (p.feedback || (held && p.promise)) && h('div', { className: 'nk-task__feedback', role: 'status' }, p.feedback,
+        p.promise && h('p', { className: 'ui-label nk-task__promise' }, p.promise)),
+      !brk && h('div', { className: 'nk-task__notice' }, p.notice || h(Notice, { reserve: true })),
+      !brk && h('div', { className: 'nk-task__foot ui-caption' },
+        held && p.promise && h('span', { className: 'nk-task__foot-promise', 'aria-hidden': true }, p.promise),
+        held ? (coarse ? h(Button, { variant: 'text', size: 'sm', className: 'nk-task__next', onClick: p.onNext }, L.next)
+          : h('span', { className: 'nk-task__hint' }, h(Kbd, null, 'enter'), ' ', L.next))
+          : (kind === 'recall' || kind === 'word') && (coarse
+            ? h(Button, { variant: 'text', size: 'sm', className: 'nk-task__show', onClick: p.onShow }, L.show)
+            : h('span', { className: 'nk-task__hint' }, h(Kbd, null, 'esc'), ' ', L.show)),
+        p.footEnd || h('span', { className: 'nk-task__focus', 'aria-live': 'polite' }, L.focus)));
   });
+
+  /* ================= Task stages of P9 (decisions 163–172) =================
+   * Drawn inside KanaTask's card through `stage`; static markup, the controller of the code writes the caret, the buffer and the
+   * classes on a keystroke. */
+
+  /* A word or a run: its kana by token (a merged っX is one token), the caret before the current one, the buffer under it; typed
+     tokens fur-dim; once answered the reading in the reserved line and the meaning. A run wraps and has no reading. */
+  function KanaWord(p) {
+    var narrow = useNarrow(), tokens = p.tokens, o = p, marks = p.marks || {}, n = tokens.join('').length;
+    var size = p.run ? (narrow ? 'jp-cell' : 'jp-test-sm') : narrow ? (n <= 5 ? 'jp-solo-sm' : 'jp-test-sm') : (n <= 4 ? 'jp-solo' : n <= 7 ? 'jp-solo-sm' : 'jp-test-sm');
+    var caret = h('span', { className: 'nk-caret nk-word__caret', 'aria-hidden': true }, h('span', { className: 'nk-caret__reject' }));
+    var ghost = p.ghost;
+    return h('span', { className: 'nk-word' },
+      h('span', { className: cx('nk-word__kana', size, p.run && 'is-run', o.done && 'is-done'), lang: 'ja', 'aria-label': p.label || tokens.join('') },
+        tokens.map(function (tk, i) {
+          var m = marks[i];
+          var text = m === 'rule' || m === 'eye' ? [h('span', { key: 'a', className: m === 'rule' ? 'nk-word__rule' : 'nk-word__mark' }, tk.charAt(0)), tk.slice(1)] : tk;
+          return h('span', { key: i, 'aria-hidden': true, className: cx('nk-word__t', !o.done && o.cur != null && i < o.cur && 'is-typed', m === 'wrong' && 'is-wrong') },
+            !o.done && i === o.cur && caret, text,
+            !o.done && i === o.cur && h('span', { className: cx('nk-word__buf', narrow ? 'mono-small' : 'mono-romaji') }, o.buffer || ''));
+        })),
+      ghost ? h('span', { className: 'nk-task__ghost mono-counter', 'aria-label': ghost.text },
+        Array.from(ghost.text).map(function (c, i) { return h('span', { key: i, className: cx('nk-task__letter', (ghost.marks || []).indexOf(i) >= 0 && 'nk-word__ghost-mark'), 'aria-hidden': true }, c); }), caret)
+        : h('span', { className: 'mono-romaji nk-word__reading', 'aria-hidden': !o.done }, o.done && o.reading ? o.reading : ' '),
+      p.note && h('span', { className: 'ui-body nk-word__note' }, p.note),
+      o.done && o.meaning && h('span', { className: 'ui-body nk-word__meaning', lang: 'en' }, o.meaning));
+  }
+
+  /* A row of kana and signs: a build (か + ゛ → が) and a transfer (加 → か カ). Items: { kana, tone: 'dim' | 'q' | 'new' },
+     { op: '+' | '→' }, { node } (the origin kanji); `caret` stands before the first kana of a typed build; under the row a ghost
+     hint (introductions) or the reserved reading line. */
+  function KanaParts(p) {
+    var narrow = useNarrow(), solo = narrow ? 'jp-solo-sm' : 'jp-solo';
+    var caret = h('span', { className: 'nk-caret nk-word__caret', 'aria-hidden': true }, h('span', { className: 'nk-caret__reject' }));
+    var first = true;
+    return h('span', { className: 'nk-word' },
+      h('span', { className: 'nk-parts' }, p.items.map(function (it, i) {
+        if (it.op) return h('span', { key: i, className: 'mono-counter nk-parts__op', 'aria-hidden': true }, it.op);
+        if (it.node) return h('span', { key: i, className: 'nk-parts__node' }, it.node);
+        var c = p.typing && first; first = false;
+        return h('span', { key: i, className: cx(solo, 'nk-parts__k', 'is-' + (it.tone || 'q'), it.tone === 'new' && 'nk-task__kana'), lang: 'ja' }, c && caret, it.kana,
+          c && h('span', { className: cx('nk-word__buf', narrow ? 'mono-small' : 'mono-romaji') }, p.buffer || ''));
+      })),
+      p.ghost ? h('span', { className: 'nk-task__ghost mono-counter', 'aria-label': p.ghost },
+        Array.from(p.ghost).map(function (c, i) { return h('span', { key: i, className: 'nk-task__letter', 'aria-hidden': true }, c); }), caret)
+        : h('span', { className: 'mono-romaji nk-word__reading' }, p.reading || ' '));
+  }
+
+  /* ================= Strokes (decisions 169, 174) =================
+   * KanjiVG centre lines in a 109 × 109 box. The pen moves at one speed: a stroke takes its length / PEN_SPEED ms, at least PEN_MIN,
+   * PEN_LIFT between strokes; the stroke being drawn is eye, then fur. Under prefers-reduced-motion everything is there at once.
+   * A small kana (ゃ ゅ ょ っ) is drawn at 70% from the bottom left, as it sits in writing. */
+  var PEN_SPEED = 0.16, PEN_MIN = 260, PEN_LIFT = 140, SMALL_KANA = 'translate(10 30) scale(0.7)';
+  function Strokes(p) {
+    var box = useRef(null);
+    useLayoutEffect(function () {
+      if (p.still) return;
+      var t = 0;
+      box.current.querySelectorAll('svg').forEach(function (svg) {
+        var g = svg.querySelector('g'), scale = g && g.getAttribute('transform') ? 0.7 : 1, nums = svg.querySelectorAll('.nk-strokes__n');
+        svg.querySelectorAll('.nk-strokes__s').forEach(function (path, i) {
+          var ms = Math.max(PEN_MIN, Math.round(path.getTotalLength() * scale / PEN_SPEED));
+          path.style.animationDelay = t + 'ms'; path.style.animationDuration = ms + 'ms';
+          if (nums[i]) nums[i].style.animationDelay = t + 'ms';
+          t += ms + PEN_LIFT;
+        });
+      });
+    }, [p.run, p.still]);
+    return h('span', { ref: box, className: cx('nk-strokes', p.boxed && 'is-boxed', p.size && 'is-' + p.size, p.still && 'is-still'), role: 'img', 'aria-label': p.label },
+      (p.glyphs || []).map(function (gl, gi) {
+        return h('svg', { key: gi + '-' + (p.run || 0), viewBox: '0 0 109 109', 'aria-hidden': true },
+          h('g', { transform: gl.small ? SMALL_KANA : undefined },
+            gl.s.map(function (d, i) { return h('path', { key: i, d: d, pathLength: 1, className: cx('nk-strokes__s', (gl.kept || []).indexOf(i) >= 0 && 'is-kept') }); }),
+            p.numbers && (gl.n || []).map(function (xy, i) { return h('text', { key: 'n' + i, x: xy[0], y: xy[1], className: 'nk-strokes__n' }, i + 1); })));
+      }));
+  }
+  /* The stroke order of a kana in its details: each glyph boxed, the strokes numbered; it draws itself when the dialog opens,
+     `replay` draws it again. While the data loads or after a failure the place keeps its size and holds nothing. */
+  function StrokeOrder(p) {
+    var run = useState(0), narrow = useNarrow();
+    var empty = !p.glyphs;
+    return h('div', { className: 'nk-stroke-order' },
+      empty ? h('span', { className: cx('nk-strokes is-boxed is-empty', narrow ? 'is-sm' : 'is-md'), 'aria-hidden': true }, h('svg', { viewBox: '0 0 109 109' }))
+        : h(Strokes, { glyphs: p.glyphs, numbers: true, boxed: true, size: narrow ? 'sm' : 'md', run: run[0], still: p.still, label: p.label }),
+      h(Button, { variant: 'secondary', size: 'sm', icon: 'reset', disabled: empty, onClick: function () { run[1](run[0] + 1); } }, p.replayLabel || 'replay'));
+  }
+
+  /* ================= Radio group, Textarea (decision 167) ================= */
+  function RadioGroup(p) {
+    var name = useId();
+    return h('fieldset', { className: 'nk-radios', disabled: p.disabled },
+      h('legend', { className: 'nk-radios__l ui-caption' }, p.label),
+      (p.options || []).map(function (o) {
+        return h('label', { key: o.value, className: 'nk-radio ui-body' },
+          h('input', { type: 'radio', name: name, className: 'nk-radio__i', value: o.value, checked: p.value === o.value, onChange: function () { p.onChange && p.onChange(o.value); } }),
+          h('span', null, o.label));
+      }));
+  }
+  function Textarea(p) {
+    var id = useId();
+    return Field(p, h('textarea', Object.assign(fieldProps(p, id, cx('nk-input__field nk-textarea', 'ui-body')), { rows: p.rows || 3 })), id);
+  }
 
   /*
    * Notice states: default (fur-dim), `tone="miss"` (blocks an action; pair with a retry `action`),
@@ -540,10 +680,11 @@
   /* ================= Lesson ================= */
   function OptionCard(p) {
     var state = p.state || 'idle';
-    return h('button', { type: 'button', className: cx('nk-opt', 'is-' + state), disabled: p.disabled, onClick: p.onClick,
+    return h('button', { type: 'button', className: cx('nk-opt', 'is-' + state, p.text && 'nk-opt--text'), disabled: p.disabled, onClick: p.onClick,
       'aria-label': p.ariaLabel, 'aria-pressed': state === 'correct' || state === 'wrong' ? true : undefined },
       h(Kbd, null, p.n),
-      h('span', { className: cx('nk-opt__label', p.kana ? 'jp-test-sm' : 'mono-stat'), lang: p.kana ? 'ja' : undefined }, p.children));
+      h('span', { className: cx('nk-opt__label', p.kana ? 'jp-test-sm' : p.text ? 'ui-heading' : 'mono-stat'), lang: p.kana ? 'ja' : undefined }, p.children),
+      p.sub != null && h('span', { className: 'nk-opt__sub mono-romaji' }, p.sub));
   }
 
   /* ================= Nav & footer ================= */
@@ -585,7 +726,8 @@
     Button: Button, Segmented: Segmented, Switch: Switch, Input: Input, Tooltip: Tooltip,
     Stat: Stat, ResultChart: ResultChart, ActivityMap: ActivityMap, KanaChart: KanaChart,
     OptionCard: OptionCard, Nav: Nav, Footer: Footer,
-    Cat: Cat, EmptyState: EmptyState, Icon: Icon, KanaTask: KanaTask, kanaStateLines: kanaStateLines, isDue: isDue, KC_LABELS: KC_LABELS,
-    /* not components: */ createTaskController: createTaskController, useNarrow: useNarrow, useCoarse: useCoarse, TASK_LABELS: TASK_LABELS, KANA_ROWS: ROWS, kanaRows: rowsFor, kanaOf: kanaOf
+    Cat: Cat, EmptyState: EmptyState, Icon: Icon, KanaTask: KanaTask, KanaWord: KanaWord, KanaParts: KanaParts, Strokes: Strokes, StrokeOrder: StrokeOrder,
+    RadioGroup: RadioGroup, Textarea: Textarea, kanaStateLines: kanaStateLines, isDue: isDue, KC_LABELS: KC_LABELS,
+    /* not components: */ PEN: { speed: PEN_SPEED, min: PEN_MIN, lift: PEN_LIFT }, createTaskController: createTaskController, useNarrow: useNarrow, useCoarse: useCoarse, TASK_LABELS: TASK_LABELS, KANA_ROWS: ROWS, kanaRows: rowsFor, kanaOf: kanaOf
   });
 })();

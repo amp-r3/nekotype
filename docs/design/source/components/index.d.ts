@@ -71,6 +71,12 @@ export declare function Switch(props: SwitchProps): React.ReactElement;
 export interface FieldProps { label?: React.ReactNode; hint?: React.ReactNode; error?: React.ReactNode }
 export interface InputProps extends FieldProps, React.InputHTMLAttributes<HTMLInputElement> { mono?: boolean }
 export declare function Input(props: InputProps): React.ReactElement;
+/** The multi-line field: the comment of the report dialog (decision 167). */
+export interface TextareaProps extends FieldProps, React.TextareaHTMLAttributes<HTMLTextAreaElement> { rows?: number }
+export declare function Textarea(props: TextareaProps): React.ReactElement;
+/** One choice of a few; none chosen in advance (decision 167). */
+export interface RadioGroupProps { label: React.ReactNode; options: { value: string; label: React.ReactNode }[]; value: string | null; onChange?: (value: string) => void; disabled?: boolean }
+export declare function RadioGroup(props: RadioGroupProps): React.ReactElement;
 
 export interface TooltipProps { label: React.ReactNode; side?: 'top' | 'bottom'; open?: boolean; children: React.ReactElement }
 export declare function Tooltip(props: TooltipProps): React.ReactElement;
@@ -180,32 +186,57 @@ export interface TaskController {
   setWindowFocus(on: boolean): void;
   setInputFocus(on: boolean): void;
   measure(): void;
-  readonly kind: 'introduction' | 'recall' | 'recognition';
+  readonly kind: 'introduction' | 'recall' | 'recognition' | 'word' | 'break';
   destroy(): void;
 }
 export interface KanaTaskProps {
-  kind: 'introduction' | 'recall' | 'recognition';
+  /** `word`: a typed task whose stage the consumer draws (KanaWord, KanaParts); `break`: a screen of its own (the round, the closing word). */
+  kind: 'introduction' | 'recall' | 'recognition' | 'word' | 'break';
   /** introduction, recall. */
   kana?: string;
   /** introduction: the ghost hint; recognition: the prompt. */
   romaji?: string;
-  /** The session line `learning · 7 of 30` and its ticks; `misses`: 0-based numbers of the finished tasks answered with an error (decision 149). */
-  session: { kind: 'learning'; n: number; total: number; misses?: number[] };
+  /** recognition: a kana as the prompt (transfer, hiragana or katakana?). */
+  promptKana?: string;
+  /** The kind's caption over the prompt (decision 159); default `new kana` (introduction), `which kana is it?` (recognition), none (recall). */
+  caption?: React.ReactNode | null;
+  /** introduction: the kana's row under the ghost hint. */
+  row?: { kana: string[]; known?: string[] };
+  /** A custom stage: a word, a run, a rule's example, a build, a transfer, a break's content. */
+  stage?: React.ReactNode;
+  /** The session line and its ticks; `misses`: 0-based numbers of the tasks answered wrong (decision 149); `round` adds the round's ticks after a gap (162). */
+  session: { kind: 'learning'; n: number; total: number; misses?: number[]; round?: { n: number; size: number; misses?: number[] } };
+  /** The session line's text, in place of `7 of 30` (the round's screen: `round · 3 kana`). */
+  progress?: React.ReactNode;
+  /** The verdict once answered; `wrong` turns the card's border miss-dim (decision 160). */
+  answered?: 'right' | 'slip' | 'wrong' | null;
+  /** recall answered wrong: the learner's kana left of the right one, in the stage. */
+  compare?: { yours?: string | null; yoursRomaji?: string | null; romaji: string; label?: string };
+  /** The lines under the card (role status): the pair as an sr-only sentence, the difference, a rule, a find-the-error line. */
+  feedback?: React.ReactNode;
+  /** `ぬ comes back at the end of the session`: under the card, in the key line below 640px. */
+  promise?: React.ReactNode;
+  /** The answer waits for Enter, Space or a click: `next` in the key line, no notice line. */
+  held?: boolean;
+  /** The end of the key line: `report a problem` (decision 167). */
+  footEnd?: React.ReactNode;
+  /** recognition: the number of columns (2, 3), larger kana (contrast), find the error. */
+  options?: { count?: 2 | 3; large?: boolean; find?: boolean };
   /** Content of the reserved notice line (a Notice). */
   notice?: React.ReactNode;
-  /** recognition: four OptionCards. */
+  /** recognition: the OptionCards. */
   children?: React.ReactNode;
-  /** Previews: the place of a later phase's task type; replaces the prompt and the options (decision 152). */
+  /** Previews: the place of a later phase's task type (decision 152). */
   later?: React.ReactNode;
-  /** `leave session`: back to `/` without confirmation. */
   onLeave?: () => void;
-  /** recall under pointer: coarse: the `show the romaji` button (no Esc on an on-screen keyboard). */
+  /** pointer: coarse: the `show the romaji` button. */
   onShow?: () => void;
-  /** Force the touch layout; by default `(pointer: coarse)`. */
+  /** pointer: coarse: the `next` button of a held answer. */
+  onNext?: () => void;
   coarse?: boolean;
   label?: string;
   optionsLabel?: string;
-  labels?: Partial<Record<'learning' | 'of' | 'newKana' | 'show' | 'blur' | 'focus' | 'leave', string>>;
+  labels?: Partial<Record<'learning' | 'round' | 'of' | 'newKana' | 'which' | 'show' | 'blur' | 'focus' | 'leave' | 'next' | 'typed', string>>;
   onReady?: (ctl: TaskController) => void;
   onRender?: () => void;
   className?: string;
@@ -228,8 +259,53 @@ export interface OptionCardProps {
   disabled?: boolean;
   onClick?: () => void;
   ariaLabel?: string;
+  /** find the error: the romaji the kana wears, under it (decision 171). */
+  sub?: React.ReactNode;
+  /** hiragana or katakana?: a word in ui-heading instead of a kana (decision 172). */
+  text?: boolean;
 }
 export declare function OptionCard(props: OptionCardProps): React.ReactElement;
+
+/* ================= The stages of P9 (decisions 163–174) ================= */
+export interface KanaWordProps {
+  /** The kana by reading token; a merged っX is one token. */
+  tokens: string[];
+  /** The token being typed: the caret before it, the buffer under it. */
+  cur?: number;
+  buffer?: string;
+  /** Per token: `wrong` (miss), `rule` (its っ or ー in miss), `eye` (a rule's mark in an example). */
+  marks?: Record<number, 'wrong' | 'rule' | 'eye'>;
+  done?: boolean;
+  reading?: string;
+  /** English, after the answer only. */
+  meaning?: string | null;
+  /** A fluency run: one wrapping line, jp-test-sm (22px below 640px). */
+  run?: boolean;
+  /** A rule's example: the ghost hint and the letters the mark gives. */
+  ghost?: { text: string; marks?: number[] };
+  /** A rule's line under the example. */
+  note?: React.ReactNode;
+  label?: string;
+}
+export declare function KanaWord(props: KanaWordProps): React.ReactElement;
+export interface KanaPartsProps {
+  items: ({ kana: string; tone?: 'dim' | 'q' | 'new' } | { op: '+' | '→' } | { node: React.ReactNode })[];
+  typing?: boolean;
+  buffer?: string;
+  ghost?: string;
+  reading?: string;
+}
+export declare function KanaParts(props: KanaPartsProps): React.ReactElement;
+/** KanjiVG centre lines in a 109 × 109 box. */
+export interface StrokeGlyph { s: string[]; n?: [number, number][]; small?: boolean; kept?: number[] }
+export interface StrokesProps { glyphs: StrokeGlyph[]; numbers?: boolean; boxed?: boolean; size?: 'md' | 'sm' | 'origin'; still?: boolean; run?: number; label?: string }
+export declare function Strokes(props: StrokesProps): React.ReactElement;
+/** The stroke order of a kana in its details; `glyphs` null while the data loads or after a failure (the place keeps its size). */
+export interface StrokeOrderProps { glyphs: StrokeGlyph[] | null; label?: string; replayLabel?: string; still?: boolean }
+export declare function StrokeOrder(props: StrokeOrderProps): React.ReactElement;
+/** The pen of the strokes: units of the 109 box per ms, the shortest stroke and the lift between strokes, in ms. */
+export declare const PEN: { speed: 0.16; min: 260; lift: 140 };
+
 
 /* ================= Shell ================= */
 export interface NavItem { id: string; label: React.ReactNode; href?: string }
@@ -252,7 +328,7 @@ export declare function Nav(props: NavProps): React.ReactElement;
 export interface FooterProps { links: { id: string; label: React.ReactNode; href?: string; onClick?: () => void }[] }
 export declare function Footer(props: FooterProps): React.ReactElement;
 
-/** `content` and `grumpy` are drawn and have no place in the product yet (decisions 98, 136). */
+/** `content` stands on the screen of the closing word (decision 165); `grumpy` is drawn and has no place yet (decision 98). */
 export type CatMood = 'neutral' | 'sleep' | 'content' | 'grumpy';
 export interface CatProps {
   mood?: CatMood;
