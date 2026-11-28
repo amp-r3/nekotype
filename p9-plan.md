@@ -668,7 +668,7 @@ After a task with a `wrong` verdict the task waits for `Enter` (D21) and shows (
 
 - **Contrast:** the prompt is `displayRomaji(K)`; the options are the plan's, shuffled with the session's `rng`; keys 1–4; as many columns as options, larger kana (decision 168).
 - **Transfer:** the prompt is the hiragana `from` (`promptKana`); the options are `recognitionOptions` for the katakana K, as for a recognition; keys 1–4.
-- **Build:** the prompt is the parts (が: か and ゛, from the kana's canonical decomposition; きゃ: き and ゃ, its two characters) with `+` between them; the romaji is typed as in a recall, against the matcher of K; once answered `→` and K and its reading appear (decision 170).
+- **Build:** the prompt is the parts (が: か and ゛, from the kana's canonical decomposition; きゃ: き and ゃ, its two characters) with `+` between them; the romaji is typed as in a recall, against the matcher of K; once answered `→` and K and its reading appear (decision 170). A right build holds `ANSWER_PAUSE_MS` and moves on, as a recall: the learner has just typed the reading and saw the kana in its introduction. A wrong one waits for `Enter` (D21) with `→` K, its reading and the comparison of D23 on screen.
 - **Hiragana or katakana?:** the kana K (`promptKana`); two word options (`OptionCard text`), `hiragana` and `katakana`, keys 1 and 2; `ok` when the chosen script is K's.
 - **Find the error:** the word's kana as `OptionCard`s, each with `displayRomaji` under it (`sub`), the one at `index` under `displayRomaji(alt)`; the learner picks a kana by its number (1–9) or a click; `ok` when the pick is `index`.
 - **Introductions:**
