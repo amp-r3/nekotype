@@ -1028,12 +1028,16 @@ The executor of PR 4 downloads the archive of [D2](#d2-stroke-data-and-the-origi
 
 ### M4. Sync before PR 2 is merged
 
+Done on 2026-11-28: ticked in #254, which the maintainer marked ready and merged.
+
 PR 2 raises `SCHEMA_VERSION` to 8, and the reset deletes what a device has not sent. PR 2 is a draft, and its description starts with this step as a checklist, one line per device on which the maintainer is signed in (Q7):
 
 1. On each device: open `/settings` online, wait for `synced`, tick its line.
 2. Once every line is ticked: mark the pull request ready and merge it. The executor never marks it ready.
 
 ### M5. Production check of PR 2
+
+Done on 2026-11-28: confirmed by the maintainer.
 
 After PR 2 is deployed:
 
