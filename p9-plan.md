@@ -4,10 +4,11 @@ Working file of phase P9 ([phases.md](docs/spec/phases.md), item 10). It tells t
 
 - Written on 2026-11-27 against `main` at 8acf510 (PR 249 merged: part 3 of the P9 research and [ADR 118](docs/adr/118-the-p9-planner.md)). The research decided the scope, the grades and the planner in [ADR 116](docs/adr/116-words-written-in-kana-and-varied-tasks-in-p9.md), [ADR 117](docs/adr/117-grades-of-the-p9-task-types.md) and ADR 118; the maintainer answered this plan's four questions on the same day ([section 5](#5-answered-questions)).
 - Changed on 2026-11-27, before the merge: the pull requests after PR 9 numbered in the order they run (10 the stroke order, 11 the choice tasks, 12 the fluency run).
-- Changed on 2026-11-28 by PR D, against the design export (decisions 159–177, [ADR 119](docs/adr/119-the-p9-design.md)): the decisions in the last column of 4.2; D21, D23–D27 as the export draws them; with the maintainer's consent the data gain the part of the origin kanji a katakana kept (D2) and `roundKana` and `seen` of the session plan (D12); the cards of PRs 5, 6, 7, 8, 9, 10, 11 and 12.
-- Where this plan and `docs/spec/` disagree, the spec wins until the pull request named here changes the spec. Every such change is listed in [section 3.10](#310-spec-changes) with its pull request.
+- Changed on 2026-11-28 by PR D, against the design export (decisions 159–177, [ADR 119](docs/adr/119-the-p9-design.md)): the decisions in the last column of 4.2; D21, D23–D27 as the export draws them; with the maintainer's consent the data gain the part of the origin kanji a katakana kept (D2) and `roundKana` and `seen` of the session plan (D12); the cards of PRs 5, 6, 7, 8, 9, 10, 11 and 12 (numbered as before the review below).
+- Changed on 2026-11-28, after PR D was merged, by a review of the plan against `main` at b95e250: the phase cut into 21 pull requests of at most about 900 lines, with the components apart from the session and the session's code split by mechanic, so the critical path is 7 pull requests instead of 10 ([section 7](#7-pull-requests)); the forecast with words measured before any code ([D18](#d18-the-forecast-and-the-outline)); a visual audit of the origin kanji (D2, M7); the design reference's names kept in the code ([D31](#d31-the-design-reference-in-the-code)); the session's chunks and an allowance per pull request decided in advance ([D29](#d29-budgets)); a synthetic log with the load of a P9 session (D10); the maintainer's answers Q5–Q8 ([section 5](#5-answered-questions)). The pull requests after PR D are numbered anew, in the order they can start.
+- Where this plan and `docs/spec/` disagree, the spec wins until the pull request named here changes the spec. Every such change is listed in [section 3.11](#311-spec-changes) with its pull request.
 - **Two kinds of content.** Section 3 holds the data, the rules and the computations as final contracts: types, names, files, keys and constants. An executor copies them and does not invent names. Everything that depends on how a screen looks is a brief for the design session ([section 4](#4-design-brief)): proposals, not decisions. The design export decides, and its decision numbers fill the brief's last column.
-- **The screens follow the design export.** No code pull request starts before PR D is merged (ADR 116, point 7). PR D rewrites the cards of the pull requests that build screens (6, 7, 8, 10, 11, 12) against the export.
+- **The screens follow the design export.** No code pull request started before PR D was merged (ADR 116, point 7). PR D (#251) rewrote the cards of the screens against the export; the review of 2026-11-28 cut them into the cards of section 7, which keep their layouts and strings.
 - **Decisions are final, and the code may force a deviation.** An executor builds what this plan says and decides nothing on its own. Where the code makes a contract impossible or clearly worse, it deviates by the rule of [section 8](#8-instructions-for-executor-agents), item 3, and records the deviation here and in its pull request.
 - Sections: [status](#status), [goal and scope](#1-goal-and-scope), [what was checked](#2-what-was-checked), [decisions](#3-decisions), [design brief](#4-design-brief), [answered questions](#5-answered-questions), [manual steps](#6-maintainers-manual-steps), [pull requests](#7-pull-requests), [executor instructions](#8-instructions-for-executor-agents), [risks](#9-risks).
 
@@ -15,22 +16,30 @@ Working file of phase P9 ([phases.md](docs/spec/phases.md), item 10). It tells t
 
 The executor of a pull request fills its row ([section 8](#8-instructions-for-executor-agents), item 11). Every row goes to `main`: P9 has no integration branch ([D30](#d30-no-integration-branch)).
 
-| PR  | Branch                     | Status | Pull request |
-| --- | -------------------------- | ------ | ------------ |
-| D   | `docs/p9-design`           | open   | #251         |
-| 1   | `p9-01-words-content`      | —      | —            |
-| 2   | `p9-02-log-format-4`       | —      | —            |
-| 3   | `p9-03-engine-rule-errors` | —      | —            |
-| 4   | `p9-04-grades`             | —      | —            |
-| 5   | `p9-05-session-plan`       | —      | —            |
-| 6   | `p9-06-session-screen`     | —      | —            |
-| 7   | `p9-07-words`              | —      | —            |
-| 8   | `p9-08-report`             | —      | —            |
-| 9   | `p9-09-kanjivg`            | —      | —            |
-| 10  | `p9-10-stroke-order`       | —      | —            |
-| 11  | `p9-11-choice-tasks`       | —      | —            |
-| 12  | `p9-12-fluency`            | —      | —            |
-| 13  | `p9-13-close`              | —      | —            |
+| PR  | Branch                 | Status | Pull request |
+| --- | ---------------------- | ------ | ------------ |
+| D   | `docs/p9-design`       | done   | #251         |
+| 1   | `p9-01-engine`         | —      | —            |
+| 2   | `p9-02-log-format-4`   | —      | —            |
+| 3   | `p9-03-session-lazy`   | —      | —            |
+| 4   | `p9-04-kanjivg`        | —      | —            |
+| 5   | `p9-05-words-content`  | —      | —            |
+| 6   | `p9-06-grades`         | —      | —            |
+| 7   | `p9-07-task-frame`     | —      | —            |
+| 8   | `p9-08-stages`         | —      | —            |
+| 9   | `p9-09-report-dialog`  | —      | —            |
+| 10  | `p9-10-pair-lines`     | —      | —            |
+| 11  | `p9-11-stroke-order`   | —      | —            |
+| 12  | `p9-12-session-plan`   | —      | —            |
+| 13  | `p9-13-words-client`   | —      | —            |
+| 14  | `p9-14-mix-run`        | —      | —            |
+| 15  | `p9-15-session-screen` | —      | —            |
+| 16  | `p9-16-sim`            | —      | —            |
+| 17  | `p9-17-word-tasks`     | —      | —            |
+| 18  | `p9-18-choice-tasks`   | —      | —            |
+| 19  | `p9-19-build-transfer` | —      | —            |
+| 20  | `p9-20-fluency`        | —      | —            |
+| 21  | `p9-21-close`          | —      | —            |
 
 ## 1. Goal and scope
 
@@ -56,7 +65,7 @@ The executor of a pull request fills its row ([section 8](#8-instructions-for-ex
 
 - the memory model (FSRS-6), its constants, and every rule of [ADR 100](docs/adr/100-knowledge-model-fsrs-planner-and-answer-log.md) that ADRs 115–118 and this plan do not amend;
 - the kana planner `nextTask`: its order, its share of recognition, and the 30 tasks of a session;
-- the home, Progress and their insights: the outline and the forecast still play the kana planner alone ([D18](#d18-the-forecast-and-the-outline));
+- the home, Progress and their insights, but for one part of the outline: once the track has had a word, the outline names the session's words (Q6); the forecast still plays the kana planner alone ([D18](#d18-the-forecast-and-the-outline));
 - the server's storage of the log as received;
 - the hot-path rule (0 renders per keystroke, at most 1 on the answer), every budget limit and one dark theme;
 - no score, record, timer or kana per minute ([ADR 093](docs/adr/093-learning-only-words-in-learning.md), point 1).
@@ -94,6 +103,18 @@ Checked on 2026-11-27 against the code on `main` at 8acf510.
 | Design export           | Decisions up to 158. P9 is drawn as places only (decision 152): a dashed box per task type, the place of the stroke order in the details, and a notice line after an error                                                                                                                                                                                                                       |
 | Records                 | The last ADR is 118; the last design decision is 158                                                                                                                                                                                                                                                                                                                                             |
 
+Checked on 2026-11-28 against `main` at b95e250 (PR D merged), by the review of the plan.
+
+| Item                     | Finding                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The forecast with words  | `packages/sim` with the options of part 3 (`createProductionPolicy('hiragana', { words: { every: 5, minPool: 25, recent: 30, closing: true, mode: 'recalls', of: 'introduced' }, slips: 'hard', endRound: 5 })`, `slip` 0.03), 50 beginners over 30 days, the forecast of the next row made at the first session of each day (`forward: 1`, as P7's table). Without words: median error 1 session, bias 0, within ±1 session 76% of the forecasts shown. With words: the raw median is biased by −1 session (a word takes one task in six), and the history's correction brings the forecast shown to a median error of 1 session, bias 0, within ±1 in 79%. The line of D19 holds on hiragana; PR 16 measures the production plan on both tracks |
+| The open page of the log | `appendEvents` reads `own:open` with `decodePage(…) ?? []` (`entities/learn/model/log.ts`): a tab of older code that cannot decode a page of format 4 takes it as empty and writes over it. Format 4 therefore keeps the schema reset of D3, and M4 guards it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Chunks                   | `vite.config.ts` puts all of `packages/model/src` into the chunk `model` (8.44 KB), which the learn store loads for the home; the session plan would grow it for a screen that does not use it. The learn store (`entities/learn`) is in the initial chunk                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Budget headroom          | `pnpm run build && pnpm run budget`: initial JS 30.72 KB of the line 31.0 (0.28 KB left); initial CSS 7.75 of 8.0; session runtime 10.42 of 20.0; model 8.44 of 12.0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| The design reference     | `KanaTask` in `bundle.js` is static markup plus `createTaskController`, the split of `shared/ui/kana-task.tsx` and `task-controller.ts`, with the same controller methods. `KanaWord` draws its caret and buffer from the props `cur` and `buffer`, `KanaParts` from `typing` and `buffer`: ported as they are, each keystroke would render. `index.d.ts` names the stroke data `StrokeGlyph { s, n?, small?, kept? }` and the pen `PEN { speed, min, lift }`                                                                                                                                                                                                                                                                                     |
+| Word lengths             | The committed N5–N4 chunks: 3 (2–4) tokens a hiragana word and 4 (2–6) a katakana word (part 1, table 1); the brief draws words of up to about 10 kana. `syntheticLog({ words: true })` as D10 had it gave words of 3 kana, with no rules and no runs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Design export            | Decisions 159–177 (ADR 119); new components `KanaWord`, `KanaParts`, `Strokes`, `StrokeOrder`, `RadioGroup`, `Textarea`. The last ADR is 119                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+
 ## 3. Decisions
 
 Each decision fills a gap that ADRs 116–118 leave open, or carries one of their points into code. The maintainer answered four questions on 2026-11-27 ([section 5](#5-answered-questions)); everything else is decided here, with its reason. Paths are relative to the repository root.
@@ -114,35 +135,37 @@ The pipeline selects the words by the rule of ADR 116, point 2, for both scripts
 - **The exclusion list.** `packages/content/word-exclusions.json`, `[{ "seq": number, "text": string, "reason": string }]`, is applied after the rule and counted as `excludedByList`. It holds the leftovers of part 1 that the rule lets through (クソ, ナチス and any other) and what the maintainer names in M2. It is part of the pipeline and reviewed like code; no chunk is edited by hand (D19 of the spec).
 - **Items** are built as steps 4–7 of "Words" build them today: the meaning (the first gloss of the first 3 senses, with `stagr`, at most 60 characters), homonyms merged into `w:<script>:<reading>`, the Russian coverage. Items are sorted by reading in code-point order.
 - **Output:** `words-hiragana.json` and `words-katakana.json` (`ContentItem[]`, format unchanged), the manifest's counts and `contentVersion`; each chunk at most 40 KB gzip (part 1 estimated 24 and 17 KB). A word of one kana stays in the chunk; the session leaves it out ([D11](#d11-words-in-the-model)).
-- **The sample.** The build writes `packages/content/audit-words.md`: 100 words of each script in the order of `sha256("audit:" + id)`, each with its reading, meaning and JMdict entry number, then every word of the exclusion list with its reason. The maintainer reads it before PR 1 is merged (M2).
+- **The sample.** The build writes `packages/content/audit-words.md`: 100 words of each script in the order of `sha256("audit:" + id)`, each with its reading, meaning and JMdict entry number, then every word of the exclusion list with its reason. The maintainer reads it before PR 5 is merged (M2).
 - **Glyphs:** `glyphs.txt` and the Noto subset follow the content ([ADR 071](docs/adr/071-glyph-set-from-generated-content.md)); the font stays within 45 KB.
 
 #### D2. Stroke data and the origin kanji from KanjiVG
 
 KanjiVG is the source of the stroke order that ADR 099 left to P9. It holds each stroke as a centre line in writing order, and the same files draw the kanji a pair of kana comes from (Q3), so no font grows.
 
-- **Source:** the latest release of `KanjiVG/kanjivg` on GitHub on the day of PR 9, its archive of the main SVG files (one file per character, named by its code point). It is pinned in `packages/content/sources.json` (URL, sha256, size, date, licence `CC BY-SA 3.0 (Ulrich Apel, KanjiVG)`) and mirrored as an asset of a new release `content-sources-YYYY-MM-DD` ([ADR 068](docs/adr/068-content-sources-mirrored-as-release-assets.md); M3).
+- **Source:** the latest release of `KanjiVG/kanjivg` on GitHub on the day of PR 4, its archive of the main SVG files (one file per character, named by its code point). It is pinned in `packages/content/sources.json` (URL, sha256, size, date, licence `CC BY-SA 3.0 (Ulrich Apel, KanjiVG)`) and mirrored as an asset of a new release `content-sources-YYYY-MM-DD` ([ADR 068](docs/adr/068-content-sources-mirrored-as-release-assets.md); M3).
 - **Glyphs:** every character of every learnable kana of both tracks (each of the two characters of a yōon or an extended kana; a kana with a dakuten or handakuten as its own character), and the origin kanji of the table below. A character with no file fails the build.
 - **Chunks** in `apps/web/src/entities/prompt/content/`: `strokes-hiragana.json` and `strokes-katakana.json` keyed by character, `origins.json` keyed by kanji, each at most 40 KB gzip:
 
   ```ts
+  /** `StrokeGlyph` of the design reference (`index.d.ts`), with `readonly`. */
   type StrokeGlyph = {
     /** The path data of each stroke in writing order, in KanjiVG's 109 × 109 box, one decimal. */
-    readonly d: readonly string[];
-    /** Where each stroke's number stands (KanjiVG's stroke numbers), one decimal. */
-    readonly n: readonly (readonly [x: number, y: number])[];
-    /** The stroke chunks only: true for a small kana (ぁ ぃ ぅ ぇ ぉ ゃ ゅ ょ っ ゎ and their katakana), which the details draw at 70% from the bottom left (decision 174). */
-    readonly small?: true;
+    readonly s: readonly string[];
+    /** The stroke chunks only: where each stroke's number stands (KanjiVG's stroke numbers), one decimal. An origin kanji has none: its numbers are never drawn. */
+    readonly n?: readonly (readonly [x: number, y: number])[];
+    /** The stroke chunks only, written when true: a small kana (ぁ ぃ ぅ ぇ ぉ ゃ ゅ ょ っ ゎ and their katakana), which the details draw at 70% from the bottom left (decision 174). */
+    readonly small?: boolean;
     /** `origins.json` only: the indexes of the strokes of the part the katakana kept (decision 169 draws them in eye). */
     readonly kept?: readonly number[];
   };
   type StrokeChunk = Readonly<Record<string, StrokeGlyph>>;
   ```
 
-  The design reference (`index.d.ts`, `StrokeGlyph`) calls `d` `s` and has `n` optional; these names are the contract, and an origin kanji's `n` is written but not drawn.
+  These are the reference's names and shapes, so `Strokes` and `StrokeOrder` take the chunks as they are ([D31](#d31-the-design-reference-in-the-code)).
 
-- **The origins table** `packages/engine/src/data/origins.ts`: `kanaOrigins: Readonly<Record<string, { readonly kanji: string; readonly part: string | readonly number[] }>>`, hiragana → its kanji and the part of it the katakana kept, for the basic kana whose hiragana and katakana come from the same kanji, and `originOf(kana: string): string | null` (the kanji) for either script. `part` is either a component that KanjiVG names (`kvg:element` of a group of the kanji's file: 力 of 加 for か / カ; the kanji itself when the katakana kept all of it), or, when the strokes the katakana kept are no group of the file (ク of 久, ノ of 乃, ナ of 奈), their 0-based indexes in writing order (ク: `[0, 1]`). A name that is no group of the file, or an index outside its strokes, fails the build. The kanji come from the tables of origins (字源) of the Japanese Wikipedia articles 平仮名 and 片仮名, cited with the date in the file; the parts are written by the executor of PR 9 from the shapes, since the tables do not name them, and the maintainer reads both (M7). A pair whose two scripts come from different kanji is left out.
-- **Credit:** CC BY-SA 3.0 applies to the converted data, shipped as these separate files. `/about` credits KanjiVG from the pull request that first shows its data (PR 10, [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen)); `NOTICE.md` lists it under "Third-party data" and "Mirrored content sources" in PR 9.
+- **The origins table** `packages/engine/src/data/origins.ts`: `kanaOrigins: Readonly<Record<string, { readonly kanji: string; readonly part: string | readonly number[] }>>`, hiragana → its kanji and the part of it the katakana kept, for the basic kana whose hiragana and katakana come from the same kanji, and `originOf(kana: string): string | null` (the kanji) for either script. `part` is either a component that KanjiVG names (`kvg:element` of a group of the kanji's file: 力 of 加 for か / カ; the kanji itself when the katakana kept all of it), or, when the strokes the katakana kept are no group of the file (ク of 久, ノ of 乃, ナ of 奈), their 0-based indexes in writing order (ク: `[0, 1]`). A name is the rule: indexes stand only where the kanji's file has no group for the part, and each such entry carries a comment that names its strokes in words (`// ク: ノ and ㇇, the first two strokes of 久`). A name that is no group of the file, or an index outside its strokes, fails the build. The kanji come from the tables of origins (字源) of the Japanese Wikipedia articles 平仮名 and 片仮名, cited with the date in the file; the parts are written by the executor of PR 4 from the shapes, since the tables do not name them, and the maintainer reads both (M7). A pair whose two scripts come from different kanji is left out.
+- **The visual audit.** A check that an index lies within its strokes cannot tell a wrong stroke from a right one, and nobody can read `[0, 1]` against a shape. So the build writes `packages/content/audit-origins.svg` (generated, committed): one cell per entry of `kanaOrigins`, in the table's order, with the origin kanji drawn from its strokes, the `kept` strokes in a dark ink and the rest in light grey, each stroke numbered by its 0-based index; beside it the katakana drawn from its own KanjiVG strokes, and the hiragana; under them the kanji, the part (a name or the indexes) and two stroke counts, the kept part's and the katakana's, marked `≠` when they differ (a katakana may simplify its part, so `≠` asks for a second look and fails nothing). GitHub shows the file as an image in the pull request. The executor renders it with the repository's Playwright and looks at every cell before the pull request is opened ([PR 4](#pr-4--kanjivg-data)); the maintainer reads the image (M7).
+- **Credit:** CC BY-SA 3.0 applies to the converted data, shipped as these separate files. `/about` credits KanjiVG from the pull request that first shows its data (PR 11, [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen)); `NOTICE.md` lists it under "Third-party data" and "Mirrored content sources" in PR 4.
 
 ### 3.2 The log
 
@@ -224,7 +247,7 @@ Every event of one task is written in one append with the same `at`: a word's ev
 
 #### D5. Reading tokens and rule errors
 
-- **`readingTokens`** (`packages/engine/src/data/reading.ts`, exported from the index), built in PR 1 because the pipeline needs it first:
+- **`readingTokens`** (`packages/engine/src/data/reading.ts`, exported from the index), built in PR 1 with the rule errors, because the pipeline (PR 5) and the model (PR 12) read it:
 
   ```ts
   export type ReadingToken =
@@ -325,7 +348,14 @@ export type ModelState = {
 #### D10. The pace of a word, and the synthetic log
 
 - `TimedTask` gains `word`: a kana of a word is graded against the pace `word` of its device (`word:<dev>`, then `word`), as ADR 117, point 1, decided. An answer whose `k` is not a kana is never timed and never moves a pace (`countsForPace` asks for a kana key).
-- **`syntheticLog({ answers, seed, words })`.** With `words: true`, after every 5 kana tasks of a sitting comes a word task of 3 introduced kana of the selected track drawn with the seeded `Rng` (a pseudo-word whose reading is their characters). Each kana is an event of task `word`, answered as the log answers a recall of that kana, sharing the task's `at`; there are no rules. Without `words`, the log is byte for byte as today. `model-cost.spec.ts` and `home-cost.spec.ts` use `words: true` from PR 4; the 40,000 answers count each event of a word.
+- **`syntheticLog({ answers, seed, words })`.** With `words: true` a session of the log has the shapes of a P9 session, so the measurements of [D29](#d29-budgets) fold what a learner's log will hold, all drawn with the seeded `Rng`:
+  - **words:** after every 5 kana tasks, a word task of `L` introduced kana of the selected track, a pseudo-word whose reading is their characters (`w`); `L` is 2–4 in 60% of the words, 5–7 in 30% and 8–10 in 10%, longer than the N5–N4 chunks (section 2) so the tail is measured. Each kana is an event of task `word`, answered as the log answers a recall of that kana, all at the task's `at`;
+  - **rules:** a rule token in every 4th katakana word and every 20th hiragana word (part 1: 60 of 108 katakana words and 53 of 1,167 hiragana words need one), placed before a kana (っ) or after it (ー); an `intro` of the rule before its first word, then its `word` event with the rule key, not `ok` in 1 of 10;
+  - **runs:** at the 15th task of a session, once 12 kana of the track are learned, a run of their 12 `fluency` events at one `at`;
+  - **rounds:** after the 30th task, a `recall` of each kana answered wrong in the session, at most 5;
+  - **slips:** 1 recall in 30 is a slip (`misses` 1, `ok` false, in time).
+
+  Without `words`, the log is byte for byte as today. `model-cost.spec.ts` and `home-cost.spec.ts` use `words: true` from PR 6; the 40,000 answers count each event of a word, a rule and a run. PR 5's description gives the real histogram of word lengths; when its tail is longer than this one's, PR 14 widens `L` to it and says so (a fixture of the measurements, not a rule of the model).
 
 ### 3.5 The session plan
 
@@ -525,24 +555,26 @@ New constants of `packages/model/src/constants.ts`. Each chooses tasks, so a cha
 | `CONTRAST_OPTIONS`  | 4     | ADR 117, point 5 (2–4 options)        |
 | `MISMATCH_MAX_KANA` | 9     | this plan: the keys 1–9               |
 
-`WORDS_RECENT` comes with PR 4, which keeps the recent words in the state ([D9](#d9-one-task-per-moment-and-the-recent-words)); the others come with PR 5. `MISSES_MAX` = 9 and `WORD_TEXT_MAX` = 32 are bounds of the codec in `packages/shared` ([D3](#d3-events-of-format-4)).
+`WORDS_RECENT` comes with PR 6, which keeps the recent words in the state ([D9](#d9-one-task-per-moment-and-the-recent-words)); `WORD_EVERY`, `WORDS_START`, `ROUND_MAX`, `RULE_ERRORS` and `RULE_WORDS` with PR 12; `FLUENCY_AT`, `FLUENCY_MIN`, `FLUENCY_MAX`, `CONTRAST_OPTIONS` and `MISMATCH_MAX_KANA` with PR 14. `MISSES_MAX` = 9 and `WORD_TEXT_MAX` = 32 are bounds of the codec in `packages/shared` ([D3](#d3-events-of-format-4)).
 
 #### D18. The forecast and the outline
 
-`forecastRow` and `outlineSession` keep playing `nextTask` alone, without words, runs, the mix or the round.
+`forecastRow` keeps playing `nextTask` alone, without words, runs, the mix or the round. `outlineSession` plays the word slots once the track has had a word.
 
-- The home does not load the words, and part 3 measured the same pace per day with and without them (the 104 kana on day 13 both), so a session's progress through a row changes little. The history's correction absorbs a steady bias per learner.
-- PR 5 measures the forecast's error on the production plan in the simulator ([D19](#d19-the-simulator-on-the-production-plan)). Over 1 session (median) the pull request stops and asks.
-- The outline still counts kana tasks (`about 30 tasks: 6 reviews, 2 new kana`). With words open a session holds 25 kana tasks and 5 words, which the outline does not name: it is an outline, not a promise ([learning.md](docs/spec/learning.md)). P12, which brings words to the home, may name them.
+- **The forecast, measured before the code.** The home does not load the words. Part 3 measured the same pace per day with and without them (the 104 kana on day 13 both), and the review of 2026-11-28 measured the forecast itself ([section 2](#2-what-was-checked)): with the words, the closing word, the round and the 3% slips of part 3, the raw forecast of the next row is biased by −1 session, and the history's correction brings the forecast shown to a median error of 1 session with no bias, within ±1 session in 79% of the forecasts (76% without words). PR 16 measures it again on the production plan, on both tracks ([D19](#d19-the-simulator-on-the-production-plan)).
+- **If PR 16 misses the line** (a median error over 1 session), the remedy is decided here: the forecast plays the word slots as the outline does (below), PR 16 measures again and records the change as a deviation. Only a miss after that stops the pull request.
+- **The outline names the words** (Q6). Once `state.learner.words` holds a word of the track — a word whose first character is of the track's script (hiragana U+3041–U+3096, katakana U+30A1–U+30FA) — the outline plays a word slot after every `WORD_EVERY` planner tasks, as the session does ([D13](#d13-the-order-of-a-session)). A slot counts toward `SESSION_TASKS` and grades nothing: the play knows no words. `Outline` gains `words: number`, and the line reads `about 30 tasks: 5 reviews, 2 new kana, 5 words` / `около 30 заданий: 5 повторений, 2 новые каны, 5 слов`.
+  - The words' part is the plural key `home.outline.words` of the lazy `home` part ([D28](#d28-strings-and-styles)), so the initial JS gains no string. The part loads with the home's panels, in parallel with the model; until it has loaded, the line leaves the words out.
+  - Before the track's first word, and on the other track, the outline is as today. Rules, the run and the round are not named: it is an outline, not a promise ([learning.md](docs/spec/learning.md)).
 
 #### D19. The simulator on the production plan
 
-- `createProductionPolicy` gains the option `plan: true`: each session is `createSessionPlan({ track, words, rng, features: all })`, with `words` the readable entries of the track's committed chunk (`apps/web/src/entities/prompt/content/words-<track>.json` after PR 1, read with `fs` and `wordEntry`; no import of `apps/web` code). Its fold keeps statistics for the run. The adapter converts the plan's tasks to the harness's tasks and the answers to the events of [D4](#d4-what-each-task-logs), and holds no rule of the plan.
+- `createProductionPolicy` gains the option `plan: true`: each session is `createSessionPlan({ track, words, rng, features: all })`, with `words` the readable entries of the track's committed chunk (`apps/web/src/entities/prompt/content/words-<track>.json` after PR 5, read with `fs` and `wordEntry`; no import of `apps/web` code). Its fold keeps statistics for the run. The adapter converts the plan's tasks to the harness's tasks and the answers to the events of [D4](#d4-what-each-task-logs), and holds no rule of the plan.
 - **The harness answers the new kinds:** contrast, transfer and find the error as a recognition of their kana; build as a recall; hiragana or katakana? always right; a word's kana by `Learner.read`; a run's kana as recalls; the round as recalls; a rule introduction as nothing, and a rule token always right (the reference learner has no rules).
 - **Slips:** `ReferenceParams.slip` = 0.03 in the acceptance run (part 3, table 5).
 - **Research options** (`every`, `carrier`, `recheck`, `minPool`, `recent`, `closing`, `endRound`, `slips`) stay outside the production path, so the tables of parts 1–3 still reproduce.
-- **`src/p9.ts`** (`pnpm --filter @nekotype/sim run p9`), 50 beginners over 60 days, on hiragana and on both tracks with the katakana suggestion followed: the P7 line without words against the production plan, with the columns of part 3's table 5 and the forecast's median absolute error for the next row; then the slow learners of P7 part 3 on the production plan.
-- **Lines** (P9 acceptance): the beginner reads the 46 basic hiragana by day 8 (median), with review retention of at least 90% and at most 10 minutes a day over days 1–14; each slow learner within 2 points of its P7 value; the forecast off by at most 1 session (median). A number outside its line stops the pull request; nothing is tuned to pass.
+- **`src/p9.ts`** (`pnpm --filter @nekotype/sim run p9`), 50 beginners over 60 days, on hiragana and on both tracks with the katakana suggestion followed: the P7 line without words against the production plan, with the columns of part 3's table 5; the forecast's table of section 2 (median error, bias, within ±1, raw and shown) for the next row over 30 days; then the slow learners of P7 part 3 on the production plan.
+- **Lines** (P9 acceptance): the beginner reads the 46 basic hiragana by day 8 (median), with review retention of at least 90% and at most 10 minutes a day over days 1–14; each slow learner within 2 points of its P7 value; the forecast off by at most 1 session (median). A number outside its line stops the pull request, but for the forecast, whose remedy D18 decides; nothing is tuned to pass.
 
 ### 3.6 The session in the app
 
@@ -567,14 +599,23 @@ New constants of `packages/model/src/constants.ts`. Each chooses tasks, so a cha
   export function loadContentVersion(): Promise<string>;
   ```
 
-- **Loading.** The session loads the word chunk of `learn.track` with its runtime (`Promise.all`) and reads the items with `wordEntry` once, outside any key handler; an entry that is null is dropped. A chunk that fails to load gives a session without words (no word, closing word, rule introduction or find the error), never a blocked start.
-- **Prefetch.** On idle after the store is ready, with the session runtime (`app/prefetch.ts`), when the selected track has an introduced kana.
-- **`check-budget.mjs`:** content chunks may be in the build from P9. A content chunk is never the initial chunk, nor a static import of it or of a route chunk (the checks of `SYNC_ENTRY`), and is at most 40 KB gzip.
+- **The slice** comes with PR 13 (the word functions and `loadContentVersion`); PR 11 adds `loadStrokes` and PR 19 `loadOrigins`. Whichever of PRs 11 and 13 merges first creates `index.ts`.
+- **Loading** (PR 15). The session loads the word chunk of `learn.track` with its runtime (`Promise.all`), and the runtime reads the items with `wordEntry` once, outside any key handler (in the loader, `wordEntry` would pull `session-plan` into the first load); an entry that is null is dropped. A chunk that fails to load gives a session without words (no word, closing word, rule introduction or find the error), never a blocked start.
+- **Prefetch** (PR 13). On idle after the store is ready, with the session runtime (`app/prefetch.ts`), when the selected track has an introduced kana.
+- **`check-budget.mjs`** (PR 13): content chunks may be in the build from P9. A content chunk is never the initial chunk, nor a static import of it or of a route chunk (the checks of `SYNC_ENTRY`), and is at most 40 KB gzip.
 
 #### D21. The session
 
-- **`createLearnSession`** plans with `createSessionPlan`. Its deps gain `words: readonly WordEntry[]` and `items: ReadonlyMap<string, WordItem>` (by text) of the selected track, and `features: ReadonlySet<PlanFeature>`. The features come from `SESSION_FEATURES` in `pages/learn/lib/constants.ts`, which each pull request extends with what it builds: PR 6 `round`; PR 7 `word`, `closing`, `rule`; PR 11 `contrast`, `transfer`, `build`, `script`, `mismatch`; PR 12 `fluency`.
+- **`createLearnSession`** plans with `createSessionPlan`. Its deps gain `words: readonly WordEntry[]` and `items: ReadonlyMap<string, WordItem>` (by text) of the selected track, and `features: ReadonlySet<PlanFeature>`. The features come from `SESSION_FEATURES` in `pages/learn/lib/constants.ts`, which each pull request extends with what it builds: PR 15 `round`; PR 17 `word`, `closing`, `rule`; PR 18 `contrast`, `script`, `mismatch`; PR 19 `transfer`, `build`; PR 20 `fluency`.
 - **`TaskView`** mirrors `SessionTask` with what the screen shows: the kana, the romaji, the options, and a word's meaning once it is answered. The export names the views.
+- **The session's code by mechanic** (PR 15). `pages/learn/model/session.ts` is split along the three ways a task is answered, so the pull requests after PR 15 add a kind mostly in files of their own and PRs 17, 18 and 19 can run side by side:
+  - `session.ts` keeps the core: the plan, the phases, the held answer, the deferred recording, the ticks, the round and its screen, the summary;
+  - `model/typed.ts`: a task typed as one kana (the introductions, recall, build);
+  - `model/choice.ts`: the choices (recognition, contrast, transfer, hiragana or katakana?, find the error);
+  - `model/stream.ts` (PR 17): a task typed as a stream of tokens (a word, a rule's example, a run).
+
+  PR 15 writes the functions between the core and a mechanic into `docs/architecture/pages.md`. A later pull request adds its kind to its mechanic's file, its view to `TaskView` and its feature to `SESSION_FEATURES`, and changes the core only where its card says.
+
 - The session hands the plan `{ state: store.modelState(), stats: store.stats() }` when a task is shown.
 - **The learn store** (`entities/learn`):
   - `recordAnswer(input: AnswerInput): Verdict | null`, where `AnswerInput` gains `misses: number`;
@@ -607,7 +648,7 @@ New constants of `packages/model/src/constants.ts`. Each chooses tasks, so a cha
   - adds the task's number to `misses` (its tick turns `miss`) when a verdict is `wrong`, or when the choice of a hiragana-or-katakana task is wrong;
   - sets the feedback of [D23](#d23-feedback-that-teaches).
 - **Ticks:** one per task of the session (`total` = `SESSION_TASKS`); the round adds `roundSize` ticks after a gap when it starts (decision 162).
-- **Two screens that are not tasks** (decisions 162, 165): before the round's first task, the screen of the round with `plan.roundKana`; before the closing word, its screen with `plan.seen`. Each waits for `Enter` or `start`, logs nothing and adds no tick.
+- **Two screens that are not tasks** (decisions 162, 165): before the round's first task, the screen of the round with `plan.roundKana` (PR 15); before the closing word, its screen with `plan.seen` (PR 17). Each waits for `Enter` or `start`, logs nothing and adds no tick.
 - **A held answer** (decision 160): a task with a `wrong` verdict, a wrong choice, a word once answered (its meaning) and the end of a run wait for `Enter`, `Space`, a click or `next`; keys before that do nothing. A right answer and a slip hold `ANSWER_PAUSE_MS` as today.
 - **The summary:** `errors` lists the kana with a `wrong` verdict (a slip is not listed); `mixups` lists the option chosen in a wrong recognition, contrast or transfer and the kana picked in a missed find-the-error; the rest as now.
 - **The session's `end`** is written after the round, when `next` returns null. A session left early has no round and no `end`.
@@ -639,6 +680,15 @@ export function tokenAnswers(input: {
 ```
 
 - **The key handler** only pushes a `TypedKey`, with `errorTarget` and `ruleError` for a rejected key; both are cheap reads of the match state. `tokenAnswers` runs in the deferred callback.
+- **The controller of a stream** (`shared/ui/task-controller.ts`, PR 8). The reference draws `KanaWord`'s caret and buffer from its props ([D31](#d31-the-design-reference-in-the-code)); in the code `KanaWord` renders them once, under token 0, and the controller moves them:
+
+  ```ts
+  /** A word, a rule's example or a run: the caret and the buffer stand under token `index`, and the tokens before it are typed (`is-typed`). */
+  readonly setToken: (index: number) => void;
+  ```
+
+  `setBuffer` writes the buffer, `reject` flashes the caret, and `type(n)` marks the ghost letters of a rule's example, as for an introduction. The marks of an answered task (`wrong`, `rule`) come through props, in its one render. `KanaParts` (a build) has its caret before the first kana in its markup; the controller writes only its buffer.
+
 - **Accepted keys** go to their token by `committedTimings(matcher, state)`: each token's first and last accepted key.
 - **A kana token:**
   - `misses` = its rejected keys that are not rule errors;
@@ -655,13 +705,13 @@ After a task with a `wrong` verdict the task waits for `Enter` (D21) and shows (
   - A typed kana whose `wrong` names a kana: in the stage, the right kana in its place with its romaji under it, the learner's kana on its left, smaller, in `miss`, with `you typed` / `вы ввели` over it and its romaji under it.
   - A typed kana with no `wrong` (a reveal, several keys, a slow recovery): the right kana and its romaji.
   - A choice: the options keep their marks (`wrong`, `reveal`).
-  - A word: first its first wrong kana, as a typed kana, with the caption `word · <the word>`; `Enter`; then the word with that kana in `miss` and its meaning. A rule error: the word with the rule's mark in `miss` and the rule's line, no pair and no promise.
+  - A word: first its first wrong kana, as a typed kana, with the caption `word · <the word>`; `Enter`; then the word with every kana of a `wrong` verdict in `miss` (`marks`, decision 164), its meaning, and the promise naming each of them the round takes (Q5). A rule error: the word with the rule's mark in `miss` and the rule's line, no pair and no promise.
   - A missed find-the-error: the odd card shows the romaji it wore struck and its own; the line `し was shown as chi; it is shi` / `у し было chi, а это shi`.
   - A wrong hiragana-or-katakana: `リ is katakana; its hiragana is り` / `リ — катакана; в хирагане это り`.
   - A wrong transfer: the options keep their marks, and the line `タ is ta · か ka → カ` / `タ — это ta · か ka → カ` (the chosen katakana, then the prompt and the right one).
   - For a screen reader the pair is also a sentence in the status line (`me is め · this is ぬ nu` / `me — это め · а здесь ぬ nu`; after a reveal `this is ぬ nu` / `здесь ぬ nu`).
-- **The difference of a pair:** when the two kana are a pair of `similarPairs`, one line under the card on how they differ. The keys are `session.pair.<h|k>.<a>.<b>`, with `a` and `b` the romaji of the pair in the table's order (`session.pair.h.nu.me`, `session.pair.k.shi.tsu`). The executor of PR 6 drafts the 47 lines in English and Russian; the maintainer reads them before its merge (M6). Other pairs get no line.
-- **The promise:** `ぬ comes back at the end of the session` / `ぬ вернётся в конце сессии` while the kana is among the first `ROUND_MAX` wrong kana of the session; once the round is full, and in the round, no promise. Below 640px it stands in the key line, left of `next`.
+- **The difference of a pair:** when the two kana are a pair of `similarPairs`, one line under the card on how they differ. The keys are `session.pair.<h|k>.<a>.<b>`, with `a` and `b` the romaji of the pair in the table's order (`session.pair.h.nu.me`, `session.pair.k.shi.tsu`). The executor of PR 10 drafts the 47 lines in English and Russian; the maintainer reads them before its merge (M6). Other pairs get no line, and until PR 10 is merged no pair has one: the feedback of PR 15 shows a line only when its key exists.
+- **The promise** names the kana of the task that the round will take, in the order they were answered: `ぬ comes back at the end of the session` / `ぬ вернётся в конце сессии`, and for more than one, in a word or a run (Q5), `ぬ, め come back at the end of the session` / `ぬ, め вернутся в конце сессии` — the plural key `session.promise` by the number of kana, the kana joined with `, `. A kana is named while it is among the first `ROUND_MAX` wrong kana of the session; with none named (the round full, or in the round), no promise. Below 640px it stands in the key line, left of `next`.
 - **A slip:** nothing — the caret flashed, the kana stays `fur`, the tick stays right.
 
 #### D24. Choice and build tasks
@@ -680,42 +730,66 @@ After a task with a `wrong` verdict the task waits for `Enter` (D21) and shows (
 #### D25. The fluency run on the screen
 
 - The run's kana are the prompts of one stream (`compile` of the kana, one prompt each); a reveal shows the current kana's romaji.
-- No timer, count, speed or score is shown (ADR 093); the run ends when its last kana is typed, then shows `done` / `готово` under the card and waits for `Enter`; with a wrong kana, the pair of the first one as a line (`you typed ぬ nu · here め me` / `вы ввели ぬ nu · здесь め me`), its difference and the promise (decision 173).
+- No timer, count, speed or score is shown (ADR 093); the run ends when its last kana is typed, then shows `done` / `готово` under the card and waits for `Enter`; with a wrong kana, the pair of the first one as a line (`you typed ぬ nu · here め me` / `вы ввели ぬ nu · здесь め me`), its difference and the promise, which names every wrong kana of the run the round takes (decision 173, D23).
 - It is recorded at the end with `recordTokens({ task: 'fluency', w: null, … })`: one `fluency` event per kana, each kana being in the run once.
 - A keystroke renders nothing; the end of the run renders at most once.
 
 #### D26. The report dialog
 
-- Restored from commit 753df9f (`git show 753df9f:apps/web/src/pages/trainer/…`): the dialog into `pages/learn/ui/report/`, a lazy chunk of its own, and `lib/turnstile.ts` into `pages/learn/lib/turnstile.ts`. It is laid out as decision 167 draws it: the word and its meaning under the title, the reasons as a `RadioGroup` with **none chosen in advance** (the restored `Select` with its default goes), a `Textarea`, the Turnstile slot, the reserved notice in the actions row. `send` is enabled once a reason is chosen and the check has passed.
+- Restored from commit 753df9f (`git show 753df9f:apps/web/src/pages/trainer/…`) by PR 9, apart from the session: the dialog into `pages/learn/ui/report/`, a lazy chunk of its own, and `lib/turnstile.ts` into `pages/learn/lib/turnstile.ts`. PR 17 opens it from a word task. It is laid out as decision 167 draws it: the word and its meaning under the title, the reasons as a `RadioGroup` with **none chosen in advance** (the restored `Select` with its default goes), a `Textarea`, the Turnstile slot, the reserved notice in the actions row. `send` is enabled once a reason is chosen and the check has passed.
 - It opens from `report a problem` / `сообщить об ошибке` at the end of a word task's key line after the answer, never while the word is typed. The session waits while it is open; closing it gives the focus back to the session's input.
 - The request of [backend.md](docs/spec/backend.md): `itemId` the word's `id`, `contentVersion` from the manifest ([D20](#d20-words-in-the-app)), `reason` (`wrong_reading`, `wrong_translation`, `other`), an optional `comment`, and the Turnstile token. Turnstile's script loads only when the dialog opens; the site key is chosen by host (ADR 092); the action is disabled offline (`useOnline`).
 - Its strings are in the `session` part ([D28](#d28-strings-and-styles)).
 
 #### D27. Stroke order and the origin kanji on the screen
 
-- **The kana details** (`features/kana-details`) load the stroke chunk of the kana's track (`loadStrokes`) when the dialog opens and draw each glyph of the kana (a yōon, two) as SVG paths in writing order with their numbers (`StrokeOrder`, decision 174): a 112px box (88px below 640px), a glyph with `small` (D2) at 70% from the bottom left. The strokes draw one after another when the dialog opens at one pen speed — a stroke takes its length (`getTotalLength`) / `PEN_SPEED` 0.16 units per ms, at least `PEN_MIN` 260ms, `PEN_LIFT` 140ms between strokes (the reference's names, exported by `shared/ui/strokes.tsx`), the current one in `eye` — and `replay` / `ещё раз` (`secondary`, `sm`, the `reset` icon) draws them again. Under `prefers-reduced-motion` every stroke is there at once. While the chunk loads, and after a failure, the place keeps its size and `replay` is disabled.
+- **The kana details** (`features/kana-details`) load the stroke chunk of the kana's track (`loadStrokes`) when the dialog opens and draw each glyph of the kana (a yōon, two) as SVG paths in writing order with their numbers (`StrokeOrder`, decision 174): a 112px box (88px below 640px), a glyph with `small` (D2) at 70% from the bottom left. The strokes draw one after another when the dialog opens at one pen speed — a stroke takes its length (`getTotalLength`) / `PEN.speed` (0.16 units per ms), at least `PEN.min` (260ms), with `PEN.lift` (140ms) between strokes (`PEN` of the reference, exported by `shared/ui/strokes.tsx`), the current one in `eye` — and `replay` / `ещё раз` (`secondary`, `sm`, the `reset` icon) draws them again. Under `prefers-reduced-motion` every stroke is there at once. While the chunk loads, and after a failure, the place keeps its size and `replay` is disabled.
 - **The origin kanji.** The session loads `origins.json` with its runtime when `learn.track` is katakana. A transfer introduction draws the kanji from it once when it appears, with the same pen, its `kept` strokes in `eye` and the rest `fur-dim`, 88px (56px below 640px) (`Strokes`, decision 169); without the chunk it shows the pair alone.
-- PR 10 adds the KanjiVG credit to `/about`, so the data is credited from the first pull request that shows it; PR 11, which shows the origins, comes after it.
+- PR 11 adds the KanjiVG credit to `/about`, so the data is credited from the first pull request that shows it; PR 19, which shows the origins, comes after it.
 
 #### D28. Strings and styles
 
-- **Strings.** A dictionary part `session` (en and ru, key parity) is loaded with the session runtime (`loadSessionRuntime` waits for it). It holds every new string of the session: the task types, the notices, the 47 pair differences, the round, the run, the rule introductions and the report dialog. The `learn.session.*` strings of the English core stay. The `details` part gains the stroke order's strings, and `about` the sources section.
-- **Styles.** The styles of the session's tasks move from `app/styles/index.css` to a stylesheet that the session runtime imports, so they leave the initial CSS. `nk-caret`, which the home's path draws, stays.
+- **Strings** (PR 3). A dictionary part `session` (en and ru, key parity) is loaded with the session runtime (`loadSessionRuntime` waits for it). It holds every new string of the session: the task types, the notices, the 47 pair differences, the round, the run, the rule introductions and the report dialog. The `learn.session.*` strings of the English core stay. The `details` part gains the stroke order's strings, `about` the sources section, and `home` the words of the outline (`home.outline.words`, PR 14, [D18](#d18-the-forecast-and-the-outline)).
+- **Styles** (PR 3). The styles of the session's tasks move from `app/styles/index.css` to a stylesheet that the session runtime imports, so they leave the initial CSS. `nk-caret`, which the home's path draws, stays. The pull requests after PR 3 add the session's styles to that stylesheet, copied from the reference ([D31](#d31-the-design-reference-in-the-code)).
 
 ### 3.7 Budgets and measurements
 
 #### D29. Budgets
 
 - **Lines** after every pull request into `main`:
-  - initial JS ≤ 31.0 KB gzip and initial CSS ≤ 8.0 KB gzip;
-  - the session runtime chunk ≤ 20.0 KB gzip and the model chunk ≤ 12.0 KB gzip;
+  - initial JS ≤ 31.5 KB gzip (Q9; was 31.0) and initial CSS ≤ 8.0 KB gzip;
+  - the session runtime chunk ≤ 20.0 KB gzip, the chunks `session-plan` and `session-stream` ≤ 5.0 KB gzip each, and the model chunk ≤ 12.0 KB gzip;
   - each word, stroke and origin chunk ≤ 40 KB gzip (the content budget of [quality.md](docs/spec/quality.md)).
 
-  Above a line: stop and ask. Reason: P11 and P12 still need the initial chunk (the first visit and the words on `/`), and a session runtime past 20 KB is the sign to split it (the run, the report dialog).
+  Above a line: stop and ask. Reason: P11 and P12 still need the initial chunk (the first visit and the words on `/`), 3.5 KB below the limit of 35.
 
-- Every pull request writes in its description the initial JS and CSS and the session runtime and model chunks, before and after.
+- **Session code stays out of the first load.** Code that only a session runs lives in the session runtime, its two chunks below or the model chunk, never in `entities/learn`, `pages/learn/session-loader.ts` or `app/` beyond a type, a dynamic import and the call that forwards. The learn store keeps what needs its own state — `recordTokens` turns the tokens it is handed into events with K and the verdicts ([D21](#d21-the-session)) — while building the tokens (`tokenAnswers`), the views and the feedback stay in the session's chunks. This is the first thing to check when a pull request comes near its allowance below.
+- **The session's chunks** are decided here, not by the pull request that would pass a line:
+  - `session-plan`: `packages/model/src/session.ts` and `words.ts`, a named chunk of `vite.config.ts` placed before `model` (PR 15). Only the session plans; the `model` chunk, which the home loads, keeps the fold, the forecast and the outline;
+  - `session-stream`: `pages/learn/model/stream.ts`, `pages/learn/lib/typed-answer.ts` and `shared/ui/kana-word.tsx`, a named chunk (PR 17);
+  - both are static imports of the session runtime, so they load with it, in parallel, and the session never waits for them between tasks. `check-budget.mjs` finds each by name, as it finds `model`, and fails a build in which it is missing or part of the first load: PR 15 adds the check of `session-plan`, PR 17 that of `session-stream`;
+  - the report dialog (PR 9) is a chunk of its own by the dynamic import of PR 17, and the strokes (`shared/ui/strokes.tsx`), which the details dialog and a transfer share, a chunk shared by the two.
+- **Allowances.** What each pull request is expected to add, in KB gzip; a pull request not in the table adds nothing that the first load or a session loads. Its description gives each figure against its allowance, and a figure over its allowance by more than half of it says why.
+
+  | PR        | Initial JS | Initial CSS | Session runtime | `session-plan` | `session-stream` | Model     |
+  | --------- | ---------- | ----------- | --------------- | -------------- | ---------------- | --------- |
+  | today     | 30.72      | 7.75        | 10.42           | —              | —                | 8.44      |
+  | 2         | +0.10      | —           | +0.05           | —              | —                | +0.05     |
+  | 3         | +0.02      | −1.0        | +0.05           | —              | —                | —         |
+  | 6         | +0.10      | —           | —               | —              | —                | +0.8      |
+  | 7         | —          | —           | +1.5            | —              | —                | —         |
+  | 13        | +0.05      | —           | —               | —              | —                | —         |
+  | 14        | +0.03      | —           | —               | —              | —                | +0.1      |
+  | 15        | +0.03      | —           | +1.5            | 3.0, new       | —                | —         |
+  | 17        | —          | —           | +0.5            | —              | 3.0, new         | —         |
+  | 18        | —          | —           | +1.5            | —              | —                | —         |
+  | 19        | +0.02      | —           | +1.0            | —              | —                | —         |
+  | 20        | —          | —           | —               | —              | +0.5             | —         |
+  | End of P9 | about 31.1 | about 6.8   | about 16.5      | about 3.0      | about 3.5        | about 9.4 |
+
+- Every pull request writes in its description the initial JS and CSS, the session runtime, `session-plan`, `session-stream` and model chunks, before and after.
 - The limits of [quality.md](docs/spec/quality.md) are not raised.
-- **Measurements.** The latency gate samples word keystrokes too: PR 7 seeds its log so that words open. `model-cost.spec.ts` and `home-cost.spec.ts` measure a log with words from PR 4 ([D10](#d10-the-pace-of-a-word-and-the-synthetic-log)).
+- **Measurements.** The latency gate samples word keystrokes too: PR 17 seeds its log so that words open, with a word of at least 8 kana among the samples, and PR 20 adds a run's keystrokes. `model-cost.spec.ts` and `home-cost.spec.ts` measure a log with words, rules, runs, rounds and slips from PR 6 ([D10](#d10-the-pace-of-a-word-and-the-synthetic-log)).
 
 ### 3.8 How it reaches production
 
@@ -723,47 +797,72 @@ After a task with a `wrong` verdict the task waits for `Enter` (D21) and shows (
 
 Every pull request goes to `main`. Reasons:
 
-- PRs 1–5 change no screen. PR 2 makes the session log the rejected keys and the reveal; PR 4 makes a slip "hard". Production keeps working.
-- The screens turn their features on one at a time ([D21](#d21-the-session)); between two pull requests a session shows the kinds built so far.
-- The one reset, schema 8, is PR 2; M4 comes first.
+- PRs 1–6, 8–10, 12, 13 and 16 change no screen. PR 2 makes the session log the rejected keys and the reveal; PR 6 makes a slip "hard"; PR 3 moves styles without changing them. Production keeps working.
+- The components come before the session uses them (PRs 7–11), and the screens turn their features on one at a time ([D21](#d21-the-session)); between two pull requests a session shows the kinds built so far. PR 7 shows the current kinds in the new frame before PR 15 changes how a session runs.
+- The one reset, schema 8, is PR 2, a draft until M4 is ticked.
 - Before P14 only the maintainer uses production (ADR 061).
 
-### 3.9 Documents and decision records
+### 3.9 The design reference in the code
 
-- **ADRs,** each with the next free number when its pull request is opened (today the last is 118; the expected numbers follow):
+#### D31. The design reference in the code
+
+The export is a React reference; the code is Preact with a controller on the hot path. This is how an executor carries one into the other without choosing anything.
+
+- **What the reference is.** `docs/design/source/components/bundle.js` (React 18, `h`), `bundle.css` and `index.d.ts`. Its `KanaTask` is static markup plus `createTaskController`, the split of `shared/ui/kana-task.tsx` and `task-controller.ts`: props render once per task, and the controller writes classes, text and transforms on a keystroke, with the same methods.
+- **The rules of the port:**
+  1. **Styles.** The rules of `bundle.css` for the classes a pull request builds are copied as they are into the session's stylesheet or the component's own, token variables included; no value is retyped from a picture.
+  2. **Markup.** Each element, class, `role`, `aria-*` and `lang` of the reference's component stays; `h(…)` becomes JSX, `React.ReactNode` becomes `ComponentChildren`.
+  3. **Names.** A prop, type or constant that `index.d.ts` declares keeps its name and shape in the code, with `readonly`. A name the reference lacks comes from section 3. Strings come from the dictionary parts, never from the reference's literals.
+  4. **The hot path.** A prop of the reference that changes while a task is typed is written by the controller in the code (the table below), never by a render.
+  5. **Parity.** Before a screen's pull request is opened, its executor renders each state its card lists twice: the reference (a local page with `tokens.json` as CSS variables, `bundle.css`, React 18 and `bundle.js`, as step 5 of the [design workflow](docs/design/workflow.md) builds it) and the code (`pnpm run dev`, the state reached through a seeded log or a test fixture), at 1120 px and at 360 px (360 × 280 above the keyboard for a state of a session). It looks at each pair and lists in the description every state checked and every difference left, with its reason. The images stay in the executor's scratchpad.
+- **Where the code differs from the reference:**
+
+  | Reference                           | Code                                                                                                                                             | Why                         |
+  | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
+  | `KanaWord` `cur`, `buffer`          | `setToken(index)` and `setBuffer(text)` of the controller ([D22](#d22-typed-answers-by-token))                                                   | a keystroke renders nothing |
+  | `KanaParts` `typing`, `buffer`      | the caret in the markup, the buffer by `setBuffer`                                                                                               | the same                    |
+  | `TaskController`                    | the code's `TaskController`: the same methods, and `setToken`                                                                                    | the stream                  |
+  | `KanaTask` `labels`, `optionsLabel` | the code's `TaskLabels`: the reference's keys, `esc`, and `options` for `optionsLabel`                                                           | the code's names since P6   |
+  | `StrokeGlyph`, `PEN`                | the same names and shapes ([D2](#d2-stroke-data-and-the-origin-kanji-from-kanjivg), [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen)) | —                           |
+
+  An executor who finds another difference adds its row in the pull request, as a deviation ([section 8](#8-instructions-for-executor-agents), item 3).
+
+### 3.10 Documents and decision records
+
+- **ADRs.** Each takes the next free number when its pull request is opened (the last is 119). PRs 2, 3 and 4 open in one wave in any order, so the numbers are not fixed here; a document names another pull request's ADR by number once that ADR exists.
   - **119** in PR D: the P9 design export (the session screen, every task type, the round, the stroke order, the report dialog), and what it changes in the code or the spec;
-  - **120** in PR 1: words written in kana in the pipeline (the port, the learnable filter, the exclusion list as part of the pipeline, the order by reading; the JLPT lists no longer select words);
-  - **121** in PR 2: the log and sync format 4 (`misses`, `w`, `mismatch`, `script`, the rule keys, `hint` as a reveal, the shortest encoding, format-3 pages still read, schema 8);
-  - **122** in PR 4: the fold of P9 (verdicts and what they drive, a slip as a correct recall with a hint, contrast's confusion with the option chosen, one task per moment, the recent words, the rules' state, the `word` pace);
-  - **123** in PR 5: the session plan in the model (the features, words of the selected track only as in Q1, the order of a session, the precedence of the mix, the contrast set without shared spellings, find the error on words of at most 9 kana, the run's kana as in Q4, the forecast and the outline on the kana planner). It amends ADR 118, point 7, for the run;
-  - **124** in PR 6: the session's strings and styles out of the first load (the `session` part, the lazy stylesheet), and the feedback of D23 with the pair differences;
-  - **125** in PR 9: the stroke data and the origin kanji from KanjiVG (the choice ADR 099 left to P9) and the origins table in the engine.
-- PRs 3, 7, 8, 10, 11, 12 and 13 need no ADR: the engine's change is ADR 117's, and the screens follow the export and this plan. One that decides something new takes the next number.
-- **A-items** in [decisions.md](docs/spec/decisions.md): PR 4 adds A53 (a word is one recall per kana; a slip is "hard"; a rule error grades no kana; ADRs 117, 118, 122); PR 5 adds A54 (the session: a word after every 5 kana tasks of the selected track, the closing word, the round, the mix; ADRs 118, 123). A47 gets "Amended by A53, A54".
-- `docs/architecture/` changes with the code: `model.md` (PRs 4, 5), `sync.md` and `entities.md` (PR 2), `entities.md` (PR 7: `entities/prompt`), `pages.md` (PRs 6, 7, 8, 10, 11, 12), `quality-gates.md` (PR 7: content chunks and the latency gate).
-- `README.md`: how a session looks (PRs 6, 7), the shipped content and its credits (PRs 7, 10).
-- `docs/README.md` gets a row for this plan in this pull request; PR 13 removes it.
+  - in **PR 2**: the log and sync format 4 (`misses`, `w`, `mismatch`, `script`, the rule keys, `hint` as a reveal, the shortest encoding, format-3 pages still read, schema 8 and why it stays a reset);
+  - in **PR 3**: the session's lazy parts (the `session` part, the lazy stylesheet, the chunks `session-plan` and `session-stream`, session code out of the first load) and the initial JS line of P9 at 31.5 KB (Q9);
+  - in **PR 4**: the stroke data and the origin kanji from KanjiVG (the choice ADR 099 left to P9), the origins table in the engine and its visual audit;
+  - in **PR 5**: words written in kana in the pipeline (the port, the learnable filter, the exclusion list as part of the pipeline, the order by reading; the JLPT lists no longer select words);
+  - in **PR 6**: the fold of P9 (verdicts and what they drive, a slip as a correct recall with a hint, contrast's confusion with the option chosen, one task per moment, the recent words, the rules' state, the `word` pace, the synthetic log with words);
+  - in **PR 12**: the session plan in the model (the features, words of the selected track only as in Q1, the order of a session, the precedence of the mix, the contrast set without shared spellings, find the error on words of at most 9 kana, the run's kana as in Q4, the promise that names each kana the round takes as in Q5, the forecast on the kana planner and the outline that names the words as in Q6). It amends ADR 118, point 7, for the run.
+- PRs 1, 7–11 and 13–21 need no ADR: the engine's change is ADR 117's, and the screens follow the export and this plan. One that decides something new takes the next number.
+- **A-items** in [decisions.md](docs/spec/decisions.md): PR 6 adds A53 (a word is one recall per kana; a slip is "hard"; a rule error grades no kana; ADRs 117, 118 and the ADR of PR 6); PR 12 adds A54 (the session: a word after every 5 kana tasks of the selected track, the closing word, the round, the mix; ADR 118 and the ADR of PR 12). A47 gets "Amended by A53, A54".
+- `docs/architecture/` changes with the code: `model.md` (PRs 6, 12, 14), `sync.md` and `entities.md` (PR 2), `entities.md` (PR 13: `entities/prompt`), `pages.md` (PRs 3, 7, 8, 9, 11, 15, 17–20), `quality-gates.md` (PR 13: content chunks and the session's chunks; PR 17: the latency gate with word keystrokes).
+- `README.md`: how a session looks (PRs 7, 15, 17), the shipped content and its credits (PRs 11, 17).
+- `docs/README.md` has a row for this plan (#250); PR 21 removes it.
 - `AGENTS.md` does not change.
 
-### 3.10 Spec changes
+### 3.11 Spec changes
 
-| #   | Change                                                                                                                                                   | Spec file                                   | In PR    |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | -------- |
-| S1  | P9 specified in full: its acceptance                                                                                                                     | `phases.md`                                 | the plan |
-| S2  | "Words": the rule of D1 in place of steps 2–3 for words, the learnable filter, the exclusion list, the order by reading; the JLPT lists for phrases only | `content.md`                                | 1        |
-| S3  | Events of format 4 (D3, D4); schema 8 in "Schema changes"; the data model's events                                                                       | `storage-sync.md`, `metrics.md`             | 2        |
-| S4  | Sync format 4; `400` for another `v`                                                                                                                     | `backend.md`                                | 2        |
-| S5  | `readingTokens` (PR 1); rule errors and their golden rows (PR 3)                                                                                         | `engine.md`                                 | 1, 3     |
-| S6  | Memory and grades: a slip, a word as recalls per kana, the rules, the pace `word`; accuracy by verdict; A53                                              | `learning.md`, `metrics.md`, `decisions.md` | 4        |
-| S7  | The learning session: the plan (cadence, start, recent words, closing word, round, the mix, the rules, the run) and its constants; A54                   | `learning.md`, `decisions.md`               | 5        |
-| S8  | The session screen: the frame, feedback that teaches, the round, the ticks, the summary's errors by verdict; the `session` part and the lazy styles      | `learning.md`, `frontend.md`                | 6        |
-| S9  | Word tasks (the meaning after the answer, the closing word, the rule introductions); the content shipped and its budget row; JMdict on `/about`          | `learning.md`, `content.md`, `quality.md`   | 7        |
-| S10 | The report action and dialog on word tasks                                                                                                               | `content.md`, `frontend.md`                 | 8        |
-| S11 | KanjiVG: the source, the chunks, the credit                                                                                                              | `content.md`                                | 9        |
-| S12 | The stroke order in the kana details; KanjiVG on `/about`                                                                                                | `metrics.md`, `content.md`                  | 10       |
-| S13 | Contrast, transfer, build, hiragana or katakana? and find the error on the screen                                                                        | `learning.md`                               | 11       |
-| S14 | The fluency run on the screen; its keys on the hot path                                                                                                  | `learning.md`, `frontend.md`                | 12       |
-| S15 | The "Closed" line of P9; the "End of P9" budget column                                                                                                   | `phases.md`, `quality.md`                   | 13       |
+| #   | Change                                                                                                                                                                                   | Spec file                                   | In PR    |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | -------- |
+| S1  | P9 specified in full: its acceptance; the maintainer's answers of the review (Q5, Q6)                                                                                                    | `phases.md`                                 | the plan |
+| S2  | "Words": the rule of D1 in place of steps 2–3 for words, the learnable filter, the exclusion list, the order by reading; the JLPT lists for phrases only                                 | `content.md`                                | 5        |
+| S3  | Events of format 4 (D3, D4); schema 8 in "Schema changes"; the data model's events                                                                                                       | `storage-sync.md`, `metrics.md`             | 2        |
+| S4  | Sync format 4; `400` for another `v`                                                                                                                                                     | `backend.md`                                | 2        |
+| S5  | `readingTokens`; rule errors and their golden rows                                                                                                                                       | `engine.md`                                 | 1        |
+| S6  | Memory and grades: a slip, a word as recalls per kana, the rules, the pace `word`; accuracy by verdict; A53                                                                              | `learning.md`, `metrics.md`, `decisions.md` | 6        |
+| S7  | The learning session: the plan (cadence, start, recent words, closing word, round, the mix, the rules, the run) and its constants; A54 (PR 12); the outline's words (PR 14)              | `learning.md`, `decisions.md`               | 12, 14   |
+| S8  | The `session` part, the lazy styles and the session's chunks (PR 3); the session screen: the frame, feedback that teaches, the round, the ticks, the summary's errors by verdict (PR 15) | `learning.md`, `frontend.md`                | 3, 15    |
+| S9  | The content shipped lazily and its budget row (PR 13); word tasks: the meaning after the answer, the closing word, the rule introductions, JMdict on `/about` (PR 17)                    | `learning.md`, `content.md`, `quality.md`   | 13, 17   |
+| S10 | The report action and dialog on word tasks                                                                                                                                               | `content.md`, `frontend.md`                 | 17       |
+| S11 | KanjiVG: the source, the chunks, the credit                                                                                                                                              | `content.md`                                | 4        |
+| S12 | The stroke order in the kana details; KanjiVG on `/about`                                                                                                                                | `metrics.md`, `content.md`                  | 11       |
+| S13 | Contrast, hiragana or katakana? and find the error (PR 18); build and transfer (PR 19) on the screen                                                                                     | `learning.md`                               | 18, 19   |
+| S14 | The fluency run on the screen; its keys on the hot path                                                                                                                                  | `learning.md`, `frontend.md`                | 20       |
+| S15 | The "Closed" line of P9; the "End of P9" budget column                                                                                                                                   | `phases.md`, `quality.md`                   | 21       |
 
 ## 4. Design brief
 
@@ -862,7 +961,7 @@ The session runs in four rounds ([design workflow](docs/design/workflow.md)):
 
 **Question.** The learner's answer next to the right one only, or also a line on how the two kana differ, as decision 152 sketched (`ぬ, not め: ぬ ends with a loop`)?
 
-**Answer (2026-11-27):** both. The answer and the right kana side by side, and a line for each of the 47 pairs of the similar table in en and ru, drafted in PR 6 and read by the maintainer before its merge ([D23](#d23-feedback-that-teaches), M6).
+**Answer (2026-11-27):** both. The answer and the right kana side by side, and a line for each of the 47 pairs of the similar table in en and ru, drafted in PR 10 (PR 6 before the review of 2026-11-28) and read by the maintainer before its merge ([D23](#d23-feedback-that-teaches), M6).
 
 ### Q3. The origin kanji in a transfer
 
@@ -876,25 +975,62 @@ The session runs in four rounds ([design workflow](docs/design/workflow.md)):
 
 **Answer (2026-11-27):** the slowest of the accurate kana: a run when at least 8 learned kana have an accuracy of at least 0.8, made of the 12 slowest of them by median time ([D16](#d16-the-fluency-run)).
 
+### Q5. A word with several wrong kana
+
+**Question** (the review of 2026-11-28). After an error in a word the screen compares its first wrong kana, then shows the word with that kana marked; the round takes every wrong kana of the word. How does the learner learn why the second one comes back?
+
+**Answer (2026-11-28):** the first step stays as decision 164 draws it; the second marks every kana of the word with a `wrong` verdict in `miss`, and the promise names each kana the round takes: `ぬ, め come back at the end of the session` / `ぬ, め вернутся в конце сессии`. The same holds for a run ([D23](#d23-feedback-that-teaches), [D25](#d25-the-fluency-run-on-the-screen)).
+
+### Q6. The outline with words
+
+**Question.** The home's outline (`about 30 tasks: 6 reviews, 2 new kana`) plays the kana planner alone, while a session with words holds 25 kana tasks and 5 words. Name the words, keep honest kana counts without naming them, or leave the outline to P12?
+
+**Answer (2026-11-28):** name them. The outline plays the word slots once `learner.words` holds a word of the current track, found by its script, and the new string goes into the lazy `home` part so the initial JS gains none ([D18](#d18-the-forecast-and-the-outline)). The forecast stays on the kana planner: the review measured its error with words to be what it is without them.
+
+### Q7. The schema reset
+
+**Question.** The reset to schema 8 in PR 2 deletes the events a device has not sent. Keeping schema 7 is unsafe (a tab of older code writes over a page it cannot decode). Guard the reset with code that sends the old outbox first, or with the merge procedure?
+
+**Answer (2026-11-28):** with the procedure, no code. PR 2 is a draft until the maintainer has ticked `synced` on every device in its description (M4); only the maintainer marks it ready and merges it ([PR 2](#pr-2--log-format-4)).
+
+### Q8. How many pull requests
+
+**Question.** Cut the phase into about 21 pull requests of at most about 900 lines, the components apart from the session, or into about 16 of up to 1,200 lines, each component with its integration?
+
+**Answer (2026-11-28):** about 21 of at most about 900 lines ([section 7](#7-pull-requests)).
+
+### Q9. The initial JS line
+
+**Question.** The initial JS is 30.72 KB against the plan's line of 31.0 KB, and P9 is expected to add about 0.3 KB to it (the codec of format 4, `recordTokens`, the prefetch of words, the outline's words, the loading of words and origins). Raise the line, or keep it and stop if the moves of session code do not suffice?
+
+**Answer (2026-11-28):** the line is 31.5 KB, and session code stays out of the first load by a rule decided in advance ([D29](#d29-budgets)).
+
 ## 6. Maintainer's manual steps
 
+A step is written "done" with its date under the card it names in [section 7](#7-pull-requests). Each step blocks only the pull request it names (the "Depends on" column of section 7), and none blocks a pull request of the critical path for longer than the step itself takes.
+
 ### M1. The design session — before PR D
+
+Done on 2026-11-28 (#251).
 
 An agent runs the session by the [design workflow](docs/design/workflow.md) in a workbench artifact `Nekotype · P9 design`, by [section 4](#4-design-brief), in the four rounds of 4.3. Each round starts with the agent's questions (at most four) or, when the maintainer asks for it, with the variants the agent recommends; the maintainer's remarks come in the chat. After the last round the agent moves the approved variants into the design-system artifact as decisions from 159.
 
 Check after approval: `decisions.md` has the new decisions after 158; every kind of `SessionTask` has a preview in each of its states; no P9 state is a dashed place any more. The workbench is deleted after PR D is merged, with the maintainer's confirmation.
 
-### M2. The word sample — before PR 1 is merged
+### M2. The word sample — before PR 5 is merged
 
-The maintainer reads `packages/content/audit-words.md` of PR 1 and names each word to leave out, with its reason. The executor adds them to `word-exclusions.json`, builds again and updates the sample, until the maintainer approves. Write "done" with the date under PR 1 in [section 7](#7-pull-requests).
+The maintainer reads `packages/content/audit-words.md` of PR 5 and names each word to leave out, with its reason. The executor adds them to `word-exclusions.json`, builds again and updates the sample, until the maintainer approves. PR 5 is on no critical path: the pull requests that wait for it (16 and 17) come three waves later.
 
-### M3. KanjiVG mirrored — before PR 9
+### M3. KanjiVG mirrored — before PR 4
 
-The executor of PR 9 downloads the archive of [D2](#d2-stroke-data-and-the-origin-kanji-from-kanjivg), checks that it holds the kana, and gives the maintainer its sha256 and the release notes (the source, the licence CC BY-SA 3.0, the attribution). The maintainer creates the release `content-sources-YYYY-MM-DD` with the archive as its asset ([ADR 068](docs/adr/068-content-sources-mirrored-as-release-assets.md)), or tells the executor in the chat to create it with `gh release create`. Write "done" under PR 9.
+The executor of PR 4 downloads the archive of [D2](#d2-stroke-data-and-the-origin-kanji-from-kanjivg), checks that it holds the kana, and gives the maintainer its sha256 and the release notes (the source, the licence CC BY-SA 3.0, the attribution). The maintainer creates the release `content-sources-YYYY-MM-DD` with the archive as its asset ([ADR 068](docs/adr/068-content-sources-mirrored-as-release-assets.md)), or tells the executor in the chat to create it with `gh release create`.
 
 ### M4. Sync before PR 2 is merged
 
-PR 2 raises `SCHEMA_VERSION` to 8, and the reset deletes what a device has not sent. On every device where the maintainer is signed in: open `/settings` online and wait for `synced`. Then merge PR 2.
+PR 2 raises `SCHEMA_VERSION` to 8, and the reset deletes what a device has not sent. PR 2 is a draft, and its description starts with this step as a checklist, one line per device on which the maintainer is signed in (Q7):
+
+1. On each device: open `/settings` online, wait for `synced`, tick its line.
+2. Once every line is ticked: mark the pull request ready and merge it. The executor never marks it ready.
 
 ### M5. Production check of PR 2
 
@@ -903,104 +1039,142 @@ After PR 2 is deployed:
 1. On `https://nekotype.pages.dev` the application starts as a guest with default settings (the reset).
 2. Sign in: the log of format 3 comes back by the pull; the home and `/progress` show the account's progress.
 3. A session ends with `synced` in `/settings`.
-4. Write "done" with the date under PR 2.
 
-### M6. The pair differences — before PR 6 is merged
+### M6. The pair differences — before PR 10 is merged
 
-The maintainer reads the 47 lines of [D23](#d23-feedback-that-teaches) in English and Russian, which the PR lists in a table, and approves or corrects them. Write "done" under PR 6.
+The maintainer reads the 47 lines of [D23](#d23-feedback-that-teaches) in English and Russian, which PR 10 lists in a table, and approves or corrects them. Nothing waits for PR 10: until it is merged the feedback simply has no difference line.
 
-### M7. The origins table — before PR 9 is merged
+### M7. The origins table — before PR 4 is merged
 
-The maintainer reads the table of [D2](#d2-stroke-data-and-the-origin-kanji-from-kanjivg) (each hiragana, its katakana, their kanji with the source, and the part the katakana kept, as a name or as stroke indexes), which the PR lists, and approves or corrects it. Write "done" under PR 9.
+The maintainer looks at `packages/content/audit-origins.svg` in PR 4 ([D2](#d2-stroke-data-and-the-origin-kanji-from-kanjivg), "The visual audit"): in each cell the strokes drawn dark are the part the katakana kept, beside the katakana itself, with the kanji's source. The maintainer names each cell to correct, starting with those marked `≠` and those the executor doubts; the executor corrects the table and builds the image again, until the maintainer approves.
 
-### M8. Production check of the session — after PR 12, before PR 13
+### M8. Production checks of the screens — after each screen is deployed
 
-On a desktop and a phone:
-
-- once 25 words are readable, a word after every 5 tasks, its meaning after the answer, and a closing word;
-- an error with its feedback, and the round at the end;
-- a rule introduction; a contrast, a transfer with its origin, a build, a find-the-error, a hiragana-or-katakana and a fluency run, as their conditions arise on the maintainer's progress;
-- a report sent from a word; the stroke order in a kana's details; the credits on `/about`.
-
-Write "done" with the date under PR 13.
+After each of PRs 7, 11, 15, 17, 18, 19 and 20 is deployed, the maintainer goes through the "On production" list of its card on a desktop and on a phone, a few minutes each. A check waits when its condition has not arisen on the maintainer's progress (a confused pair for a contrast, 8 accurate learned kana for a run), and is done when it arises. No check blocks the next pull request: a problem found goes to a fix pull request. Before PR 21: one whole session on the phone with its keyboard open.
 
 ## 7. Pull requests
 
-**The screens follow the export.** Cards 6, 7, 8, 10, 11 and 12 were rewritten by PR D against the design export (decisions 159–177, ADR 119): each names the export's components, its layout and its strings in en and ru. The reference is `docs/design/source/` (`components/KanaTask`, `KanaWord`, `StrokeOrder`, `RadioGroup`, `OptionCard`, `README.md` "Learning session"); its `bundle.js` and `bundle.css` are a React reference, rewritten in Preact in `shared/ui`. Cards 1–5, 9 and 13 do not depend on the export, but they start after PR D too (ADR 116, point 7); cards 5 and 9 gained the data of D12 and D2. The maintainer approves the rewritten cards with PR D.
+**How the phase is cut** (the review of 2026-11-28, [Q8](#q8-how-many-pull-requests)). Twenty-one pull requests of at most about 900 changed lines with tests: a size one executor session holds without losing the hot path or an edge state. Three rules make the cut:
 
-Common to all: the branch is cut from fresh `main`; the acceptance items are those of [phases.md](docs/spec/phases.md), numbered in the [table at the end](#acceptance-items-and-pull-requests); sizes are changed lines with tests, a guide to what one executor session holds.
+- **Components apart from the session.** The task frame, the word and parts stages, the report dialog, the strokes and the 47 pair lines are pull requests of their own (7–11), built and tested through their props against the export before a session uses them. An integration pull request then wires a finished component, and its review reads the session's change alone.
+- **The session by mechanic** ([D21](#d21-the-session)). PR 15 splits the session's code into its core and the three ways a task is answered (typed, a stream, a choice), so PRs 17, 18 and 19 change mostly files of their own and may run side by side.
+- **Gates that block only what they guard.** M2 blocks PR 5 and M7 blocks PR 4, neither on the critical path; M6 blocks only PR 10, which nothing waits for; M8 is a short check after each screen is deployed, not a gate ([section 6](#6-maintainers-manual-steps)).
 
-| PR  | Depends on                 | Can run in parallel with |
-| --- | -------------------------- | ------------------------ |
-| D   | M1                         | —                        |
-| 1   | D; M2 before the merge     | 2, 3, 9                  |
-| 2   | D; M4 before the merge     | 1, 3, 9                  |
-| 3   | D                          | 1, 2, 4, 9               |
-| 4   | 2                          | 1, 3, 9                  |
-| 5   | 1, 4                       | 3, 9, 10                 |
-| 6   | 5; M6 before the merge     | 3, 9, 10                 |
-| 7   | 3, 6                       | 9, 10                    |
-| 8   | 7                          | 9, 10                    |
-| 9   | D, M3; M7 before the merge | 1–8                      |
-| 10  | 9                          | 5–8                      |
-| 11  | 8, 10                      | —                        |
-| 12  | 11                         | —                        |
-| 13  | all, M8                    | —                        |
+The critical path is PRs 2 → 6 → 12 → 15 → 17 → 20 → 21: seven pull requests, against ten before the review.
 
-PRs 6, 7, 8, 11 and 12 all change the session (`pages/learn/model/session.ts`, `KanaTask`), so they go one after another. Sign-in is hidden on previews: what needs a session is checked locally (`pnpm run dev` with `pnpm run dev:api`) and, after the merge, by the maintainer on production.
+**The screens follow the export.** The cards of PRs 7–11 and 15–20 keep what PR D wrote against the design export (decisions 159–177, ADR 119): the export's components, layout and strings in en and ru. The reference is `docs/design/source/` (`components/KanaTask`, `KanaWord`, `StrokeOrder`, `RadioGroup`, `OptionCard`, `README.md` "Learning session"); its `bundle.js` and `bundle.css` are rewritten in Preact by the rules of [D31](#d31-the-design-reference-in-the-code), which also lists each name in which the code differs from the reference. Cards 1–6, 12–14 and 16 do not depend on the export.
+
+**Common to all.** The branch is cut from fresh `main`; a pull request starts once every pull request it depends on is merged and every manual step it waits for is done; the acceptance items are those of [phases.md](docs/spec/phases.md), numbered in the [table at the end](#acceptance-items-and-pull-requests); sizes are changed lines with tests. Two pull requests of one wave may change the same file (the `session` part, `SESSION_FEATURES`, `docs/architecture/`, the Status table of this plan): the second to merge rebases on `main` and keeps both sides. Sign-in is hidden on previews: what needs a signed-in session is checked locally (`pnpm run dev` with `pnpm run dev:api`) and, after the merge, by the maintainer on production. A screen card's "On production" list is its part of M8.
+
+| PR  | Title                                                  | Depends on                   | Wave |
+| --- | ------------------------------------------------------ | ---------------------------- | ---- |
+| 1   | Reading tokens and rule errors in the engine           | —                            | 1    |
+| 2   | Log format 4                                           | — ; M4 before the merge      | 1    |
+| 3   | The session's strings and styles out of the first load | —                            | 1    |
+| 4   | KanjiVG data                                           | M3; M7 before the merge      | 1    |
+| 5   | Words written in kana                                  | 1; M2 before the merge       | 2    |
+| 6   | The grades of P9                                       | 2                            | 2    |
+| 7   | The task frame                                         | 3                            | 2    |
+| 8   | The word and parts stages                              | 7                            | 3    |
+| 9   | The report dialog                                      | 3                            | 2    |
+| 10  | The pair differences                                   | 3; M6 before the merge       | 2    |
+| 11  | Stroke order in the kana details                       | 4                            | 2    |
+| 12  | The session plan                                       | 1, 6                         | 3    |
+| 13  | Words in the client                                    | 1, 6                         | 3    |
+| 14  | The mix, the run and the outline                       | 12                           | 4    |
+| 15  | The session on the plan                                | 7, 12, 13                    | 4    |
+| 16  | The simulator on the production plan                   | 5, 14                        | 5    |
+| 17  | Word tasks                                             | 5, 8, 9, 15                  | 5    |
+| 18  | Choice tasks                                           | 14, 15                       | 5    |
+| 19  | Build and transfer                                     | 4, 8, 11, 14, 15             | 5    |
+| 20  | The fluency run                                        | 14, 17                       | 6    |
+| 21  | Close the phase                                        | every other pull request; M8 | 7    |
+
+A wave is the earliest a pull request can start if every pull request takes one step; the pull requests of one wave may run in parallel.
 
 ### PR D — Design export
 
+Done: #251, merged on 2026-11-28.
+
 - **Branch:** `docs/p9-design`. **Depends on:** M1 (approved by the maintainer).
 - **Goal.** The approved design exported from the artifact into `docs/design/source/` (never edited there by hand), and this plan brought in line with it.
-- **Docs:** `docs/design/source/` (`README.md` "Learning session" and every section the session changes, `decisions.md` from 159, `tokens.json`, the component guidelines, `bundle.js`, `bundle.css`, `index.d.ts`, new or removed component folders); `docs/design/README.md` (the decisions it holds); ADR 119; the token CSS and `tokens.test.ts` only if tokens change; in this plan: the decision numbers in the last column of 4.2, the cards of PRs 6, 7, 8, 10, 11 and 12 rewritten against the export (layout, components and strings in en and ru), and section 3 amended where the export needs data it did not give, with the maintainer's consent.
+- **Docs:** `docs/design/source/` (`README.md` "Learning session" and every section the session changes, `decisions.md` from 159, `tokens.json`, the component guidelines, `bundle.js`, `bundle.css`, `index.d.ts`, new or removed component folders); `docs/design/README.md` (the decisions it holds); ADR 119; the token CSS and `tokens.test.ts` only if tokens change; in this plan: the decision numbers in the last column of 4.2, the cards of the screens rewritten against the export (layout, components and strings in en and ru), and section 3 amended where the export needs data it did not give, with the maintainer's consent.
 - **Preview URL:** nothing changes.
 - **Done when:** `pnpm run docs:check` passes; every row of 4.2 names a decision; the rewritten cards name the export's components and strings; the maintainer approved them; the workbench is deleted after the merge.
 - **Size:** documents only.
 
-### PR 1 — Words written in kana
+### PR 1 — Reading tokens and rule errors in the engine
 
-- **Branch:** `p9-01-words-content`. **Depends on:** PR D; M2 before the merge.
-- **Goal.** The words of [D1](#d1-words-written-in-kana) in the committed chunks, and `readingTokens` of [D5](#d5-reading-tokens-and-rule-errors), which the pipeline needs first.
-- **Creates:** `packages/engine/src/data/reading.ts` and its test; `packages/content/word-exclusions.json`; `packages/content/audit-words.md` (generated).
-- **Changes:** `packages/engine/src/index.ts` (`readingTokens`, `ReadingToken`); `packages/content/src/jmdict/` (the `misc` and `pos` of a sense), `src/words.ts` (`selectKanaWords`; the JLPT path no longer selects words), `src/build.ts` (the selection, the learnable filter, the exclusion list, the sample, the report's counts), `src/types.ts`, the tests and fixtures; `apps/web/src/entities/prompt/content/` (the word chunks, `manifest.json`); `glyphs.txt` and the subset if they change; `packages/content/README.md`.
-- **Tests:** `readingTokens` (a yōon, an extended katakana, a merged and a standalone っ, ー, a small kana alone, ゐ, ヶ, an empty string); each step of the rule on fixture entries (kanji with and without `uk` on the first sense, each priority tag by script, each unfit tag anywhere, each first-sense tag, a name, grammar only and grammar mixed with a noun, no English gloss, not learnable, on the exclusion list, homonyms merged, the order by reading); the build is reproducible (two builds, the same bytes).
-- **Acceptance:** 2 (the content).
-- **Docs:** ADR 120; S2; S5 (`readingTokens`).
-- **Preview URL:** nothing changes: no chunk is imported yet.
-- **Done when:** `verify:quick` passes; the description shows the counts of the port before the exclusion list (1,077 and 828), the build report and the chunk sizes in gzip (each ≤ 40 KB); M2 is done.
-- **Size:** about 700 lines, plus the generated files.
+- **Branch:** `p9-01-engine`. **Depends on:** nothing.
+- **Goal.** [D5](#d5-reading-tokens-and-rule-errors): `readingTokens`, which the pipeline (PR 5) and the model (PR 12) read, and `Token.sokuon` and `Engine.ruleError`.
+- **Creates:** `packages/engine/src/data/reading.ts` and its test.
+- **Changes:** `packages/engine/src/index.ts` (`readingTokens`, `ReadingToken`); `src/matcher/` (`types.ts`, `compile.ts`, `observe.ts` or a module of its own, `engine.ts`); the golden table; `apps/web/src/pages/learn/lib/prompt/engine.ts` and `index.ts` (`ruleError`).
+- **Tests:** `readingTokens` (a yōon, an extended katakana, a merged and a standalone っ, ー, a small kana alone, ゐ, ヶ, an empty string); every golden row of D5 in both strictness modes; a property: on a prompt without っ or ー, `ruleError` is false for every rejected key; coverage ≥ 95%.
+- **Acceptance:** 4 (the rule errors).
+- **Docs:** S5 (`readingTokens`, the API, "Rule errors", the golden rows).
+- **Preview URL:** nothing changes.
+- **Done when:** `pnpm --filter @nekotype/engine test` passes with its thresholds; `verify:quick` passes.
+- **Size:** about 600 lines.
 
 ### PR 2 — Log format 4
 
-- **Branch:** `p9-02-log-format-4`. **Depends on:** PR D; M4 before the merge.
+- **Branch:** `p9-02-log-format-4`. **Depends on:** nothing; M4 before the merge.
 - **Goal.** [D3](#d3-events-of-format-4) and, for the tasks that exist, [D4](#d4-what-each-task-logs): a recall logs its rejected keys and the reveal.
-- **Changes:** `packages/shared` (`types.ts`, `log-codec.ts`, `sync-format.ts`, `runtime.ts`); `apps/api` (`routes/sync.ts` and its tests); `apps/web/src/shared/lib/idb/schema.ts` (8; the comment names format 4); `entities/learn` (`AnswerInput.misses`, the store writes `misses` and `w: null`); `pages/learn/model/session.ts` (a recall counts its rejected keys up to 9 and sets `hint` on Esc and on "show the romaji"); every producer of events (`packages/model/src/testing/`, `syntheticLog`, the simulator's adapters: `misses` 0 and `w` null); the fold ignores an `intro` of a rule until PR 4 (it is not an item).
+- **A draft until M4** ([Q7](#q7-the-schema-reset)). The executor opens it with `gh pr create --draft`; the description starts with M4 as a checklist, one line per device on which the maintainer is signed in, and the executor never marks it ready. The maintainer ticks each device once it shows `synced`, marks the pull request ready and merges it.
+- **Changes:** `packages/shared` (`types.ts`, `log-codec.ts`, `sync-format.ts`, `runtime.ts`); `apps/api` (`routes/sync.ts` and its tests); `apps/web/src/shared/lib/idb/schema.ts` (8; the comment names format 4); `entities/learn` (`AnswerInput.misses`, the store writes `misses` and `w: null`); `pages/learn/model/session.ts` (a recall counts its rejected keys up to 9 and sets `hint` on Esc and on "show the romaji"); every producer of events (`packages/model/src/testing/`, `syntheticLog`, the simulator's adapters: `misses` 0 and `w` null); the fold ignores an `intro` of a rule until PR 6 (it is not an item).
 - **Tests:** the codec round-trips the three forms; a page of format 3 decodes with `misses` 0 and `w` null and encodes back to the same bytes; the bounds (`misses` 10, `w` of 33 characters, a rule key with a task other than `word`, an `intro` of a rule); `POST /api/sync` answers `400` to `v` 3 and serves a row of format 3 to a pull; a database of schema 7 is reset; a recall with two wrong keys logs `misses` 2, with Esc `hint` true.
 - **Acceptance:** 3.
-- **Docs:** ADR 121; S3, S4; `docs/architecture/` (`sync.md`, `entities.md`).
+- **Docs:** the ADR of the log and sync format 4 ([3.10](#310-documents-and-decision-records)); S3, S4; `docs/architecture/` (`sync.md`, `entities.md`).
 - **Preview URL:** the application starts with empty data (schema 8) and behaves as before.
-- **Done when:** `verify:quick` passes; CI is green with the sync e2e (`pnpm run e2e:sync`); after the merge the maintainer does M5.
+- **Done when:** `verify:quick` passes; CI is green with the sync e2e (`pnpm run e2e:sync`); M4 is ticked; after the merge the maintainer does M5.
 - **Size:** about 700 lines.
 
-### PR 3 — Rule errors in the engine
+### PR 3 — The session's strings and styles out of the first load
 
-- **Branch:** `p9-03-engine-rule-errors`. **Depends on:** PR D.
-- **Goal.** `Token.sokuon` and `Engine.ruleError` of [D5](#d5-reading-tokens-and-rule-errors).
-- **Changes:** `packages/engine/src/matcher/` (`types.ts`, `compile.ts`, `observe.ts` or a module of its own, `engine.ts`), `src/index.ts`; the golden table; `apps/web/src/pages/learn/lib/prompt/engine.ts` and `index.ts` (`ruleError`).
-- **Tests:** every golden row of D5 in both strictness modes; a property: on a prompt without っ or ー, `ruleError` is false for every rejected key; coverage ≥ 95%.
-- **Acceptance:** 4 (the rule errors).
-- **Docs:** S5 (the API, "Rule errors", the golden rows).
-- **Preview URL:** nothing changes.
-- **Done when:** `pnpm --filter @nekotype/engine test` passes with its thresholds; `verify:quick` passes.
-- **Size:** about 400 lines.
+- **Branch:** `p9-03-session-lazy`. **Depends on:** nothing.
+- **Goal.** [D28](#d28-strings-and-styles): the dictionary part `session` and the session's stylesheet, so the pull requests after it put their strings and styles where they belong. No visual change.
+- **Creates:** `shared/i18n/parts/session` (en and ru, empty of P9 strings but for what this pull request moves); the session's stylesheet, imported by the session runtime.
+- **Changes:** `shared/i18n` (`DictionaryPart` gains `session`); `pages/learn/session-loader.ts` (`loadSessionRuntime` waits for the part, as `loadHomePanels` waits for `home`); `app/styles/index.css` (the session's task styles out; `nk-caret`, which the home's path draws, stays); the budget test of the initial CSS if it names a figure.
+- **Tests:** the part loads with the runtime and a failure of the part fails the runtime's load as a failure of the runtime does; key parity of the part; the session screen tests unchanged; e2e: a session looks as before (`learn-session.spec.ts`, desktop and `@mobile`).
+- **Acceptance:** 11 (the initial CSS goes down).
+- **Docs:** the ADR of the session's lazy parts ([3.10](#310-documents-and-decision-records)); S8 (the `session` part and the lazy styles); `docs/architecture/pages.md`.
+- **Preview URL:** a session looks and works as before.
+- **Done when:** `verify:quick` passes; CI is green with the e2e; the initial CSS is lower than before by the moved styles.
+- **Size:** about 300 lines.
 
-### PR 4 — The grades of P9
+### PR 4 — KanjiVG data
 
-- **Branch:** `p9-04-grades`. **Depends on:** PR 2.
+- **Branch:** `p9-04-kanjivg`. **Depends on:** M3; M7 before the merge.
+- **Goal.** [D2](#d2-stroke-data-and-the-origin-kanji-from-kanjivg): the stroke chunks, the origins chunk, the origins table and its visual audit.
+- **Creates:** `packages/content/src/kanjivg/` (reading a KanjiVG SVG: the strokes in order, their numbers and the strokes of a named group) and the stroke build; `packages/engine/src/data/origins.ts` and its test; `strokes-hiragana.json`, `strokes-katakana.json`, `origins.json`; `packages/content/audit-origins.svg` (generated).
+- **Changes:** `packages/content/sources.json`, `src/fetch.ts`, `src/build.ts`, the manifest; `packages/engine/src/index.ts` (`kanaOrigins`, `originOf`); `NOTICE.md` ("Third-party data", "Mirrored content sources"); `packages/content/README.md`.
+- **Tests:** the reader on fixture SVGs (order, the numbers, one decimal, the strokes of a named group); every character of every learnable kana has a glyph; the glyphs have the reference's shape (`s`, `n`, `small` only when true; an origin without `n`); every entry of the origins table is a basic hiragana with a katakana pair and a `part` that is a group of its kanji's file or indexes within its strokes; a name that is no group and an index out of range fail the build; `origins.json` holds `kept` (加: strokes 0 and 1, the 力; 久: 0 and 1 as given); `small` on ゃ and ャ, not on や; the audit has one cell per entry and marks a count that differs with `≠`; each chunk ≤ 40 KB gzip.
+- **The look.** Before the pull request is opened, the executor renders `audit-origins.svg` with the repository's Playwright (a script in its scratchpad), looks at every cell, and lists in the description the cells it doubts and why.
+- **Acceptance:** 10 (the data).
+- **Docs:** the ADR of KanjiVG ([3.10](#310-documents-and-decision-records)); S11.
+- **Preview URL:** nothing changes: no chunk is imported yet.
+- **Done when:** `verify:quick` passes; the build is reproducible; M7 is done.
+- **Size:** about 900 lines, plus the generated files.
+
+### PR 5 — Words written in kana
+
+- **Branch:** `p9-05-words-content`. **Depends on:** PR 1; M2 before the merge.
+- **Goal.** The words of [D1](#d1-words-written-in-kana) in the committed chunks.
+- **Creates:** `packages/content/word-exclusions.json`; `packages/content/audit-words.md` (generated).
+- **Changes:** `packages/content/src/jmdict/` (the `misc` and `pos` of a sense), `src/words.ts` (`selectKanaWords`; the JLPT path no longer selects words), `src/build.ts` (the selection, the learnable filter with `readingTokens`, the exclusion list, the sample, the report's counts), `src/types.ts`, the tests and fixtures; `apps/web/src/entities/prompt/content/` (the word chunks, `manifest.json`); `glyphs.txt` and the subset if they change; `packages/content/README.md`.
+- **Tests:** each step of the rule on fixture entries (kanji with and without `uk` on the first sense, each priority tag by script, each unfit tag anywhere, each first-sense tag, a name, grammar only and grammar mixed with a noun, no English gloss, not learnable, on the exclusion list, homonyms merged, the order by reading); the build is reproducible (two builds, the same bytes).
+- **Acceptance:** 2 (the content).
+- **Docs:** the ADR of words written in kana ([3.10](#310-documents-and-decision-records)); S2.
+- **Preview URL:** nothing changes: no chunk is imported yet.
+- **Done when:** `verify:quick` passes; the description shows the counts of the port before the exclusion list (1,077 and 828), the build report, the histogram of word lengths in kana per script (D10 reads it) and the chunk sizes in gzip (each ≤ 40 KB); M2 is done.
+- **Size:** about 600 lines, plus the generated files.
+
+### PR 6 — The grades of P9
+
+- **Branch:** `p9-06-grades`. **Depends on:** PR 2.
 - **Goal.** [D6](#d6-grades)–[D10](#d10-the-pace-of-a-word-and-the-synthetic-log) in `@nekotype/model`, with the learn store returning verdicts.
 - **Creates:** `packages/model/src/verdict.ts` and its test.
-- **Changes:** `grade.ts` (the rows), `fold.ts` (verdicts, the rules, one task per moment, `learner.words`), `pace.ts` (`word`), `stats.ts` (`RecallStat.ok`), `constants.ts` (`WORDS_RECENT`), `index.ts` (`Verdict`, `verdictOf`, `RuleState`), `testing/synthetic-log.ts` (`words`), `fold.properties.test.ts`; `apps/web/src/entities/learn` (`recordAnswer` returns a verdict, `recordTokens`, `stats()`, `introduce` of a rule); `apps/web/e2e/model-cost.spec.ts`, `home-cost.spec.ts` and the probe (the log with words); `packages/sim` (the adapters write the events of D4).
+- **Changes:** `grade.ts` (the rows), `fold.ts` (verdicts, the rules, one task per moment, `learner.words`), `pace.ts` (`word`), `stats.ts` (`RecallStat.ok`), `constants.ts` (`WORDS_RECENT`), `index.ts` (`Verdict`, `verdictOf`, `RuleState`), `testing/synthetic-log.ts` (`words`, the profile of D10), `fold.properties.test.ts`; `apps/web/src/entities/learn` (`recordAnswer` returns a verdict, `recordTokens`, `stats()`, `introduce` of a rule); `apps/web/e2e/model-cost.spec.ts`, `home-cost.spec.ts` and the probe (the log with words); `packages/sim` (the adapters write the events of D4).
 - **Tests:**
   - every row of D6 on synthetic answers, the slip at its edges (`misses` 1 with `ms` = line and line + 1; `misses` 2; `wrong` set; `hint`);
   - a log of format 3 folds to the same state and statistics as before the change (`syntheticLog({ answers: 40_000, seed: 1 })`);
@@ -1008,187 +1182,290 @@ PRs 6, 7, 8, 11 and 12 all change the session (`pages/learn/model/session.ts`, `
   - one task per moment: a word's events add 1 to `tasks`, share `lastTask` and push one interval; `learner.words` keeps 30, one per task;
   - the pace `word` apart from `recall`'s;
   - `verdictOf` equals the fold's verdict on every event of a seeded log with words and slips;
+  - `syntheticLog({ words: true })` holds words of 2–10 kana, rule tokens, runs, rounds and slips in the shares of D10;
   - the property tests converge with words, rules and runs in the log.
 - **Acceptance:** 4 (grades, convergence), 7 (the cost with words).
-- **Docs:** ADR 122; S6; `docs/architecture/model.md`.
+- **Docs:** the ADR of the fold of P9 ([3.10](#310-documents-and-decision-records)); S6; `docs/architecture/model.md`.
 - **The simulator:** `pnpm --filter @nekotype/sim run p7` before and after in the description; the P7 lines hold (rule 4c).
 - **Preview URL:** in a session, one wrong letter that is no kana's spelling, then the right romaji, on a learned kana: on `/progress` the kana stays learned and its accuracy does not drop.
-- **Done when:** `verify:quick` passes; CI is green with the latency gate (`packages/model/` changed); the model chunk ≤ 12 KB.
-- **Size:** about 1,200 lines.
+- **Done when:** `verify:quick` passes; CI is green with the latency gate (`packages/model/` changed); the budgets of [D29](#d29-budgets) with their allowances.
+- **Size:** about 1,200 lines, two thirds of them tests of a pure package.
 
-### PR 5 — The session plan
+### PR 7 — The task frame
 
-- **Branch:** `p9-05-session-plan`. **Depends on:** PRs 1 and 4.
-- **Goal.** [D11](#d11-words-in-the-model)–[D19](#d19-the-simulator-on-the-production-plan) in `@nekotype/model` and `packages/sim`. The application still asks `nextTask`; PR 6 switches it.
-- **Creates:** `packages/model/src/words.ts`, `src/session.ts` and their tests; `packages/sim/src/p9.ts`.
-- **Changes:** `packages/model/src/constants.ts` (D17), `src/index.ts`; `packages/sim/src/policies/production.ts` (`plan: true`), the harness (the new kinds), `package.json` (`p9`).
+- **Branch:** `p9-07-task-frame`. **Depends on:** PR 3.
+- **Goal.** `KanaTask` as decisions 159–162 draw it, with every new prop built and tested by its props, and the session's current kinds (introduction, recall, recognition) shown in the new frame. The session's behaviour does not change: the compare, the feedback, the promise, the held answer and the round's ticks are wired by PR 15.
+- **The design.** `docs/design/source/` (ADR 119): `components/KanaTask/README.md` and `README.md` "Learning session"; the live previews `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard` of the design artifact. The port follows [D31](#d31-the-design-reference-in-the-code).
+- **Layout** (`KanaTask`): the session line and the ticks (the round's after a `space-3` gap, `session.round`); the task on a card (`bg-raised`, `line`, `radius-md`, padding `space-8` `space-6`; no frame below 640px) that slides in (`dur-reveal`, none under reduced motion), its border `miss-dim` once `answered` is `wrong`; in the card a reserved caption line (`caption`), the prompt, the options; under it the feedback lines (`feedback`, `role="status"`), the notice line (hidden while `held`) and the key line (`Kbd enter` + `next` while `held`, a `next` text button under `pointer: coarse`; `footEnd` at its end). An introduction shows the kana's row (`row`: `jp-cell`, the new kana underlined `eye`, the known ones `fur-dim`, the rest `fur-faint`). A recall answered wrong compares in the stage (`compare`: the right kana `fur` with its romaji, the learner's left of it, smaller, `miss`, `you typed` over it). `promise` stands under the card, and in the key line left of `next` below 640px. The kinds `word` (a typed task whose stage the consumer draws, `stage`) and `break` (a screen of its own: `stage` and `progress` in place of `7 of 30`). The phone over its keyboard (decision 161): every state at 360 within 280px.
+- **The current kinds in the frame:** the session passes an introduction's caption with its row (`new kana · the m row`) and its `row`, and a recognition's caption; nothing else of the session changes.
+- **Strings (en / ru):** `new kana · the m row` / `новая кана · ряд m` (`the vowels` / `гласные`); `which kana is it?` / `какая это кана?`; `you typed` / `вы ввели`; `next` / `дальше`; `round · 1 of 3` / `повтор · 1 из 3`.
+- **Changes:** `shared/ui/kana-task.tsx` and `task-controller.ts` (the card, the caption, the row, `answered`, `compare`, `feedback`, `promise`, `held`, `footEnd`, `stage`, `progress`, the round's ticks, the kinds `word` and `break`), the session's stylesheet; `pages/learn/ui/session-screen.tsx` (the caption and the row of the current kinds); the `session` part; `e2e/learn-session.spec.ts`.
+- **Tests:** a DOM test per state through props: the card and its slide-in (none under reduced motion), the reserved caption line in recall, the row, the `wrong` border, the compare, the feedback as a status line, the promise under the card and in the key line below 640px, `held` (the key line reads `next`, no notice line), the round's ticks after their gap, `word` with a stage, `break` with its progress line; `session-screen.test.tsx` still shows 0 renders per keystroke and at most 1 on the answer; e2e at 360 × 280 (`@mobile`): a recall, a recognition and an introduction keep their key line visible.
+- **Parity** ([D31](#d31-the-design-reference-in-the-code)): every state above against the reference's `KanaTask`, at 1120 and at 360.
+- **Acceptance:** 1 (the frame), 7 (the hot path).
+- **Docs:** `docs/architecture/pages.md`; `README.md` (the session's look).
+- **Preview URL:** each task lies on a card that slides in; an introduction names its row and shows it; on a phone the key line stays above the keyboard.
+- **On production** (M8): a session of the current kinds on a desktop and a phone, the card and the row as in the previews.
+- **Done when:** `verify:quick` passes; CI is green with the latency gate; the budgets of D29 with their allowances.
+- **Size:** about 800 lines.
+
+### PR 8 — The word and parts stages
+
+- **Branch:** `p9-08-stages`. **Depends on:** PR 7.
+- **Goal.** `KanaWord` and `KanaParts` as decisions 163, 166, 169, 170 and 173 draw them, and the controller of a stream ([D22](#d22-typed-answers-by-token): `setToken`). No session uses them yet.
+- **The design.** `docs/design/source/components/KanaWord/README.md`; the word, rule, run, build and transfer states of `ScreenLesson` and `ScreenLessonKeyboard`. The port follows D31: what the reference draws from `cur`, `buffer` and `typing` the code writes through the controller.
+- **Layout:** `KanaWord` — `tokens` (a merged っX one token), the size by length (up to 4 kana `jp-solo`, up to 7 `jp-solo-sm`, longer `jp-test-sm`; below 640px up to 5 `jp-solo-sm`), one caret and one buffer under the current token, typed tokens `fur-dim`, the reserved line under the word (the reading once `done`), the meaning under it, `marks` (`wrong` in `miss` with a `miss-dim` underline, `rule` on the first character of its token, `eye` on a rule's mark), `ghost` (the ghost hint with its `marks` in `eye`), `note`, `run` (one wrapping line, `jp-test-sm`; 22px below 640px). `KanaParts` — `items` (`{ kana, tone }`, `{ op }` in `mono-counter` `fur-dim`, `{ node }`), the caret before the first kana and the buffer under it while typing, `ghost` or `reading`.
+- **Creates:** `shared/ui/kana-word.tsx` (`KanaWord`), `shared/ui/kana-parts.tsx` (`KanaParts`) and their tests.
+- **Changes:** `shared/ui/task-controller.ts` (`setToken`), the barrel of `shared/ui`, the session's stylesheet.
+- **Tests:** each state through props (sizes at 4, 5, 7 and 10 kana and below 640px, each mark, the ghost and its marks, the note, the meaning only when `done`, a run wrapping); `setToken` and `setBuffer` move the caret and the buffer and set `is-typed` with no render (a render counter); `KanaParts` with its items, tones, ops and a node.
+- **Parity** (D31): every state above against the reference, at 1120 and at 360.
+- **Acceptance:** 1, 7.
+- **Docs:** `docs/architecture/pages.md` (the stream controller).
+- **Preview URL:** nothing changes.
+- **Done when:** `verify:quick` passes.
+- **Size:** about 500 lines.
+
+### PR 9 — The report dialog
+
+- **Branch:** `p9-09-report-dialog`. **Depends on:** PR 3.
+- **Goal.** [D26](#d26-the-report-dialog) as decision 167 draws it, built apart from the session: PR 17 opens it from a word task.
+- **The design.** `components/Dialog`, `RadioGroup` and `Input` of `docs/design/source/`; the report states of `ScreenLesson`. The port follows D31.
+- **Layout:** the shared `Dialog`: the title; the word (`jp-body`) and its meaning (`ui-body`, `fur-dim`); `RadioGroup` of the three reasons, none chosen (16px circles, `line-strong`; chosen: `fur` border and an `eye` dot; 44px rows under `pointer: coarse`); `Textarea` (`Input`'s field, three lines, 88px, resizable vertically); the Turnstile slot, 65px, full width; the reserved `Notice` in the actions row; `cancel`, `send` (enabled once a reason is chosen and the check passed). The states of decisions 115–116.
+- **Strings (en / ru):** `Report a problem with this word` / `Ошибка в слове`; `What is wrong` / `Что не так`; `wrong reading` / `неверное чтение`; `wrong translation` / `неверный перевод`; `other` / `другое`; `Comment (optional)` / `Комментарий (необязательно)`; `cancel` / `отмена`; `send` / `отправить`; `sending…` / `отправка…`; `Report sent.` / `Сообщение отправлено.`; `close` / `закрыть`; `offline. reporting is available online only.` / `нет сети. отправка только онлайн.`; `verification failed. try again.` / `проверка не пройдена. попробуйте ещё раз.`; `failed to send. check the connection and try again.` / `не удалось отправить. проверьте соединение.`; `verification did not load.` / `проверка не загрузилась.`; `retry` / `ещё раз`.
+- **Creates:** `pages/learn/ui/report/` (restored from 753df9f, the `Select` replaced by the `RadioGroup`), to be loaded by a dynamic import of its own (PR 17); `pages/learn/lib/turnstile.ts`; `shared/ui/radio-group.tsx` and `shared/ui/textarea.tsx`; their tests.
+- **Changes:** `shared/ui` (the barrel); the `session` part.
+- **Tests:** the dialog in each state with a fake Turnstile loader and a fake request (sending, sent, check failed, send failed, check not loaded, offline); no reason chosen when it opens and `send` disabled until one is; the request's body (`itemId`, `contentVersion`, `reason`, `comment`, the token); the Turnstile script requested only when the dialog opens; `onClose` called on cancel, on ✕ and after sent; `RadioGroup` by arrows, its roles and names; `Textarea`'s label.
+- **Parity** (D31): every state against the reference's `Dialog`, `RadioGroup` and `Textarea`, at 1120 and at 360.
+- **Acceptance:** 9 (the dialog).
+- **Docs:** `docs/architecture/pages.md`.
+- **Preview URL:** nothing changes: no screen opens the dialog yet.
+- **Done when:** `verify:quick` passes; nothing outside its tests imports the dialog yet (PR 17 adds its dynamic import, and its chunk with it).
+- **Size:** about 700 lines, much of it restored.
+
+### PR 10 — The pair differences
+
+- **Branch:** `p9-10-pair-lines`. **Depends on:** PR 3; M6 before the merge.
+- **Goal.** The 47 lines of [D23](#d23-feedback-that-teaches) in the `session` part, one per pair of `similarPairs`, in English and Russian. The feedback of PR 15 shows a line once its key exists; until this pull request is merged it shows none.
+- **Strings:** the keys `session.pair.<h|k>.<a>.<b>` (`a` and `b` the romaji of the pair in the table's order: `session.pair.h.nu.me`, `session.pair.k.shi.tsu`); the sample of decision 160 is `ぬ ends in a loop, め does not` / `у ぬ на конце петля, у め её нет`. Each line names a difference of shape that the eye can check, in lower case, with the two kana written as kana, in at most 60 characters: one line on a desktop, two on a phone.
+- **Creates:** the lines in the part; a test.
+- **Tests:** every pair of `similarPairs` has a line in en and in ru; no key names a pair outside the table; each line holds both kana of its pair and is at most 60 characters.
+- **The table for M6.** The description lists the 47 pairs: the two kana, the English line, the Russian line.
+- **Acceptance:** 1 (key parity).
+- **Docs:** none beyond the description.
+- **Preview URL:** nothing changes until PR 15.
+- **Done when:** `verify:quick` passes; M6 is done.
+- **Size:** about 250 lines.
+
+### PR 11 — Stroke order in the kana details
+
+- **Branch:** `p9-11-stroke-order`. **Depends on:** PR 4.
+- **Goal.** The details of [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen) as decision 174 draws them, `Strokes` for the origin kanji of PR 19, and the KanjiVG credit on `/about` (175).
+- **The design.** `docs/design/source/components/StrokeOrder/README.md`; the kana details in `README.md` "Progress"; the live preview `ScreenProgress` (the `details` select) and the card `StrokeOrder` of the design artifact. The port follows D31 (`StrokeGlyph`, `PEN`).
+- **Layout:** at the top of the details, left of the places of the mnemonic (P11) and `listen` (P10): each glyph in a box (112px, 88px below 640px; `line`, `bg`, `radius-sm`), strokes `fur` 3.5 units, numbers Mono 11 units `fur-dim` at KanjiVG's places; a small kana at 70% from the bottom left; under the boxes `replay` (`Button secondary sm`, icon `reset`). Opening the dialog draws the strokes at one pen speed (`PEN`, D27), the current one `eye`; nothing moves under reduced motion. The drawing animates `stroke-dashoffset` (decision 177).
+- **Strings (en / ru):** `replay` / `ещё раз`; `stroke order: ぬ` / `порядок черт: ぬ` (the image's name); on `/about` `Sources` / `Источники` and `Ulrich Apel · stroke order and origin kanji` / `Ulrich Apel · порядок черт и иероглифы-предки` (the JMdict row comes with PR 17).
+- **Creates:** `shared/ui/strokes.tsx` (`Strokes`, `StrokeOrder`, `PEN`) and its test; `entities/prompt/index.ts` when PR 13 has not created it yet ([D20](#d20-words-in-the-app)).
+- **Changes:** `features/kana-details` (the stroke order, its loading); `entities/prompt` (`loadStrokes`); `shared/i18n/parts/details` and `about`; `pages/about` (the sources section); `e2e/progress.spec.ts` (the details show the strokes).
+- **Tests:** a kana, a yōon (two boxes, the small kana scaled) and a kana with a dakuten draw their strokes in order with numbers; each stroke's duration follows its length, with `PEN.min` and `PEN.lift` (an injected scheduler); `replay` draws again; loading and failure keep the place and disable `replay`; reduced motion draws every stroke at once; `Strokes` of an origin: no box, no numbers, `kept` in `eye`, drawn once; the chunk is not loaded until a dialog opens.
+- **Parity** (D31): the details and `/about` against `ScreenProgress` and `StrokeOrder`, at 1120 and at 360.
+- **Acceptance:** 10.
+- **Docs:** S12; `docs/architecture/pages.md`.
+- **Preview URL:** a kana's details on `/progress` draw its stroke order, long strokes taking longer, and `replay` draws it again; `/about` names KanjiVG.
+- **On production** (M8): the details of a kana, a yōon and a small kana on a desktop and a phone.
+- **Done when:** `verify:quick` passes; CI is green with the e2e; the stroke chunks are lazy and ≤ 40 KB gzip.
+- **Size:** about 600 lines.
+
+### PR 12 — The session plan
+
+- **Branch:** `p9-12-session-plan`. **Depends on:** PRs 1 and 6.
+- **Goal.** [D11](#d11-words-in-the-model)–[D13](#d13-the-order-of-a-session) and [D15](#d15-the-two-rules) in `@nekotype/model`: words, the order of a session, the closing word, the round, the rules. `SessionTask` and `PlanFeature` hold every kind of D12, but the planner's task stays the planner's own kind (a plain introduction, a recall, a recognition) and the run's slot gives nothing: PR 14 adds the mix and the run. The application still asks `nextTask`; PR 15 switches it.
+- **Creates:** `packages/model/src/words.ts`, `src/session.ts` and their tests.
+- **Changes:** `packages/model/src/constants.ts` (`WORD_EVERY`, `WORDS_START`, `ROUND_MAX`, `RULE_ERRORS`, `RULE_WORDS`), `src/index.ts`.
 - **Tests:**
   - words: the start at 25 readable words of the selected track, never the other track's; a word after every 5 planner tasks; a slot that waits when no word is readable; no word of `learner.words` or of the session;
   - the closing word at the 30th task and when the planner ends early, only of the session's kana; none when the session's kana make no word;
   - the round: first-error order, at most 5, each once, `record` ignored once it started, null after it, empty when nothing was wrong; `roundKana` null before the round and its kana in order once it starts;
   - `seen`: the kana of every kind of task, each once, in the order first met; the closing word is made of them;
   - the rules: due when not introduced and a word would be readable, or after 2 errors in a row; one a session, っ first; the 2 rule words after it;
+  - each feature off falls back as D12 says; the features of PR 14 give the planner's own kind;
+  - a property over 200 seeded sessions: every planner task's kana is the one `nextTask` gave, and every session ends.
+- **Acceptance:** 5 (words, the closing word, the round, the rules).
+- **Docs:** the ADR of the session plan ([3.10](#310-documents-and-decision-records)), with the Status line of ADR 118; S7 (all of the plan, the mix and the run included); A54; `docs/architecture/model.md`.
+- **Preview URL:** nothing changes.
+- **Done when:** `pnpm --filter @nekotype/model test` passes with its thresholds; `verify:quick` passes.
+- **Size:** about 900 lines.
+
+### PR 13 — Words in the client
+
+- **Branch:** `p9-13-words-client`. **Depends on:** PRs 1 and 6.
+- **Goal.** [D20](#d20-words-in-the-app) without the session's loading (PR 15) and [D22](#d22-typed-answers-by-token)'s `tokenAnswers`: what a session needs to load words and to judge a typed stream, with no screen yet.
+- **Creates:** `entities/prompt/index.ts` (unless PR 11 created it) and `entities/prompt/model/content.ts` (`loadWordItems`, `prefetchWords`, `loadContentVersion`) and their tests; `pages/learn/lib/typed-answer.ts` and its test.
+- **Changes:** `app/prefetch.ts` (the word chunk on idle when the selected track has an introduced kana); `scripts/check-budget.mjs` and its test (content chunks from P9, with the checks of `SYNC_ENTRY`); `docs/spec/quality.md` if a row names "no content".
+- **Tests:**
+  - `tokenAnswers`: a plain word; `te` for って (a rule error, て right); `ta` for って (て wrong as た); a standalone っ; ー; a reveal on a kana and on a merged token (the rule and X); `misses` saturating at 9; the time of each token by A37 from the token before it; a run of 12 kana;
+  - `loadWordItems` reads a chunk into `WordItem`s; a failure rejects, and a second call tries again; `prefetchWords` swallows a failure;
+  - the budget test fails a content chunk that a route imports statically, and a content chunk over 40 KB.
+- **Acceptance:** 2 (shipped lazily).
+- **Docs:** `docs/architecture/` (`entities.md`: `entities/prompt`; `quality-gates.md`: content chunks).
+- **Preview URL:** nothing visible: the word chunk is fetched on idle (the network panel shows it).
+- **Done when:** `verify:quick` passes; the word chunks are lazy and ≤ 40 KB gzip.
+- **Size:** about 700 lines.
+
+### PR 14 — The mix, the run and the outline
+
+- **Branch:** `p9-14-mix-run`. **Depends on:** PR 12.
+- **Goal.** [D14](#d14-the-mix) and [D16](#d16-the-fluency-run) in the session plan, and the outline of [D18](#d18-the-forecast-and-the-outline) that names the words (Q6).
+- **Changes:** `packages/model/src/session.ts` (the mix, the contrast set, find the error, the run's slot and its kana), `src/constants.ts` (`FLUENCY_AT`, `FLUENCY_MIN`, `FLUENCY_MAX`, `CONTRAST_OPTIONS`, `MISMATCH_MAX_KANA`), `src/forecast.ts` (the outline's word slots, `Outline.words`), `src/index.ts`; `apps/web/src/pages/learn/lib/home-copy.ts` (the words' part of the outline) and `shared/i18n/parts/home` (`home.outline.words`).
+- **Strings (en / ru):** `home.outline.words`, plural: `{count} word` / `{count} words`; `{count} слово` / `{count} слова` / `{count} слов`.
+- **Tests:**
   - the mix: each row of D14 with its precedence and its limit; the contrast set without shared spellings; find the error only on words of at most 9 kana;
   - the run: eligibility, the 12 slowest, the shuffle, none under 8 or without statistics;
-  - each feature off falls back as D12 says;
-  - a property over 200 seeded sessions: every kana task's kana is the one `nextTask` gave, no kind passes its limit, and every session ends.
-- **Acceptance:** 5, 6.
-- **Docs:** ADR 123 with the Status line of ADR 118; S7; `docs/architecture/model.md`.
-- **The simulator:** the output of `pnpm --filter @nekotype/sim run p9` in the description, with each line of D19; the research tables (`p9-words`, `p9-tasks`, `p9-planner`) still reproduce.
-- **Preview URL:** nothing changes.
-- **Done when:** `pnpm --filter @nekotype/model test` passes with its thresholds; the lines of D19 are met; `verify:quick` passes.
-- **Size:** about 1,500 lines.
+  - the property of PR 12 extended: no kind passes its limit, and every kana task's kana is the one `nextTask` gave;
+  - the outline: as today with no recent word of the track and on the other track; with one, 25 planner tasks and 5 words in 30; the forecast unchanged (the same plays as before on a seeded state);
+  - the home's copy: the words' part with its plural, left out at 0 and while the `home` part has not loaded.
+- **Acceptance:** 5 (the mix, the run).
+- **Docs:** S7 (the outline); `learning.md` "The outline"; `docs/architecture/model.md`.
+- **Preview URL:** nothing changes until a word has been given (PR 17).
+- **Done when:** `pnpm --filter @nekotype/model test` passes with its thresholds; `verify:quick` passes; CI is green with the latency gate (`packages/model/` changed); the budgets of D29 with their allowances.
+- **Size:** about 800 lines.
 
-### PR 6 — The session screen
+### PR 15 — The session on the plan
 
-- **Branch:** `p9-06-session-screen`. **Depends on:** PR 5; M6 before the merge.
-- **Goal.** The frame of decisions 159–162 on the session plan, with the kinds that exist (introduction, recall, recognition), the feedback of [D23](#d23-feedback-that-teaches) (decision 160), the round with its screen (feature `round`) and the phone over its keyboard (161); [D21](#d21-the-session), [D28](#d28-strings-and-styles).
-- **The design.** `docs/design/source/` after PR D (ADR 119): the guidelines of the components named below and `README.md` "Learning session"; the live previews are `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard` of the design artifact. `bundle.js` and `bundle.css` are a React reference, rewritten in Preact; strings come from the `session` part.
-- **Layout** (`KanaTask`): the session line and the ticks (the round's after a `space-3` gap); the task on a card (`bg-raised`, `line`, `radius-md`, padding `space-8` `space-6`; no frame below 640px) that slides in (`dur-reveal`), its border `miss-dim` once answered wrong; in the card a reserved caption line, the prompt, the options; under it the feedback lines (`role="status"`), the notice line (hidden while an answer is held) and the key line. An introduction shows the kana's row (`jp-cell`, the new kana underlined `eye`, the known ones `fur-dim`). A recall answered wrong compares in the stage (`compare`). The round's screen is `KanaTask kind="break"`: the cat `neutral`, title, the round's kana (`jp-test-sm`), one line, `start` (`primary`, `lg`, `Kbd enter`).
-- **Strings (en / ru):** `new kana · the m row` / `новая кана · ряд m` (`the vowels` / `гласные`); `which kana is it?` / `какая это кана?`; `you typed` / `вы ввели`; `me is め · this is ぬ nu` / `me — это め · а здесь ぬ nu` and `this is ぬ nu` / `здесь ぬ nu` (screen reader); `め is me · nu is ぬ` / `め — это me · nu — это ぬ` (a choice, screen reader); `ぬ comes back at the end of the session` / `ぬ вернётся в конце сессии`; `next` / `дальше`; `round · 1 of 3` / `повтор · 1 из 3`; `round · 3 kana` / `повтор · 3 каны` (a plural key with `tPlural`: `1 кана`, `3 каны`, `5 кан`); `once more: the kana you missed` / `ещё раз: каны с ошибками`; `each comes back once, then the summary` / `каждая — один раз, потом итог`; `start` / `начать`; the 47 pair differences (`ぬ ends in a loop, め does not` / `у ぬ на конце петля, у め её нет` is a sample; M6).
-- **Creates:** `shared/i18n/parts/session` (en, ru, with the pair differences); `pages/learn/lib/feedback.ts`; the session's stylesheet.
-- **Changes:** `pages/learn/model/session.ts` (the plan, verdicts, the held answer, the round and its screen, the ticks, the summary's errors), `lib/constants.ts` (`SESSION_FEATURES`), `lib/summary.ts`, `ui/session-screen.tsx`, `ui/session-runtime.tsx`, `session-loader.ts` (the part), `shared/ui/kana-task.tsx` and `task-controller.ts` (the card, the caption, the row, `compare`, `feedback`, `promise`, `held`, the round's ticks, the kind `break`), `app/styles/index.css` (the session's styles out), `shared/i18n` (`DictionaryPart` gains `session`), `e2e/learn-session.spec.ts`.
-- **Tests:** `session-screen.test.tsx` shows 0 renders per keystroke and at most 1 on the answer; a wrong recall compares in the stage, shows the pair's difference for a pair of the table, the promise while the round has room and none when it is full or in the round, and waits for `Enter` (keys before it do nothing); a wrong choice waits too; a slip shows nothing and keeps its tick; the caption line keeps the prompt's place in recall; the round's screen lists `roundKana` before its first task, then the round's line, ticks and order, `end` after it, and no `end` when the learner leaves during it; the summary lists wrong kana, not slips; the `session` part loads with the runtime; e2e: a session with an error ends with its round; at 360 × 280 the key line of a held wrong answer is visible.
+- **Branch:** `p9-15-session-screen`. **Depends on:** PRs 7, 12 and 13.
+- **Goal.** The session plans with `createSessionPlan` ([D21](#d21-the-session)): verdicts, the held answer, the feedback of [D23](#d23-feedback-that-teaches) (decision 160), the round with its screen (feature `round`, decision 162), the word chunk loaded with the runtime (D20), the session's code split by mechanic, and the chunk `session-plan` ([D29](#d29-budgets)).
+- **The design.** As PR 7; the round's screen and the held states of `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard`.
+- **Layout:** a wrong answer turns the card `wrong` and waits (`held`); a recall answered wrong compares in the stage; under the card the pair's difference when its key exists (PR 10) and the promise while the round has room. The round's screen is `KanaTask kind="break"`: `round · 3 kana` in the session line, the ticks, a card with the cat `neutral`, `once more: the kana you missed` (`ui-heading`), the round's kana (`jp-test-sm`), one line, `start` (`primary`, `lg`, `Kbd enter`). Its tasks are recalls; the session line reads `round · 1 of 3`; an error in the round has no promise.
+- **Strings (en / ru):** `me is め · this is ぬ nu` / `me — это め · а здесь ぬ nu` and `this is ぬ nu` / `здесь ぬ nu` (screen reader); `め is me · nu is ぬ` / `め — это me · nu — это ぬ` (a choice, screen reader); the promise `session.promise`, plural by the number of kana: `ぬ comes back at the end of the session` / `ぬ вернётся в конце сессии`, `ぬ, め come back at the end of the session` / `ぬ, め вернутся в конце сессии`; `round · 3 kana` / `повтор · 3 каны` (a plural key with `tPlural`: `1 кана`, `3 каны`, `5 кан`); `once more: the kana you missed` / `ещё раз: каны с ошибками`; `each comes back once, then the summary` / `каждая — один раз, потом итог`; `start` / `начать`.
+- **Creates:** `pages/learn/lib/feedback.ts`; `pages/learn/model/typed.ts` and `model/choice.ts` (the mechanics, D21).
+- **Changes:** `pages/learn/model/session.ts` (the plan, verdicts, the held answer, the round and its screen, the ticks, the summary's errors, `end` after the round), `lib/constants.ts` (`SESSION_FEATURES` with `round`), `lib/summary.ts`, `ui/session-screen.tsx`, `ui/session-runtime.tsx`, `session-loader.ts` (the word chunk with `Promise.all`; the runtime reads it with `wordEntry`); `vite.config.ts` (`session-plan`) and `scripts/check-budget.mjs` with its test (the chunk by name); the `session` part; `e2e/learn-session.spec.ts`.
+- **Tests:** `session-screen.test.tsx` shows 0 renders per keystroke and at most 1 on the answer; a wrong recall compares in the stage, shows the pair's difference for a pair with a key and none for one without, the promise while the round has room and none when it is full or in the round, and waits for `Enter` (keys before it do nothing); a wrong choice waits too; a slip shows nothing and keeps its tick; the round's screen lists `roundKana` before its first task, then the round's line, ticks and order, `end` after it, and no `end` when the learner leaves during it; the summary lists wrong kana, not slips; a word chunk that fails to load gives a session without words; e2e: a session with an error ends with its round; at 360 × 280 the key line of a held wrong answer is visible.
+- **Parity** (D31): the held states, the compare and the round's screen, at 1120 and at 360 × 280.
 - **Acceptance:** 1 (the screen), 7 (the hot path), 8 (the round).
-- **Docs:** ADR 124; S8; `docs/architecture/pages.md`; `README.md` (the session).
-- **Preview URL:** each task lies on a card that slides in; a wrong answer shows your kana next to the right one, their difference for a pair such as ぬ and め, and that the kana comes back, and waits for Enter; after the last task a screen lists the kana to repeat, then the round brings them back; one wrong letter that is no kana's spelling, then the right romaji, leaves the tick as a right one.
-- **Done when:** `verify:quick` passes; CI is green with the latency gate; the budgets of D29 (the initial CSS goes down); M6 is done.
-- **Size:** about 1,700 lines.
+- **Docs:** S8; `docs/architecture/pages.md` (the core and its mechanics); `README.md` (the session).
+- **Preview URL:** a wrong answer shows your kana next to the right one, their difference for a pair such as ぬ and め once PR 10 is in, and that the kana comes back, and waits for Enter; after the last task a screen lists the kana to repeat, then the round brings them back; one wrong letter that is no kana's spelling, then the right romaji, leaves the tick as a right one.
+- **On production** (M8): an error with its feedback and the round at the end, on a desktop and a phone with its keyboard.
+- **Done when:** `verify:quick` passes; CI is green with the latency gate; the budgets of D29 with their allowances.
+- **Size:** about 900 lines.
 
-### PR 7 — Word tasks
+### PR 16 — The simulator on the production plan
 
-- **Branch:** `p9-07-words`. **Depends on:** PRs 3 and 6.
-- **Goal.** [D20](#d20-words-in-the-app) and [D22](#d22-typed-answers-by-token); the features `word`, `closing` and `rule` as decisions 163–166 draw them; the meaning after the answer; JMdict and EDRDG on `/about` (175).
-- **The design.** `docs/design/source/` after PR D (ADR 119): the guidelines of the components named below and `README.md` "Learning session"; the live previews are `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard` of the design artifact. `bundle.js` and `bundle.css` are a React reference, rewritten in Preact; strings come from the `session` part.
-- **Layout:** a word is `KanaTask kind="word"` with `KanaWord`: the word in the place of the kana (up to 4 kana `jp-solo`, up to 7 `jp-solo-sm`, longer `jp-test-sm`; below 640px up to 5 `jp-solo-sm`), one buffer under the current kana, typed kana `fur-dim`; once answered the reading in the reserved line, the English meaning under it, held for `Enter`. An error in a word: first its first wrong kana as a recall's error (caption `word · <the word>`), `Enter`, then the word with that kana in `miss`; a rule error: the word with the mark in `miss` and the rule's line. The closing word: first its screen (`kind="break"`, the cat `content`, `plan.seen`), then the word with its caption. A rule introduction: the example word, the mark and the letters it gives in `eye` (`marks`, `ghost.marks`), the ghost hint typed once, the rule's line (`note`). The word chunk's `WordItem` gives the meaning; the reading is the kana's `displayRomaji` joined.
-- **Strings (en / ru):** `word` / `слово`; `a word of today's kana` / `слово из сегодняшних кан`; `one last word` / `слово напоследок`; `all its kana were in this session` / `все его каны были в этой сессии`; `rule` / `правило`; `rule · once more` / `правило · ещё раз`; `っ doubles the next consonant` / `っ удваивает следующую согласную` (ッ on katakana); `ー makes the vowel long: type -` / `ー удлиняет гласную: набирайте -`; `っ doubles the next consonant: もっと is motto` / `っ удваивает следующую согласную: もっと — это motto`; `ー makes the vowel before it long: コーヒー is ko-hi-` / `ー удлиняет предыдущую гласную: コーヒー — это ko-hi-` (`-` is the spelling both strictness modes accept, engine.md); on `/about` `Sources` / `Источники` and `words and their meanings` / `слова и их значения`.
-- **Creates:** `entities/prompt/index.ts`, `entities/prompt/model/content.ts` and their tests; `pages/learn/lib/typed-answer.ts` and its test; `shared/ui/kana-word.tsx` (`KanaWord`); `e2e/learn-words.spec.ts`.
-- **Changes:** `pages/learn/model/session.ts` (word, closing word and rule tasks, the closing screen), `lib/constants.ts`, `session-loader.ts` (the word chunk), the screen and `task-controller.ts` (the caret and the buffer from token to token, the typed tokens' class); `app/prefetch.ts`; `scripts/check-budget.mjs` and its test; `pages/about` (the sources section with JMdict); `shared/i18n`; `e2e/latency.spec.ts` (a log in which words open, so word keystrokes are samples).
-- **Tests:**
-  - `tokenAnswers`: a plain word; `te` for って (a rule error, て right); `ta` for って (て wrong as た); a standalone っ; ー; a reveal on a kana and on a merged token (the rule and X); `misses` saturating at 9; the time of each token by A37 from the token before it;
-  - only the selected track's words; a chunk that fails to load gives a session without words;
-  - 0 renders per keystroke of a word; the meaning absent before the answer and shown after it; an error in a word shows the pair first and the word on `Enter`; a rule error shows the rule and no promise; the closing word is the last task and its screen lists `plan.seen`; a rule introduction logs an `intro` of the rule;
-  - the budget test fails a content chunk that a route imports statically;
-  - e2e: a word task, its meaning after the answer, and a rule introduction.
-- **Acceptance:** 1, 2 (shipped lazily), 7, 8, 10 (JMdict).
-- **Docs:** S9; `README.md`; `docs/architecture/` (`entities.md`, `pages.md`, `quality-gates.md`).
-- **Preview URL:** from a fresh start, after the k row (25 readable words) a word comes after every 5 tasks; its meaning appears only after it is typed; a word with a wrong kana shows that kana's error first; before the first word with っ the rule is introduced on an example; the last task of a session is a word of its kana, after a screen with the cat; `/about` names JMdict and EDRDG.
-- **Done when:** `verify:quick` passes; CI is green with the latency gate and word keystrokes among its samples; the word chunks are lazy and ≤ 40 KB gzip.
-- **Size:** about 1,700 lines.
+- **Branch:** `p9-16-sim`. **Depends on:** PRs 5 and 14.
+- **Goal.** [D19](#d19-the-simulator-on-the-production-plan): `packages/sim` plays the production session plan, and its lines are measured.
+- **Creates:** `packages/sim/src/p9.ts`.
+- **Changes:** `packages/sim/src/policies/production.ts` (`plan: true`), the harness (the new kinds), `package.json` (`p9`).
+- **Tests:** the adapter turns each kind of `SessionTask` into the harness's task and its answers into the events of D4; the research options still give the tables of parts 1–3 (`p9-words`, `p9-tasks`, `p9-planner`).
+- **Acceptance:** 6.
+- **Docs:** the output of `pnpm --filter @nekotype/sim run p9` in the description, with each line of D19 and the forecast's table of [section 2](#2-what-was-checked) on the production plan, on hiragana and on both tracks.
+- **Preview URL:** nothing changes.
+- **Done when:** the lines of D19 are met (D18 says what to do if the forecast misses); `verify:quick` passes.
+- **Size:** about 500 lines.
 
-### PR 8 — The report dialog
+### PR 17 — Word tasks
 
-- **Branch:** `p9-08-report`. **Depends on:** PR 7.
-- **Goal.** [D26](#d26-the-report-dialog) as decision 167 draws it.
-- **The design.** `docs/design/source/` after PR D (ADR 119): the guidelines of the components named below and `README.md` "Learning session"; the live previews are `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard` of the design artifact. `bundle.js` and `bundle.css` are a React reference, rewritten in Preact; strings come from the `session` part.
-- **Layout:** `report a problem` (`Button text`) at the end of a word task's key line once answered (left of `next` below 640px). The shared `Dialog`: the title; the word (`jp-body`) and its meaning (`ui-body`, `fur-dim`); `RadioGroup` of the three reasons, none chosen; `Textarea` (three lines); the Turnstile slot, 65px, full width; the reserved `Notice` in the actions row; `cancel`, `send` (enabled once a reason is chosen and the check passed). The states of decisions 115–116.
-- **Strings (en / ru):** `report a problem` / `сообщить об ошибке`; `Report a problem with this word` / `Ошибка в слове`; `What is wrong` / `Что не так`; `wrong reading` / `неверное чтение`; `wrong translation` / `неверный перевод`; `other` / `другое`; `Comment (optional)` / `Комментарий (необязательно)`; `cancel` / `отмена`; `send` / `отправить`; `sending…` / `отправка…`; `Report sent.` / `Сообщение отправлено.`; `close` / `закрыть`; `offline. reporting is available online only.` / `нет сети. отправка только онлайн.`; `verification failed. try again.` / `проверка не пройдена. попробуйте ещё раз.`; `failed to send. check the connection and try again.` / `не удалось отправить. проверьте соединение.`; `verification did not load.` / `проверка не загрузилась.`; `retry` / `ещё раз`.
-- **Creates:** `pages/learn/ui/report/` (restored from 753df9f, the `Select` replaced), `pages/learn/lib/turnstile.ts`, their tests; `shared/ui/radio-group.tsx` and `shared/ui/textarea.tsx` with their tests; `e2e/sync/report.spec.ts`.
-- **Changes:** the word task (`footEnd`); `shared/ui` (the barrel); `shared/i18n`; the e2e server's Turnstile verifier only if the test needs it.
-- **Tests:** the dialog in each state with a fake Turnstile loader and a fake request (sending, sent, check failed, send failed, check not loaded, offline); no reason chosen when it opens and `send` disabled until one is; the request's body; the Turnstile script requested only when the dialog opens; the focus back to the session after closing; `RadioGroup` by arrows and `Textarea`'s label; e2e on the sync configuration: from a word task, open the dialog, choose a reason, send, and see the server's answer.
-- **Acceptance:** 9.
-- **Docs:** S10; `docs/architecture/pages.md`.
-- **Preview URL:** after a word is typed, `report a problem` opens the dialog with the word and its meaning; `send` waits for a reason; the check passes and the report is sent; offline the action is disabled.
-- **Done when:** `verify:quick` passes; CI is green with the e2e; the dialog is a lazy chunk.
-- **Size:** about 800 lines, much of it restored.
+- **Branch:** `p9-17-word-tasks`. **Depends on:** PRs 5, 8, 9 and 15.
+- **Goal.** The features `word`, `closing` and `rule` as decisions 163–166 draw them: the stream mechanic (`model/stream.ts`) with `tokenAnswers` and `recordTokens`, the meaning after the answer, the closing word's screen, the rule introductions, the report action opening the dialog of PR 9, JMdict and EDRDG on `/about` (175), and the chunk `session-stream` ([D29](#d29-budgets)).
+- **The design.** `components/KanaWord`, `KanaTask` and `README.md` "Learning session"; the word, rule and report states of `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard`.
+- **Layout:** a word is `KanaTask kind="word"` with `KanaWord`: the word in the place of the kana, one buffer under the current kana, typed kana `fur-dim`; once answered the reading in the reserved line, the English meaning under it, held for `Enter`. An error in a word: first its first wrong kana as a recall's error (caption `word · <the word>`), `Enter`, then the word with every wrong kana in `miss` and the promise naming the kana the round takes (Q5); a rule error: the word with the mark in `miss` and the rule's line, no promise. The closing word: first its screen (`kind="break"`, the cat `content`, `plan.seen`), then the word with its caption. A rule introduction: the example word, the mark and the letters it gives in `eye` (`marks`, `ghost.marks`), the ghost hint typed once, the rule's line (`note`). `report a problem` (`Button text`) at the end of the key line once answered (left of `next` below 640px); the session waits while the dialog is open, and closing it gives the focus back to the session's input. The word chunk's `WordItem` gives the meaning; the reading is the kana's `displayRomaji` joined.
+- **Strings (en / ru):** `word` / `слово`; `a word of today's kana` / `слово из сегодняшних кан`; `one last word` / `слово напоследок`; `all its kana were in this session` / `все его каны были в этой сессии`; `rule` / `правило`; `rule · once more` / `правило · ещё раз`; `っ doubles the next consonant` / `っ удваивает следующую согласную` (ッ on katakana); `ー makes the vowel long: type -` / `ー удлиняет гласную: набирайте -`; `っ doubles the next consonant: もっと is motto` / `っ удваивает следующую согласную: もっと — это motto`; `ー makes the vowel before it long: コーヒー is ko-hi-` / `ー удлиняет предыдущую гласную: コーヒー — это ko-hi-` (`-` is the spelling both strictness modes accept, engine.md); `report a problem` / `сообщить об ошибке`; on `/about` `JMdict`, `words and their meanings` / `слова и их значения`.
+- **Creates:** `pages/learn/model/stream.ts`; `e2e/learn-words.spec.ts`; `e2e/sync/report.spec.ts`.
+- **Changes:** `pages/learn/model/session.ts` (the closing screen), `lib/constants.ts`, the screen and its use of the stream controller; `vite.config.ts` (`session-stream`) and `scripts/check-budget.mjs` with its test (the chunk by name); `pages/about` (the JMdict row); the `session` and `about` parts; `e2e/latency.spec.ts` (a log in which words open, so word keystrokes are samples, a word of at least 8 kana among them); the e2e server's Turnstile verifier only if the test needs it.
+- **Tests:** only the selected track's words; 0 renders per keystroke of a word; the meaning absent before the answer and shown after it; an error in a word shows the pair first and, on `Enter`, the word with each wrong kana marked and the promise naming them; a rule error shows the rule and no promise; the closing word is the last task and its screen lists `plan.seen`; a rule introduction logs an `intro` of the rule; `report a problem` opens the dialog after the answer, never while the word is typed, and the focus comes back on close; e2e: a word task, its meaning after the answer, and a rule introduction; on the sync configuration, from a word task, open the dialog, choose a reason, send, and see the server's answer.
+- **Parity** (D31): the word, error, closing, rule and report states, at 1120 and at 360 × 280.
+- **Acceptance:** 1, 2, 7, 8, 9, 10 (JMdict).
+- **Docs:** S9, S10; `README.md` (the session, the shipped content and its credits); `docs/architecture/` (`pages.md`, `quality-gates.md`: the latency gate's word keystrokes).
+- **Preview URL:** from a fresh start, after the k row (25 readable words) a word comes after every 5 tasks; its meaning appears only after it is typed; a word with two wrong kana marks both and says both come back; before the first word with っ the rule is introduced on an example; the last task of a session is a word of its kana, after a screen with the cat; `report a problem` opens the dialog with the word and its meaning, `send` waits for a reason, and offline the action is disabled; `/about` names JMdict and EDRDG.
+- **On production** (M8): once 25 words are readable, a word after every 5 tasks, its meaning, a closing word, a rule introduction, and a report sent from a word with the real Turnstile; the home's outline names the words.
+- **Done when:** `verify:quick` passes; CI is green with the latency gate and word keystrokes among its samples, the e2e and the sync e2e; the budgets of D29 with their allowances.
+- **Size:** about 900 lines.
 
-### PR 9 — KanjiVG data
+### PR 18 — Choice tasks
 
-- **Branch:** `p9-09-kanjivg`. **Depends on:** PR D, M3; M7 before the merge.
-- **Goal.** [D2](#d2-stroke-data-and-the-origin-kanji-from-kanjivg): the stroke chunks, the origins chunk and the origins table.
-- **Creates:** `packages/content/src/kanjivg/` (reading a KanjiVG SVG: the strokes in order, their numbers and the strokes of a named group) and the stroke build; `packages/engine/src/data/origins.ts` and its test; `strokes-hiragana.json`, `strokes-katakana.json`, `origins.json`.
-- **Changes:** `packages/content/sources.json`, `src/fetch.ts`, `src/build.ts`, the manifest; `packages/engine/src/index.ts` (`kanaOrigins`, `originOf`); `NOTICE.md` ("Third-party data", "Mirrored content sources"); `packages/content/README.md`.
-- **Tests:** the reader on fixture SVGs (order, the numbers, one decimal, the strokes of a named group); every character of every learnable kana has a glyph; every entry of the origins table is a basic hiragana with a katakana pair and a `part` that is a group of its kanji's file or indexes within its strokes; a name that is no group and an index out of range fail the build; `origins.json` holds `kept` (加: strokes 0 and 1, the 力; 久: 0 and 1 as given); `small` on ゃ and ャ, not on や; each chunk ≤ 40 KB gzip.
-- **Acceptance:** 10 (the data).
-- **Docs:** ADR 125; S11.
-- **Preview URL:** nothing changes: no chunk is imported yet.
-- **Done when:** `verify:quick` passes; the build is reproducible; M7 is done.
-- **Size:** about 800 lines, plus the generated files.
-
-### PR 10 — Stroke order in the kana details
-
-- **Branch:** `p9-10-stroke-order`. **Depends on:** PR 9.
-- **Goal.** The details of [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen) as decision 174 draws them, and the KanjiVG credit on `/about` (175).
-- **The design.** `docs/design/source/components/StrokeOrder/README.md`; the kana details in `README.md` "Progress"; the live preview `ScreenProgress` (the `details` select) and the card `StrokeOrder` of the design artifact.
-- **Layout:** at the top of the details, left of the places of the mnemonic (P11) and `listen` (P10): each glyph in a box (112px, 88px below 640px; `line`, `bg`, `radius-sm`), strokes `fur` 3.5 units, numbers Mono 11 units `fur-dim` at KanjiVG's places; a small kana at 70% from the bottom left; under the boxes `replay` (`Button secondary sm`, icon `reset`). Opening the dialog draws the strokes at one pen speed (D27), the current one `eye`; nothing moves under reduced motion. The drawing animates `stroke-dashoffset` (decision 177).
-- **Strings (en / ru):** `replay` / `ещё раз`; `stroke order: ぬ` / `порядок черт: ぬ` (the image's name); on `/about` `Ulrich Apel · stroke order and origin kanji` / `Ulrich Apel · порядок черт и иероглифы-предки`.
-- **Creates:** `shared/ui/strokes.tsx` (`Strokes`, `StrokeOrder`, `PEN_SPEED`, `PEN_MIN`, `PEN_LIFT`) and its test; the glyphs come as D2 names them (`d`, `n`, `small`), not as the reference's `s`.
-- **Changes:** `features/kana-details` (the stroke order, its loading); `entities/prompt` (`loadStrokes`); `shared/i18n/parts/details` and `about`; `pages/about`; `e2e/progress.spec.ts` (the details show the strokes).
-- **Tests:** a kana, a yōon (two boxes, the small kana scaled) and a kana with a dakuten draw their strokes in order with numbers; each stroke's duration follows its length, with the minimum and the lift; `replay` draws again; loading and failure keep the place and disable `replay`; reduced motion draws every stroke at once; the chunk is not loaded until a dialog opens.
-- **Acceptance:** 10.
-- **Docs:** S12; `docs/architecture/pages.md`.
-- **Preview URL:** a kana's details on `/progress` draw its stroke order, long strokes taking longer, and `replay` draws it again; `/about` names KanjiVG.
-- **Done when:** `verify:quick` passes; CI is green with the e2e; the stroke chunks are lazy and ≤ 40 KB gzip.
-- **Size:** about 600 lines.
-
-### PR 11 — Choice and build tasks
-
-- **Branch:** `p9-11-choice-tasks`. **Depends on:** PRs 8 and 10.
-- **Goal.** [D24](#d24-choice-and-build-tasks) as decisions 168–172 draw it; the features `contrast`, `transfer`, `build`, `script` and `mismatch`; the origin kanji of [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen).
-- **The design.** `docs/design/source/` after PR D (ADR 119): the guidelines of the components named below and `README.md` "Learning session"; the live previews are `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard` of the design artifact. `bundle.js` and `bundle.css` are a React reference, rewritten in Preact; strings come from the `session` part.
-- **Layout:** contrast — `options: { count, large }`: as many columns as options, cards 136px with 48px kana (56px and 32px below 640px). Transfer — the introduction `KanaParts` with `Strokes` (the origin, `kept` in `eye`), `→`, the hiragana `fur-dim`, the katakana `fur`; the task `promptKana` (48px on a 56px line below 640px) and four katakana. Build — the introduction `か + ゛ → が`; the task the parts with the caret, once answered `→ きゃ` and its reading. Find the error — `OptionCard` with `sub`, `options.find` (five a row below 640px); the odd card shows the wrong romaji struck after the answer. Hiragana or katakana? — `promptKana`, two `OptionCard text`, `options.count` 2.
-- **Strings (en / ru):** `which of the similar kana is it?` / `какая из похожих кан?`; `new katakana` / `новая катакана`; `from 加` / `из 加`; `the same kana in katakana` / `та же кана катаканой`; `type the kana they make` / `наберите кану из частей`; `find the error` / `найдите ошибку`; `し was shown as chi; it is shi` / `у し было chi, а это shi`; `hiragana or katakana?` / `хирагана или катакана?`; `hiragana` / `хирагана`; `katakana` / `катакана`; `リ is katakana; its hiragana is り` / `リ — катакана; в хирагане это り`; a wrong transfer `タ is ta · か ka → カ` / `タ — это ta · か ka → カ`.
-- **Changes:** `pages/learn/model/session.ts`, `lib/constants.ts`, `lib/distractors.ts` if transfer needs it, `session-loader.ts` (`origins.json` when the track is katakana), the screen, `shared/ui/kana-task.tsx` (`promptKana`, `options`), `shared/ui/option-card.tsx` (`sub`, `text`), `shared/ui/kana-parts.tsx` (`KanaParts`); `shared/i18n`; `apps/web/glyphs.txt` and the Noto subset (`゛` U+309B, `゜` U+309C, decision 170).
-- **Tests:** each kind's view, keys and log (D4): contrast's options shuffled, its columns and its `alt`; transfer's options of katakana; build typed and timed, its result after the answer; hiragana or katakana by 1 and 2; find the error by number and by click, `ok` only at `index`, the struck romaji after a miss; a wrong transfer keeps the marks and shows its line; a build and a transfer introduction (the origin drawn with its `kept` strokes when the table has one, the pair alone without the chunk); one render per choice.
+- **Branch:** `p9-18-choice-tasks`. **Depends on:** PRs 14 and 15.
+- **Goal.** Contrast, hiragana or katakana? and find the error of [D24](#d24-choice-and-build-tasks) as decisions 168, 171 and 172 draw them; the features `contrast`, `script` and `mismatch`, in the choice mechanic.
+- **The design.** `components/OptionCard` and `KanaTask`; the choice states of `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard`.
+- **Layout:** contrast — `options: { count, large }`: as many columns as options, cards 136px with 48px kana (56px and 32px below 640px). Find the error — `OptionCard` with `sub`, `options.find` (five a row below 640px); the odd card shows the wrong romaji struck after the answer. Hiragana or katakana? — `promptKana` (48px on a 56px line below 640px), two `OptionCard text`, `options.count` 2.
+- **Strings (en / ru):** `which of the similar kana is it?` / `какая из похожих кан?`; `find the error` / `найдите ошибку`; `し was shown as chi; it is shi` / `у し было chi, а это shi`; `hiragana or katakana?` / `хирагана или катакана?`; `hiragana` / `хирагана`; `katakana` / `катакана`; `リ is katakana; its hiragana is り` / `リ — катакана; в хирагане это り`.
+- **Changes:** `pages/learn/model/choice.ts`, `lib/constants.ts`, the screen, `shared/ui/kana-task.tsx` (`promptKana`, `options`), `shared/ui/option-card.tsx` (`sub`, `text`); the `session` part.
+- **Tests:** each kind's view, keys and log (D4): contrast's options shuffled, its columns and its `alt`; hiragana or katakana by 1 and 2; find the error by number (1–9) and by click, `ok` only at `index`, the struck romaji after a miss, the line and the promise; one render per choice.
+- **Parity** (D31): each kind before, after a right and after a wrong answer, at 1120 and at 360 × 280.
 - **Acceptance:** 1, 7.
-- **Docs:** S13; `docs/architecture/pages.md`.
-- **Preview URL:** on a log with a confused pair, a recognition of its kana becomes a contrast with larger kana; on katakana with the hiragana learned, an introduction draws the kanji with the kept part in blue, then the pair; が is introduced and practised from か and ゛; one find-the-error and one hiragana-or-katakana come in a session when their conditions hold.
-- **Done when:** `verify:quick` passes; CI is green with the latency gate; budgets within D29; the subset stays within its budget.
-- **Size:** about 1,400 lines.
+- **Docs:** S13 (these three); `docs/architecture/pages.md`.
+- **Preview URL:** on a log with a confused pair, a recognition of its kana becomes a contrast with larger kana; one find-the-error and one hiragana-or-katakana come in a session when their conditions hold.
+- **On production** (M8): each of the three on a desktop and a phone, when its condition holds on the maintainer's progress.
+- **Done when:** `verify:quick` passes; CI is green with the latency gate; the budgets of D29 with their allowances.
+- **Size:** about 700 lines.
 
-### PR 12 — The fluency run
+### PR 19 — Build and transfer
 
-- **Branch:** `p9-12-fluency`. **Depends on:** PR 11.
-- **Goal.** [D25](#d25-the-fluency-run-on-the-screen) as decision 173 draws it; the feature `fluency`.
-- **The design.** `docs/design/source/` after PR D (ADR 119): the guidelines of the components named below and `README.md` "Learning session"; the live previews are `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard` of the design artifact. `bundle.js` and `bundle.css` are a React reference, rewritten in Preact; strings come from the `session` part.
-- **Layout:** `KanaTask kind="word"` with `KanaWord run`: the caption, the 12 kana in one line (`jp-test-sm`; 22px in two lines below 640px), the caret and the buffer as in a word, typed kana `fur-dim`, a wrong one `miss`. The end: `done` under the card and `Enter`; with a wrong kana the pair of the first one as a line, its difference and the promise.
+- **Branch:** `p9-19-build-transfer`. **Depends on:** PRs 4, 8, 11, 14 and 15.
+- **Goal.** Build and transfer of [D24](#d24-choice-and-build-tasks) as decisions 169 and 170 draw them, their introductions, and the origin kanji of [D27](#d27-stroke-order-and-the-origin-kanji-on-the-screen); the features `build` and `transfer`.
+- **The design.** `components/KanaWord` (`KanaParts`), `StrokeOrder` (`Strokes`) and `KanaTask`; the build and transfer states of `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard`.
+- **Layout:** transfer — the introduction `KanaParts` with `Strokes` (the origin, `kept` in `eye`, the rest `fur-dim`, 88px, 56px below 640px; drawn once), `→`, the hiragana `fur-dim`, the katakana `fur`; without the origin the pair alone; the task `promptKana` (48px on a 56px line below 640px) and four katakana. Build — the introduction `か + ゛ → が`; the task the parts with the caret, once answered `→ きゃ` and its reading; a right build holds `ANSWER_PAUSE_MS`, a wrong one waits for `Enter` with the comparison of D23.
+- **Strings (en / ru):** `new katakana` / `новая катакана`; `from 加` / `из 加`; `the same kana in katakana` / `та же кана катаканой`; `type the kana they make` / `наберите кану из частей`; a wrong transfer `タ is ta · か ka → カ` / `タ — это ta · か ka → カ`.
+- **Changes:** `pages/learn/model/typed.ts` (build, the build and transfer introductions), `model/choice.ts` (transfer), `lib/constants.ts`, `lib/distractors.ts` if transfer needs it, `session-loader.ts` (`origins.json` when the track is katakana), the screen; `entities/prompt` (`loadOrigins`); the `session` part; `apps/web/glyphs.txt` and the Noto subset (`゛` U+309B, `゜` U+309C, decision 170).
+- **Tests:** transfer's options of katakana, its keys and log; a wrong transfer keeps the marks and shows its line; build typed and timed, its result after the answer, the hold of a right one and the wait of a wrong one; a build and a transfer introduction (the origin drawn with its `kept` strokes when the table has one, the pair alone without the chunk), each logging an `intro`; 0 renders per keystroke of a build.
+- **Parity** (D31): both introductions and both tasks, at 1120 and at 360 × 280.
+- **Acceptance:** 1, 7, 10 (the origins on screen).
+- **Docs:** S13 (these two); `docs/architecture/pages.md`.
+- **Preview URL:** on katakana with the hiragana learned, an introduction draws the kanji with the kept part in blue, then the pair; が is introduced and practised from か and ゛.
+- **On production** (M8): a transfer introduction with its origin and a build, on a desktop and a phone, when their conditions hold.
+- **Done when:** `verify:quick` passes; CI is green with the latency gate; the budgets of D29 with their allowances; the subset stays within its budget.
+- **Size:** about 700 lines.
+
+### PR 20 — The fluency run
+
+- **Branch:** `p9-20-fluency`. **Depends on:** PRs 14 and 17.
+- **Goal.** [D25](#d25-the-fluency-run-on-the-screen) as decision 173 draws it, in the stream mechanic; the feature `fluency`.
+- **The design.** `components/KanaWord` (`run`); the run's states of `ScreenLesson`, `ScreenLessonMobile` and `ScreenLessonKeyboard`.
+- **Layout:** `KanaTask kind="word"` with `KanaWord run`: the caption, the 12 kana in one line (`jp-test-sm`; 22px in two lines below 640px), the caret and the buffer as in a word, typed kana `fur-dim`, a wrong one `miss`. The end: `done` under the card and `Enter`; with a wrong kana the pair of the first one as a line, its difference and the promise naming every wrong kana the round takes.
 - **Strings (en / ru):** `run: type them in a row` / `прогон: наберите подряд`; `done` / `готово`; `you typed ぬ nu · here め me` / `вы ввели ぬ nu · здесь め me`.
-- **Changes:** `pages/learn/model/session.ts`, `lib/constants.ts`, the screen and `task-controller.ts` (the run); `shared/i18n`; `e2e/fluency.spec.ts`.
+- **Changes:** `pages/learn/model/stream.ts` (the run), `lib/constants.ts`, the screen; the `session` part; `e2e/fluency.spec.ts`; `e2e/latency.spec.ts` (a run's keystrokes among the samples).
 - **Tests:** the run's kana are the plan's; a keystroke renders nothing and the end at most once; one `fluency` event per kana at one moment, with `misses`, `hint` and `wrong`; the end waits for `Enter`; a wrong kana goes to the round; no timer or number on screen; e2e: a seeded log with 8 accurate learned kana gives a run at the 15th task, typed to its end.
+- **Parity** (D31): the run while typed, at its end and with an error, at 1120 and at 360 × 280.
 - **Acceptance:** 7, 8.
 - **Docs:** S14; `docs/architecture/pages.md`.
 - **Preview URL:** with 8 accurate learned kana, the 15th task of a session is a run of the slowest of them in one line, with no timer or count, ending with `done`; a wrong kana in it comes back in the round.
-- **Done when:** `verify:quick` passes; CI is green with the latency gate; budgets within D29; after the merge the maintainer does M8.
-- **Size:** about 800 lines.
+- **On production** (M8): a run on a desktop and a phone with its keyboard.
+- **Done when:** `verify:quick` passes; CI is green with the latency gate; the budgets of D29 with their allowances.
+- **Size:** about 500 lines.
 
-### PR 13 — Close the phase
+### PR 21 — Close the phase
 
-- **Branch:** `p9-13-close`. **Depends on:** every other pull request, M8.
+- **Branch:** `p9-21-close`. **Depends on:** every other pull request, M8.
 - **Does:**
   - the leftovers audit, with its command and result in the description: `git grep -n -E "N5–N4 by reading|no content is shipped before P9|before P9|decision 152|none exists before P9|places of"` over `apps`, `packages`, `scripts`, `docs/spec`, `docs/architecture`, `docs/design/source`, each hit removed or explained (research, ADRs and the archive are history);
-  - the export against the code: each kind of task, the round, the feedback, the report dialog, the stroke order and `/about` match their previews in the design artifact (a list in the description);
+  - the export against the code: each kind of task, the round, the feedback, the report dialog, the stroke order and `/about` match their previews in the design artifact (a list in the description, from the parity notes of PRs 7–11 and 15–20);
   - `pnpm run build && pnpm run budget`, and the CI figures of the latency, `model-cost` and `home-cost` tests;
   - `pnpm --filter @nekotype/sim run p9` on the merged code;
   - `docs/research/2026-11-NN-p9-acceptance.md` (the day of the check): a row per acceptance item with its line, its measure and its proof, and its row in `docs/README.md`.
-- **Docs:** S15; `README.md` and `docs/architecture/` reread against the code; `docs/adr/README.md` has ADRs 119–125; this file moved to `docs/archive/p9-plan.md` with a note on top, and the link of P9 in `phases.md` pointed there; its row in `docs/README.md` removed.
-- **Done when:** every row of the table below names a passing test or check in the description.
+- **Docs:** S15; `README.md` and `docs/architecture/` reread against the code; `docs/adr/README.md` has the ADRs of P9; this file moved to `docs/archive/p9-plan.md` with a note on top, and the link of P9 in `phases.md` pointed there; its row in `docs/README.md` removed.
+- **Done when:** every row of the table below names a passing test or check in the description; every "On production" list of M8 is marked done, or its condition has not arisen and the description says so.
 - **Size:** about 400 lines, documents.
 
 ### Acceptance items and pull requests
 
 The items of the P9 acceptance in [phases.md](docs/spec/phases.md), in its order.
 
-| #   | Acceptance item                                                                                                                                                                  | PR                        | Proved by                                                                                     |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------- |
-| 1   | The design comes first, draws every P9 task in full and matches the code; key parity; every task works from the keyboard and is named for screen readers                         | D, 6, 7, 8, 10–13         | ADR 119 and the export; DOM tests by role and name; the parity test; the check of PR 13       |
-| 2   | The word chunks: the rule, at most 40 KB gzip each, by dynamic import only; the maintainer read a sample                                                                         | 1, 7                      | the build report, `audit-words.md` and M2; `check-budget.mjs`                                 |
-| 3   | Format 4: its events, format-3 pages read, `400` for a batch of format 3, a database of schema 7 reset                                                                           | 2                         | `log-codec.test.ts`, the API's sync tests, `database.test.ts`                                 |
-| 4   | Every grade of ADR 117 and ADR 118, point 5, has a test; the rule errors are golden tests; two devices converge with words, rules and runs                                       | 3, 4                      | `grade.test.ts`, `verdict.test.ts`, the engine's golden tests, `fold.properties.test.ts`      |
-| 5   | The session plan has a test for each rule of ADR 118                                                                                                                             | 5                         | `session.test.ts` of the model                                                                |
-| 6   | The simulator runs the production plan and meets the lines of D19                                                                                                                | 5, 13                     | `pnpm --filter @nekotype/sim run p9` in PR 5 and in the acceptance note                       |
-| 7   | A keystroke of a typed task renders nothing and its answer at most once; the latency test holds with word keystrokes; the fold, the forecast and the home's line hold with words | 4, 6, 7, 11, 12, every PR | `session-screen.test.tsx`; `latency.spec.ts`, `model-cost.spec.ts`, `home-cost.spec.ts` in CI |
-| 8   | An e2e plays a session with a word, its meaning and the round, and one with a fluency run                                                                                        | 6, 7, 12                  | `learn-session.spec.ts`, `learn-words.spec.ts`, `fluency.spec.ts`                             |
-| 9   | The report dialog on a word task sends with Turnstile, loads its script only when opened, and is disabled offline                                                                | 8                         | the dialog's DOM tests; `e2e/sync/report.spec.ts`                                             |
-| 10  | Every learnable kana's details show its stroke order; KanjiVG, JMdict and EDRDG are credited on `/about`, KanjiVG in `NOTICE.md`                                                 | 7, 9, 10                  | the stroke tests; the details' DOM test; the `/about` test                                    |
-| 11  | Every budget holds, with the lines of this plan                                                                                                                                  | every PR                  | `check-budget.mjs`; the figures of each pull request                                          |
-| 12  | The spec describes P9                                                                                                                                                            | 1–12, 13                  | S1–S15; the audit of PR 13                                                                    |
+| #   | Acceptance item                                                                                                                                                                  | PR                           | Proved by                                                                                     |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | --------------------------------------------------------------------------------------------- |
+| 1   | The design comes first, draws every P9 task in full and matches the code; key parity; every task works from the keyboard and is named for screen readers                         | D, 7–11, 15, 17–21           | ADR 119 and the export; DOM tests by role and name; the parity test; the check of PR 21       |
+| 2   | The word chunks: the rule, at most 40 KB gzip each, by dynamic import only; the maintainer read a sample                                                                         | 5, 13, 17                    | the build report, `audit-words.md` and M2; `check-budget.mjs`                                 |
+| 3   | Format 4: its events, format-3 pages read, `400` for a batch of format 3, a database of schema 7 reset                                                                           | 2                            | `log-codec.test.ts`, the API's sync tests, `database.test.ts`                                 |
+| 4   | Every grade of ADR 117 and ADR 118, point 5, has a test; the rule errors are golden tests; two devices converge with words, rules and runs                                       | 1, 6                         | `grade.test.ts`, `verdict.test.ts`, the engine's golden tests, `fold.properties.test.ts`      |
+| 5   | The session plan has a test for each rule of ADR 118                                                                                                                             | 12, 14                       | `session.test.ts` of the model                                                                |
+| 6   | The simulator runs the production plan and meets the lines of D19                                                                                                                | 16, 21                       | `pnpm --filter @nekotype/sim run p9` in PR 16 and in the acceptance note                      |
+| 7   | A keystroke of a typed task renders nothing and its answer at most once; the latency test holds with word keystrokes; the fold, the forecast and the home's line hold with words | 6, 7, 8, 15, 17–20, every PR | `session-screen.test.tsx`; `latency.spec.ts`, `model-cost.spec.ts`, `home-cost.spec.ts` in CI |
+| 8   | An e2e plays a session with a word, its meaning and the round, and one with a fluency run                                                                                        | 15, 17, 20                   | `learn-session.spec.ts`, `learn-words.spec.ts`, `fluency.spec.ts`                             |
+| 9   | The report dialog on a word task sends with Turnstile, loads its script only when opened, and is disabled offline                                                                | 9, 17                        | the dialog's DOM tests; `e2e/sync/report.spec.ts`                                             |
+| 10  | Every learnable kana's details show its stroke order; KanjiVG, JMdict and EDRDG are credited on `/about`, KanjiVG in `NOTICE.md`                                                 | 4, 11, 17, 19                | the stroke tests; the details' DOM test; the `/about` test                                    |
+| 11  | Every budget holds, with the lines of this plan                                                                                                                                  | every PR                     | `check-budget.mjs`; the figures of each pull request                                          |
+| 12  | The spec describes P9                                                                                                                                                            | 1–21                         | S1–S15; the audit of PR 21                                                                    |
 
 ## 8. Instructions for executor agents
 
 One executor takes one pull request of section 7.
 
-1. **Read first:** `AGENTS.md`; in this file sections 1, 8 and 9, your card in section 7, the decisions it names in section 3 and the ones they link; for a pull request with screens, section 4 and the export in `docs/design/source/`; the ADRs your decisions cite (116–118 for the model); the spec sections your card names. Check the Status table: every pull request yours depends on is merged and every manual step it waits for is marked done. If not, stop and tell the maintainer what is missing.
-2. **Make no decision this plan does not hold.** Types, names, files, keys and constants of section 3 are copied as written. How a screen looks is the export's: build what it draws, with its names and strings. What the plan and the export leave open you do not fill by taste: ask the maintainer (in Russian) and wait.
+1. **Read first:** `AGENTS.md`; in this file sections 1, 8 and 9, your card in section 7, the decisions it names in section 3 and the ones they link; for a pull request with screens, section 4, [D31](#d31-the-design-reference-in-the-code) and the export in `docs/design/source/`; the ADRs your decisions cite (116–118 for the model); the spec sections your card names. Check the Status table and the dependency table of section 7: every pull request yours depends on is merged and every manual step it waits for is marked done. If not, stop and tell the maintainer what is missing.
+2. **Make no decision this plan does not hold.** Types, names, files, keys and constants of section 3 are copied as written. How a screen looks is the export's: build what it draws, with its names and strings, by the rules of D31. What the plan and the export leave open you do not fill by taste: ask the maintainer (in Russian) and wait. The functions between the session's core and a mechanic are the one thing an executor writes for the others: PR 15 defines them and documents them in `docs/architecture/pages.md` ([D21](#d21-the-session)).
 3. **Deviations.** The code wins where it and the plan disagree. When a contract cannot be built as written (an API that does not exist or behaves otherwise, a name that clashes, a measured cost over a line, a rule that contradicts another one of the spec):
    - build the smallest change that keeps the decision's intent;
    - write it in the pull request's description under "Deviations from the plan", with the reason and what you checked;
@@ -1197,43 +1474,48 @@ One executor takes one pull request of section 7.
    **Stop and ask instead** when the deviation would change a rule or a constant of the model (anything the simulator measures), the log or the sync format, behaviour the spec defines or the export draws, a budget line, or another pull request's scope.
 
 4. **Rules of P9:**
-   - a. The design comes first: no code pull request before PR D is merged, and no visual decision outside the export.
+   - a. The design comes first: no visual decision outside the export; a screen's pull request lists its parity check (D31).
    - b. Words come from the selected track only, and a word's meaning is never shown before its answer.
-   - c. The model's rules and constants are those of section 3. A change to `nextTask`, to the fold's rules or to a constant beyond section 3 stops the pull request; it needs a run of `pnpm --filter @nekotype/sim run p7` (and `p9` from PR 5) on the production model, an ADR, and the maintainer's consent.
+   - c. The model's rules and constants are those of section 3. A change to `nextTask`, to the fold's rules or to a constant beyond section 3 stops the pull request; it needs a run of `pnpm --filter @nekotype/sim run p7` (and `p9` from PR 16) on the production model, an ADR, and the maintainer's consent.
    - d. `packages/sim` runs the production session plan, never a copy of its rules; the research options stay outside the production path.
    - e. Nothing new on the hot path: a key handler pushes a key (`TypedKey`, with `errorTarget` and `ruleError`) and updates the DOM through the controller; no plan, verdict, fold, `wrongKana`, `tokenAnswers` or IndexedDB access in it; recording is deferred; 0 renders per keystroke, at most 1 on the answer.
    - f. The raw keystroke log is never persisted: an event holds an outcome, and `misses` is a count.
    - g. Content comes from the pipeline: no generated chunk is edited by hand. The exclusion list, the origins table and the pair differences are read by the maintainer before their merge (M2, M7, M6).
    - h. A kind reaches the screen only through `SESSION_FEATURES`, in the pull request that builds it.
-5. **Stay in scope.** Build what your card lists. Anything else you had to touch is named in the pull request description.
+   - i. A component pull request (7–11) builds what its card lists and tests it through its props; it wires nothing into the session beyond what its card names.
+5. **Stay in scope.** Build what your card lists. Anything else you had to touch is named in the pull request description. A card is sized at most about 900 changed lines with tests (PR 6, a pure package, about 1,200); a pull request that grows well past its card's size stops and proposes a split to the maintainer instead of cutting scope.
 6. **Follow `AGENTS.md`:** the code rules (no `any`, no assertions, strings through i18n with `en` and `ru` in parity, injected time and randomness), the layer rules, the hot-path and budget rules. Never bypass a hook.
-7. **Budgets.** Run `pnpm run build && pnpm run budget` before and after and write the figures of [D29](#d29-budgets) in the description. Above a line: stop and ask.
+7. **Budgets.** Run `pnpm run build && pnpm run budget` before and after and write the figures of [D29](#d29-budgets) in the description, each against its allowance. Near an allowance, first move session code out of the first load as D29 says; above a line: stop and ask.
 8. **Tests.** Write the tests your card lists and name, for each acceptance item you close, the test that proves it. Run the e2e files you touched on Chromium (`pnpm exec playwright test e2e/<file>.spec.ts --project=chromium`), `pnpm run e2e:sync` when a sync e2e changed, and `pnpm run e2e:latency` when `pages/learn`, `entities/learn/model` or `packages/model` changed (CI is the gate). Report results as they are.
-9. **Documents** change in the same pull request: the spec items of [section 3.10](#310-spec-changes), the ADR named, `README.md` and `docs/architecture/` when the code they describe changed. A new ADR takes the next free number and a row in `docs/adr/README.md`.
-10. **Finish:** when the work is done and `pnpm run verify:quick` passes, commit with a Conventional Commits message, push the branch (the pre-push hook runs the checks) and open the pull request against `main`. Its description lists: what changed, why, the deviations from the plan, anything outside the scope, what to check on the preview URL (from your card), the acceptance items closed with their tests, and the budget figures before and after. No AI attribution in commits or in the pull request. Never merge: the maintainer does.
+9. **Documents** change in the same pull request: the spec items of [section 3.11](#311-spec-changes), the ADR named, `README.md` and `docs/architecture/` when the code they describe changed. A new ADR takes the next free number and a row in `docs/adr/README.md`.
+10. **Finish:** when the work is done and `pnpm run verify:quick` passes, commit with a Conventional Commits message, push the branch (the pre-push hook runs the checks) and open the pull request against `main` (PR 2 as a draft, M4). Its description lists: what changed, why, the deviations from the plan, anything outside the scope, what to check on the preview URL (from your card), the parity check of D31 for a screen, the acceptance items closed with their tests, and the budget figures before and after against their allowances. No AI attribution in commits or in the pull request. Never merge: the maintainer does.
 11. **Mark the plan:** after `gh pr create`, set your row of the Status table to `done` with the pull request number, in a second commit on the same branch (`docs: mark P9 PR n done`).
 12. **Communication:** with the maintainer in Russian; code, comments, commits and documents in English.
 
 ## 9. Risks
 
-| Risk                                              | How it shows                                                                        | What to do                                                                                                                                                                      |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The design session takes long                     | No code pull request can start                                                      | ADR 116 puts the design first. It runs in four rounds that can be reviewed on different days (ADR 106); PRs 1–5 and 9 are ready to start the day PR D is merged                 |
-| The export needs data section 3 does not give     | A preview shows something the plan does not compute                                 | Section 4's constraint: the session stops and asks before the export; PR D adds the contract with the maintainer's consent                                                      |
-| The port of the selection differs from the script | Counts other than 1,077 and 828                                                     | Compare the readings by script, find the tag the parser reads otherwise, fix the port. A real difference of rule goes to the maintainer                                         |
-| The rule lets unfit words through                 | The maintainer finds them in the sample                                             | The exclusion list (M2). A whole class of them is a change of the rule, written into content.md with the ADR of PR 1                                                            |
-| KanjiVG lacks a character                         | The build of PR 9 fails on a kana (a small kana, a kana with a dakuten)             | Compose it from KanjiVG parts (the base and the mark) and record it as a deviation; a character that cannot be composed goes to the maintainer                                  |
-| A content chunk passes 40 KB gzip                 | The figures of PR 1 or PR 9                                                         | Words: split a script's chunk by the first kana's row. Strokes: one decimal is already the rule; then a chunk per block of the path. Either is a deviation recorded in the plan |
-| The fold slows with words                         | `model-cost.spec.ts` over 100 ms on the log with words (about 1.4 times the events) | Profile first: D9 keeps a word one task, and the word's events skip `noteTask`. Then stop and ask; the P7 options (a Worker, statistics folded apart) stand                     |
-| The home misses its 300 ms                        | `home-cost.spec.ts` over 300 ms                                                     | The P8 plan's order: profile, split the forecast's plays into callbacks, a Worker only by an ADR                                                                                |
-| The simulator misses a line                       | A number of D19 outside its line in PR 5                                            | Report the tables and the suspected cause (the mix, the run, the round); the maintainer decides; nothing is tuned                                                               |
-| The forecast drifts with words                    | Its median error over 1 session in PR 5                                             | Stop and ask. The fix is to play the session plan with a word list in the forecast (D18), which needs the words on the home                                                     |
-| A rule error is charged wrongly                   | A golden row fails, or a learner sees a kana sent back for っ                       | The rows of D5 are the contract; a spelling the rows miss (`ltu` forms, `cch`) gets a row first, then the fix                                                                   |
-| Timing by token is off                            | A word's first kana always slow                                                     | Expected: it carries the time to start reading, which is why `word` has a pace of its own (ADR 117). `committedTimings` at the end of a word gives every token                  |
-| The session runtime passes 20 KB                  | The figures of PRs 7, 11 or 12                                                      | Stop and ask; the run and the report dialog are the first to become chunks of their own                                                                                         |
-| The schema reset loses unsent progress            | After PR 2 the account misses a device's last session                               | M4. Before the release nobody else uses production (ADR 061)                                                                                                                    |
-| A stale tab of format 3                           | It gets `400` and stops syncing                                                     | A28 as designed: a reload loads the new client, whose schema reset clears its outbox                                                                                            |
-| Turnstile in tests                                | The widget cannot run in CI                                                         | A fake loader in DOM tests and a stub script in the e2e; the real widget is checked by the maintainer in M8                                                                     |
-| The report dialog steals the session's focus      | After closing, keys go nowhere                                                      | D26: closing gives the focus back to the session's input; a DOM test and the e2e check it                                                                                       |
-| Interleaving still feels monotonous               | The maintainer's review in M8                                                       | The mix follows the model (ADR 118, point 7). A change of cadence or of the mix is a constant or a rule: a sim run and an ADR                                                   |
-| A pull request outgrows its session               | Well past the size of its card                                                      | Propose a split to the maintainer instead of cutting scope                                                                                                                      |
+| Risk                                                 | How it shows                                                                                            | What to do                                                                                                                                                                         |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The export needs data section 3 does not give        | A component or a screen needs a value the plan does not compute                                         | Stop and ask; the contract is added to section 3 with the maintainer's consent, as PR D did for D2 and D12                                                                         |
+| A component built before its session does not fit it | PR 15, 17, 18, 19 or 20 needs a prop of PR 7–9 or 11 that does not exist, or one that behaves otherwise | The props are the reference's (D31), so a gap is a gap of the reference: the integration pull request adds the prop in `shared/ui` with its DOM test and records it as a deviation |
+| The port differs from the reference                  | The parity check of D31 shows a difference; the maintainer sees one in M8                               | The rules of D31: copy the styles and the markup, keep the names; a difference the code cannot avoid gets a row in D31's table                                                     |
+| Two pull requests of one wave change one file        | A conflict on the `session` part, `SESSION_FEATURES`, `docs/architecture/` or the Status table          | The second to merge rebases and keeps both sides (section 7). The session's code by mechanic (D21) keeps PRs 17, 18 and 19 in files of their own                                   |
+| The port of the selection differs from the script    | Counts other than 1,077 and 828                                                                         | Compare the readings by script, find the tag the parser reads otherwise, fix the port. A real difference of rule goes to the maintainer                                            |
+| The rule lets unfit words through                    | The maintainer finds them in the sample                                                                 | The exclusion list (M2). A whole class of them is a change of the rule, written into content.md with the ADR of PR 5                                                               |
+| KanjiVG lacks a character                            | The build of PR 4 fails on a kana (a small kana, a kana with a dakuten)                                 | Compose it from KanjiVG parts (the base and the mark) and record it as a deviation; a character that cannot be composed goes to the maintainer                                     |
+| A part the katakana kept is wrong                    | A cell of `audit-origins.svg` whose dark strokes do not look like the katakana                          | Visible before the merge: the executor's look and M7. A name of a KanjiVG group is preferred to indexes (D2)                                                                       |
+| A content chunk passes 40 KB gzip                    | The figures of PR 4 or PR 5                                                                             | Words: split a script's chunk by the first kana's row. Strokes: one decimal is already the rule; then a chunk per block of the path. Either is a deviation recorded in the plan    |
+| The fold slows with words                            | `model-cost.spec.ts` over 100 ms on the log with words, rules and runs (about 1.5 times the events)     | Profile first: D9 keeps a word one task, and the word's events skip `noteTask`. Then stop and ask; the P7 options (a Worker, statistics folded apart) stand                        |
+| The home misses its 300 ms                           | `home-cost.spec.ts` over 300 ms                                                                         | The P8 plan's order: profile, split the forecast's plays into callbacks, a Worker only by an ADR                                                                                   |
+| The simulator misses a line                          | A number of D19 outside its line in PR 16                                                               | Report the tables and the suspected cause (the mix, the run, the round); the maintainer decides; nothing is tuned                                                                  |
+| The forecast drifts with words                       | Its median error over 1 session in PR 16                                                                | Unlikely: measured before the code (section 2). The remedy is decided in D18: the forecast plays the word slots, and PR 16 measures again                                          |
+| A rule error is charged wrongly                      | A golden row fails, or a learner sees a kana sent back for っ                                           | The rows of D5 are the contract; a spelling the rows miss (`ltu` forms, `cch`) gets a row first, then the fix                                                                      |
+| Timing by token is off                               | A word's first kana always slow                                                                         | Expected: it carries the time to start reading, which is why `word` has a pace of its own (ADR 117). `committedTimings` at the end of a word gives every token                     |
+| A chunk passes its line                              | The figures of a pull request against the allowances of D29                                             | The split is decided in D29 (`session-plan`, `session-stream`); session code stays out of the first load. A line passed after that: stop and ask                                   |
+| The initial JS passes 31.5 KB                        | The figures of PRs 2, 6, 13, 14, 15 or 19                                                               | D29's rule first: a module only a session runs leaves `entities/learn`, `session-loader.ts` and `app/`. Then stop and ask                                                          |
+| The schema reset loses unsent progress               | After PR 2 the account misses a device's last session                                                   | M4 as a hard gate: PR 2 is a draft until every device is ticked (Q7). Before the release nobody else uses production (ADR 061)                                                     |
+| A stale tab of format 3                              | It gets `400` and stops syncing                                                                         | A28 as designed: a reload loads the new client, whose schema reset clears its outbox                                                                                               |
+| Turnstile in tests                                   | The widget cannot run in CI                                                                             | A fake loader in DOM tests and a stub script in the e2e; the real widget is checked by the maintainer in M8 (PR 17)                                                                |
+| The report dialog steals the session's focus         | After closing, keys go nowhere                                                                          | D26: closing gives the focus back to the session's input; a DOM test (PR 9) and the e2e (PR 17) check it                                                                           |
+| Interleaving still feels monotonous                  | The maintainer's checks of M8                                                                           | The mix follows the model (ADR 118, point 7). A change of cadence or of the mix is a constant or a rule: a sim run and an ADR                                                      |
+| A pull request outgrows its session                  | Well past the size of its card                                                                          | Propose a split to the maintainer instead of cutting scope                                                                                                                         |
