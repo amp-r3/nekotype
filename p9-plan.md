@@ -21,7 +21,7 @@ The executor of a pull request fills its row ([section 8](#8-instructions-for-ex
 | D   | `docs/p9-design`       | done   | #251         |
 | 1   | `p9-01-engine`         | done   | #253         |
 | 2   | `p9-02-log-format-4`   | done   | #254         |
-| 3   | `p9-03-session-lazy`   | —      | —            |
+| 3   | `p9-03-session-lazy`   | done   | #256         |
 | 4   | `p9-04-kanjivg`        | —      | —            |
 | 5   | `p9-05-words-content`  | —      | —            |
 | 6   | `p9-06-grades`         | —      | —            |
@@ -751,7 +751,7 @@ After a task with a `wrong` verdict the task waits for `Enter` (D21) and shows (
 #### D28. Strings and styles
 
 - **Strings** (PR 3). A dictionary part `session` (en and ru, key parity) is loaded with the session runtime (`loadSessionRuntime` waits for it). It holds every new string of the session: the task types, the notices, the 47 pair differences, the round, the run, the rule introductions and the report dialog. The `learn.session.*` strings of the English core stay. The `details` part gains the stroke order's strings, `about` the sources section, and `home` the words of the outline (`home.outline.words`, PR 14, [D18](#d18-the-forecast-and-the-outline)).
-- **Styles** (PR 3). The styles of the session's tasks move from `app/styles/index.css` to a stylesheet that the session runtime imports, so they leave the initial CSS. `nk-caret`, which the home's path draws, stays. The pull requests after PR 3 add the session's styles to that stylesheet, copied from the reference ([D31](#d31-the-design-reference-in-the-code)).
+- **Styles** (PR 3). The styles of the session's tasks move from `app/styles/index.css` to a stylesheet that the session runtime imports, so they leave the initial CSS. As built (`pages/learn/ui/session.css`, ADR 121): the runtime imports its address (`?url`) and adds the link itself, and the loader waits for it, because Vite 8.3.5 does not ask again for a lazy chunk's stylesheet that failed. No later pull request imports a `.css` file from a session chunk: its styles go into this file. `nk-caret`, which the home's path draws, stays. The pull requests after PR 3 add the session's styles to that stylesheet, copied from the reference ([D31](#d31-the-design-reference-in-the-code)).
 
 ### 3.7 Budgets and measurements
 
@@ -811,7 +811,7 @@ The export is a React reference; the code is Preact with a controller on the hot
 
 - **What the reference is.** `docs/design/source/components/bundle.js` (React 18, `h`), `bundle.css` and `index.d.ts`. Its `KanaTask` is static markup plus `createTaskController`, the split of `shared/ui/kana-task.tsx` and `task-controller.ts`: props render once per task, and the controller writes classes, text and transforms on a keystroke, with the same methods.
 - **The rules of the port:**
-  1. **Styles.** The rules of `bundle.css` for the classes a pull request builds are copied as they are into the session's stylesheet or the component's own, token variables included; no value is retyped from a picture.
+  1. **Styles.** The rules of `bundle.css` for the classes a pull request builds are copied as they are into the session's stylesheet (a component outside a session may have its own, D28), token variables included; no value is retyped from a picture.
   2. **Markup.** Each element, class, `role`, `aria-*` and `lang` of the reference's component stays; `h(…)` becomes JSX, `React.ReactNode` becomes `ComponentChildren`.
   3. **Names.** A prop, type or constant that `index.d.ts` declares keeps its name and shape in the code, with `readonly`. A name the reference lacks comes from section 3. Strings come from the dictionary parts, never from the reference's literals.
   4. **The hot path.** A prop of the reference that changes while a task is typed is written by the controller in the code (the table below), never by a render.
@@ -1138,7 +1138,7 @@ Done: #251, merged on 2026-11-28.
 
 - **Branch:** `p9-03-session-lazy`. **Depends on:** nothing.
 - **Goal.** [D28](#d28-strings-and-styles): the dictionary part `session` and the session's stylesheet, so the pull requests after it put their strings and styles where they belong. No visual change.
-- **Creates:** `shared/i18n/parts/session` (en and ru, empty of P9 strings but for what this pull request moves); the session's stylesheet, imported by the session runtime.
+- **Creates:** `shared/i18n/parts/session` (en and ru, empty of P9 strings but for what this pull request moves); the session's stylesheet, imported by the session runtime. As built: the part is empty, so its keys are not yet in `TranslationKey` and its `ru` has no compile-time `satisfies` (lint refuses a type of no keys); the stylesheet is loaded as D28 says.
 - **Changes:** `shared/i18n` (`DictionaryPart` gains `session`); `pages/learn/session-loader.ts` (`loadSessionRuntime` waits for the part, as `loadHomePanels` waits for `home`); `app/styles/index.css` (the session's task styles out; `nk-caret`, which the home's path draws, stays); the budget test of the initial CSS if it names a figure.
 - **Tests:** the part loads with the runtime and a failure of the part fails the runtime's load as a failure of the runtime does; key parity of the part; the session screen tests unchanged; e2e: a session looks as before (`learn-session.spec.ts`, desktop and `@mobile`).
 - **Acceptance:** 11 (the initial CSS goes down).
@@ -1204,7 +1204,7 @@ Done: #251, merged on 2026-11-28.
 - **Layout** (`KanaTask`): the session line and the ticks (the round's after a `space-3` gap, `session.round`); the task on a card (`bg-raised`, `line`, `radius-md`, padding `space-8` `space-6`; no frame below 640px) that slides in (`dur-reveal`, none under reduced motion), its border `miss-dim` once `answered` is `wrong`; in the card a reserved caption line (`caption`), the prompt, the options; under it the feedback lines (`feedback`, `role="status"`), the notice line (hidden while `held`) and the key line (`Kbd enter` + `next` while `held`, a `next` text button under `pointer: coarse`; `footEnd` at its end). An introduction shows the kana's row (`row`: `jp-cell`, the new kana underlined `eye`, the known ones `fur-dim`, the rest `fur-faint`). A recall answered wrong compares in the stage (`compare`: the right kana `fur` with its romaji, the learner's left of it, smaller, `miss`, `you typed` over it). `promise` stands under the card, and in the key line left of `next` below 640px. The kinds `word` (a typed task whose stage the consumer draws, `stage`) and `break` (a screen of its own: `stage` and `progress` in place of `7 of 30`). The phone over its keyboard (decision 161): every state at 360 within 280px.
 - **The current kinds in the frame:** the session passes an introduction's caption with its row (`new kana · the m row`) and its `row`, and a recognition's caption; nothing else of the session changes.
 - **Strings (en / ru):** `new kana · the m row` / `новая кана · ряд m` (`the vowels` / `гласные`); `which kana is it?` / `какая это кана?`; `you typed` / `вы ввели`; `next` / `дальше`; `round · 1 of 3` / `повтор · 1 из 3`.
-- **Changes:** `shared/ui/kana-task.tsx` and `task-controller.ts` (the card, the caption, the row, `answered`, `compare`, `feedback`, `promise`, `held`, `footEnd`, `stage`, `progress`, the round's ticks, the kinds `word` and `break`), the session's stylesheet; `pages/learn/ui/session-screen.tsx` (the caption and the row of the current kinds); the `session` part; `e2e/learn-session.spec.ts`.
+- **Changes:** `shared/ui/kana-task.tsx` and `task-controller.ts` (the card, the caption, the row, `answered`, `compare`, `feedback`, `promise`, `held`, `footEnd`, `stage`, `progress`, the round's ticks, the kinds `word` and `break`), the session's stylesheet; `pages/learn/ui/session-screen.tsx` (the caption and the row of the current kinds); the `session` part (the first strings: add `keyof typeof sessionEn` to `TranslationKey`, type `sessionRu` with `satisfies Record<keyof typeof sessionEn, string>`, and move its parity test into `PIECES` of `translate.test.ts`); `e2e/learn-session.spec.ts`.
 - **Tests:** a DOM test per state through props: the card and its slide-in (none under reduced motion), the reserved caption line in recall, the row, the `wrong` border, the compare, the feedback as a status line, the promise under the card and in the key line below 640px, `held` (the key line reads `next`, no notice line), the round's ticks after their gap, `word` with a stage, `break` with its progress line; `session-screen.test.tsx` still shows 0 renders per keystroke and at most 1 on the answer; e2e at 360 × 280 (`@mobile`): a recall, a recognition and an introduction keep their key line visible.
 - **Parity** ([D31](#d31-the-design-reference-in-the-code)): every state above against the reference's `KanaTask`, at 1120 and at 360.
 - **Acceptance:** 1 (the frame), 7 (the hot path).

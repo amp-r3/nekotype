@@ -18,10 +18,17 @@ import type { SummaryModel } from '../model/summary';
 import type { LearnSession } from '../model/session';
 import { forecastBeforeOf } from '../lib/summary';
 import { silentAudio } from '../lib/audio';
+import { loadStylesheet } from '../lib/stylesheet';
+import sessionStyles from './session.css?url';
 
 export { SessionScreen } from './session-screen';
 // The end of a session is reached only through a session, so its screen travels with this chunk.
 export { SummaryScreen } from './summary-screen';
+
+/** The styles of the session's tasks; the loader waits for them before the session is shown. */
+export function loadSessionStyles(): Promise<void> {
+  return loadStylesheet(sessionStyles);
+}
 
 /** Opens a learning session on the planner of the model (P7 plan, D18). */
 export function openSession(): LearnSession {

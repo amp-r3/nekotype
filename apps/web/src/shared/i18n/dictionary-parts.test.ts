@@ -3,6 +3,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { progressEn } from './parts/progress/en';
 import { homeEn } from './parts/home/en';
+import { sessionEn } from './parts/session/en';
 import { detailsEn } from './parts/details/en';
 import { settingsEn } from './parts/settings/en';
 import { aboutEn } from './parts/about/en';
@@ -20,6 +21,9 @@ const PARTS: readonly (readonly [string, Record<string, string>, RegExp])[] = [
     homeEn,
     /^pages\/learn\/ui\/(home\/panels\/|summary-panel|summary-forecast|kana-buttons)/,
   ],
+  // Loaded with the session runtime (`session-loader.ts`); a pull request that gives the session a
+  // file of another name adds it here.
+  ['session', sessionEn, /^pages\/learn\/ui\/session-/],
   ['details', detailsEn, /^features\/kana-details\//],
   // The "another account" dialog loads the settings part before it shows (design decision 118).
   ['settings', settingsEn, /^(pages\/settings|features\/sync\/ui)\//],

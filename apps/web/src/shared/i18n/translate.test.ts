@@ -5,6 +5,8 @@ import { progressEn } from './parts/progress/en';
 import { progressRu } from './parts/progress/ru';
 import { homeEn } from './parts/home/en';
 import { homeRu } from './parts/home/ru';
+import { sessionEn } from './parts/session/en';
+import { sessionRu } from './parts/session/ru';
 import { detailsEn } from './parts/details/en';
 import { detailsRu } from './parts/details/ru';
 import { settingsEn } from './parts/settings/en';
@@ -28,6 +30,11 @@ const PIECES: readonly (readonly [string, Record<string, string>, Record<string,
 ];
 
 describe('i18n: translations and locale handling', () => {
+  // Apart from `PIECES`: the part holds no string until the screens of P9 add theirs.
+  it('has exact runtime key parity between en and ru: session', () => {
+    expect(Object.keys(sessionRu).sort()).toEqual(Object.keys(sessionEn).sort());
+  });
+
   it.each(PIECES)(
     'has exact runtime key parity between en and ru: %s',
     (_name, english, russian) => {
