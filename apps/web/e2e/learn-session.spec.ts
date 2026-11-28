@@ -66,6 +66,28 @@ test.describe('learning session on /', () => {
   });
 });
 
+test.describe('the stylesheet of the session', () => {
+  test('one that failed to load is asked for again, so the session is not shown without it', async ({
+    page,
+  }) => {
+    let offline = true;
+    await page.route(/assets\/session-.*\.css$/, (route) =>
+      offline ? route.abort() : route.continue(),
+    );
+    // The first try is the idle prefetch.
+    const failed = page.waitForEvent('requestfailed', (request) =>
+      /assets\/session-.*\.css$/.test(request.url()),
+    );
+    await page.goto('/');
+    await expect(page.getByTestId('home-reason')).toBeVisible();
+    await failed;
+
+    offline = false;
+    await page.getByRole('button', { name: 'continue' }).click();
+    await expect(page.getByTestId('kana-task')).toHaveCSS('display', 'flex');
+  });
+});
+
 test.describe('review in a session on /', () => {
   test('takes the due kana first, names it as the reason and clears it after', async ({ page }) => {
     // The learner came back every 2 hours on the first day, then stayed away for a month: the
